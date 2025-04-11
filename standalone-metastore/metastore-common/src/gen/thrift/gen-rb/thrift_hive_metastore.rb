@@ -3557,6 +3557,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'update_compaction_metrics_data failed: unknown result')
     end
 
+    def set_compaction_type(cr)
+      send_set_compaction_type(cr)
+      recv_set_compaction_type()
+    end
+
+    def send_set_compaction_type(cr)
+      send_message('set_compaction_type', Set_compaction_type_args, :cr => cr)
+    end
+
+    def recv_set_compaction_type()
+      result = receive_message(Set_compaction_type_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
     def remove_compaction_metrics_data(request)
       send_remove_compaction_metrics_data(request)
       recv_remove_compaction_metrics_data()
@@ -7386,6 +7401,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'update_compaction_metrics_data', seqid)
+    end
+
+    def process_set_compaction_type(seqid, iprot, oprot)
+      args = read_args(iprot, Set_compaction_type_args)
+      result = Set_compaction_type_result.new()
+      begin
+        @handler.set_compaction_type(args.cr)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'set_compaction_type', seqid)
     end
 
     def process_remove_compaction_metrics_data(seqid, iprot, oprot)
@@ -16066,6 +16092,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_compaction_type_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CR = 1
+
+    FIELDS = {
+      CR => {:type => ::Thrift::Types::STRUCT, :name => 'cr', :class => ::CompactionInfoStruct}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Set_compaction_type_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

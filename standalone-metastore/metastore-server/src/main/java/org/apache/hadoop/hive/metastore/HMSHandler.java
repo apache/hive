@@ -9175,6 +9175,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public void set_compaction_type(org.apache.hadoop.hive.metastore.api.CompactionInfoStruct cr) throws MetaException {
+    getTxnHandler().setCompactionType(CompactionInfo.compactionStructToInfo(cr));
+  }
+
+  @Override
   public boolean update_compaction_metrics_data(CompactionMetricsDataStruct struct) throws MetaException, TException {
       return getTxnHandler().updateCompactionMetricsData(CompactionMetricsDataConverter.structToData(struct));
   }

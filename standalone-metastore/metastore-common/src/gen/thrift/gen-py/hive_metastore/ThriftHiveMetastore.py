@@ -1853,6 +1853,14 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
+    def set_compaction_type(self, cr):
+        """
+        Parameters:
+         - cr
+
+        """
+        pass
+
     def remove_compaction_metrics_data(self, request):
         """
         Parameters:
@@ -10210,6 +10218,38 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         raise TApplicationException(TApplicationException.MISSING_RESULT, "update_compaction_metrics_data failed: unknown result")
 
+    def set_compaction_type(self, cr):
+        """
+        Parameters:
+         - cr
+
+        """
+        self.send_set_compaction_type(cr)
+        self.recv_set_compaction_type()
+
+    def send_set_compaction_type(self, cr):
+        self._oprot.writeMessageBegin('set_compaction_type', TMessageType.CALL, self._seqid)
+        args = set_compaction_type_args()
+        args.cr = cr
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_set_compaction_type(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = set_compaction_type_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        return
+
     def remove_compaction_metrics_data(self, request):
         """
         Parameters:
@@ -12807,6 +12847,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["mark_failed"] = Processor.process_mark_failed
         self._processMap["mark_refused"] = Processor.process_mark_refused
         self._processMap["update_compaction_metrics_data"] = Processor.process_update_compaction_metrics_data
+        self._processMap["set_compaction_type"] = Processor.process_set_compaction_type
         self._processMap["remove_compaction_metrics_data"] = Processor.process_remove_compaction_metrics_data
         self._processMap["set_hadoop_jobid"] = Processor.process_set_hadoop_jobid
         self._processMap["get_latest_committed_compaction_info"] = Processor.process_get_latest_committed_compaction_info
@@ -19023,6 +19064,32 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("update_compaction_metrics_data", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_set_compaction_type(self, seqid, iprot, oprot):
+        args = set_compaction_type_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = set_compaction_type_result()
+        try:
+            self._handler.set_compaction_type(args.cr)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("set_compaction_type", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -54137,6 +54204,131 @@ class update_compaction_metrics_data_result(object):
 all_structs.append(update_compaction_metrics_data_result)
 update_compaction_metrics_data_result.thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class set_compaction_type_args(object):
+    """
+    Attributes:
+     - cr
+
+    """
+
+
+    def __init__(self, cr=None,):
+        self.cr = cr
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.cr = CompactionInfoStruct()
+                    self.cr.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('set_compaction_type_args')
+        if self.cr is not None:
+            oprot.writeFieldBegin('cr', TType.STRUCT, 1)
+            self.cr.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(set_compaction_type_args)
+set_compaction_type_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'cr', [CompactionInfoStruct, None], None, ),  # 1
+)
+
+
+class set_compaction_type_result(object):
+    """
+    Attributes:
+     - o1
+
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('set_compaction_type_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(set_compaction_type_result)
+set_compaction_type_result.thrift_spec = (
+    None,  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 

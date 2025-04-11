@@ -132,6 +132,7 @@ public interface TxnStore extends Configurable {
   char MINOR_TYPE = 'i';
   char REBALANCE_TYPE = 'r';
   char ABORT_TXN_CLEANUP_TYPE = 'c';
+  char SMART_OPTIMIZE_TYPE = '*';
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
       SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };
@@ -695,6 +696,15 @@ public interface TxnStore extends Configurable {
   @Transactional(POOL_COMPACTOR)
   void markRefused(CompactionInfo info) throws MetaException;
 
+  /**
+   * Update compaction type.
+   * @param info compaction job.
+   * @throws MetaException
+   */
+  @SqlRetry
+  @Transactional(POOL_COMPACTOR)
+  void setCompactionType(CompactionInfo info) throws MetaException;
+  
   /**
    * Stores the value of {@link CompactionInfo#retryRetention} and {@link CompactionInfo#errorMessage} fields
    * of the CompactionInfo either by inserting or updating the fields in the HMS database.

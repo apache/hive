@@ -1085,6 +1085,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("update_compaction_metrics_data\n");
   }
 
+  void set_compaction_type(const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("set_compaction_type\n");
+  }
+
   void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) {
     // Your implementation goes here
     printf("remove_compaction_metrics_data\n");

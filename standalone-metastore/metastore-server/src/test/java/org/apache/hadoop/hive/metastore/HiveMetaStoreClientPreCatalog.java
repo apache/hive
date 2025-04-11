@@ -3764,6 +3764,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void setCompactionType(CompactionInfoStruct cr) throws TException {
+    client.set_compaction_type(cr);
+  }
+
+  @Override
   public List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException {
     return client.find_columns_with_stats(cr);
   }
