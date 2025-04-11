@@ -3804,15 +3804,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // 4. Construct GB Keys (ExprNode)
           for (ASTNode groupByNode : groupByNodes) {
             Map<ASTNode, RexNode> astToRexNodeMap = genAllRexNode(
-                    groupByNode, groupByInputRowResolver, cluster.getRexBuilder());
+                groupByNode, groupByInputRowResolver, cluster.getRexBuilder());
             RexNode groupByExpression = astToRexNodeMap.get(groupByNode);
             if (groupByExpression == null) {
               throw new CalciteSemanticException("Invalid Column Reference: " + groupByNode.dump(),
-                      UnsupportedFeature.Invalid_column_reference);
+                  UnsupportedFeature.Invalid_column_reference);
             }
 
             addToGBExpr(groupByOutputRowResolver, groupByInputRowResolver, groupByNode,
-                    groupByExpression, groupByExpressions, outputColumnNames);
+                groupByExpression, groupByExpressions, outputColumnNames);
           }
           groupByInputRowResolver.setCheckForAmbiguity(false);
         }
