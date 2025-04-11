@@ -96,53 +96,51 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return r;
     }
 
-    String s = t.toString();
-    int[] index = makeIndex(pos, len, s.length());
-    if (index == null) {
+    byte[] utf8String = t.toString().getBytes();
+    StringSubstrColStartLen.populateSubstrOffsets(utf8String, 0, utf8String.length, craetePos(pos), len, index);
+    if (index[0] == -1) {
       return r;
     }
 
-    r.set(s.substring(index[0], index[1]));
+    r.set(new String(utf8String, index[0], index[1]));
     return r;
   }
 
-  private int[] makeIndex(int pos, int len, int inputLen) {
-    if ((Math.abs(pos) > inputLen)) {
+  private Text evaluateInternal(Text t, int pos) {
+    r.clear();
+
+    byte[] utf8String = t.toString().getBytes();
+    int offset = StringSubstrColStart.getSubstrStartOffset(utf8String, 0, utf8String.length, craetePos(pos));
+    if (offset == -1) {
+      return r;
+    }
+
+    r.set(new String(utf8String, offset, utf8String.length - offset));
+    return r;
+  }
+
+  public Text evaluate(Text s, IntWritable pos) {
+    if ((s == null) || (pos == null)) {
       return null;
     }
 
-    int start, end;
-
-    if (pos > 0) {
-      start = pos - 1;
-    } else if (pos < 0) {
-      start = inputLen + pos;
-    } else {
-      start = 0;
-    }
-
-    if ((inputLen - start) < len) {
-      end = inputLen;
-    } else {
-      end = start + len;
-    }
-    index[0] = start;
-    index[1] = end;
-    return index;
-  }
-
-  private final IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
-
-  // Even though we are using longs, substr can only deal with ints, so we use
-  // the maximum int value as the maxValue
-  private final LongWritable maxLongValue = new LongWritable(Integer.MAX_VALUE);
-
-  public Text evaluate(Text s, IntWritable pos) {
-    return evaluate(s, pos, maxValue);
+    return evaluateInternal(s, pos.get());
   }
 
   public Text evaluate(Text s, LongWritable pos) {
-    return evaluate(s, pos, maxLongValue);
+    if ((s == null) || (pos == null)) {
+      return null;
+    }
+
+    long longPos = pos.get();
+    // If an unsupported value is seen, we don't want to return a string
+    // that doesn't match what the user expects, so we return NULL (still
+    // unexpected, of course, but probably better than a bad string).
+    if (longPos > Integer.MAX_VALUE || longPos < Integer.MIN_VALUE) {
+      return null;
+    }
+
+    return evaluateInternal(s, (int) pos.get());
   }
 
   public BytesWritable evaluate(BytesWritable bw, LongWritable pos, LongWritable len) {
@@ -172,30 +170,68 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
   }
 
   private BytesWritable evaluateInternal(BytesWritable bw, int pos, int len) {
-
     if (len <= 0) {
       return new BytesWritable();
     }
 
-    int[] index = makeIndex(pos, len, bw.getLength());
-    if (index == null) {
+    byte[] b = Arrays.copyOf(bw.getBytes(), bw.getLength());
+    StringSubstrColStartLen.populateSubstrOffsets(b, 0, b.length, craetePos(pos), len, index);
+    if (index[0] == -1) {
       return new BytesWritable();
     }
 
-    return new BytesWritable(Arrays.copyOfRange(bw.getBytes(), index[0], index[1]));
+    return new BytesWritable(arrayCopy(b, index[0], index[1]));
+  }
+
+  private BytesWritable evaluateInternal(BytesWritable bw, int pos) {
+    byte[] b = Arrays.copyOf(bw.getBytes(), bw.getLength());
+    int offset = StringSubstrColStart.getSubstrStartOffset(b, 0, b.length, craetePos(pos));
+
+    if (offset == -1) {
+      return new BytesWritable();
+    }
+
+    return new BytesWritable(arrayCopy(b, offset, bw.getLength() - offset));
   }
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos){
-    return evaluate(bw, pos, maxValue);
+    if ((bw == null) || (pos == null)) {
+      return null;
+    }
+    return evaluateInternal(bw, pos.get());
   }
 
   public BytesWritable evaluate(BytesWritable bw, LongWritable pos){
-    return evaluate(bw, pos, maxLongValue);
+    if ((bw == null) || (pos == null)) {
+      return null;
+    }
+
+    return evaluateInternal(bw, (int) pos.get());
   }
 
   @Override
   public StatEstimator getStatEstimator() {
     return new SubStrStatEstimator();
+  }
+
+  private byte[] arrayCopy(byte[] src, int pos, int len) {
+    byte[] b = new byte[len];
+
+    int copyIdx = 0;
+    for (int srcIdx = pos; copyIdx < len; srcIdx++) {
+      b[copyIdx] = src[srcIdx];
+      copyIdx++;
+    }
+
+    return b;
+  }
+
+  private int craetePos(int pos) {
+    if (pos <= 0) {
+      return pos;
+    }
+
+    return pos - 1;
   }
 
   private static class SubStrStatEstimator implements StatEstimator {
