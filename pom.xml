@@ -1815,7 +1815,6 @@
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
-            <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables/>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
