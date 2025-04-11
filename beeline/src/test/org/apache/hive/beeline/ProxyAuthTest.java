@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.session.SessionUtils;
