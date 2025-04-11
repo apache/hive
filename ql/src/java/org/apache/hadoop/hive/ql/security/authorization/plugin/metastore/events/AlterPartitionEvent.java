@@ -76,10 +76,15 @@ public class AlterPartitionEvent extends HiveMetaStoreAuthorizableEvent {
     ret.add(getHivePrivilegeObject(event.getTable()));
 
     Partition newPartition = event.getNewPartition();
-    String    newUri       = (newPartition != null) ? getSdLocation(newPartition.getSd()) : "";
+    Partition oldPartition = event.getOldPart();
 
-    if (StringUtils.isNotEmpty(newUri)) {
-        ret.add(getHivePrivilegeObjectDfsUri(newUri));
+    String    newUri       = (newPartition != null) ? getSdLocation(newPartition.getSd()) : "";
+    String    oldUri       = (oldPartition != null) ? getSdLocation(oldPartition.getSd()) : "";
+
+    // Skip DFS_URI auth if old and new partition uri are empty or same
+    if (StringUtils.isNotEmpty(newUri) && StringUtils.isNotEmpty(oldUri) && !StringUtils.equalsIgnoreCase(oldUri,
+        newUri)) {
+      ret.add(getHivePrivilegeObjectDfsUri(newUri));
     }
 
     COMMAND_STR = buildCommandString(COMMAND_STR, event.getTableName(), newPartition);

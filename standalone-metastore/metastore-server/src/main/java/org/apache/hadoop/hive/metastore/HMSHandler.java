@@ -6004,8 +6004,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       Table table = getMS().getTable(catName, db_name, tbl_name, null);
+      Partition oldPartition = getMS().getPartition(catName, db_name, tbl_name, part_vals);
 
-      firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, part_vals, new_part, this));
+      firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, oldPartition, new_part, this));
       if (part_vals != null && !part_vals.isEmpty()) {
         MetaStoreServerUtils.validatePartitionNameCharacters(new_part.getValues(),
             partitionValidationPattern);

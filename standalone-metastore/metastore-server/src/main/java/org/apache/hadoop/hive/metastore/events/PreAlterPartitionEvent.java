@@ -33,16 +33,16 @@ public class PreAlterPartitionEvent extends PreEventContext {
   private final String dbName;
   private final String tableName;
   private final Table table;
-  private final List<String> oldPartVals;
+  private final Partition oldPart;
   private final Partition newPart;
 
-  public PreAlterPartitionEvent(String dbName, String tableName, Table table, List<String> oldPartVals,
+  public PreAlterPartitionEvent(String dbName, String tableName, Table table, Partition oldPart,
       Partition newPart, IHMSHandler handler) {
     super(PreEventType.ALTER_PARTITION, handler);
     this.dbName = dbName;
     this.tableName = tableName;
     this.table = table;
-    this.oldPartVals = oldPartVals;
+    this.oldPart = oldPart;
     this.newPart = newPart;
   }
 
@@ -56,8 +56,8 @@ public class PreAlterPartitionEvent extends PreEventContext {
 
   public Table getTable() { return table; }
 
-  public List<String> getOldPartVals() {
-    return oldPartVals;
+  public Partition getOldPart() {
+    return oldPart;
   }
 
   /**
