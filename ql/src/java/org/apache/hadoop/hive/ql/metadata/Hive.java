@@ -49,6 +49,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -125,6 +126,7 @@ import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -251,6 +253,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
@@ -6006,11 +6009,31 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
+    if ("rest".equals(conf.get("metastore.type", "hms"))) {
+      return getHiveIcebergRESTCatalog(conf, hookLoader);
+    }
+
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
       return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
     } else {
       return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
           SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+    }
+  }
+  private IMetaStoreClient getHiveIcebergRESTCatalog(HiveConf conf, HiveMetaHookLoader hookLoader) throws MetaException {
+    try {
+      Class<? extends IMetaStoreClient> handlerClass =
+          (Class<? extends IMetaStoreClient>)
+              Class.forName("org.apache.iceberg.hive.HiveIcebergRESTCatalogClientAdapter", true, Utilities.getSessionSpecifiedClassLoader());
+      Class<?>[] constructorArgTypes = new Class[] {Configuration.class, HiveMetaHookLoader.class};
+      Object[] constructorArgs = new Object[] {conf, hookLoader};
+      IMetaStoreClient restCatalogMetastoreClient = JavaUtils.newInstance(handlerClass, constructorArgTypes, constructorArgs); 
+          //ReflectionUtils.newInstance(handlerClass, conf);
+      restCatalogMetastoreClient.reconnect();
+      return restCatalogMetastoreClient;
+    } catch (ClassNotFoundException e) {
+      throw new MetaException("Error in loading HiveIcebergRESTCatalogClientAdapter class."
+          + e.getMessage());
     }
   }
 
