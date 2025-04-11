@@ -6,4 +6,4 @@ POSTHOOK: query: create table t1(i int, j int, k int) stored by iceberg
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
-FAILED: SemanticException DROP STATISTICS FOR COLUMNS is not supported for ICEBERG tables
+FAILED: SemanticException DROP STATISTICS FOR COLUMNS is not supported for non-native table that doesn't store stats in metastore.

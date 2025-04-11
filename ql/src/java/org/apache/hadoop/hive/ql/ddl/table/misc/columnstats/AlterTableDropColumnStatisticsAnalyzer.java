@@ -51,7 +51,7 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
     Table table = getTable(tableName);
     
     if (table.isNonNative() && table.getStorageHandler().canSetColStatistics(table)) {
-      throw new SemanticException("DROP STATISTICS FOR COLUMNS is not supported for non-native tables that " +
+      throw new SemanticException("DROP STATISTICS FOR COLUMNS is not supported for non-native table that " +
           "doesn't store stats in metastore.");
     }
     
