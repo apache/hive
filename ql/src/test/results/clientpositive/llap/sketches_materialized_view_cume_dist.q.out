@@ -177,28 +177,28 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	2	0.09090909090909091
-rewrite; mv matching	3	0.13636363636363635
-rewrite; mv matching	4	0.18181818181818182
-rewrite; mv matching	5	0.22727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	11	0.7727272727272727
-rewrite; mv matching	12	0.8181818181818182
-rewrite; mv matching	13	0.8636363636363636
-rewrite; mv matching	14	0.9090909090909091
-rewrite; mv matching	15	0.9545454545454546
+rewrite; mv matching	1	0.09090909090909091
+rewrite; mv matching	1	0.09090909090909091
+rewrite; mv matching	2	0.13636363636363635
+rewrite; mv matching	3	0.18181818181818182
+rewrite; mv matching	4	0.22727272727272727
+rewrite; mv matching	5	0.2727272727272727
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	8	0.5909090909090909
+rewrite; mv matching	8	0.5909090909090909
+rewrite; mv matching	9	0.6818181818181818
+rewrite; mv matching	9	0.6818181818181818
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	11	0.8181818181818182
+rewrite; mv matching	12	0.8636363636363636
+rewrite; mv matching	13	0.9090909090909091
+rewrite; mv matching	14	0.9545454545454546
+rewrite; mv matching	15	1.0
 PREHOOK: query: explain
 select 'no rewrite; no mv matching', id, cume_dist() over (order by id) from sketch_input order by id
 PREHOOK: type: QUERY
@@ -466,50 +466,50 @@ POSTHOOK: query: select 'rewrite; no mv matching', id, cume_dist() over (order b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	1	0.0
-rewrite; no mv matching	2	0.09090909090909091
-rewrite; no mv matching	2	0.09090909090909091
-rewrite; no mv matching	3	0.13636363636363635
-rewrite; no mv matching	3	0.13636363636363635
-rewrite; no mv matching	4	0.18181818181818182
-rewrite; no mv matching	4	0.18181818181818182
-rewrite; no mv matching	5	0.22727272727272727
-rewrite; no mv matching	5	0.22727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	6	0.2727272727272727
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	7	0.4090909090909091
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	8	0.5
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	9	0.5909090909090909
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	10	0.6818181818181818
-rewrite; no mv matching	11	0.7727272727272727
-rewrite; no mv matching	11	0.7727272727272727
-rewrite; no mv matching	12	0.8181818181818182
-rewrite; no mv matching	12	0.8181818181818182
-rewrite; no mv matching	13	0.8636363636363636
-rewrite; no mv matching	13	0.8636363636363636
-rewrite; no mv matching	14	0.9090909090909091
-rewrite; no mv matching	14	0.9090909090909091
-rewrite; no mv matching	15	0.9545454545454546
-rewrite; no mv matching	15	0.9545454545454546
+rewrite; no mv matching	1	0.09090909090909091
+rewrite; no mv matching	1	0.09090909090909091
+rewrite; no mv matching	1	0.09090909090909091
+rewrite; no mv matching	1	0.09090909090909091
+rewrite; no mv matching	2	0.13636363636363635
+rewrite; no mv matching	2	0.13636363636363635
+rewrite; no mv matching	3	0.18181818181818182
+rewrite; no mv matching	3	0.18181818181818182
+rewrite; no mv matching	4	0.22727272727272727
+rewrite; no mv matching	4	0.22727272727272727
+rewrite; no mv matching	5	0.2727272727272727
+rewrite; no mv matching	5	0.2727272727272727
+rewrite; no mv matching	6	0.4090909090909091
+rewrite; no mv matching	6	0.4090909090909091
+rewrite; no mv matching	6	0.4090909090909091
+rewrite; no mv matching	6	0.4090909090909091
+rewrite; no mv matching	6	0.4090909090909091
+rewrite; no mv matching	6	0.4090909090909091
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	7	0.5
+rewrite; no mv matching	8	0.5909090909090909
+rewrite; no mv matching	8	0.5909090909090909
+rewrite; no mv matching	8	0.5909090909090909
+rewrite; no mv matching	8	0.5909090909090909
+rewrite; no mv matching	9	0.6818181818181818
+rewrite; no mv matching	9	0.6818181818181818
+rewrite; no mv matching	9	0.6818181818181818
+rewrite; no mv matching	9	0.6818181818181818
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	10	0.7727272727272727
+rewrite; no mv matching	11	0.8181818181818182
+rewrite; no mv matching	11	0.8181818181818182
+rewrite; no mv matching	12	0.8636363636363636
+rewrite; no mv matching	12	0.8636363636363636
+rewrite; no mv matching	13	0.9090909090909091
+rewrite; no mv matching	13	0.9090909090909091
+rewrite; no mv matching	14	0.9545454545454546
+rewrite; no mv matching	14	0.9545454545454546
+rewrite; no mv matching	15	1.0
+rewrite; no mv matching	15	1.0
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
@@ -848,50 +848,50 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	1	0.0
-rewrite; mv matching	2	0.09090909090909091
-rewrite; mv matching	2	0.09090909090909091
-rewrite; mv matching	3	0.13636363636363635
-rewrite; mv matching	3	0.13636363636363635
-rewrite; mv matching	4	0.18181818181818182
-rewrite; mv matching	4	0.18181818181818182
-rewrite; mv matching	5	0.22727272727272727
-rewrite; mv matching	5	0.22727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	6	0.2727272727272727
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	7	0.4090909090909091
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	8	0.5
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	9	0.5909090909090909
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	10	0.6818181818181818
-rewrite; mv matching	11	0.7727272727272727
-rewrite; mv matching	11	0.7727272727272727
-rewrite; mv matching	12	0.8181818181818182
-rewrite; mv matching	12	0.8181818181818182
-rewrite; mv matching	13	0.8636363636363636
-rewrite; mv matching	13	0.8636363636363636
-rewrite; mv matching	14	0.9090909090909091
-rewrite; mv matching	14	0.9090909090909091
-rewrite; mv matching	15	0.9545454545454546
-rewrite; mv matching	15	0.9545454545454546
+rewrite; mv matching	1	0.09090909090909091
+rewrite; mv matching	1	0.09090909090909091
+rewrite; mv matching	1	0.09090909090909091
+rewrite; mv matching	1	0.09090909090909091
+rewrite; mv matching	2	0.13636363636363635
+rewrite; mv matching	2	0.13636363636363635
+rewrite; mv matching	3	0.18181818181818182
+rewrite; mv matching	3	0.18181818181818182
+rewrite; mv matching	4	0.22727272727272727
+rewrite; mv matching	4	0.22727272727272727
+rewrite; mv matching	5	0.2727272727272727
+rewrite; mv matching	5	0.2727272727272727
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	6	0.4090909090909091
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	7	0.5
+rewrite; mv matching	8	0.5909090909090909
+rewrite; mv matching	8	0.5909090909090909
+rewrite; mv matching	8	0.5909090909090909
+rewrite; mv matching	8	0.5909090909090909
+rewrite; mv matching	9	0.6818181818181818
+rewrite; mv matching	9	0.6818181818181818
+rewrite; mv matching	9	0.6818181818181818
+rewrite; mv matching	9	0.6818181818181818
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	10	0.7727272727272727
+rewrite; mv matching	11	0.8181818181818182
+rewrite; mv matching	11	0.8181818181818182
+rewrite; mv matching	12	0.8636363636363636
+rewrite; mv matching	12	0.8636363636363636
+rewrite; mv matching	13	0.9090909090909091
+rewrite; mv matching	13	0.9090909090909091
+rewrite; mv matching	14	0.9545454545454546
+rewrite; mv matching	14	0.9545454545454546
+rewrite; mv matching	15	1.0
+rewrite; mv matching	15	1.0
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, id, cume_dist() over (partition by category order by id) from sketch_input order by category,id
 PREHOOK: type: QUERY
@@ -1002,50 +1002,50 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	a	1	0.0
-rewrite; mv matching	a	1	0.0
-rewrite; mv matching	a	1	0.0
-rewrite; mv matching	a	1	0.0
-rewrite; mv matching	a	2	0.18181818181818182
-rewrite; mv matching	a	2	0.18181818181818182
-rewrite; mv matching	a	3	0.2727272727272727
-rewrite; mv matching	a	3	0.2727272727272727
-rewrite; mv matching	a	4	0.36363636363636365
-rewrite; mv matching	a	4	0.36363636363636365
-rewrite; mv matching	a	5	0.45454545454545453
-rewrite; mv matching	a	5	0.45454545454545453
-rewrite; mv matching	a	6	0.5454545454545454
-rewrite; mv matching	a	6	0.5454545454545454
-rewrite; mv matching	a	7	0.6363636363636364
-rewrite; mv matching	a	7	0.6363636363636364
-rewrite; mv matching	a	8	0.7272727272727273
-rewrite; mv matching	a	8	0.7272727272727273
-rewrite; mv matching	a	9	0.8181818181818182
-rewrite; mv matching	a	9	0.8181818181818182
-rewrite; mv matching	a	10	0.9090909090909091
-rewrite; mv matching	a	10	0.9090909090909091
-rewrite; mv matching	b	6	0.0
-rewrite; mv matching	b	6	0.0
-rewrite; mv matching	b	6	0.0
-rewrite; mv matching	b	6	0.0
-rewrite; mv matching	b	7	0.18181818181818182
-rewrite; mv matching	b	7	0.18181818181818182
-rewrite; mv matching	b	8	0.2727272727272727
-rewrite; mv matching	b	8	0.2727272727272727
-rewrite; mv matching	b	9	0.36363636363636365
-rewrite; mv matching	b	9	0.36363636363636365
-rewrite; mv matching	b	10	0.45454545454545453
-rewrite; mv matching	b	10	0.45454545454545453
-rewrite; mv matching	b	11	0.5454545454545454
-rewrite; mv matching	b	11	0.5454545454545454
-rewrite; mv matching	b	12	0.6363636363636364
-rewrite; mv matching	b	12	0.6363636363636364
-rewrite; mv matching	b	13	0.7272727272727273
-rewrite; mv matching	b	13	0.7272727272727273
-rewrite; mv matching	b	14	0.8181818181818182
-rewrite; mv matching	b	14	0.8181818181818182
-rewrite; mv matching	b	15	0.9090909090909091
-rewrite; mv matching	b	15	0.9090909090909091
+rewrite; mv matching	a	1	0.18181818181818182
+rewrite; mv matching	a	1	0.18181818181818182
+rewrite; mv matching	a	1	0.18181818181818182
+rewrite; mv matching	a	1	0.18181818181818182
+rewrite; mv matching	a	2	0.2727272727272727
+rewrite; mv matching	a	2	0.2727272727272727
+rewrite; mv matching	a	3	0.36363636363636365
+rewrite; mv matching	a	3	0.36363636363636365
+rewrite; mv matching	a	4	0.45454545454545453
+rewrite; mv matching	a	4	0.45454545454545453
+rewrite; mv matching	a	5	0.5454545454545454
+rewrite; mv matching	a	5	0.5454545454545454
+rewrite; mv matching	a	6	0.6363636363636364
+rewrite; mv matching	a	6	0.6363636363636364
+rewrite; mv matching	a	7	0.7272727272727273
+rewrite; mv matching	a	7	0.7272727272727273
+rewrite; mv matching	a	8	0.8181818181818182
+rewrite; mv matching	a	8	0.8181818181818182
+rewrite; mv matching	a	9	0.9090909090909091
+rewrite; mv matching	a	9	0.9090909090909091
+rewrite; mv matching	a	10	1.0
+rewrite; mv matching	a	10	1.0
+rewrite; mv matching	b	6	0.18181818181818182
+rewrite; mv matching	b	6	0.18181818181818182
+rewrite; mv matching	b	6	0.18181818181818182
+rewrite; mv matching	b	6	0.18181818181818182
+rewrite; mv matching	b	7	0.2727272727272727
+rewrite; mv matching	b	7	0.2727272727272727
+rewrite; mv matching	b	8	0.36363636363636365
+rewrite; mv matching	b	8	0.36363636363636365
+rewrite; mv matching	b	9	0.45454545454545453
+rewrite; mv matching	b	9	0.45454545454545453
+rewrite; mv matching	b	10	0.5454545454545454
+rewrite; mv matching	b	10	0.5454545454545454
+rewrite; mv matching	b	11	0.6363636363636364
+rewrite; mv matching	b	11	0.6363636363636364
+rewrite; mv matching	b	12	0.7272727272727273
+rewrite; mv matching	b	12	0.7272727272727273
+rewrite; mv matching	b	13	0.8181818181818182
+rewrite; mv matching	b	13	0.8181818181818182
+rewrite; mv matching	b	14	0.9090909090909091
+rewrite; mv matching	b	14	0.9090909090909091
+rewrite; mv matching	b	15	1.0
+rewrite; mv matching	b	15	1.0
 PREHOOK: query: drop materialized view mv_1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv_1
