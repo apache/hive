@@ -708,8 +708,10 @@ public class DagUtils {
    * are set
    */
   private static String getContainerJavaOpts(Configuration conf) {
+    String baseJavaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS);
+    String trimmedOpts = baseJavaOpts != null ? baseJavaOpts.trim() : "";
     String javaOpts = String.join(" ",
-        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS).trim(),
+        trimmedOpts,
         "--add-opens=java.base/java.net=ALL-UNNAMED",
         "--add-opens=java.base/java.util=ALL-UNNAMED",
         "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
