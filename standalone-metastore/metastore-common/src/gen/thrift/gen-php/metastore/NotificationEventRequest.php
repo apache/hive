@@ -59,6 +59,15 @@ class NotificationEventRequest
                 'type' => TType::STRING,
                 ),
         ),
+        7 => array(
+            'var' => 'eventTypeList',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => array(
+                'type' => TType::STRING,
+                ),
+        ),
     );
 
     /**
@@ -85,6 +94,10 @@ class NotificationEventRequest
      * @var string[]
      */
     public $tableNames = null;
+    /**
+     * @var string[]
+     */
+    public $eventTypeList = null;
 
     public function __construct($vals = null)
     {
@@ -106,6 +119,9 @@ class NotificationEventRequest
             }
             if (isset($vals['tableNames'])) {
                 $this->tableNames = $vals['tableNames'];
+            }
+            if (isset($vals['eventTypeList'])) {
+                $this->eventTypeList = $vals['eventTypeList'];
             }
         }
     }
@@ -189,6 +205,22 @@ class NotificationEventRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::LST) {
+                        $this->eventTypeList = array();
+                        $_size874 = 0;
+                        $_etype877 = 0;
+                        $xfer += $input->readListBegin($_etype877, $_size874);
+                        for ($_i878 = 0; $_i878 < $_size874; ++$_i878) {
+                            $elem879 = null;
+                            $xfer += $input->readString($elem879);
+                            $this->eventTypeList []= $elem879;
+                        }
+                        $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -219,8 +251,8 @@ class NotificationEventRequest
             }
             $xfer += $output->writeFieldBegin('eventTypeSkipList', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->eventTypeSkipList));
-            foreach ($this->eventTypeSkipList as $iter874) {
-                $xfer += $output->writeString($iter874);
+            foreach ($this->eventTypeSkipList as $iter880) {
+                $xfer += $output->writeString($iter880);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -241,8 +273,20 @@ class NotificationEventRequest
             }
             $xfer += $output->writeFieldBegin('tableNames', TType::LST, 6);
             $output->writeListBegin(TType::STRING, count($this->tableNames));
-            foreach ($this->tableNames as $iter875) {
-                $xfer += $output->writeString($iter875);
+            foreach ($this->tableNames as $iter881) {
+                $xfer += $output->writeString($iter881);
+            }
+            $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->eventTypeList !== null) {
+            if (!is_array($this->eventTypeList)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('eventTypeList', TType::LST, 7);
+            $output->writeListBegin(TType::STRING, count($this->eventTypeList));
+            foreach ($this->eventTypeList as $iter882) {
+                $xfer += $output->writeString($iter882);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
