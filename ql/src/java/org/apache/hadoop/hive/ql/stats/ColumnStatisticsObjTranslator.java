@@ -59,7 +59,7 @@ public class ColumnStatisticsObjTranslator {
       List<ColumnStatsField> columnStatsFields, int start, List<? extends StructField> fields,
       List<Object> values) throws HiveException {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
-    statsObj.setColName(columnName);
+    statsObj.setColName(columnName.toLowerCase());
     statsObj.setColType(columnType);
 
     int end = start + columnStatsFields.size();
