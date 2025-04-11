@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.metasummary;
 
+import org.apache.hadoop.hive.common.util.SuppressFBWarnings;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,6 +198,7 @@ public class MetadataTableSummary {
     return mapColumnCount;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public Map<String, Object> getExtraSummary() {
     return summary;
   }
