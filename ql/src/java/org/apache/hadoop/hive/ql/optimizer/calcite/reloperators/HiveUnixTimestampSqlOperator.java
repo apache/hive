@@ -29,13 +29,9 @@ import org.apache.calcite.sql.type.ReturnTypes;
  */
 public class HiveUnixTimestampSqlOperator {
   public static final SqlFunction INSTANCE =
-      new SqlFunction("UNIX_TIMESTAMP", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT, null,
+      new HiveSqlFunction("UNIX_TIMESTAMP", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT, null,
           OperandTypes.or(OperandTypes.NILADIC,
               OperandTypes.or(OperandTypes.STRING, OperandTypes.TIMESTAMP, OperandTypes.DATE),
-              OperandTypes.STRING_STRING), SqlFunctionCategory.NUMERIC) {
-        @Override
-        public boolean isDynamicFunction() {
-          return true;
-        }
+              OperandTypes.STRING_STRING), SqlFunctionCategory.NUMERIC, true, true) {
       };
 }
