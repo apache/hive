@@ -40,3 +40,5 @@ jobs:
       - name: 'Build project'
         run: |
           mvn clean install -DskipTests -Pitests
+      - name: 'Dependency tree'
+        run: mvn dependency:tree -Pitests
