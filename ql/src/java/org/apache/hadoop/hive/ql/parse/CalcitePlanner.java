@@ -84,6 +84,7 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
@@ -590,15 +591,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
             }
+            newPlan =
+                PlanModifierForReturnPath.convertOpTree(newPlan, resultSchema, this.getQB().getTableDesc() != null);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Plan after return path modifier:\n" + RelOptUtil.toString(newPlan));
+            }
             sinkOp = getOptimizedHiveOPDag(newPlan);
             if (oldHints.size() > 0) {
               LOG.debug("Propagating hints to QB: " + oldHints);
               getQB().getParseInfo().setHintList(oldHints);
             }
-            LOG.info("CBO Succeeded; optimized logical plan.");
-
-            this.ctx.setCboInfo(getOptimizedByCboInfo());
-            this.ctx.setCboSucceeded(true);
           } else {
             // 1. Convert Plan to AST
             ASTNode newAST = getOptimizedAST(newPlan);
@@ -649,38 +651,39 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             disableJoinMerge = defaultJoinMerge;
             sinkOp = genPlan(getQB());
-            LOG.info("CBO Succeeded; optimized logical plan.");
-
-            this.ctx.setCboInfo(getOptimizedByCboInfo());
-            this.ctx.setCboSucceeded(true);
-            if (this.ctx.isExplainPlan()) {
-              // Enrich explain with information derived from CBO
-              ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
-              if (explainConfig.isCbo()) {
-                if (!explainConfig.isCboJoinCost()) {
-                  // Include cost as provided by Calcite
-                  newPlan.getCluster().invalidateMetadataQuery();
-                  RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
-                }
-                if (explainConfig.isFormatted()) {
-                  this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-                } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
-                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
-                } else {
-                  // Do not include join cost
-                  this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
-                }
-              } else if (explainConfig.isFormatted()) {
-                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-              } else if (explainConfig.isExtended()) {
-                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
-              }
-            }
             if (LOG.isTraceEnabled()) {
-              LOG.trace(getOptimizedSql(newPlan));
               LOG.trace(newAST.dump());
             }
+          }
+          LOG.info("CBO Succeeded; optimized logical plan.");
+          this.ctx.setCboInfo(getOptimizedByCboInfo());
+          this.ctx.setCboSucceeded(true);
+          if (this.ctx.isExplainPlan()) {
+            // Enrich explain with information derived from CBO
+            ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
+            if (explainConfig.isCbo()) {
+              if (!explainConfig.isCboJoinCost()) {
+                // Include cost as provided by Calcite
+                newPlan.getCluster().invalidateMetadataQuery();
+                RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
+              }
+              if (explainConfig.isFormatted()) {
+                this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+              } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
+                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+              } else {
+                // Do not include join cost
+                this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+              }
+            } else if (explainConfig.isFormatted()) {
+              this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+            } else if (explainConfig.isExtended()) {
+              this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+            }
+          }
+          if (LOG.isTraceEnabled()) {
+            LOG.trace(getOptimizedSql(newPlan));
           }
           perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.GENERATE_OPERATOR_TREE);
         } catch (Exception e) {
@@ -1415,12 +1418,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @throws SemanticException
    */
   Operator getOptimizedHiveOPDag(RelNode optimizedOptiqPlan) throws SemanticException {
-    RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-        optimizedOptiqPlan, resultSchema, this.getQB().getTableDesc() != null);
-
-    LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps)
-                                  .convert(modifiedOptimizedOptiqPlan);
+                                  .convert(optimizedOptiqPlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
     String dest = getQB().getParseInfo().getClauseNames().iterator().next();
@@ -2418,7 +2417,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 9.2.  Introduce exchange operators below join/multijoin operators
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-            HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
+                new HiveInsertExchange4JoinRule(Join.class, NullOrdering.defaultNullOrder(conf).getDirection()),
+                new HiveInsertExchange4JoinRule(
+                        HiveMultiJoin.class, NullOrdering.defaultNullOrder(conf).getDirection()));
       } else {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
                 HiveProjectSortExchangeTransposeRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
@@ -4179,6 +4180,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3. Construct new Row Resolver with everything from below.
       RowResolver out_rwsch = new RowResolver();
+      out_rwsch.setExprResolver(inputRR.getIsExprResolver());
       if (!RowResolver.add(out_rwsch, inputRR)) {
         LOG.warn(ERROR_MESSAGE_DUPLICATES_DETECTED);
       }
@@ -5405,6 +5407,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
 
         int fieldIndex = genSortByKey(ref);
+        if (fieldIndex < 0) {
+          continue;
+        }
 
         // 2.4 Determine the Direction of order by
         RelFieldCollation.Direction order = RelFieldCollation.Direction.DESCENDING;
@@ -5448,6 +5453,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.warn("Using constant number {}" +
                   " in order by. If you try to use position alias when hive.orderby.position.alias is false, " +
                   "the position alias will be ignored.", ref.getText());
+          return -1;
         }
       } else {
         // 2.2 Convert ExprNode to RexNode
@@ -5465,8 +5471,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           return fieldIndex;
         }
       }
-
-      return 0;
     }
 
     private RexNode getOrderByExpression(
@@ -5520,16 +5524,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (int i = 0; i < distributeByAST.getChildCount(); ++i) {
           ASTNode keyAST = (ASTNode) distributeByAST.getChild(i);
           int fieldIndex = genSortByKey(keyAST);
-          keys.add(fieldIndex);
+          if (fieldIndex >= 0) {
+            keys.add(fieldIndex);
+          }
         }
-        hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, keys.build());
-      } else {
-        // In case of SORT BY we do not need Distribution
-        // but the instance RelDistributions.ANY can not be used here because
-        // org.apache.calcite.rel.core.Exchange has
-        // assert distribution != RelDistributions.ANY;
-        hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
+        ImmutableList<Integer> keyList = keys.build();
+        if (!keyList.isEmpty()) {
+          hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.HASH_DISTRIBUTED, keyList);
+          return this;
+        }
       }
+      // In case of SORT BY we do not need Distribution
+      // but the instance RelDistributions.ANY can not be used here because
+      // org.apache.calcite.rel.core.Exchange has
+      // assert distribution != RelDistributions.ANY;
+      hiveRelDistribution = new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
       return this;
     }
 
@@ -5599,6 +5608,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     RelNode sortLimit(RexNode offsetRN, RexNode fetchRN) throws SemanticException {
       genOBProject();
 
+      if (fieldCollations.isEmpty()) {
+        return endGenOBLogicalPlan(obInputRel);
+      }
+
       // 4. Construct SortRel
       RelOptCluster cluster = calcitePlannerAction.cluster;
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
@@ -5610,13 +5623,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
     RelNode sortExchange() throws SemanticException {
       genOBProject();
 
+      if (fieldCollations.isEmpty() && hiveRelDistribution.getKeys().isEmpty()) {
+        return endGenOBLogicalPlan(obInputRel);
+      }
+
       RelCollation canonizedCollation = RelCollations.of(fieldCollations);
       ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
       for (RelFieldCollation relFieldCollation : canonizedCollation.getFieldCollations()) {
         int index = relFieldCollation.getFieldIndex();
         builder.add(calcitePlannerAction.cluster.getRexBuilder().makeInputRef(obInputRel, index));
       }
-      RelNode sortRel = HiveSortExchange.create(obInputRel, hiveRelDistribution, canonizedCollation, builder.build());
+      ImmutableList<RexNode> keys = builder.build();
+      RelNode sortRel = HiveSortExchange.create(obInputRel, hiveRelDistribution, canonizedCollation, keys);
       return endGenOBLogicalPlan(sortRel);
     }
 

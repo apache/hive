@@ -25,14 +25,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -47,29 +47,37 @@ public class PartExprEvalUtils {
    * Evaluate expression with partition columns
    *
    * @param expr
-   * @param rowObjectInspector
    * @return value returned by the expression
    * @throws HiveException
    */
-  static public Object evalExprWithPart(ExprNodeDesc expr,
-      Partition p, List<VirtualColumn> vcs,
-      StructObjectInspector rowObjectInspector) throws HiveException {
+  static public Object evalExprWithPart(ExprNodeDesc expr, Partition p) throws HiveException {
     LinkedHashMap<String, String> partSpec = p.getSpec();
     Properties partProps = p.getSchema();
-    String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
-    String[] partKeyTypes = pcolTypes.trim().split(":");
-
-    if (partSpec.size() != partKeyTypes.length) {
-        throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
-                " doesn't match partition key definition size, " + partKeyTypes.length);
+    
+    String[] partKeyTypes;
+    if (p.getTable().hasNonNativePartitionSupport()) {
+      if (!partSpec.keySet().containsAll(expr.getCols())) {
+        return null;
+      }
+      partKeyTypes = p.getTable().getStorageHandler().getPartitionKeys(p.getTable()).stream()
+          .map(FieldSchema::getType).toArray(String[]::new);
+    } else {
+      String pcolTypes = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES);
+      partKeyTypes = pcolTypes.trim().split(":");
     }
-    boolean hasVC = vcs != null && !vcs.isEmpty();
-    Object[] rowWithPart = new Object[hasVC ? 3 : 2];
+    
+    if (partSpec.size() != partKeyTypes.length) {
+      if (DDLUtils.isIcebergTable(p.getTable())) {
+        return null;
+      }
+      throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
+          " doesn't match partition key definition size, " + partKeyTypes.length);
+    }
     // Create the row object
-    ArrayList<String> partNames = new ArrayList<String>();
-    ArrayList<Object> partValues = new ArrayList<Object>();
-    ArrayList<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
-    int i=0;
+    List<String> partNames = new ArrayList<>();
+    List<Object> partValues = new ArrayList<>();
+    List<ObjectInspector> partObjectInspectors = new ArrayList<>();
+    int i = 0;
     for (Map.Entry<String, String> entry : partSpec.entrySet()) {
       partNames.add(entry.getKey());
       ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector
@@ -82,22 +90,12 @@ public class PartExprEvalUtils {
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
 
-    rowWithPart[1] = partValues;
-    ArrayList<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
-    ois.add(rowObjectInspector);
-    ois.add(partObjectInspector);
-    if (hasVC) {
-      ois.add(VirtualColumn.getVCSObjectInspector(vcs));
-    }
-    StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory
-        .getUnionStructObjectInspector(ois);
-
     ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory
         .get(expr);
     ObjectInspector evaluateResultOI = evaluator
-        .initialize(rowWithPartObjectInspector);
-    Object evaluateResultO = evaluator.evaluate(rowWithPart);
-
+        .initialize(partObjectInspector);
+    Object evaluateResultO = evaluator.evaluate(partValues);
+    
     return ((PrimitiveObjectInspector) evaluateResultOI)
         .getPrimitiveJavaObject(evaluateResultO);
   }

@@ -64,7 +64,7 @@ public class HiveSamlHttpServlet extends HttpServlet {
       } else {
         LOG.error("SAML response could not be validated", e);
       }
-      generateFormData(response, HiveSamlUtils.getLoopBackAddress(port), null, false,
+      generateFormData(response, HiveSamlUtils.resolveLoopbackAddress(port), null, false,
           "SAML assertion could not be validated. Check server logs for more details.");
       return;
     }
@@ -72,7 +72,7 @@ public class HiveSamlHttpServlet extends HttpServlet {
     LOG.info(
         "Successfully validated saml response for user {}. Forwarding the token to port {}",
         nameId, port);
-    generateFormData(response, HiveSamlUtils.getLoopBackAddress(port),
+    generateFormData(response, HiveSamlUtils.resolveLoopbackAddress(port),
         tokenGenerator.get(nameId, relayState), true, "");
   }
 

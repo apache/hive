@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.type.Date;
@@ -56,6 +57,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hive.common.util.TimestampParser;
@@ -172,7 +175,7 @@ public class HiveJsonReader {
   public HiveJsonReader(ObjectInspector oi, TimestampParser tsParser) {
     this.tsParser = tsParser;
     this.oi = oi;
-    this.objectMapper = new ObjectMapper();
+    this.objectMapper = new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
   }
 
   /**
@@ -426,7 +429,8 @@ public class HiveJsonReader {
     case TIMESTAMP:
       return tsParser.parseTimestamp(leafNode.asText());
     case DECIMAL:
-      return HiveDecimal.create(leafNode.asText());
+      HiveDecimal decimal = HiveDecimal.create(leafNode.asText());
+      return HiveDecimalUtils.enforcePrecisionScale(decimal, (DecimalTypeInfo) typeInfo);
     case TIMESTAMPLOCALTZ:
       final Timestamp ts = tsParser.parseTimestamp(leafNode.asText());
       final ZoneId zid = ((TimestampLocalTZTypeInfo) typeInfo).timeZone();

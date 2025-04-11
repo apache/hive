@@ -40,7 +40,7 @@ public final class DriverFactory {
   }
 
   public static IDriver newDriver(HiveConf conf) {
-    return newDriver(getNewQueryState(conf), null);
+    return newDriver(getNewQueryState(conf), QueryInfo.getFromConf(conf));
   }
 
   public static IDriver newDriver(QueryState queryState, QueryInfo queryInfo) {

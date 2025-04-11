@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -319,7 +320,7 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
   protected void updateOutputs(Table targetTable) {
     markReadEntityForUpdate();
 
-    if (targetTable.isPartitioned()) {
+    if (targetTable.isPartitioned() && !targetTable.hasNonNativePartitionSupport()) {
       List<ReadEntity> partitionsRead = getRestrictedPartitionSet(targetTable);
       if (!partitionsRead.isEmpty()) {
         // if there is WriteEntity with WriteType=UPDATE/DELETE for target table, replace it with
@@ -384,5 +385,12 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
     // Since any DDL now advances the write id, we should ignore the write Id,
     // while comparing two tables
     return targetTable.equalsWithIgnoreWriteId(entity.getTable());
+  }
+
+
+  @Override
+  public void setQueryType(ASTNode tree) {
+    // UPDATE/DELETE/MERGE queries are handled with RewriteSemanticAnalyzer
+    queryProperties.setQueryType(QueryProperties.QueryType.DML);
   }
 }

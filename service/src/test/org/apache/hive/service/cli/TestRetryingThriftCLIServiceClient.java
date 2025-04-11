@@ -20,6 +20,7 @@ package org.apache.hive.service.cli;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -62,6 +63,8 @@ public class TestRetryingThriftCLIServiceClient extends AbstractThriftCLITest {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
   }
 
   static class RetryingThriftCLIServiceClientTest extends RetryingThriftCLIServiceClient {
@@ -114,7 +117,7 @@ public class TestRetryingThriftCLIServiceClient extends AbstractThriftCLITest {
     // Reset port setting
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, thriftPort);
 
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "10.17.207.11");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, IPStackUtils.transformToIPv6("10.17.207.11"));
     try {
       RetryingThriftCLIServiceClientTest.newRetryingCLIServiceClient(hiveConf);
       fail("Expected to throw exception for invalid host");
@@ -123,7 +126,7 @@ public class TestRetryingThriftCLIServiceClient extends AbstractThriftCLITest {
       assertTrue(sqlExc.getMessage().contains("3"));
     }
     // Reset host setting
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, "127.0.0.1");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, IPStackUtils.resolveLoopbackAddress());
 
     // Create client
     RetryingThriftCLIServiceClient.CLIServiceClientWrapper cliServiceClient

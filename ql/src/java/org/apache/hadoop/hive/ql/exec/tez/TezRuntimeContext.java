@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
-import org.apache.tez.client.TezClient;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounters;
 
@@ -42,8 +41,8 @@ public class TezRuntimeContext {
   // llap/container
   private String executionMode;
 
-  public void init(TezClient tezClient) {
-    this.amAddress = tezClient.getAmHost() + ":" + tezClient.getAmPort();
+  public void init(TezSessionState sessionState) {
+    this.amAddress = sessionState.getAppMasterUri();
   }
 
   public TezCounters getCounters() {
@@ -99,7 +98,7 @@ public class TezRuntimeContext {
   }
 
   public long getCounter(String groupName, String counterName) {
-    CounterGroup group = getCounters().getGroup(groupName);
+    CounterGroup group = counters == null ? null : counters.getGroup(groupName);
     if (group == null) {
       return 0;
     }

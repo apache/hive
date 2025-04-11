@@ -362,7 +362,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ds\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	1                   
@@ -414,7 +414,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ds\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	1                   
@@ -465,7 +465,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ds\":\"true\",\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	1                   
@@ -570,7 +570,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"}]}
 	format-version      	1                   

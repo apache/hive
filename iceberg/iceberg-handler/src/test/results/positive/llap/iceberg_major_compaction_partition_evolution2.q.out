@@ -16,7 +16,7 @@ PREHOOK: query: create table ice_orc (
     dept_id bigint
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:ice_comp
 PREHOOK: Output: ice_comp@ice_orc
@@ -26,7 +26,7 @@ POSTHOOK: query: create table ice_orc (
     dept_id bigint
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:ice_comp
 POSTHOOK: Output: ice_comp@ice_orc
@@ -154,6 +154,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"2\",\"deleted-records\":\"2\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
@@ -235,6 +236,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
@@ -244,6 +246,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	2                   
+	numPartitions       	2                   
 	numRows             	4                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####

@@ -1434,10 +1434,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     PrintStream ps = new PrintStream(baos);
     try {
       List<Task<?>> rootTasks = sem.getAllRootTasks();
+      boolean isExtended = conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_INCLUDE_EXTENDED);
       if (conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_SHOW_GRAPH)) {
         JSONObject jsonPlan = task.getJSONPlan(
-            null, rootTasks, sem.getFetchTask(), true,
-            conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_INCLUDE_EXTENDED), true, sem.getCboInfo(),
+            null, rootTasks, sem.getFetchTask(), true, isExtended, true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
             jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=
@@ -1447,7 +1447,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           ret = null;
         }
       } else {
-        task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true, sem.getCboInfo(),
+        task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, isExtended, true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
         ret = baos.toString();
       }

@@ -18,12 +18,14 @@
 package org.apache.hadoop.hive.metastore.properties;
 
 import com.google.common.base.Supplier;
+import java.nio.charset.StandardCharsets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TestObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
@@ -31,11 +33,11 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-
+@Category(MetastoreUnitTest.class)
 public class PropertyStoreTest {
   private ObjectStore objectStore = null;
   private Configuration conf;

@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.utils.CommonCliOptions;
 import org.apache.hadoop.hive.metastore.utils.LogUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -60,7 +59,9 @@ import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TServlet;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -94,6 +95,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.servlet.Servlet;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 /**
@@ -119,13 +121,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ZooKeeperHiveHelper zooKeeperHelper = null;
   private static String msHost = null;
   private static ThriftServer thriftServer;
-  private static Server propertyServer = null;
+  /** the servlet server. */
+  private static Server servletServer = null;
+  /** the port and path of the property servlet. */
+  private static int propertyServletPort = -1;
+  /** the port and path of the catalog servlet. */
+  private static int catalogServletPort = -1;
 
-
-  public static Server getPropertyServer() {
-    return propertyServer;
+  /**
+   * Gets the embedded servlet server.
+   * @return the server instance or null
+   */
+  public static Server getServletServer() {
+    return servletServer;
   }
 
+  /**
+   * Gets the property servlet connector port.
+   * <p>If configuration is 0, this port is allocated by the system.</p>
+   * @return the connector port or -1 if not configured
+   */
+  public static int getPropertyServletPort() {
+    return propertyServletPort;
+  }
+  
+  /**
+   * Gets the catalog servlet connector port.
+   * <p>If configuration is 0, this port is allocated by the system.</p>
+   * @return the connector port or -1 if not configured
+   */
+  public static int getCatalogServletPort() {
+    return catalogServletPort;
+  }
+  
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
       if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
@@ -191,69 +219,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return delegationTokenManager.renewDelegationToken(tokenStrForm);
   }
 
-  /**
-   * HiveMetaStore specific CLI
-   *
-   */
-  public static class HiveMetastoreCli extends CommonCliOptions {
-    private int port;
-
-    @SuppressWarnings("static-access")
-    HiveMetastoreCli(Configuration configuration) {
-      super("hivemetastore", true);
-      this.port = MetastoreConf.getIntVar(configuration, ConfVars.SERVER_PORT);
-
-      // -p port
-      OPTIONS.addOption(OptionBuilder
-          .hasArg()
-          .withArgName("port")
-          .withDescription("Hive Metastore port number, default:"
-              + this.port)
-          .create('p'));
-
-    }
-    @Override
-    public void parse(String[] args) {
-      super.parse(args);
-
-      // support the old syntax "hivemetastore [port]" but complain
-      args = commandLine.getArgs();
-      if (args.length > 0) {
-        // complain about the deprecated syntax -- but still run
-        System.err.println(
-            "This usage has been deprecated, consider using the new command "
-                + "line syntax (run with -h to see usage information)");
-
-        this.port = Integer.parseInt(args[0]);
-      }
-
-      // notice that command line options take precedence over the
-      // deprecated (old style) naked args...
-
-      if (commandLine.hasOption('p')) {
-        this.port = Integer.parseInt(commandLine.getOptionValue('p'));
-      } else {
-        // legacy handling
-        String metastorePort = System.getenv("METASTORE_PORT");
-        if (metastorePort != null) {
-          this.port = Integer.parseInt(metastorePort);
-        }
-      }
-    }
-
-    public int getPort() {
-      return this.port;
-    }
-  }
-
   /*
   Interface to encapsulate Http and binary thrift server for
   HiveMetastore
    */
   private interface ThriftServer {
-    public void start() throws Throwable;
-    public boolean isRunning();
-    public IHMSHandler getHandler();
+    void start() throws Throwable;
+    boolean isRunning();
+    IHMSHandler getHandler();
   }
 
   /**
@@ -288,7 +261,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     startupShutdownMessage(HiveMetaStore.class, args, LOG);
 
     try {
-      String msg = "Starting hive metastore on port " + cli.port;
+      String msg = "Starting hive metastore on port " + cli.getPort();
       LOG.info(msg);
       if (cli.isVerbose()) {
         System.err.println(msg);
@@ -309,6 +282,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isCliVerbose) {
           System.err.println(shutdownMsg);
         }
+        // servlet server
+        if (servletServer != null) {
+          try {
+            servletServer.stop();
+          } catch (Exception e) {
+            LOG.error("Error stopping Property Map server.", e);
+          }
+        }
+        // metrics
         if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
           try {
             Metrics.shutdown();
@@ -379,7 +361,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       throws Exception {
     LOG.info("Attempting to start http metastore server on port: {}", port);
     // login principal if security is enabled
-    ServletSecurity.loginServerPincipal(conf);
+    ServletSecurity.loginServerPrincipal(conf);
 
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
@@ -445,7 +427,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     IHMSHandler handler = HMSHandlerProxyFactory.getProxy(conf, baseHandler, false);
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
-    TServlet thriftHttpServlet = new HmsThriftHttpServlet(processor, protocolFactory, conf);
+    boolean jwt = MetastoreConf.getVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt");
+    ServletSecurity security = new ServletSecurity(conf, jwt);
+    Servlet thriftHttpServlet = security.proxy(new TServlet(processor, protocolFactory));
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
@@ -592,10 +576,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           keyStorePassword, keyStoreType, keyStoreAlgorithm, sslVersionBlacklist);
     }
 
-    if (tcpKeepAlive) {
-      serverSocket = new TServerSocketKeepAlive(serverSocket);
-    }
-
     ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,
         60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> {
           Thread thread = new Thread(r);
@@ -604,7 +584,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           return thread;
     });
 
-    TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
+    TThreadPoolServer.Args args =
+        new TThreadPoolServer.Args(new TServerSocket(serverSocket.getServerSocket()) {
+          @Override
+          public TSocket accept() throws TTransportException {
+            TSocket ts = super.accept();
+            // get the limit from the configuration for every new connection
+            int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
+                conf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+            HMSHandler.LOG.debug("Thrift maxMessageSize = {}", maxThriftMessageSize);
+            if (maxThriftMessageSize > 0) {
+              ts.getConfiguration().setMaxMessageSize(maxThriftMessageSize);
+            }
+            return ts;
+          }
+        })
         .processor(processor)
         .transportFactory(transFactory)
         .protocolFactory(protocolFactory)
@@ -730,16 +724,49 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       }
     }
-    // optionally create and start the property server and servlet
-    propertyServer = PropertyServlet.startServer(conf);
 
+    // optionally create and start the property and Iceberg REST server
+    ServletServerBuilder builder = new ServletServerBuilder(conf);
+    ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
+    ServletServerBuilder.Descriptor catalog = builder.addServlet(createIcebergServlet(conf));
+    servletServer = builder.start(LOG);
+    if (servletServer != null) {
+      if (properties != null) {
+          propertyServletPort = properties.getPort();
+      }
+      if (catalog != null) {
+        catalogServletPort = catalog.getPort();
+      }
+    }
+
+    // main server
     thriftServer.start();
+  }
+  
+  /**
+   * Creates the Iceberg REST catalog servlet descriptor.
+   * @param configuration the configuration
+   * @return the servlet descriptor (can be null)
+   */
+  static ServletServerBuilder.Descriptor createIcebergServlet(Configuration configuration) {
+    try {
+      String className = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_FACTORY);
+      Class<?> iceClazz = Class.forName(className);
+      Method iceStart = iceClazz.getMethod("createServlet", Configuration.class);
+      return (ServletServerBuilder.Descriptor) iceStart.invoke(null, configuration);
+    } catch (ClassNotFoundException xnf) {
+      LOG.warn("Unable to start Iceberg REST Catalog server, missing jar?", xnf);
+      return null;
+    } catch (Exception e) {
+      LOG.error("Unable to start Iceberg REST Catalog server", e);
+      return null;
+    }
   }
 
   /**
    * @param port where metastore server is running
    * @return metastore server instance URL. If the metastore server was bound to a configured
-   * host, return that appended by port. Otherwise return the externally visible URL of the local
+   * host, return that appended by port. Otherwise, return the externally visible URL of the local
    * host with the given port
    * @throws Exception
    */

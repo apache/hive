@@ -73,7 +73,6 @@ bround
 bucket_number
 buildversion
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -218,6 +217,12 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_bucket
+iceberg_day
+iceberg_hour
+iceberg_month
+iceberg_truncate
+iceberg_year
 if
 in
 in_bloom_filter
@@ -522,7 +527,6 @@ PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE 'c%'
 POSTHOOK: type: SHOWFUNCTIONS
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -563,7 +567,6 @@ POSTHOOK: type: SHOWFUNCTIONS
 array_remove
 array_slice
 assert_true
-case
 coalesce
 current_database
 current_date
@@ -585,6 +588,7 @@ explode
 first_value
 floor_minute
 from_unixtime
+iceberg_truncate
 in_file
 inline
 isfalse
@@ -704,7 +708,6 @@ bround
 bucket_number
 buildversion
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -849,6 +852,12 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_bucket
+iceberg_day
+iceberg_hour
+iceberg_month
+iceberg_truncate
+iceberg_year
 if
 in
 in_bloom_filter

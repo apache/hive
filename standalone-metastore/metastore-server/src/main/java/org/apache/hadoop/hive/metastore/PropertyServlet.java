@@ -29,11 +29,6 @@ import org.apache.hadoop.hive.metastore.properties.PropertyManager;
 import org.apache.hadoop.hive.metastore.properties.PropertyMap;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlet.Source;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,15 +59,16 @@ public class PropertyServlet extends HttpServlet {
   public static final Logger LOGGER = LoggerFactory.getLogger(PropertyServlet.class);
   /** The configuration. */
   private final Configuration configuration;
-  /** The security. */
-  private final ServletSecurity security;
 
   PropertyServlet(Configuration configuration) {
-    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
-    boolean jwt = auth != null && "jwt".equals(auth.toLowerCase());
-    this.security = new ServletSecurity(configuration, jwt);
     this.configuration = configuration;
   }
+
+  @Override
+  public String getServletName() {
+    return "HMS Property";
+  }
+  
   private String strError(String msg, Object...args) {
     return String.format(PTYERROR + msg, args);
   }
@@ -136,18 +132,13 @@ public class PropertyServlet extends HttpServlet {
     writer.flush();
   }
 
+  @Override
   public void init() throws ServletException {
     super.init();
-    security.init();
   }
 
   @Override
   protected void doPost(HttpServletRequest request,
-                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runPost);
-  }
-
-  private void runPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException {
     final RawStore ms =  getMS();
     final String ns = getNamespace(request.getRequestURI());
@@ -171,44 +162,12 @@ public class PropertyServlet extends HttpServlet {
             switch (method) {
               // fetch a list of qualified keys by name
               case "fetchProperties": {
-                // one or many keys
-                Object jsonKeys = call.get("keys");
-                if (jsonKeys == null) {
-                  throw new IllegalArgumentException("null keys");
-                }
-                Iterable<?> keys = jsonKeys instanceof List<?>
-                    ? (List<?>) jsonKeys
-                    : Collections.singletonList(jsonKeys);
-                Map<String, String> properties = new TreeMap<>();
-                for (Object okey : keys) {
-                  String key = okey.toString();
-                  String value = mgr.exportPropertyValue(key);
-                  if (value != null) {
-                    properties.put(key, value);
-                  }
-                }
-                reactions.add(properties);
+                fetchProperties( mgr, call, reactions);
                 break;
               }
               // select a list of qualified keys by prefix/predicate/selection
               case "selectProperties": {
-                String prefix = (String) call.get("prefix");
-                if (prefix == null) {
-                  throw new IllegalArgumentException("null prefix");
-                }
-                String predicate = (String) call.get("predicate");
-                // selection may be null, a sole property or a list
-                Object selection = call.get("selection");
-                @SuppressWarnings("unchecked") List<String> project =
-                    selection == null
-                        ? null
-                        : selection instanceof List<?>
-                        ? (List<String>) selection
-                        : Collections.singletonList(selection.toString());
-                Map<String, PropertyMap> selected = mgr.selectProperties(prefix, predicate, project);
-                Map<String, Map<String, String>> returned = new TreeMap<>();
-                selected.forEach((k, v) -> returned.put(k, v.export(project == null)));
-                reactions.add(returned);
+                selectProperties(mgr, call, reactions);
                 break;
               }
               case "script": {
@@ -221,7 +180,7 @@ public class PropertyServlet extends HttpServlet {
                 break;
               }
               default: {
-                throw new IllegalArgumentException("bad argument type " + action.getClass());
+                throw new IllegalArgumentException("Bad argument type " + action.getClass());
               }
             }
           }
@@ -242,26 +201,49 @@ public class PropertyServlet extends HttpServlet {
     }
   }
 
-//  A way to import values using files sent over http
-//  private void importProperties(HttpServletRequest request) throws ServletException, IOException {
-//    List<Part> fileParts = request.getParts().stream()
-//        .filter(part -> "files".equals(part.getName()) && part.getSize() > 0)
-//        .collect(Collectors.toList()); // Retrieves <input type="file" name="files" multiple="true">
-//
-//    for (Part filePart : fileParts) {
-//      String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString(); // MSIE fix.
-//      InputStream fileContent = filePart.getInputStream();
-//      // ... (do your job here)
-//    }
-//  }
+  private static void fetchProperties(PropertyManager mgr, Map<String, Object> call, List<Object> reactions) {
+    // one or many keys
+    Object jsonKeys = call.get("keys");
+    if (jsonKeys == null) {
+      throw new IllegalArgumentException("null keys");
+    }
+    Iterable<?> keys = jsonKeys instanceof List<?>
+        ? (List<?>) jsonKeys
+        : Collections.singletonList(jsonKeys);
+    Map<String, String> properties = new TreeMap<>();
+    for (Object okey : keys) {
+      String key = okey.toString();
+      String value = mgr.exportPropertyValue(key);
+      if (value != null) {
+        properties.put(key, value);
+      }
+    }
+    reactions.add(properties);
+  }
+
+  private static void selectProperties(PropertyManager mgr, Map<String, Object> call, List<Object> reactions) {
+    String prefix = (String) call.get("prefix");
+    if (prefix == null) {
+      throw new IllegalArgumentException("null prefix");
+    }
+    String predicate = (String) call.get("predicate");
+    // selection may be null, a sole property or a list
+    Object selection = call.get("selection");
+    @SuppressWarnings("unchecked") List<String> project =
+        selection == null
+            ? null
+            : selection instanceof List<?>
+            ? (List<String>) selection
+            : Collections.singletonList(selection.toString());
+    Map<String, PropertyMap> selected = mgr.selectProperties(prefix, predicate, project);
+    Map<String, Map<String, String>> returned = new TreeMap<>();
+    selected.forEach((k, v) -> returned.put(k, v.export(project == null)));
+    reactions.add(returned);
+  }
 
   @Override
   protected void doPut(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runPut);
-  }
-  private void runPut(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException {
     final String ns = getNamespace(request.getRequestURI());
     final RawStore ms =  getMS();
     try {
@@ -294,11 +276,6 @@ public class PropertyServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-    security.execute(request, response, PropertyServlet.this::runGet);
-  }
-
-  private void runGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException {
     final String ns = getNamespace(request.getRequestURI());
     final RawStore ms = getMS();
     try {
@@ -331,42 +308,31 @@ public class PropertyServlet extends HttpServlet {
     }
   }
 
+  public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
+    try {
+      int port = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
+      String path = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+      if (port >= 0 && path != null && !path.isEmpty()) {
+        String authType = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
+        ServletSecurity security = new ServletSecurity(authType, configuration);
+        HttpServlet servlet = security.proxy(new PropertyServlet(configuration));
+        return new ServletServerBuilder.Descriptor(port, path, servlet);
+      }
+    } catch (Exception io) {
+      LOGGER.error("Failed to create servlet ", io);
+    }
+    return null;
+  }
+
   /**
    * Convenience method to start a http server that only serves this servlet.
+   *
    * @param conf the configuration
    * @return the server instance
    * @throws Exception if servlet initialization fails
    */
   public static Server startServer(Configuration conf) throws Exception {
-    // no port, no server
-    int port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT);
-    if (port < 0) {
-      return null;
-    }
-    String cli = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    // HTTP Server
-    Server server = new Server();
-    server.setStopAtShutdown(true);
-
-    // Optional SSL
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
-    final ServerConnector connector = new ServerConnector(server, sslContextFactory);
-    connector.setPort(port);
-    connector.setReuseAddress(true);
-    server.addConnector(connector);
-
-    // Hook the servlet
-    ServletHandler handler = new ServletHandler();
-    server.setHandler(handler);
-    ServletHolder holder = handler.newServletHolder(Source.EMBEDDED);
-    holder.setServlet(new PropertyServlet(conf)); //
-    handler.addServletWithMapping(holder, "/"+cli+"/*");
-    server.start();
-    if (!server.isStarted()) {
-      LOGGER.error("unable to start property-maps servlet server, path {}, port {}", cli, port);
-    } else {
-      LOGGER.info("started property-maps servlet server on {}", server.getURI());
-    }
-    return server;
+   return ServletServerBuilder.startServer(LOGGER, conf, PropertyServlet::createServlet);
   }
+
 }

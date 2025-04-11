@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.io.IOException;
 
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.calcite.plan.RelOptCluster;
@@ -78,11 +79,7 @@ public class PartitionPrune {
       super(true);
       this.hiveTable = hiveTable;
       rType = hiveTable.getRowType();
-      List<FieldSchema> pfs = hiveTable.getHiveTableMD().getPartCols();
-      partCols = new HashSet<String>();
-      for (FieldSchema pf : pfs) {
-        partCols.add(pf.getName());
-      }
+      partCols = Sets.newHashSet(hiveTable.getHiveTableMD().getPartColNames());
       this.cluster = cluster;
     }
 

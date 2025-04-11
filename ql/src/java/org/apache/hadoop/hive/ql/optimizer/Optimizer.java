@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
+import static org.apache.hadoop.hive.conf.HiveConf.shouldComputeLineage;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
@@ -42,10 +42,6 @@ import org.apache.hadoop.hive.ql.ppd.SimplePredicatePushDown;
 import org.apache.hadoop.hive.ql.ppd.SyntheticJoinPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 
 /**
  * Implementation of the optimizer.
@@ -72,13 +68,7 @@ public class Optimizer {
     transformations.add(new HiveOpConverterPostProc());
 
     // Add the transformation that computes the lineage information.
-    Set<String> postExecHooks = Sets.newHashSet(
-      Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.POST_EXEC_HOOKS))));
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_LINEAGE_INFO)
-        || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
-        || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
-        || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
+    if (shouldComputeLineage(hiveConf)) {
       transformations.add(Generator.fromConf(hiveConf));
     }
 

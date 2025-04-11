@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -92,6 +90,14 @@ public final class DriverUtils {
     }
   }
 
+  public static SessionState setUpAndStartSessionState(HiveConf conf) {
+    return setUpAndStartSessionState(conf, null);
+  }
+
+  public static SessionState setUpAndStartSessionState(HiveConf conf, String user) {
+    return setUpSessionState(conf, user, true);
+  }
+
   public static SessionState setUpSessionState(HiveConf conf, String user, boolean doStart) {
     SessionState sessionState = SessionState.get();
     if (sessionState == null) {
@@ -104,8 +110,7 @@ public final class DriverUtils {
         SessionState.start(sessionState);
       }
       SessionState.setCurrentSessionState(sessionState);
-    }
-    else {
+    } else {
       sessionState.setConf(conf);
     }
     return sessionState;

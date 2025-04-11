@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClie
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -153,6 +154,10 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
     hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, MockedHiveAuthorizerFactory.class.getName());
     hiveConf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());
     hiveConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
+
+    // query history adds no value to this test
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     startHiveServer2WithConf(hiveConf);
 
@@ -311,8 +316,10 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
    */
   @Test
   public void testForwardedHeaders() throws Exception {
-    verifyForwardedHeaders(new ArrayList<String>(Arrays.asList("127.0.0.1", "202.101.101.101")), "show tables");
-    verifyForwardedHeaders(new ArrayList<String>(Arrays.asList("202.101.101.101")), "fs -ls /");
+    verifyForwardedHeaders(new ArrayList<String>(Arrays.asList(IPStackUtils.resolveLoopbackAddress(),
+        IPStackUtils.transformToIPv6("202.101.101.101"))), "show tables");
+    verifyForwardedHeaders(new ArrayList<String>(Arrays.asList(
+        IPStackUtils.transformToIPv6("202.101.101.101"))), "fs -ls /");
     verifyForwardedHeaders(new ArrayList<String>(), "show databases");
   }
 

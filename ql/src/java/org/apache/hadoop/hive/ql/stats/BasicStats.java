@@ -116,21 +116,11 @@ public class BasicStats {
     }
   }
 
-  public static interface IStatsEnhancer {
+  public interface IStatsEnhancer {
     void apply(BasicStats stats);
   }
 
   public static class SetMinRowNumber implements IStatsEnhancer {
-
-    @Override
-    public void apply(BasicStats stats) {
-      if (stats.getNumRows() == 0) {
-        stats.setNumRows(1);
-      }
-    }
-  }
-
-  public static class SetMinRowNumber01 implements IStatsEnhancer {
 
     @Override
     public void apply(BasicStats stats) {
@@ -241,8 +231,8 @@ public class BasicStats {
 
   public BasicStats(Partish p) {
     partish = p;
+    tryGetBasicStatsFromStorageHandler();
 
-    checkForBasicStatsFromStorageHandler();
     rowCount = parseLong(StatsSetupConst.ROW_COUNT);
     rawDataSize = parseLong(StatsSetupConst.RAW_DATA_SIZE);
     totalSize = parseLong(StatsSetupConst.TOTAL_SIZE);
@@ -264,7 +254,7 @@ public class BasicStats {
     List<Long> nrIn = Lists.newArrayList();
     List<Long> dsIn = Lists.newArrayList();
     List<Long> fsIn = Lists.newArrayList();
-    state = (partStats.size() == 0) ? State.COMPLETE : null;
+    state = (partStats.isEmpty()) ? State.COMPLETE : null;
     for (BasicStats ps : partStats) {
       nrIn.add(ps.getNumRows());
       dsIn.add(ps.getDataSize());
@@ -282,10 +272,11 @@ public class BasicStats {
 
   }
 
-  private void checkForBasicStatsFromStorageHandler() {
+  private void tryGetBasicStatsFromStorageHandler() {
     if (partish.getTable() != null && partish.getTable().isNonNative() &&
         partish.getTable().getStorageHandler().canProvideBasicStatistics()) {
-      partish.getPartParameters().putAll(partish.getTable().getStorageHandler().getBasicStatistics(partish));
+      partish.getPartParameters().putAll(
+          partish.getTable().getStorageHandler().getBasicStatistics(partish));
     }
   }
 

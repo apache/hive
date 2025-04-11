@@ -140,6 +140,80 @@ public class TestActivePassiveHA {
   }
 
   @Test(timeout = 60000)
+  public void testHealthCheck() throws Exception {
+    String instanceId1 = UUID.randomUUID().toString();
+    miniHS2_1.start(getConfOverlay(instanceId1));
+
+    String leaderURL = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    String healthCheckURL = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+
+    String leaderURLHealthCheckPort = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/leader";
+    String healthCheckURLWebUIPort = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/ha-healthcheck/health-ha";
+    
+    assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
+    assertEquals(true, miniHS2_1.isLeader());
+
+    assertEquals("true", sendGet(leaderURL));
+    assertEquals("true", sendGet(healthCheckURL));
+
+    assertEquals("Not Found", sendGet(leaderURLHealthCheckPort));
+    assertEquals("Not Found", sendGet(healthCheckURLWebUIPort));
+  }
+
+  @Test(timeout = 60000)
+  public void testHealthCheckAuth() throws Exception {
+    hiveConf1.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS, true);
+    setPamConfs(hiveConf1);
+    PamAuthenticator pamAuthenticator = new TestHS2HttpServerPam.TestPamAuthenticator(hiveConf1);
+    String instanceId1 = UUID.randomUUID().toString();
+    miniHS2_1.setPamAuthenticator(pamAuthenticator);
+    miniHS2_1.start(getSecureConfOverlay(instanceId1));
+
+    String leaderURL = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    String healthCheckURL = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+
+    String leaderURLHealthCheckPort = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/leader";
+    String healthCheckURLWebUIPort = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/ha-healthcheck/health-ha";
+
+    assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
+    assertEquals(true, miniHS2_1.isLeader());
+
+    assertEquals("true", sendGet(leaderURL, true, true));
+    assertEquals("true", sendGet(healthCheckURL, true, true));
+
+    try {
+      sendGet(leaderURLHealthCheckPort, true, true);
+    } catch (AssertionError e) {
+      assertTrue(e.getMessage().contains("Not Found"));
+    } catch (Exception e) {
+      fail("Expected AssertionError");
+    }
+
+    assertEquals("Not Found", sendGet(healthCheckURLWebUIPort, true, true));
+    assertEquals("Method Not Allowed", sendDelete(healthCheckURL, true, true));
+    assertEquals("Method Not Allowed", sendDelete(healthCheckURLWebUIPort, true, true));
+
+    try {
+      sendDelete(leaderURLHealthCheckPort, true, true);
+    } catch (AssertionError e) {
+      assertTrue(e.getMessage().contains("Not Found"));
+    } catch (Exception e) {
+      fail("Expected AssertionError");
+    }
+
+    String resp = sendDelete(leaderURL, true, true);
+    assertTrue(resp.contains("Failover successful!"));
+  }
+
+  @Test(timeout = 60000)
   public void testActivePassiveHA() throws Exception {
     String instanceId1 = UUID.randomUUID().toString();
     miniHS2_1.start(getConfOverlay(instanceId1));
@@ -148,12 +222,20 @@ public class TestActivePassiveHA {
 
     assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_1.isLeader());
-    String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    String url = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
+    String healthCheckURL = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+    assertEquals("true", sendGet(healthCheckURL));
 
     assertEquals(false, miniHS2_2.isLeader());
-    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" +
+        hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("false", sendGet(url));
+    healthCheckURL = "http://localhost:" +
+        hiveConf2.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+    assertEquals("false", sendGet(healthCheckURL));
 
     url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/peers";
     String resp = sendGet(url);
@@ -190,8 +272,12 @@ public class TestActivePassiveHA {
 
     assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_2.isLeader());
-    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" +
+        hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
+    healthCheckURL = "http://localhost:" +
+        hiveConf2.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+    assertEquals("true", sendGet(healthCheckURL));
 
     while (client.getAll().size() != 1) {
       Thread.sleep(100);
@@ -231,8 +317,12 @@ public class TestActivePassiveHA {
     miniHS2_1.start(getConfOverlay(instanceId1));
 
     assertEquals(false, miniHS2_1.isLeader());
-    url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("false", sendGet(url));
+    healthCheckURL = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+    assertEquals("false", sendGet(healthCheckURL));
 
     while (client.getAll().size() != 2) {
       Thread.sleep(100);
@@ -280,12 +370,20 @@ public class TestActivePassiveHA {
 
     assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_1.isLeader());
-    String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    String url = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
+    String healthCheckURL = "http://localhost:" +
+        hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+    assertEquals("true", sendGet(healthCheckURL));
 
     assertEquals(false, miniHS2_2.isLeader());
-    url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+    url = "http://localhost:" +
+        hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("false", sendGet(url));
+    healthCheckURL = "http://localhost:" +
+        hiveConf2.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+    assertEquals("false", sendGet(healthCheckURL));
 
     // miniHS2_1 will be leader
     String zkConnectString = zkServer.getConnectString();
@@ -347,11 +445,16 @@ public class TestActivePassiveHA {
       miniHS2_2.start(confOverlay);
       String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
       String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String healthCheckURL1 = "http://localhost:" +
+          hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+      String healthCheckURL2 = "http://localhost:" +
+          hiveConf2.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
 
       // when we start miniHS2_1 will be leader (sequential start)
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true, true));
+      assertEquals("true", sendGet(healthCheckURL1, true, true));
 
       // trigger failover on miniHS2_1
       String resp = sendDelete(url1, true, true);
@@ -361,11 +464,13 @@ public class TestActivePassiveHA {
       assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
       assertEquals("false", sendGet(url1, true, true));
+      assertEquals("false", sendGet(healthCheckURL1, true, true));
 
       // make sure miniHS2_2 is the new leader
       assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_2.isLeader());
       assertEquals("true", sendGet(url2, true, true));
+      assertEquals("true", sendGet(healthCheckURL2, true, true));
 
       // send failover request again to miniHS2_1 and get a failure
       resp = sendDelete(url1, true, true);
@@ -379,8 +484,10 @@ public class TestActivePassiveHA {
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true, true));
+      assertEquals("true", sendGet(healthCheckURL1, true, true));
       assertEquals(true, miniHS2_2.getNotLeaderTestFuture().get());
       assertEquals("false", sendGet(url2, true, true));
+      assertEquals("false", sendGet(healthCheckURL2, true, true));
       assertEquals(false, miniHS2_2.isLeader());
     } finally {
       resetFailoverConfs();
@@ -403,11 +510,15 @@ public class TestActivePassiveHA {
       confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
       miniHS2_2.start(confOverlay);
 
-      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url1 = "http://localhost:" +
+          hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String healthCheckURL1 = "http://localhost:" +
+          hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
       // when we start miniHS2_1 will be leader (sequential start)
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
+      assertEquals("true", sendGet(healthCheckURL1, true));
 
       // trigger failover on miniHS2_1 without authorization header
       assertTrue(sendDelete(url1, false).contains("Unauthorized"));
@@ -438,7 +549,10 @@ public class TestActivePassiveHA {
       Map<String, String> confOverlay = getSecureConfOverlay(instanceId2);
       miniHS2_2.setPamAuthenticator(pamAuthenticator2);
       miniHS2_2.start(confOverlay);
-      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url1 = "http://localhost:" +
+          hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String healthCheckURL1 = "http://localhost:" +
+          hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
 
@@ -453,6 +567,9 @@ public class TestActivePassiveHA {
       while (miniHS2_1.getOpenSessionsCount() != 0) {
         Thread.sleep(100);
       }
+
+      resp = sendDelete(healthCheckURL1, true);
+      assertTrue(resp, resp.contains("Method Not Allowed"));
 
       assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_2.isLeader());
@@ -496,6 +613,10 @@ public class TestActivePassiveHA {
       miniHS2_2.start(confOverlay);
       String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
       String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String healthCheckUrl1 = "http://localhost:" +
+          hiveConf1.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
+      String healthCheckUrl2 = "http://localhost:" +
+          hiveConf2.get(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT.varname) + "/ha-healthcheck/health-ha";
       String zkJdbcUrl = miniHS2_1.getJdbcURL();
       String zkConnectString = zkServer.getConnectString();
       assertTrue(zkJdbcUrl.contains(zkConnectString));
@@ -504,6 +625,7 @@ public class TestActivePassiveHA {
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
+      assertEquals("true", sendGet(healthCheckUrl1, true));
 
       // before failover, check if we are getting connection from miniHS2_1
       String hs2_1_directUrl = "jdbc:hive2://" + miniHS2_1.getHost() + ":" + miniHS2_1.getBinaryPort() +
@@ -523,15 +645,20 @@ public class TestActivePassiveHA {
         Thread.sleep(100);
       }
 
+      resp = sendDelete(healthCheckUrl1, true);
+      assertTrue(resp.contains("Method Not Allowed"));
+      
       // make sure miniHS2_1 is not leader
       assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
       assertEquals("false", sendGet(url1, true));
+      assertEquals("false", sendGet(healthCheckUrl1, true));
 
       // make sure miniHS2_2 is the new leader
       assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_2.isLeader());
       assertEquals("true", sendGet(url2, true));
+      assertEquals("true", sendGet(healthCheckUrl2, true));
 
       // when we make a new connection we should get it from miniHS2_2 this time
       String hs2_2_directUrl = "jdbc:hive2://" + miniHS2_2.getHost() + ":" + miniHS2_2.getHttpPort() +
@@ -555,8 +682,10 @@ public class TestActivePassiveHA {
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
+      assertEquals("true", sendGet(healthCheckUrl1, true));
       assertEquals(true, miniHS2_2.getNotLeaderTestFuture().get());
       assertEquals("false", sendGet(url2, true));
+      assertEquals("false", sendGet(healthCheckUrl2, true));
       assertEquals(false, miniHS2_2.isLeader());
       // make sure miniHS2_2 closes all its connections
       while (miniHS2_2.getOpenSessionsCount() != 0) {

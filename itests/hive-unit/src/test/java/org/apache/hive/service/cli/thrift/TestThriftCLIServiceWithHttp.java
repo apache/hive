@@ -80,6 +80,9 @@ public class TestThriftCLIServiceWithHttp extends ThriftCLIServiceTest {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.NOSASL.toString());
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH, thriftHttpPath);
+    // query history adds no value to this test
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     startHiveServer2WithConf(hiveConf);
 

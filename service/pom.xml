@@ -190,6 +190,10 @@
           <groupId>org.bouncycastle</groupId>
           <artifactId>bcprov-jdk15on</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.glassfish</groupId>
+          <artifactId>javax.json</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -343,6 +347,10 @@
         <exclusion>
           <groupId>dom4j</groupId>
           <artifactId>dom4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
