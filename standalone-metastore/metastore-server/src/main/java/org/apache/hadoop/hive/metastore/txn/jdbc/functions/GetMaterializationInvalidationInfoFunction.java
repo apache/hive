@@ -71,10 +71,10 @@ public class GetMaterializationInvalidationInfoFunction implements Transactional
       // Incremental rebuild of MVs on Iceberg sources is not supported.
       return null;
     }
-    final ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(mvSnapshot.getValidTxnList());
+    final ValidTxnWriteIdList validReaderWriteIdList = ValidTxnWriteIdList.fromValue(mvSnapshot.getValidTxnList());
 
     // Parse validTxnList
-    final ValidReadTxnList currentValidTxnList = new ValidReadTxnList(validTxnListStr);
+    final ValidReadTxnList currentValidTxnList = ValidReadTxnList.fromValue(validTxnListStr);
     // Get the valid write id list for the tables in current state
     final List<TableValidWriteIds> currentTblValidWriteIdsList = new ArrayList<>();
     for (String fullTableName : creationMetadata.getTablesUsed()) {

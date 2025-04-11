@@ -5186,7 +5186,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return null;
     }
 
-    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(
+    ValidTxnWriteIdList validTxnWriteIdList = ValidTxnWriteIdList.fromValue(
         conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(
         TableName.getDbTable(dbName, tblName));

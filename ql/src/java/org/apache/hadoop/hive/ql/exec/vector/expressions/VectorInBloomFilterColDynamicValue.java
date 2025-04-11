@@ -127,7 +127,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
                   BloomKFilter bloomKFilter = BloomKFilter.deserialize(in);
                   return bloomKFilter;
                 } else {
-                  return new BloomKFilter(1);
+                  return BloomKFilter.build(1);
                 }
               } finally {
                 IOUtils.closeStream(in);

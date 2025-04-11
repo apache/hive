@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common;
 
 import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 
 /**
@@ -40,6 +41,7 @@ public class DiskRangeInfo {
     this.totalLength = indexBaseOffset;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended")
   public void addDiskRange(DiskRangeList diskRange) {
     if (tail == null) {
       head = tail = diskRange;
@@ -49,6 +51,7 @@ public class DiskRangeInfo {
     totalLength += diskRange.getLength();
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended")
   public DiskRangeList getDiskRanges() {
     return head;
   }

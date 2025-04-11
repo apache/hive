@@ -347,7 +347,7 @@ public class HybridHashTableContainer
 
     if (useBloomFilter) {
       if (newKeyCount <= BLOOM_FILTER_MAX_SIZE) {
-        this.bloom1 = new BloomFilter(newKeyCount);
+        this.bloom1 = BloomFilter.build(newKeyCount);
       } else {
         // To avoid having a huge BloomFilter we need to scale up False Positive Probability
         double fpp = calcFPP(newKeyCount);
@@ -356,7 +356,7 @@ public class HybridHashTableContainer
           LOG.warn("BloomFilter FPP is greater than 0.5!");
         }
         LOG.info("BloomFilter is using FPP: " + fpp);
-        this.bloom1 = new BloomFilter(newKeyCount, fpp);
+        this.bloom1 = BloomFilter.build(newKeyCount, fpp);
       }
       LOG.info(String.format("Using a bloom-1 filter %d keys of size %d bytes",
         newKeyCount, bloom1.sizeInBytes()));

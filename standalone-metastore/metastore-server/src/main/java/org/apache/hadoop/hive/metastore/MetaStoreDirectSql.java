@@ -1816,7 +1816,7 @@ class MetaStoreDirectSql {
 
   private BloomFilter createPartsBloomFilter(int maxPartsPerCacheNode, double fpp,
       List<String> partNames) {
-    BloomFilter bloomFilter = new BloomFilter(maxPartsPerCacheNode, fpp);
+    BloomFilter bloomFilter = BloomFilter.build(maxPartsPerCacheNode, fpp);
     for (String partName : partNames) {
       bloomFilter.add(partName.getBytes());
     }
