@@ -25,7 +25,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TConfiguration;
 import org.apache.thrift.protocol.TField;
 import org.apache.thrift.protocol.TList;

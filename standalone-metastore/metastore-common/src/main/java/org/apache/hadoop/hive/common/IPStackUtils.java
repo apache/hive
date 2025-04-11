@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.common;
+package org.apache.hadoop.hive.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.netty.util.NetUtil;
@@ -162,7 +162,13 @@ public class IPStackUtils {
    * @return the concatenated host and port
    */
   public static String concatHostPort(String host, int port) {
+    validateHostNotEmpty(host);
+    validatePort(port);
     return formatIPAddressForURL(host) + ":" + port;
+  }
+
+  public static String concatHostPort(String host, String port) {
+    return concatHostPort(host, Integer.parseInt(port));
   }
 
   /**
@@ -251,9 +257,7 @@ public class IPStackUtils {
     port = getPort(input.substring(colonIndex + 1));
 
     // Check if the host is not null or empty
-    if (StringUtils.isEmpty(host) || host.equals("[]")) {
-      throw new IllegalArgumentException("Host address is null or empty.");
-    }
+    validateHostNotEmpty(host);
 
     // Handle IPv6 addresses enclosed in square brackets (e.g., [IPv6]:port)
     if (host.startsWith("[") && host.endsWith("]")) {
@@ -279,6 +283,12 @@ public class IPStackUtils {
     int port = Integer.parseInt(portString);
     validatePort(port);
     return port;
+  }
+
+  private static void validateHostNotEmpty(String host) {
+    if (StringUtils.isEmpty(host) || host.equals("[]")) {
+      throw new IllegalArgumentException("Host address is null or empty.");
+    }
   }
   
   private static void validatePort(int port) {

@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
