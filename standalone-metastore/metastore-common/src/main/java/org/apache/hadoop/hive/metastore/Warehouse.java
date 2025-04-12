@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.HarFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
@@ -467,6 +468,10 @@ public class Warehouse {
       }
     }
     FileSystem fs = getFs(f);
+    if (fs instanceof HarFileSystem) {
+      LOG.warn("Har path {} is not supported to delete, skipping it.", f);
+      return true;
+    }
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
