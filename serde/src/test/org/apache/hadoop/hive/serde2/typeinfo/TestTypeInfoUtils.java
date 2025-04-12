@@ -20,9 +20,10 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 
 
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+import org.apache.hadoop.util.Lists;
 import org.junit.Test;
 
 /**
@@ -65,7 +66,15 @@ public class TestTypeInfoUtils {
         "char(123,)",
         "char()",
         "char(",
-        "decimal()"
+        "decimal()",
+        "struct<user<id:int>",
+        "struct<user>id:int>",
+        "struct<user(id:int>",
+        "struct<user)id:int>",
+        "struct<user'id:int>",
+        "struct<user,id:int>",
+        "struct<user:id:int>",
+        "struct<user;id:int>",
     };
 
     for (String typeString : validTypeStrings) {
@@ -124,5 +133,55 @@ public class TestTypeInfoUtils {
       assertEquals("Failed for " + testCase.typeString, testCase.expectedPrecision, decimalType.getPrecision());
       assertEquals("Failed for " + testCase.typeString, testCase.expectedScale, decimalType.getScale());
     }
+  }
+
+  @Test
+  public void testStruct() {
+    String[] testCases = {
+        "struct<user id:int,user group: int>",
+        "struct<user-_$+/^ |id:int,user-_$+/^ |group: int>",
+        "struct<\uD842\uDFB7野家♥️:string>" // surrogate pairs
+    };
+    StructTypeInfo[] expected = {
+        new StructTypeInfo(
+            Lists.newArrayList("user id", "user group"),
+            Lists.newArrayList(TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo)
+        ),
+        new StructTypeInfo(
+            Lists.newArrayList("user-_$+/^ |id", "user-_$+/^ |group"),
+            Lists.newArrayList(TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo)
+        ),
+        new StructTypeInfo(
+            Lists.newArrayList("\uD842\uDFB7野家♥️"),
+            Lists.newArrayList(TypeInfoFactory.stringTypeInfo)
+        )
+    };
+    assertEquals(expected.length, testCases.length);
+
+    for (int i = 0; i < testCases.length; i++) {
+      String testCase = testCases[i];
+      StructTypeInfo expectedType = expected[i];
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(testCase);
+      assertEquals(expectedType, typeInfo);
+    }
+  }
+
+  @Test
+  public void testMultipleValues() {
+    String str = "int,struct<user-_$+/^ |id:int,user-_$+/^ |group: int>:struct<\uD842\uDFB7野家♥️:string>;double";
+    List<TypeInfo> types = TypeInfoUtils.getTypeInfosFromTypeString(str);
+    List<TypeInfo> expected = Lists.newArrayList(
+        TypeInfoFactory.intTypeInfo,
+        new StructTypeInfo(
+            Lists.newArrayList("user-_$+/^ |id", "user-_$+/^ |group"),
+            Lists.newArrayList(TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo)
+        ),
+        new StructTypeInfo(
+            Lists.newArrayList("\uD842\uDFB7野家♥️"),
+            Lists.newArrayList(TypeInfoFactory.stringTypeInfo)
+        ),
+        TypeInfoFactory.doubleTypeInfo
+    );
+    assertEquals(expected, types);
   }
 }

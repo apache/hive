@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import com.google.common.collect.Lists;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -51,16 +53,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * TypeInfoUtils.
  *
  */
 public final class TypeInfoUtils {
-
-  protected static final Logger LOG = LoggerFactory.getLogger(TypeInfoUtils.class);
+  private static final Set<Integer> NON_TYPE_CHARACTERS = Lists.newArrayList('<', '>', '(', ')', '\'', ',', ':', ';')
+      .stream().map(x -> (int) x).collect(Collectors.toSet());
 
   public static List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
   // The ordering of types here is used to determine which numeric types
@@ -234,15 +234,6 @@ public final class TypeInfoUtils {
     return typeInfos;
   }
 
-  public static boolean hasParameters(String typeName) {
-    int idx = typeName.indexOf('(');
-    if (idx == -1) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
   public static String getBaseName(String typeName) {
     int idx = typeName.indexOf('(');
     if (idx == -1) {
@@ -291,8 +282,8 @@ public final class TypeInfoUtils {
       }
     };
 
-    private static boolean isTypeChar(char c) {
-      return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == ' ' || c == '$';
+    private static boolean isTypeChar(int codePoint) {
+      return !NON_TYPE_CHARACTERS.contains(codePoint);
     }
 
     /**
@@ -307,35 +298,37 @@ public final class TypeInfoUtils {
      * in any type in Hive, it is safe to do so.
      */
     private static ArrayList<Token> tokenize(String typeInfoString) {
-      ArrayList<Token> tokens = new ArrayList<Token>(0);
+      ArrayList<Token> tokens = new ArrayList<>(0);
+
+      int[] codePoints = typeInfoString.codePoints().toArray();
       int begin = 0;
       int end = 1;
-      while (end <= typeInfoString.length()) {
+      while (end <= codePoints.length) {
         // last character ends a token?
         // if there are quotes, all the text between the quotes
         // is considered a single token (this can happen for
         // timestamp with local time-zone)
         if (begin > 0 &&
-            typeInfoString.charAt(begin - 1) == '(' &&
-            typeInfoString.charAt(begin) == '\'') {
+            codePoints[begin - 1] == '(' &&
+            codePoints[begin] == '\'') {
           // Ignore starting quote
           begin++;
           do {
             end++;
-          } while (typeInfoString.charAt(end) != '\'');
-        } else if (typeInfoString.charAt(begin) == '\'' &&
-            typeInfoString.charAt(begin + 1) == ')') {
+          } while (codePoints[end] != '\'');
+        } else if (codePoints[begin] == '\'' &&
+            codePoints[begin + 1] == ')') {
           // Ignore closing quote
           begin++;
           end++;
         }
-        if (end == typeInfoString.length()
-            || !isTypeChar(typeInfoString.charAt(end - 1))
-            || !isTypeChar(typeInfoString.charAt(end))) {
+        if (end == codePoints.length
+            || !isTypeChar(codePoints[end - 1])
+            || !isTypeChar(codePoints[end])) {
           Token t = new Token();
           t.position = begin;
-          t.text = typeInfoString.substring(begin, end).trim();
-          t.isType = isTypeChar(typeInfoString.charAt(begin));
+          t.text = new String(codePoints, begin, end - begin).trim();
+          t.isType = isTypeChar(codePoints[begin]);
           tokens.add(t);
           begin = end;
         }

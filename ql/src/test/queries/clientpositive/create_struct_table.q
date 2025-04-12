@@ -33,3 +33,8 @@ load data local inpath '../../data/files/kv1.txt'
 overwrite into table varchar_fields;
 
 SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields LIMIT 10;
+
+create table complex_field_names(strct struct<`user-_$+/^ |id`:int, `♠️♥️`:string>);
+insert into complex_field_names values (named_struct('user-_$+/^ |id', 1, '♠️♥️', 'abcde'));
+explain select * from complex_field_names;
+select * from complex_field_names;
