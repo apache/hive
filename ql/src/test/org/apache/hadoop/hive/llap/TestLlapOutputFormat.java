@@ -54,7 +54,6 @@ public class TestLlapOutputFormat {
     Configuration conf = new Configuration();
     // Pick random avail port
     HiveConf.setIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT, 0);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW, false);
     LlapOutputFormatService.initializeAndStart(conf, null);
     service = LlapOutputFormatService.get();
     LlapProxy.setDaemon(true);
