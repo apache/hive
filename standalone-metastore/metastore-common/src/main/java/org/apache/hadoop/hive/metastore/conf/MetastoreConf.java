@@ -700,11 +700,10 @@ public class MetastoreConf {
             "configured with embedded metastore. To get optimal performance, set config to meet the following condition\n"+
             "(2 * pool_size * metastore_instances + 2 * pool_size * HS2_instances_with_embedded_metastore) = \n" +
             "(2 * physical_core_count + hard_disk_count)."),
-    CONNECTION_POOLING_MAX_SECONDARY_CONNECTIONS("datanucleus.connectionPool.maxSecondaryPoolSize",
-            "datanucleus.connectionPool.maxSecondaryPoolSize", 2,
-            "Specify the maximum number of connections in the objectstore-secondary connection pool.\n" +
-                    "Same as datanucleus.connectionPool.maxPoolSize, but for the objectstore-secondary pool. \n" +
-                    "Note that this is not a valid datanucleus configuration, this is used only in Hive.\n" +
+    CONNECTION_POOLING_MAX_SECONDARY_CONNECTIONS("datanucleus.connectionPool.secondary.maxPoolSize",
+            "datanucleus.connectionPool.secondary.maxPoolSize", 2,
+            "Specify the maximum number of connections in the secondary connection pools (objectstore-secondary, objectstore-compactor-secondary).\n" +
+                    "Same as datanucleus.connectionPool.maxPoolSize, but for the objectstore-secondary and objectstore-compactor-secondary pools. \n" +
                     "Values smaller than 2 are ignored."),
     CONNECT_URL_HOOK("metastore.ds.connection.url.hook",
         "hive.metastore.ds.connection.url.hook", "",
