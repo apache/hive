@@ -100,7 +100,7 @@ public class TestDataSourceProviderFactory {
   }
 
   @Test
-  public void testHikariCpMaxPoolSize() throws SQLException {
+  public void testHikariCpMaxPoolSize() {
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
     PersistenceManagerProvider.updatePmfProperties(conf);
     PersistenceManagerFactory pmf =
