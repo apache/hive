@@ -111,13 +111,7 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-runner</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.mortbay.jasper</groupId>
-          <artifactId>apache-jsp</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>apache-jsp</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
