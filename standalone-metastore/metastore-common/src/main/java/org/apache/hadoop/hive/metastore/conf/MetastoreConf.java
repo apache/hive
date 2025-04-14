@@ -1799,8 +1799,6 @@ public class MetastoreConf {
         "hive.metastore.custom.database.product.classname", "none",
           "Hook for external RDBMS. This class will be instantiated only when " +
           "metastore.use.custom.database.product is set to true."),
-    HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "hive.blobstore.supported.schemes", "s3,s3a,s3n",
-            "Comma-separated list of supported blobstore schemes."),
 
     // Property-maps
     PROPERTIES_CACHE_CAPACITY("hive.metastore.properties.cache.capacity",
@@ -1844,7 +1842,7 @@ public class MetastoreConf {
             " positive value will be used as-is."
     ),
     ICEBERG_CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
-        "hive.metastore.catalog.servlet.auth", "jwt",
+        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",

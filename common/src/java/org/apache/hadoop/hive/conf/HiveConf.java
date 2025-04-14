@@ -2748,6 +2748,8 @@ public class HiveConf extends Configuration {
         "Analyzes and merges equiv downstream operators after a successful shared work optimization step."),
     HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT("hive.optimize.shared.work.parallel.edge.support", true,
         "Lets the shared work optimizer to create parallel edges in case they are for semijoins or mapjoins."),
+    HIVE_SHARED_WORK_MAX_SIBLINGS("hive.optimize.shared.work.max.siblings", -1,
+        "The maximum number of operators merged in a single iteration. -1 means infinite"),
     HIVE_REMOVE_SQ_COUNT_CHECK("hive.optimize.remove.sq_count_check", true,
         "Whether to remove an extra join with sq_count_check for scalar subqueries "
             + "with constant group by keys."),
@@ -3121,7 +3123,7 @@ public class HiveConf extends Configuration {
     TXN_MERGE_INSERT_X_LOCK("hive.txn.xlock.mergeinsert", false,
         "Ensures MERGE INSERT operations acquire EXCLUSIVE / EXCL_WRITE lock for transactional tables.\n" +
         "If enabled, prevents duplicates when MERGE statements are executed in parallel transactions."),
-    TXN_WRITE_X_LOCK("hive.txn.xlock.write", true,
+    TXN_WRITE_X_LOCK("hive.txn.xlock.write", false,
         "Manages concurrency levels for ACID resources. Provides better level of query parallelism by enabling " +
         "shared writes and write-write conflict resolution at the commit step." +
         "- If true - exclusive writes are used:\n" +
@@ -3130,7 +3132,7 @@ public class HiveConf extends Configuration {
         "  - INSERT acquires SHARED_READ locks\n" +
         "- If false - shared writes, transaction is aborted in case of conflicting changes:\n" +
         "  - INSERT OVERWRITE acquires EXCL_WRITE locks\n" +
-        "  - INSERT/UPDATE/DELETE acquire SHARED_READ locks"),
+        "  - INSERT/UPDATE/DELETE acquire SHARED_WRITE locks"),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
@@ -4056,6 +4058,8 @@ public class HiveConf extends Configuration {
       "hs2ActivePassiveHA",
       "When HiveServer2 Active/Passive High Availability is enabled, uses this namespace for registering HS2\n" +
         "instances with zookeeper"),
+    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002, 
+        "The port the HiveServer2 ha-healthcheck web app will listen on"),
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),

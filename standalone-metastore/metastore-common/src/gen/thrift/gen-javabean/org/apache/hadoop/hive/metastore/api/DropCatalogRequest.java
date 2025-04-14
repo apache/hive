@@ -99,6 +99,8 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public DropCatalogRequest() {
+    this.ifExists = true;
+
   }
 
   public DropCatalogRequest(
@@ -126,8 +128,8 @@ package org.apache.hadoop.hive.metastore.api;
   @Override
   public void clear() {
     this.name = null;
-    setIfExistsIsSet(false);
-    this.ifExists = false;
+    this.ifExists = true;
+
   }
 
   @org.apache.thrift.annotation.Nullable

@@ -155,7 +155,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
   private transient long maxMemory;
 
-  private float memoryThreshold;
+  private float hashTableMemoryPercentage;
 
   private boolean isLlap = false;
 
@@ -626,20 +626,20 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
       maxMemory = isLlap ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
-      memoryThreshold = conf.getMemoryThreshold();
+      hashTableMemoryPercentage = conf.getGroupByMemoryUsage();
       // Tests may leave this unitialized, so better set it to 1
-      if (memoryThreshold == 0.0f) {
-        memoryThreshold = 1.0f;
+      if (hashTableMemoryPercentage == 0.0f) {
+        hashTableMemoryPercentage = 1.0f;
       }
 
-      maxHashTblMemory = (int)(maxMemory * memoryThreshold);
+      maxHashTblMemory = (int)(maxMemory * hashTableMemoryPercentage);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("GBY memory limits - isLlap: {} maxMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
           isLlap,
           LlapUtil.humanReadableByteCount(maxHashTblMemory),
           LlapUtil.humanReadableByteCount(maxMemory),
-          memoryThreshold,
+          hashTableMemoryPercentage,
           fixedHashEntrySize,
           keyWrappersBatch.getKeysFixedSize(),
           aggregationBatchInfo.getAggregatorsFixedSize());

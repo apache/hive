@@ -21,6 +21,8 @@ package org.apache.iceberg.hive;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -31,8 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -42,12 +42,12 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
 import org.apache.thrift.TException;
@@ -91,7 +91,6 @@ public class MetastoreLock implements HiveLock {
   private final long lockHeartbeatIntervalTime;
   private final ScheduledExecutorService exitingScheduledExecutorService;
   private final String agentInfo;
-  private final Configuration conf;
 
   private Optional<Long> hmsLockId = Optional.empty();
   private ReentrantLock jvmLock = null;
@@ -103,7 +102,6 @@ public class MetastoreLock implements HiveLock {
     this.fullName = catalogName + "." + databaseName + "." + tableName;
     this.databaseName = databaseName;
     this.tableName = tableName;
-    this.conf = conf;
 
     this.lockAcquireTimeout =
         conf.getLong(HIVE_ACQUIRE_LOCK_TIMEOUT_MS, HIVE_ACQUIRE_LOCK_TIMEOUT_MS_DEFAULT);
@@ -270,18 +268,21 @@ public class MetastoreLock implements HiveLock {
   private LockInfo createLock() throws LockException {
     LockInfo lockInfo = new LockInfo();
 
+    String hostName;
+    try {
+      hostName = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException uhe) {
+      throw new LockException(uhe, "Error generating host name");
+    }
+
     LockComponent lockComponent =
             new LockComponent(LockType.EXCL_WRITE, LockLevel.TABLE, databaseName);
-    lockComponent.setOperationType(DataOperationType.NO_TXN);
     lockComponent.setTablename(tableName);
-
-    // An open ACID transaction might exist when the SQL statement involves both native and Iceberg tables.
-    // Use it's txn id.
-    LockRequest lockRequest = new LockRequestBuilder(null)
-            .setTransactionId(conf.getLong(hive_metastoreConstants.TXN_ID, 0L))
-            .setUser(HiveHadoopUtil.currentUser())
-            .addLockComponent(lockComponent)
-            .build();
+    LockRequest lockRequest =
+            new LockRequest(
+                    Lists.newArrayList(lockComponent),
+                    HiveHadoopUtil.currentUser(),
+                    hostName);
 
     // Only works in Hive 2 or later.
     if (HiveVersion.min(HiveVersion.HIVE_2)) {

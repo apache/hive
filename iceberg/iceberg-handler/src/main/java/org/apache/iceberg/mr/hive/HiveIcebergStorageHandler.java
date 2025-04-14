@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -177,6 +178,7 @@ import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -835,8 +837,24 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   @Override
   public LockType getLockType(WriteEntity writeEntity) {
-    if (WriteEntity.WriteType.INSERT_OVERWRITE == writeEntity.getWriteType()) {
-      return LockType.EXCL_WRITE;
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = writeEntity.getTable();
+    boolean sharedWrite = !HiveConf.getBoolVar(conf, ConfVars.TXN_WRITE_X_LOCK);
+    // Materialized views stored by Iceberg and the MV metadata is stored in HMS doesn't need write locking because
+    // the locking is done by DbTxnManager.acquireMaterializationRebuildLock()
+    if (TableType.MATERIALIZED_VIEW == writeEntity.getTable().getTableType()) {
+      return LockType.SHARED_READ;
+    }
+    if (HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf)) {
+      throw new RuntimeException("Hive locking on table `" + hmsTable.getFullTableName() +
+          "`cannot be enabled when `engine.hive.lock-enabled`=`true`. " +
+          "Disable `engine.hive.lock-enabled` to use Hive locking");
+    }
+    switch (writeEntity.getWriteType()) {
+      case INSERT_OVERWRITE:
+        return LockType.EXCL_WRITE;
+      case UPDATE:
+      case DELETE:
+        return sharedWrite ? LockType.SHARED_WRITE : LockType.EXCL_WRITE;
     }
     return LockType.SHARED_WRITE;
   }

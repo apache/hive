@@ -1,5 +1,8 @@
 set hive.optimize.join.disjunctive.transitive.predicates.pushdown=false;
 
+-- HiveProject(month=[CAST(202503):INTEGER])
+--! qt:replace:/(.*month=\[CAST\()\d+(\).*)/$1#Masked#$2/
+
 CREATE TABLE test1 (act_nbr string);
 CREATE TABLE test2 (month int);
 CREATE TABLE test3 (mth int, con_usd double);

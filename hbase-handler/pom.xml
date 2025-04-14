@@ -224,7 +224,7 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-runner</artifactId>
+      <artifactId>apache-jsp</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -21,8 +21,8 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.hadoop.mapred.TaskAttemptID;
-import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 
 public class WriterRegistry {
@@ -36,13 +36,10 @@ public class WriterRegistry {
   }
 
   public static void registerWriter(TaskAttemptID taskAttemptID, String tableName, HiveIcebergWriter writer) {
-    writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
-
-    Map<String, List<HiveIcebergWriter>> writersOfTableMap = writers.get(taskAttemptID);
-    writersOfTableMap.putIfAbsent(tableName, Lists.newArrayList());
-
-    List<HiveIcebergWriter> writerList = writersOfTableMap.get(tableName);
-    writerList.add(writer);
+    writers
+        .computeIfAbsent(taskAttemptID, k -> Maps.newConcurrentMap())
+        .computeIfAbsent(tableName, k -> new CopyOnWriteArrayList<>())
+        .add(writer);
   }
 
   public static Map<String, List<HiveIcebergWriter>> writers(TaskAttemptID taskAttemptID) {

@@ -480,7 +480,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
                         Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
-                        auto parallelism: true
+                        auto parallelism: false
             Execution mode: llap
             LLAP IO: may be used (ACID table)
             Path -> Alias:
@@ -1432,7 +1432,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
                         Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
-                        auto parallelism: true
+                        auto parallelism: false
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Path -> Alias:

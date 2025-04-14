@@ -1766,7 +1766,7 @@ class DropCatalogRequest
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
-    IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :optional => true}
+    IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :default => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end

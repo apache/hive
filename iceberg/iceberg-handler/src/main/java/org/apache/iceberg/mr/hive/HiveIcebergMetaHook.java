@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -70,6 +71,7 @@ import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
@@ -116,9 +118,12 @@ import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.hive.CachedClientPool;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreLock;
+import org.apache.iceberg.hive.NoLock;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mapping.MappingUtil;
@@ -193,7 +198,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private Transaction transaction;
   private AlterTableType currentAlterTableOp;
   private boolean createHMSTableInHook = false;
-  private MetastoreLock commitLock;
+  private HiveLock commitLock;
 
   private enum FileFormat {
     ORC("orc"), PARQUET("parquet"), AVRO("avro");
@@ -409,17 +414,31 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           context.getProperties().get(OLD_TABLE_NAME)).toString());
     }
     if (commitLock == null) {
-      commitLock = new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
-          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
+      commitLock = lockObject(hmsTable);
     }
 
     try {
-      conf.setLong(hive_metastoreConstants.TXN_ID, IcebergAcidUtil.getTxnId());
       commitLock.lock();
       doPreAlterTable(hmsTable, context);
     } catch (Exception e) {
       commitLock.unlock();
       throw new MetaException(StringUtils.stringifyException(e));
+    }
+  }
+
+  private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (!HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf) ||
+        SessionStateUtil.getQueryState(conf)
+            .map(QueryState::getHiveOperation)
+            .filter(opType -> HiveOperation.QUERY == opType)
+            .isPresent()) {
+      return new NoLock();
+    } else {
+      return new MetastoreLock(
+          conf,
+          new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
+          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(),
+          hmsTable.getTableName());
     }
   }
 
@@ -827,7 +846,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     hmsTable.getParameters().entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
       // translate key names between HMS and Iceberg where needed
-      String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+      String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
       properties.put(icebergKey, e.getValue());
     });
 
@@ -844,7 +863,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (serdeInfo != null) {
       serdeInfo.getParameters().entrySet().stream()
           .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
-            String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+            String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
             properties.put(icebergKey, e.getValue());
           });
     }
@@ -1112,7 +1131,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
         if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
           hmsTable.getParameters()
-              .put(hive_metastoreConstants.META_TABLE_STORAGE, HiveTableOperations.HIVE_ICEBERG_STORAGE_HANDLER);
+              .put(hive_metastoreConstants.META_TABLE_STORAGE, HMSTablePropertyHelper.HIVE_ICEBERG_STORAGE_HANDLER);
         }
       } catch (NoSuchTableException | NotFoundException ex) {
         // If the table doesn't exist, ignore throwing exception from here
