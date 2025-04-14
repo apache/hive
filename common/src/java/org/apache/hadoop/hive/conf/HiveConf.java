@@ -456,7 +456,6 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_VALIDATE_ACLS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_LOGGER.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_AM_USE_FQDN.varname);
-    llapDaemonVarsSetLocal.add(ConfVars.LLAP_OUTPUT_FORMAT_ARROW.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_PATH_CACHE_SIZE.varname);
   }
 
@@ -3488,13 +3487,6 @@ public class HiveConf extends Configuration {
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),
 
-    // For Arrow SerDe
-    HIVE_ARROW_ROOT_ALLOCATOR_LIMIT("hive.arrow.root.allocator.limit", Long.MAX_VALUE,
-        "Arrow root allocator memory size limitation in bytes."),
-    HIVE_ARROW_BATCH_ALLOCATOR_LIMIT("hive.arrow.batch.allocator.limit", 10_000_000_000L,
-        "Max bytes per arrow batch. This is a threshold, the memory is not pre-allocated."),
-    HIVE_ARROW_BATCH_SIZE("hive.arrow.batch.size", 1000, "The number of rows sent in one Arrow batch."),
-
     // For Druid storage handler
     HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY",
             new PatternSet("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND"),
@@ -4773,11 +4765,6 @@ public class HiveConf extends Configuration {
         "internal use only. When false, don't suppress fatal exceptions like\n" +
         "NullPointerException, etc so the query will fail and assure it will be noticed",
         true),
-    HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED(
-        "hive.vectorized.execution.filesink.arrow.native.enabled", false,
-        "This flag should be set to true to enable the native vectorization\n" +
-        "of queries using the Arrow SerDe and FileSink.\n" +
-        "The default value is false."),
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
         + "partition operations including but not limited to insert, such as alter, describe etc."),
@@ -5563,8 +5550,6 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_RFA,
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
-    LLAP_OUTPUT_FORMAT_ARROW("hive.llap.output.format.arrow", true,
-      "Whether LLapOutputFormatService should output arrow batches"),
     LLAP_COLLECT_LOCK_METRICS("hive.llap.lockmetrics.collect", false,
         "Whether lock metrics (wait times, counts) are collected for LLAP "
         + "related locks"),

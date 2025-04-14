@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.After;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.Ignore;
 
 /**
@@ -38,7 +37,6 @@ public class TestJdbcWithMiniLlapRow extends BaseJdbcWithMiniLlap {
   @BeforeClass
   public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
-    conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, false);
     BaseJdbcWithMiniLlap.beforeTest(conf);
   }
 
