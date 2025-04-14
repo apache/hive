@@ -169,6 +169,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggeste
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggesterFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
@@ -1624,7 +1625,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
        * recreate cluster, so that it picks up the additional traitDef
        */
       RelOptPlanner planner = createPlanner(conf, statsSource, ctx.isExplainPlan());
-      final RexBuilder rexBuilder = cluster.getRexBuilder();
+      final RexBuilder rexBuilder = new RexBuilder(new HiveTypeFactory());
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
       this.cluster = optCluster;
