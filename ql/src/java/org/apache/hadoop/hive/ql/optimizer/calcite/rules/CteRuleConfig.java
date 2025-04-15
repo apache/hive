@@ -22,7 +22,7 @@ import org.apache.calcite.rel.core.TableScan;
 import java.util.List;
 import java.util.Map;
 
-public class CteRuleConfig extends BaseMutableHiveConfig {
+public class CteRuleConfig extends HiveRuleConfig {
   public static CteRuleConfig config() {
     return new CteRuleConfig().withOperandSupplier(b -> b.operand(TableScan.class).noInputs()).as(CteRuleConfig.class);
   }

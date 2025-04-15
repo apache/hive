@@ -2074,7 +2074,7 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
           .withDescription("HiveLoptOptimizeJoinRule")
           .toRule();
 
-  public static class Config extends BaseMutableHiveConfig {
+  public static class Config extends HiveRuleConfig {
     @Override
     public HiveLoptOptimizeJoinRule toRule() {
       return new HiveLoptOptimizeJoinRule(this);

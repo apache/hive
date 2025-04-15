@@ -40,7 +40,7 @@ public class HiveRexShuttleTransformRule extends RelRule<HiveRexShuttleTransform
     }
   }
 
-  public static class Config extends BaseMutableHiveConfig {
+  public static class Config extends HiveRuleConfig {
     private Function<RexBuilder, RexShuttle> shuttleFactory;
 
     public Config withRexShuttle(Function<RexBuilder, RexShuttle> shuttleFactory) {

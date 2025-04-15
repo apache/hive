@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 import java.util.Objects;
 
-public abstract class BaseMutableHiveConfig implements RelRule.Config {
+public abstract class HiveRuleConfig implements RelRule.Config {
   private RelBuilderFactory factory = HiveRelFactories.HIVE_BUILDER;
   private String description;
   private RelRule.OperandTransform operandSupplier;

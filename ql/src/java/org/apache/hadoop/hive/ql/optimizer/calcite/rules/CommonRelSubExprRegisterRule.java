@@ -80,7 +80,7 @@ public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
     }
   }
 
-  private static class Config extends BaseMutableHiveConfig implements CommonRelSubExprRule.Config {
+  private static class Config extends HiveRuleConfig implements CommonRelSubExprRule.Config {
     @Override
     public RelOptRule toRule() {
       return new CommonRelSubExprRegisterRule(this.operandSupplier());

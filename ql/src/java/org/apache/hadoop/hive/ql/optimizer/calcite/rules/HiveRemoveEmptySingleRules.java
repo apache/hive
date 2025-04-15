@@ -90,7 +90,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
    * to
    * select null as emp.col0 ... null as emp.coln, dept.* from dept
    */
-  private static final class JoinLeftEmptyRuleConfig extends BaseMutableHiveConfig implements PruneEmptyRule.Config {
+  private static final class JoinLeftEmptyRuleConfig extends HiveRuleConfig implements PruneEmptyRule.Config {
     @Override
     public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
@@ -142,7 +142,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
    * to
    * select emp.*, null as dept.col0 ... null as dept.coln from emp
    */
-  private static final class JoinRightEmptyRuleConfig extends BaseMutableHiveConfig implements
+  private static final class JoinRightEmptyRuleConfig extends HiveRuleConfig implements
       PruneEmptyRules.JoinRightEmptyRuleConfig {
     @Override
     public PruneEmptyRule toRule() {
@@ -207,7 +207,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
       .toRule();
 
   /** Configuration for rule that prunes a correlate if left input is empty. */
-  public static class CorrelateLeftEmptyRuleConfig extends BaseMutableHiveConfig implements PruneEmptyRule.Config {
+  public static class CorrelateLeftEmptyRuleConfig extends HiveRuleConfig implements PruneEmptyRule.Config {
     @Override
     public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
@@ -224,7 +224,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
   }
 
   /** Configuration for rule that prunes a correlate if right input is empty. */
-  public static class CorrelateRightEmptyRuleConfig extends BaseMutableHiveConfig implements PruneEmptyRule.Config {
+  public static class CorrelateRightEmptyRuleConfig extends HiveRuleConfig implements PruneEmptyRule.Config {
     @Override
     public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
@@ -287,7 +287,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
   /**
    * Copy of {@link PruneEmptyRules.UnionEmptyPruneRuleConfig} but this version expects {@link Union}.
    */
-  private static final class HiveUnionEmptyPruneRuleConfig extends BaseMutableHiveConfig implements PruneEmptyRules.PruneEmptyRule.Config {
+  private static final class HiveUnionEmptyPruneRuleConfig extends HiveRuleConfig implements PruneEmptyRules.PruneEmptyRule.Config {
     @Override
     public PruneEmptyRules.PruneEmptyRule toRule() {
       return new PruneEmptyRules.PruneEmptyRule(this) {
@@ -349,11 +349,11 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     return false;
   }
 
-  private static final class RemoveEmptySingleRuleConfig extends BaseMutableHiveConfig
+  private static final class RemoveEmptySingleRuleConfig extends HiveRuleConfig
       implements RemoveEmptySingleRule.RemoveEmptySingleRuleConfig {
   }
 
-  private static final class SortFetchZeroRuleConfig extends BaseMutableHiveConfig
+  private static final class SortFetchZeroRuleConfig extends HiveRuleConfig
       implements PruneEmptyRules.SortFetchZeroRuleConfig {
   }
 

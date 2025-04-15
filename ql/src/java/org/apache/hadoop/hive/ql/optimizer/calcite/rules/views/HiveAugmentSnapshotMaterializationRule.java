@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.BaseMutableHiveConfig;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 
 import java.util.HashSet;
@@ -76,7 +76,7 @@ public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentS
             .toRule();
   }
 
-  public static class Config extends BaseMutableHiveConfig {
+  public static class Config extends HiveRuleConfig {
 
     private Map<String, SnapshotContext> mvMetaStoredSnapshot;
 
