@@ -111,8 +111,8 @@
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>16.0.0</arrow.version>
-    <avro.version>1.11.4</avro.version>
     <avatica.version>1.23.0</avatica.version>
+    <avro.version>1.11.4</avro.version>
     <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
     <calcite.version>1.33.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
