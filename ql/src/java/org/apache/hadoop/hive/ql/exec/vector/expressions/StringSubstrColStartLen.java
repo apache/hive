@@ -83,8 +83,8 @@ public class StringSubstrColStartLen extends VectorExpression {
    * @param start start offset of the byte array the string starts at
    * @param len length of the bytes the string holds in the byte array
    * @param substrStart the Start index for the substring operation
-   * @param substrLen the length of the substring
-   * @param offsetArray the array that indexes are populated to. Assume its length >= 2.
+   * @param substrLength the length of the substring
+   * @param offsetArray the array that indexes are populated to. Assume its {@literal length >= 2}.
    */
   public static void populateSubstrOffsets(byte[] utf8String, int start, int len, int substrStart,
       int substrLength, int[] offsetArray) {

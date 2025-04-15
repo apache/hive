@@ -186,7 +186,6 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
   private BytesWritable evaluateInternal(BytesWritable bw, int pos) {
     byte[] b = Arrays.copyOf(bw.getBytes(), bw.getLength());
     int offset = StringSubstrColStart.getSubstrStartOffset(b, 0, b.length, craetePos(pos));
-
     if (offset == -1) {
       return new BytesWritable();
     }
