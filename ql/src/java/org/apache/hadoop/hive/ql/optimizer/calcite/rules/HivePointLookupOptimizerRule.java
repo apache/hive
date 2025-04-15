@@ -571,10 +571,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
   /**
    * Merge IN clauses, when possible.
-   * TODO Consider dropping or rewriting this class
-   * The code in this class relies on the {@link HiveIn} operator that is no longer
-   * present during rule application so most of the code here doesn't do anything.
-   * If we want to make it useful as it is probably we need to handle the SEARCH operator.
    */
   protected static class RexMergeInClause extends RexShuttle {
     private final RexBuilder rexBuilder;

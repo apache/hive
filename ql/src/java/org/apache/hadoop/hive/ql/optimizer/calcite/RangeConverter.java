@@ -33,7 +33,6 @@ class RangeConverter<C extends Comparable<C>> implements RangeSets.Consumer<C> {
   protected final RexBuilder rexBuilder;
   protected final RelDataType type;
   protected final RexNode ref;
-  // TODO rename fields
   public final List<RexNode> inNodes;
   public final List<RexNode> nodes;
 

@@ -43,7 +43,6 @@ public class SearchTransformer<C extends Comparable<C>> {
   private final Sarg<C> sarg;
   protected final RelDataType type;
 
-  // TODO Pass the context for unknownAs
   public SearchTransformer(RexBuilder rexBuilder, RexCall search) {
     this.rexBuilder = rexBuilder;
     ref = search.getOperands().get(0);
