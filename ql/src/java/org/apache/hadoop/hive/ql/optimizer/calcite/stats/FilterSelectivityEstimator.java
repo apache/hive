@@ -105,7 +105,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity = computeConjunctionSelectivity(call);
       break;
     }
-
+    case SEARCH:
+      return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
     case OR: {
       selectivity = computeDisjunctionSelectivity(call);
       break;
@@ -158,8 +159,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity = computeBetweenPredicateSelectivity(call);
       break;
 
-    case SEARCH:
-      return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
     default:
       if (HiveIn.INSTANCE.equals(call.op)) {
         // TODO: 1) check for duplicates 2) We assume in clause values to be

@@ -151,6 +151,9 @@ public class HiveInBetweenExpandRule {
     @Override
     public RexNode visitCall(final RexCall call) {
       switch (call.getKind()) {
+      case SEARCH: {
+        return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
+      }
       case AND: {
         boolean[] update = {false};
         List<RexNode> newOperands = visitList(call.operands, update);
@@ -175,9 +178,6 @@ public class HiveInBetweenExpandRule {
           return rexBuilder.makeCall(SqlStdOperatorTable.OR, newOperands);
         }
         return rexBuilder.makeCall(SqlStdOperatorTable.AND, newOperands);
-      }
-      case SEARCH: {
-        return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
       }
       default:
         if (HiveIn.INSTANCE.equals(call.op)) {
