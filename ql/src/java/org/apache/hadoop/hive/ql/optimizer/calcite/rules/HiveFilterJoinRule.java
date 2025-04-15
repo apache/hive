@@ -43,6 +43,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 
@@ -66,6 +67,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     super(FilterIntoJoinRule.FilterIntoJoinRuleConfig.DEFAULT
         .withDescription("HiveFilterJoinRule(" + id + ")")
         .withOperandSupplier(b0 -> b0.exactly(operand))
+        .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
         .as(Config.class)
     );
   }

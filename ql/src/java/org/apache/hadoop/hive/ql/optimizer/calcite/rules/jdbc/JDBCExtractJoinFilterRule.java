@@ -40,6 +40,7 @@ public final class JDBCExtractJoinFilterRule extends AbstractJoinExtractFilterRu
       JoinExtractFilterRule.Config.DEFAULT.withOperandSupplier(b0 -> b0.operand(HiveJoin.class)
               .inputs(b1 -> b1.operand(HiveJdbcConverter.class).anyInputs(),
                   b2 -> b2.operand(HiveJdbcConverter.class).anyInputs()))
+          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
           .withDescription("JDBCExtractJoinFilterRule")
           .as(AbstractJoinExtractFilterRule.Config.class);
   public static final JDBCExtractJoinFilterRule INSTANCE = new JDBCExtractJoinFilterRule();
