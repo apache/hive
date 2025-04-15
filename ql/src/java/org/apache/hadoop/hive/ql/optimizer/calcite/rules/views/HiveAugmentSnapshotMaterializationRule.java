@@ -68,12 +68,10 @@ import static java.util.Collections.singletonList;
 public class HiveAugmentSnapshotMaterializationRule extends RelRule<HiveAugmentSnapshotMaterializationRule.Config> {
 
   public static RelOptRule with(Map<String, SnapshotContext> mvMetaStoredSnapshot) {
-    return new Config().as(HiveAugmentSnapshotMaterializationRule.Config.class)
-            .withMvMetaStoredSnapshot(mvMetaStoredSnapshot)
-            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-            .withOperandSupplier(operandBuilder -> operandBuilder.operand(TableScan.class).anyInputs())
-            .withDescription("HiveAugmentSnapshotMaterializationRule")
-            .toRule();
+    return new Config().withMvMetaStoredSnapshot(mvMetaStoredSnapshot)
+        .withOperandSupplier(operandBuilder -> operandBuilder.operand(TableScan.class).anyInputs())
+        .withDescription("HiveAugmentSnapshotMaterializationRule")
+        .toRule();
   }
 
   public static class Config extends HiveRuleConfig {

@@ -50,7 +50,6 @@ public final class HiveReduceExpressionsRule {
           .withOperandFor(HiveFilter.class)
           .withMatchNullability(false)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.Config.class)
           .toRule();
 
   /**
@@ -61,7 +60,6 @@ public final class HiveReduceExpressionsRule {
       ReduceExpressionsRule.ProjectReduceExpressionsRule.ProjectReduceExpressionsRuleConfig.DEFAULT
           .withOperandFor(HiveProject.class)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.Config.class)
           .toRule();
 
   /**
@@ -73,7 +71,6 @@ public final class HiveReduceExpressionsRule {
           .withOperandFor(HiveJoin.class)
           .withMatchNullability(false)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.Config.class)
           .toRule();
 
   /**
@@ -85,7 +82,6 @@ public final class HiveReduceExpressionsRule {
           .withOperandFor(HiveSemiJoin.class)
           .withMatchNullability(false)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.Config.class)
           .toRule();
 
 }

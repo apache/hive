@@ -128,8 +128,6 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
                             b2 -> b2.operand(Values.class).predicate(Values::isEmpty)
                                     .noInputs()))
             .withDescription("HivePruneEmptyJoin(right)")
-            .as(JoinRightEmptyRuleConfig.class)
-            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .toRule();
   }
 
@@ -193,8 +191,6 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
               b1 -> b1.operand(RelNode.class).anyInputs(),
               b2 -> b2.operand(Values.class).predicate(Values::isEmpty).noInputs()))
       .withDescription("PruneEmptyCorrelate(right)")
-      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-      .as(CorrelateRightEmptyRuleConfig.class)
       .toRule();
   public static final RelOptRule CORRELATE_LEFT_INSTANCE = new CorrelateLeftEmptyRuleConfig()
       .withOperandSupplier(b0 ->
@@ -202,8 +198,6 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
               b1 -> b1.operand(Values.class).predicate(Values::isEmpty).noInputs(),
               b2 -> b2.operand(RelNode.class).anyInputs()))
       .withDescription("PruneEmptyCorrelate(left)")
-      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-      .as(CorrelateLeftEmptyRuleConfig.class)
       .toRule();
 
   /** Configuration for rule that prunes a correlate if left input is empty. */

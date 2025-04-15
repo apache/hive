@@ -35,19 +35,16 @@ public final class HiveSearchRules {
   public static final RelOptRule PROJECT_SEARCH_EXPAND =
       new HiveRexShuttleTransformRule.Config().withRexShuttle(SearchTransformer.Shuttle::new)
           .withDescription("HiveProjectSearchExpandRule")
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
           .withOperandSupplier(o -> o.operand(HiveProject.class).anyInputs())
           .toRule();
   public static final RelOptRule FILTER_SEARCH_EXPAND =
       new HiveRexShuttleTransformRule.Config().withRexShuttle(SearchTransformer.Shuttle::new)
           .withDescription("HiveFilterSearchExpandRule")
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
           .withOperandSupplier(o -> o.operand(HiveFilter.class).anyInputs())
           .toRule();
   public static final RelOptRule JOIN_SEARCH_EXPAND =
       new HiveRexShuttleTransformRule.Config().withRexShuttle(SearchTransformer.Shuttle::new)
           .withDescription("HiveJoinSearchExpandRule")
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
           .withOperandSupplier(o -> o.operand(HiveJoin.class).anyInputs())
           .toRule();
 

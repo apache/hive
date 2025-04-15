@@ -2068,9 +2068,8 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
             joinInfo.leftSet());
   }
 
-  public static final RelOptRule INSTANCE = new Config().as(HiveLoptOptimizeJoinRule.Config.class)
-          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .withOperandSupplier(b -> b.operand(MultiJoin.class).anyInputs())
+  public static final RelOptRule INSTANCE =
+      new Config().withOperandSupplier(b -> b.operand(MultiJoin.class).anyInputs())
           .withDescription("HiveLoptOptimizeJoinRule")
           .toRule();
 

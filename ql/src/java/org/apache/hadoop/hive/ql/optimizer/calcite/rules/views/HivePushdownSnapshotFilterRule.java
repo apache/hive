@@ -61,11 +61,9 @@ import java.util.Set;
 public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshotFilterRule.Config> {
 
   public static final RelOptRule INSTANCE =
-          new Config().as(HivePushdownSnapshotFilterRule.Config.class)
-            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-            .withOperandSupplier(operandBuilder -> operandBuilder.operand(HiveFilter.class).anyInputs())
-            .withDescription("HivePushdownSnapshotFilterRule")
-            .toRule();
+      new Config().withOperandSupplier(operandBuilder -> operandBuilder.operand(HiveFilter.class).anyInputs())
+          .withDescription("HivePushdownSnapshotFilterRule")
+          .toRule();
 
   public static class Config extends HiveRuleConfig {
     @Override

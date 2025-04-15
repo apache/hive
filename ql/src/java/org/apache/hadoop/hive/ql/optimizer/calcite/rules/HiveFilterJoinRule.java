@@ -40,11 +40,9 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 
@@ -64,11 +62,10 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   /**
    * Creates a PushFilterPastJoinRule with an explicit root operand.
    */
-  protected HiveFilterJoinRule(RelOptRuleOperand operand, String id, RelBuilderFactory relBuilderFactory){
+  protected HiveFilterJoinRule(RelOptRuleOperand operand, String id){
     super(FilterIntoJoinRule.FilterIntoJoinRuleConfig.DEFAULT
         .withDescription("HiveFilterJoinRule(" + id + ")")
         .withOperandSupplier(b0 -> b0.exactly(operand))
-        .withRelBuilderFactory(relBuilderFactory)
         .as(Config.class)
     );
   }
@@ -100,7 +97,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   public static class HiveFilterJoinMergeRule extends HiveFilterJoinRule {
     public HiveFilterJoinMergeRule() {
       super(operand(Filter.class, operand(Join.class, any())),
-          HiveFilterJoinMergeRule.class.getSimpleName(), HiveRelFactories.HIVE_BUILDER);
+          HiveFilterJoinMergeRule.class.getSimpleName());
     }
 
     @Override
@@ -123,7 +120,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   public static class HiveFilterJoinTransposeRule extends HiveFilterJoinRule {
     public HiveFilterJoinTransposeRule() {
       super(RelOptRule.operand(Join.class, RelOptRule.any()),
-          HiveFilterJoinTransposeRule.class.getSimpleName(), HiveRelFactories.HIVE_BUILDER);
+          HiveFilterJoinTransposeRule.class.getSimpleName());
     }
 
     @Override
