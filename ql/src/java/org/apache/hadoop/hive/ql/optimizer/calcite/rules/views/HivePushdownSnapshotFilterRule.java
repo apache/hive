@@ -32,7 +32,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -81,11 +81,8 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
   @Override
   public void onMatch(RelOptRuleCall call) {
     HiveFilter filter = call.rel(0);
-    RelNode newFilter =
-        filter.accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
-    if (!newFilter.equals(filter)) {
-      call.transformTo(newFilter);
-    }
+    RexNode newCondition = filter.getCondition().accept(new SnapshotIdShuttle(call.builder().getRexBuilder(), call.getMetadataQuery(), filter));
+    call.transformTo(call.builder().push(filter.getInput()).filter(newCondition).build());
   }
 
   static class SnapshotIdShuttle extends RexShuttle {
@@ -117,7 +114,7 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
       }
 
       RexLiteral literal = (RexLiteral) op1;
-      if (literal.getType().getSqlTypeName().getFamily() != SqlTypeFamily.NUMERIC) {
+      if (literal.getTypeName() != SqlTypeName.DECIMAL) {
         return false;
       }
 
