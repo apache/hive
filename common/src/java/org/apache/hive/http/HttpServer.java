@@ -844,9 +844,9 @@ public class HttpServer {
     LoggerContext context = (LoggerContext)LogManager.getContext(false);
     for (Logger logger: context.getLoggers()) {
       for (Appender appender: logger.getAppenders().values()) {
-        if (appender instanceof AbstractOutputStreamAppender streamAppender) {
+        if (appender instanceof AbstractOutputStreamAppender outputAppender) {
           OutputStreamManager manager =
-            streamAppender.getManager();
+            outputAppender.getManager();
           if (manager instanceof FileManager fileManager) {
             String fileName = fileManager.getFileName();
             if (fileName != null) {
