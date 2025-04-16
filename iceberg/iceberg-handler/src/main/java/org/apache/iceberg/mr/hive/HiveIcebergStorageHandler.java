@@ -2154,9 +2154,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
-    boolean isTimeTravel = snapshot != null && table.currentSnapshot() != null &&
-        snapshot.snapshotId() != table.currentSnapshot().snapshotId();
-    if (isTimeTravel && hasUndergonePartitionEvolution(hmsTable)) {
+
+    boolean isTimeTravel = snapshot != null && !snapshot.equals(table.currentSnapshot());
+    if (isTimeTravel && hasUndergonePartitionEvolution(table)) {
       return false;
     }
     return table.spec().isPartitioned();
