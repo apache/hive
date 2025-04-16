@@ -146,7 +146,8 @@ public class TableName implements Serializable {
    */
   public String getNotEmptyDbTable() {
     String metaRefName = tableMetaRef == null ? "" : "." + tableMetaRef;
-    return db == null || db.trim().isEmpty() ? table : db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table + metaRefName;
+    return db == null || db.trim().isEmpty() ? table : cat + DatabaseName.CAT_DB_TABLE_SEPARATOR +
+        db + DatabaseName.CAT_DB_TABLE_SEPARATOR + table + metaRefName;
   }
 
   /**

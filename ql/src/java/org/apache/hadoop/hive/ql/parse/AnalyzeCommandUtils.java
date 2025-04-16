@@ -48,7 +48,7 @@ public final class AnalyzeCommandUtils {
   public static Table getTable(ASTNode tree, BaseSemanticAnalyzer sa) throws SemanticException {
     String tableName = ColumnStatsSemanticAnalyzer.getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
     String currentDb = SessionState.get().getCurrentDatabase();
-    String [] names = Utilities.getDbTableName(currentDb, tableName);
+    String [] names = Utilities.getDbTableName(SessionState.get().getCurrentCatalog(), currentDb, tableName);
     return sa.getTable(names[0], names[1], true);
   }
 
