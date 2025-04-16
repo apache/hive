@@ -270,7 +270,6 @@ public class RexNodeConverter {
           // except complex types
           // Rewrite to OR is done only if number of operands are less than
           // the threshold configured
-          // TODO Is this rewrite unconditional?
           childRexNodeLst = rewriteInClauseChildren(calciteOp, childRexNodeLst, rexBuilder);
           calciteOp = SqlStdOperatorTable.OR;
         }

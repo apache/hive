@@ -273,9 +273,6 @@ public class HiveFunctionHelper implements FunctionHelper {
         // transform from IN [A,B,C] => OR [EQUALS [A,B], EQUALS [A,C]]
         // Rewrite to OR is done only if number of operands are less than
         // the threshold configured
-        // TODO Consider dropping the IN to OR transformation logic
-        // The code here does somewhat the opposite of what RexSimplify does.
-        // Going back and forth is probably a waste of CPU resources
         boolean rewriteToOr = true;
         if(maxNodesForInToOrTransformation != 0) {
           if(inputs.size() > maxNodesForInToOrTransformation) {
@@ -293,7 +290,6 @@ public class HiveFunctionHelper implements FunctionHelper {
             calciteOp = SqlStdOperatorTable.OR;
           }
         }
-        // TODO Consider creating directly a SEARCH operator here
       } else if (calciteOp.getKind() == SqlKind.COALESCE &&
           inputs.size() > 1) {
         // Rewrite COALESCE as a CASE
