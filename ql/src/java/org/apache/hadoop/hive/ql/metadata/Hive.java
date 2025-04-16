@@ -1706,7 +1706,7 @@ public class Hive implements AutoCloseable {
    */
   public Table getTable(final String dbName, final String tableName, boolean throwException, boolean checkTransactional)
       throws HiveException {
-    return getTable(dbName, tableName, null, throwException, checkTransactional, false);
+    return getTable(null, dbName, tableName, null, throwException, checkTransactional, false);
   }
 
   /**
@@ -1728,7 +1728,7 @@ public class Hive implements AutoCloseable {
    */
   public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional) throws HiveException {
-    return getTable(dbName, tableName, tableMetaRef, throwException, checkTransactional, false);
+    return getTable(null, dbName, tableName, tableMetaRef, throwException, checkTransactional, false);
   }
 
   /**
@@ -1750,8 +1750,8 @@ public class Hive implements AutoCloseable {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
-                        boolean checkTransactional, boolean getColumnStats) throws HiveException {
+  public Table getTable(final String catalogName, final String dbName, final String tableName, String tableMetaRef,
+                        boolean throwException, boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
     if (tableName == null || tableName.equals("")) {
       throw new HiveException("empty table creation??");
@@ -1762,7 +1762,7 @@ public class Hive implements AutoCloseable {
     try {
       // Note: this is currently called w/true from StatsOptimizer only.
       GetTableRequest request = new GetTableRequest(dbName, tableName);
-      request.setCatName(getDefaultCatalog(conf));
+      request.setCatName(catalogName != null ? catalogName : getDefaultCatalog(conf));
       request.setGetColumnStats(getColumnStats);
       request.setEngine(Constants.HIVE_ENGINE);
       if (checkTransactional) {
