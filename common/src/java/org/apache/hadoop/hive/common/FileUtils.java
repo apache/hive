@@ -1007,10 +1007,8 @@ public final class FileUtils {
     // If destPath directory exists, rename call will move the sourcePath
     // into destPath without failing. So check it before renaming.
     if (fs.exists(destPath)) {
-      throw new IOException("""
-          Cannot rename the source path. The destination \
-          path already exists.\
-          """);
+      throw new IOException("Cannot rename the source path. The destination "
+              + "path already exists.");
     }
     return fs.rename(sourcePath, destPath);
   }

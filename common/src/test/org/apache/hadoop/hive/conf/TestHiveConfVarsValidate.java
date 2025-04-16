@@ -69,10 +69,8 @@ public class TestHiveConfVarsValidate {
     list.add(new Object[] { HIVE_DATETIME_RESOLVER_STYLE, "smart", null});
     list.add(new Object[] { HIVE_DATETIME_RESOLVER_STYLE, "strict", null});
     list.add(new Object[] { HIVE_DATETIME_RESOLVER_STYLE, "lenient", null});
-    list.add(new Object[] { HIVE_DATETIME_RESOLVER_STYLE, "OTHER", """
-        Invalid value.. expects one of [smart, strict, \
-        lenient]\
-        """ });
+    list.add(new Object[] { HIVE_DATETIME_RESOLVER_STYLE, "OTHER", "Invalid value.. expects one of [smart, strict, " +
+            "lenient]" });
     return list;
   }
 
