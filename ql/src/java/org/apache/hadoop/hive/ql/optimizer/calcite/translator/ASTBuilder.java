@@ -81,6 +81,7 @@ public class ASTBuilder {
       return cte(hTbl.getHiveTableMD().getTableName(), hts.getTableAlias());
     }
     ASTBuilder tableNameBuilder = ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
+        .add(HiveParser.Identifier, hTbl.getHiveTableMD().getCatName())
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
         .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
     if (hTbl.getHiveTableMD().getMetaTable() != null) {

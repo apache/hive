@@ -170,7 +170,7 @@ public class Table implements Serializable {
     // performance. Since those fields are null/cache-check by their accessors
     // anyway, that's not a concern.
   }
-
+  // TODO add catalog after calling this constructor
   public Table(String databaseName, String tableName) {
     this(getEmptyTable(databaseName, tableName));
   }
@@ -926,6 +926,10 @@ public class Table implements Serializable {
 
   public void setDbName(String databaseName) {
     tTable.setDbName(databaseName);
+  }
+
+  public void setCatName(String catName) {
+    tTable.setCatName(catName);
   }
 
   public List<FieldSchema> getPartitionKeys() {

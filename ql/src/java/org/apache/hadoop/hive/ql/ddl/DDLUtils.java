@@ -195,6 +195,7 @@ public final class DDLUtils {
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
     Table table = new Table(tableName.getDb(), tableName.getTable());
+    table.setCatName(tableName.getCat());
     table.setParameters(properties);
     table.setTableType(type);
     table.setTemporary(isTemporary);
