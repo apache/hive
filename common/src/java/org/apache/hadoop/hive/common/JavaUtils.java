@@ -70,7 +70,7 @@ public final class JavaUtils {
       try {
         closeClassLoader(current);
       } catch (IOException e) {
-        String detailedMessage = current instanceof URLClassLoader urlcl ?
+        String detailedMessage = (current instanceof URLClassLoader urlcl) ?
             Arrays.toString(urlcl.getURLs()) :
             "";
         LOG.info("Failed to close class loader " + current + " " + detailedMessage, e);
