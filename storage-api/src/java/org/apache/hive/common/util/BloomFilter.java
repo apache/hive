@@ -331,19 +331,18 @@ public class BloomFilter {
    * for index bounds nor expand the bit set size if the specified index is greater than the size.
    */
   static class BitSet {
-    private long[] data;
+    private final long[] data;
 
-    public BitSet() {}
-
+    private BitSet(long[] data) {
+      this.data = data;
+    }
     public static BitSet build(long bits) {
       return build(new long[(int) Math.ceil((double) bits / (double) Long.SIZE)]);
     }
 
     public static BitSet build(long[] data) {
-      BitSet bs = new BitSet();
       assert data.length > 0 : "data length is zero!";
-      bs.data = data;
-      return bs;
+      return new BitSet(data);
     }
 
     /**

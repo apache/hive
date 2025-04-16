@@ -60,7 +60,7 @@ public class BloomKFilter {
     }
   }
 
-  public BloomKFilter(int k, long m, int totalBlockCount, long[] arr) {
+  private BloomKFilter(int k, long m, int totalBlockCount, long[] arr) {
     this.k = k;
     this.m = m;
     this.bitSet = BitSet.build(arr);
@@ -410,14 +410,14 @@ public class BloomKFilter {
    * for index bounds nor expand the bit set size if the specified index is greater than the size.
    */
   public static class BitSet {
-    private long[] data;
+    private final long[] data;
 
-    public BitSet() {}
+    private BitSet(long[] data) {
+      this.data = data;
+    }
     public static BitSet build(long[] data) {
       assert data.length > 0 : "data length is zero!";
-      BitSet bs = new BitSet();
-      bs.data = data;
-      return bs;
+      return new BitSet(data);
     }
 
     /**
