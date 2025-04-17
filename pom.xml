@@ -207,8 +207,8 @@
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.10.4</snappy.version>
-    <jersey-wadl-doclet.version>4.0.0-M1</jersey-wadl-doclet.version>
-    <jaxb-runtime.version>4.0.0-M1</jaxb-runtime.version>
+    <jersey-wadl-doclet.version>4.0.0-M2</jersey-wadl-doclet.version>
+    <jaxb-runtime.version>4.0.0-M2</jaxb-runtime.version>
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
     <xmlsec.version>2.3.4</xmlsec.version>
