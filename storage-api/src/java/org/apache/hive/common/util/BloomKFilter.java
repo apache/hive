@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.BitSet;
 
 import org.apache.hadoop.io.IOUtils;
 
@@ -96,7 +95,7 @@ public class BloomKFilter {
   }
   public static BloomKFilter build(long[] bits, int numFuncs) {
     checkArgument((bits.length % DEFAULT_BLOCK_SIZE) == 0, "bitSet has to be block aligned");
-    return new BloomKFilter(bits,numFuncs);
+    return new BloomKFilter(bits, numFuncs);
   }
   static int optimalNumOfHashFunctions(long n, long m) {
     return Math.max(1, (int) Math.round((double) m / n * Math.log(2)));
