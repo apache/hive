@@ -81,9 +81,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> TableFilterContext.getOutputHObjs()");
-    }
+    LOG.debug("==> TableFilterContext.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret = new ArrayList<>();
 
@@ -101,9 +99,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
       }
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== TableFilterContext.getOutputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== TableFilterContext.getOutputHObjs(): ret=" + ret);
 
     return ret;
   }
