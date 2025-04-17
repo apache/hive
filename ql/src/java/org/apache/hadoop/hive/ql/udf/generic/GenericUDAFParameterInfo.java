@@ -23,24 +23,24 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
- * A callback interface used in conjunction with <tt>GenericUDAFResolver2</tt>
+ * A callback interface used in conjunction with <pre>GenericUDAFResolver2</pre>
  * interface that allows for a more extensible and flexible means of
  * discovering the parameter types provided for UDAF invocation. Apart from
- * allowing the function implementation to discover the <tt>TypeInfo</tt> of
+ * allowing the function implementation to discover the <pre>TypeInfo</pre> of
  * any types provided in the invocation, this also allows the implementation
- * to determine if the parameters were qualified using <tt>DISTINCT</tt>. If
+ * to determine if the parameters were qualified using <pre>DISTINCT</pre>. If
  * no parameters were specified explicitly, it allows the function
  * implementation to test if the invocation used the wildcard syntax
- * such as <tt>FUNCTION(*)</tt>.
+ * such as <pre>FUNCTION(*)</pre>.
  * <p>
  * <b>Note:</b> The implementation of function does not have to handle the
- * actual <tt>DISTINCT</tt> or wildcard implementation. This information is
+ * actual <pre>DISTINCT</pre> or wildcard implementation. This information is
  * provided only to allow the function implementation to accept or reject
- * such invocations. For example - the implementation of <tt>COUNT</tt> UDAF
- * requires that the <tt>DISTINCT</tt> qualifier be supplied when more than
+ * such invocations. For example - the implementation of <pre>COUNT</pre> UDAF
+ * requires that the <pre>DISTINCT</pre> qualifier be supplied when more than
  * one parameters are specified in the invocation. The actual filtering of
- * data bound to parameter types for <tt>DISTINCT</tt> implementation is
- * handled by the framework and not the <tt>COUNT</tt> UDAF implementation.
+ * data bound to parameter types for <pre>DISTINCT</pre> implementation is
+ * handled by the framework and not the <pre>COUNT</pre> UDAF implementation.
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
@@ -60,30 +60,30 @@ public interface GenericUDAFParameterInfo {
   ObjectInspector[] getParameterObjectInspectors();
 
   /**
-   * Returns <tt>true</tt> if the UDAF invocation was qualified with
-   * <tt>DISTINCT</tt> keyword. Note that this is provided for informational
+   * Returns <pre>true</pre> if the UDAF invocation was qualified with
+   * <pre>DISTINCT</pre> keyword. Note that this is provided for informational
    * purposes only and the function implementation is not expected to ensure
    * the distinct property for the parameter values. That is handled by the
    * framework.
-   * @return <tt>true</tt> if the UDAF invocation was qualified with
-   * <tt>DISTINCT</tt> keyword, <tt>false</tt> otherwise.
+   * @return <pre>true</pre> if the UDAF invocation was qualified with
+   * <pre>DISTINCT</pre> keyword, <pre>false</pre> otherwise.
    */
   boolean isDistinct();
 
   /**
    * The flag to indicate if the UDAF invocation was from the windowing function
    * call or not.
-   * @return <tt>true</tt> if the UDAF invocation was from the windowing function
+   * @return <pre>true</pre> if the UDAF invocation was from the windowing function
    * call.
    */
   boolean isWindowing();
   /**
-   * Returns <tt>true</tt> if the UDAF invocation was done via the wildcard
-   * syntax <tt>FUNCTION(*)</tt>. Note that this is provided for informational
+   * Returns <pre>true</pre> if the UDAF invocation was done via the wildcard
+   * syntax <pre>FUNCTION(*)</pre>. Note that this is provided for informational
    * purposes only and the function implementation is not expected to ensure
    * the wildcard handling of the target relation. That is handled by the
    * framework.
-   * @return <tt>true</tt> if the UDAF invocation was done with a wildcard
+   * @return <pre>true</pre> if the UDAF invocation was done with a wildcard
    * instead of explicit parameter list.
    */
   boolean isAllColumns();
