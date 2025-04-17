@@ -3775,7 +3775,8 @@ public interface IMetaStoreClient extends AutoCloseable {
   void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
-    IncompatibleMetastoreException(String message) {
+    // SG:FIXME
+    public IncompatibleMetastoreException(String message) {
       super(message);
     }
   }
