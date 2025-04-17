@@ -133,10 +133,9 @@ public class ReflectionUtil {
   public static void setField(Object object, String field, Object value) {
     try {
       Field fieldToChange = object.getClass().getDeclaredField(field);
-      fieldToChange.setAccessible(true);
-      fieldToChange.set(object, value);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException("Cannot set field %s in object %s".formatted(field, object.getClass()));
+      setField(object, fieldToChange, value);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException("Cannot find field %s in object %s".formatted(field, object.getClass()));
     }
   }
 
