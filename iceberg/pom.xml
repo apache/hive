@@ -28,7 +28,7 @@
     <!-- Upgrade roaringbit version in parent pom.xml whenever upgrading iceberg version -->
     <iceberg.version>1.6.1</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
-    <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
+    <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.4</iceberg.avro.version>
     <iceberg.checkstyle.plugin.version>3.5.0</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
