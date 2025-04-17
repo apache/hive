@@ -92,8 +92,7 @@ public class RetryUtilities {
         try {
           return execute(size);
         } catch (Exception ex) {
-          LOG.warn("Exception thrown while processing using a batch size %d".formatted(size),
-              ex);
+          LOG.warn("Exception thrown while processing using a batch size {}", size, ex);
         } finally {
           attempt++;
           if (attempt == maxRetries) {

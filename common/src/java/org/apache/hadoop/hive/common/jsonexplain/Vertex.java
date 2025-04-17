@@ -177,9 +177,8 @@ public final class Vertex implements Comparable<Vertex>{
               }
             } else if (childrenObj instanceof JSONArray nArray) {
               if (nArray.length() != 0) {
-                JSONArray array =nArray;
-                for (int index = 0; index < array.length(); index++) {
-                  children.add(extractOp(array.getJSONObject(index), op));
+                for (int index = 0; index < nArray.length(); index++) {
+                  children.add(extractOp(nArray.getJSONObject(index), op));
                 }
               }
             } else {
