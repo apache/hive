@@ -31,9 +31,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.thrift.TException;
+import org.mockito.ArgumentMatchers;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyListOf;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -54,7 +54,7 @@ public class TestTableIterable  {
     // create a mocked metastore client that returns 3 table objects every time it is called
     // will use same size for TableIterable batch fetch size
     List<Table> threeTables = Arrays.asList(new Table(), new Table(), new Table());
-    when(msc.getTableObjectsByName(anyString(), anyListOf(String.class))).thenReturn(threeTables);
+    when(msc.getTableObjectsByName(anyString(), ArgumentMatchers.<String>anyList())).thenReturn(threeTables);
 
     List<String> tableNames = Arrays.asList("a", "b", "c", "d", "e", "f");
     TableIterable tIterable = new TableIterable(msc, "dummy", tableNames,

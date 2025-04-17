@@ -184,8 +184,8 @@
     <opencsv.version>5.9</opencsv.version>
     <orc.version>1.9.4</orc.version>
     <otel.version>1.42.0</otel.version>
-    <mockito-core.version>5.0.0</mockito-core.version>
-    <mockito-inline.version>5.0.0</mockito-inline.version>
+    <mockito-core.version>5.17.0</mockito-core.version>
+    <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.116.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
