@@ -49,8 +49,8 @@ public class BloomFilter {
   public BloomFilter() {
   }
 
-  public BloomFilter(long expectedEntries) {
-    this(expectedEntries, DEFAULT_FPP);
+  public static BloomFilter build(long expectedEntries) {
+    return build(expectedEntries, DEFAULT_FPP);
   }
 
   static void checkArgument(boolean expression, String message) {
@@ -59,14 +59,16 @@ public class BloomFilter {
     }
   }
 
-  public BloomFilter(long expectedEntries, double fpp) {
+  public static BloomFilter build(long expectedEntries, double fpp) {
     checkArgument(expectedEntries > 0, "expectedEntries should be > 0");
     checkArgument(fpp > 0.0 && fpp < 1.0, "False positive probability should be > 0.0 & < 1.0");
+    BloomFilter bloomFilter = new BloomFilter();
     int nb = optimalNumOfBits(expectedEntries, fpp);
     // make 'm' multiple of 64
-    this.numBits = nb + (Long.SIZE - (nb % Long.SIZE));
-    this.numHashFunctions = optimalNumOfHashFunctions(expectedEntries, numBits);
-    this.bitSet = new BitSet(numBits);
+    bloomFilter.numBits = nb + (Long.SIZE - (nb % Long.SIZE));
+    bloomFilter.numHashFunctions = optimalNumOfHashFunctions(expectedEntries, bloomFilter.numBits);
+    bloomFilter.bitSet = BitSet.build(bloomFilter.numBits);
+    return bloomFilter;
   }
 
   /**
@@ -77,7 +79,7 @@ public class BloomFilter {
   public BloomFilter(long[] bits, int numFuncs) {
     super();
     // input long[] is set as such without copying, so any modification to the source will affect bloom filter
-    this.bitSet = new BitSet(bits);
+    this.bitSet = BitSet.build(bits);
     this.numBits = bits.length * Long.SIZE;
     this.numHashFunctions = numFuncs;
   }
@@ -331,18 +333,16 @@ public class BloomFilter {
   static class BitSet {
     private final long[] data;
 
-    public BitSet(long bits) {
-      this(new long[(int) Math.ceil((double) bits / (double) Long.SIZE)]);
+    private BitSet(long[] data) {
+      this.data = data;
+    }
+    public static BitSet build(long bits) {
+      return build(new long[(int) Math.ceil((double) bits / (double) Long.SIZE)]);
     }
 
-    /**
-     * Deserialize long array as bit set.
-     *
-     * @param data - bit array
-     */
-    public BitSet(long[] data) {
+    public static BitSet build(long[] data) {
       assert data.length > 0 : "data length is zero!";
-      this.data = data;
+      return new BitSet(data);
     }
 
     /**

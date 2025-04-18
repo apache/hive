@@ -813,7 +813,7 @@ public class MRCompactor implements Compactor {
       AcidInputFormat<WritableComparable, V> aif =
           instantiate(AcidInputFormat.class, jobConf.get(INPUT_FORMAT_CLASS_NAME));
       ValidWriteIdList writeIdList =
-          new ValidCompactorWriteIdList(jobConf.get(ValidWriteIdList.VALID_WRITEIDS_KEY));
+          ValidCompactorWriteIdList.fromValue(jobConf.get(ValidWriteIdList.VALID_WRITEIDS_KEY));
 
       boolean isMajor = jobConf.getBoolean(IS_MAJOR, false);
       AcidInputFormat.RawReader<V> reader =

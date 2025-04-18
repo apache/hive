@@ -66,8 +66,10 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     this.highWatermark = highWatermark;
   }
 
-  public ValidReaderWriteIdList(String value) {
-    readFromString(value);
+  public static ValidReaderWriteIdList fromValue(String value) {
+    ValidReaderWriteIdList rdWrtList = new ValidReaderWriteIdList();
+    rdWrtList.readFromString(value);
+    return rdWrtList;
   }
 
   @Override

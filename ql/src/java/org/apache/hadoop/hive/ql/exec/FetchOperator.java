@@ -486,7 +486,7 @@ public class FetchOperator implements Serializable {
     if (currDesc.getTableName() == null || !org.apache.commons.lang3.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       LOG.debug("FetchOperator get writeIdStr: " + txnString);
-      return txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      return txnString == null ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
     }
     return null;  // not fetching from a table directly but from a temp location
   }

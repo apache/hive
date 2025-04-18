@@ -485,7 +485,7 @@ public class CompactorUtil {
 
   private static ValidWriteIdList resolveValidWriteIds(Table t, TxnStore txnHandler, HiveConf conf)
       throws NoSuchTxnException, MetaException {
-    ValidTxnList validTxnList = new ValidReadTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+    ValidTxnList validTxnList = ValidReadTxnList.fromValue(conf.get(ValidTxnList.VALID_TXNS_KEY));
     // The response will have one entry per table and hence we get only one ValidWriteIdList
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
     GetValidWriteIdsRequest validWriteIdsRequest =

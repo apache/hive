@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,10 +62,12 @@ public class EncodedColumnBatch<BatchKey> {
       return i;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Intended")
     public List<MemoryBuffer> getCacheBuffers() {
       return cacheBuffers;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Intended")
     public void setCacheBuffers(List<MemoryBuffer> cacheBuffers) {
       this.cacheBuffers = cacheBuffers;
     }

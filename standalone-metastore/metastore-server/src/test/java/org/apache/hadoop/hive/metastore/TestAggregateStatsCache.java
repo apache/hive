@@ -248,7 +248,7 @@ public class TestAggregateStatsCache {
    */
   private BloomFilter prepareBloomFilter(List <String> partNames) {
     BloomFilter bloomFilter =
-        new BloomFilter(MAX_PARTITIONS_PER_CACHE_NODE, FALSE_POSITIVE_PROBABILITY);
+        BloomFilter.build(MAX_PARTITIONS_PER_CACHE_NODE, FALSE_POSITIVE_PROBABILITY);
     for (String partName: partNames) {
       bloomFilter.add(partName.getBytes());
     }
