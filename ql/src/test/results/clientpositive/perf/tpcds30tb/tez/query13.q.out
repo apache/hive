@@ -15,16 +15,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
-                  filterExpr: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_store_sk is not null and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 100) or (ss_net_profit <= 200) or (ss_net_profit >= 150) or (ss_net_profit <= 300) or (ss_net_profit >= 50) or (ss_net_profit <= 250))) (type: boolean)
+                  filterExpr: (ss_net_profit is not null and ss_sales_price is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_store_sk is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_89_container, bigKeyColName:ss_hdemo_sk, smallTablePos:1, keyRatio:7.945618813963477E-8
                   Statistics: Num rows: 82510879939 Data size: 39653754183252 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_store_sk is not null and ((ss_sales_price >= 100) or (ss_sales_price <= 150) or (ss_sales_price >= 50) or (ss_sales_price <= 100) or (ss_sales_price >= 150) or (ss_sales_price <= 200)) and ((ss_net_profit >= 100) or (ss_net_profit <= 200) or (ss_net_profit >= 150) or (ss_net_profit <= 300) or (ss_net_profit >= 50) or (ss_net_profit <= 250))) (type: boolean)
-                    Statistics: Num rows: 75000207877 Data size: 36044213915176 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (ss_net_profit is not null and ss_sales_price is not null and ss_cdemo_sk is not null and ss_addr_sk is not null and ss_hdemo_sk is not null and ss_store_sk is not null) (type: boolean)
+                    Statistics: Num rows: 71506977209 Data size: 34365408522320 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_cdemo_sk (type: bigint), ss_hdemo_sk (type: bigint), ss_addr_sk (type: bigint), ss_quantity (type: int), ss_ext_sales_price (type: decimal(7,2)), ss_ext_wholesale_cost (type: decimal(7,2)), ss_sold_date_sk (type: bigint), ss_net_profit BETWEEN 100 AND 200 (type: boolean), ss_net_profit BETWEEN 150 AND 300 (type: boolean), ss_net_profit BETWEEN 50 AND 250 (type: boolean), ss_sales_price BETWEEN 100 AND 150 (type: boolean), ss_sales_price BETWEEN 50 AND 100 (type: boolean), ss_sales_price BETWEEN 150 AND 200 (type: boolean)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                      Statistics: Num rows: 75000207877 Data size: 20854196630752 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 71506977209 Data size: 19882885733240 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -34,7 +34,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col7, _col8, _col9, _col10, _col11, _col12
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 15073766151 Data size: 3714497051360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 14371686201 Data size: 3541489597360 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -44,10 +44,10 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col3, _col4, _col5, _col7, _col8, _col9, _col10, _col11, _col12, _col15, _col16, _col17
                           input vertices:
                             1 Map 4
-                          Statistics: Num rows: 1279848314 Data size: 46074539548 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1220237740 Data size: 43928558884 Basic stats: COMPLETE Column stats: COMPLETE
                           Filter Operator
                             predicate: ((_col15 and _col7) or (_col16 and _col8) or (_col17 and _col9)) (type: boolean)
-                            Statistics: Num rows: 959886234 Data size: 34555904668 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 915178305 Data size: 32946419224 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
                                    Inner Join 0 to 1
@@ -57,7 +57,7 @@ STAGE PLANS:
                               outputColumnNames: _col0, _col3, _col4, _col5, _col10, _col11, _col12, _col19, _col20
                               input vertices:
                                 1 Map 5
-                              Statistics: Num rows: 191977250 Data size: 3839545236 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 183035664 Data size: 3660713516 Basic stats: COMPLETE Column stats: COMPLETE
                               Map Join Operator
                                 condition map:
                                      Inner Join 0 to 1
@@ -67,14 +67,14 @@ STAGE PLANS:
                                 outputColumnNames: _col3, _col4, _col5, _col10, _col11, _col12, _col19, _col20, _col22, _col23, _col24, _col25, _col26, _col27
                                 input vertices:
                                   1 Map 6
-                                Statistics: Num rows: 49365582 Data size: 2172085836 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 47066317 Data size: 2070918176 Basic stats: COMPLETE Column stats: COMPLETE
                                 Filter Operator
                                   predicate: ((_col22 and _col23 and _col10 and _col19) or (_col24 and _col25 and _col11 and _col20) or (_col26 and _col27 and _col12 and _col20)) (type: boolean)
-                                  Statistics: Num rows: 9256044 Data size: 407266164 Basic stats: COMPLETE Column stats: COMPLETE
+                                  Statistics: Num rows: 8824932 Data size: 388297236 Basic stats: COMPLETE Column stats: COMPLETE
                                   Select Operator
                                     expressions: _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
                                     outputColumnNames: _col3, _col4, _col5
-                                    Statistics: Num rows: 9256044 Data size: 407266164 Basic stats: COMPLETE Column stats: COMPLETE
+                                    Statistics: Num rows: 8824932 Data size: 388297236 Basic stats: COMPLETE Column stats: COMPLETE
                                     Group By Operator
                                       aggregations: sum(_col3), count(_col3), sum(_col4), count(_col4), sum(_col5), count(_col5)
                                       minReductionHashAggr: 0.99
@@ -129,13 +129,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
-                  filterExpr: ((ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and (ca_country = 'United States')) (type: boolean)
+                  filterExpr: ((ca_state) IN ('GA', 'IN', 'KY', 'MO', 'MT', 'NM', 'OR', 'WI', 'WV') and (ca_country = 'United States')) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 7640000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and (ca_country = 'United States')) (type: boolean)
+                    predicate: ((ca_state) IN ('GA', 'IN', 'KY', 'MO', 'MT', 'NM', 'OR', 'WI', 'WV') and (ca_country = 'United States')) (type: boolean)
                     Statistics: Num rows: 3396227 Data size: 648679357 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: ca_address_sk (type: bigint), (ca_state) IN ('KY', 'GA', 'NM') (type: boolean), (ca_state) IN ('MT', 'OR', 'IN') (type: boolean), (ca_state) IN ('WI', 'MO', 'WV') (type: boolean)
+                      expressions: ca_address_sk (type: bigint), (ca_state) IN ('GA', 'KY', 'NM') (type: boolean), (ca_state) IN ('IN', 'MT', 'OR') (type: boolean), (ca_state) IN ('MO', 'WI', 'WV') (type: boolean)
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 3396227 Data size: 67924540 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
@@ -151,10 +151,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
-                  filterExpr: (hd_dep_count) IN (3, 1) (type: boolean)
+                  filterExpr: (hd_dep_count) IN (1, 3) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 86400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (hd_dep_count) IN (3, 1) (type: boolean)
+                    predicate: (hd_dep_count) IN (1, 3) (type: boolean)
                     Statistics: Num rows: 1440 Data size: 17280 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hd_demo_sk (type: bigint), (hd_dep_count = 3) (type: boolean), (hd_dep_count = 1) (type: boolean)
@@ -173,10 +173,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_demographics
-                  filterExpr: ((cd_marital_status) IN ('M', 'D', 'U') and (cd_education_status) IN ('4 yr Degree         ', 'Primary             ', 'Advanced Degree     ')) (type: boolean)
+                  filterExpr: ((cd_marital_status) IN ('D', 'M', 'U') and (cd_education_status) IN ('4 yr Degree         ', 'Advanced Degree     ', 'Primary             ')) (type: boolean)
                   Statistics: Num rows: 1920800 Data size: 359189600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cd_marital_status) IN ('M', 'D', 'U') and (cd_education_status) IN ('4 yr Degree         ', 'Primary             ', 'Advanced Degree     ')) (type: boolean)
+                    predicate: ((cd_marital_status) IN ('D', 'M', 'U') and (cd_education_status) IN ('4 yr Degree         ', 'Advanced Degree     ', 'Primary             ')) (type: boolean)
                     Statistics: Num rows: 493920 Data size: 92363040 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cd_demo_sk (type: bigint), (cd_marital_status = 'M') (type: boolean), (cd_education_status = '4 yr Degree         ') (type: boolean), (cd_marital_status = 'D') (type: boolean), (cd_education_status = 'Primary             ') (type: boolean), (cd_marital_status = 'U') (type: boolean), (cd_education_status = 'Advanced Degree     ') (type: boolean)

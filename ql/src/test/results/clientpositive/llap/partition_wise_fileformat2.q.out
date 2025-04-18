@@ -98,6 +98,31 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
+238	val_238	102
+		102
+311	val_311	102
+	val_27	102
+	val_165	102
+	val_409	102
+255	val_255	102
+278	val_278	102
+98	val_98	102
+	val_484	102
+	val_265	102
+	val_193	102
+401	val_401	102
+150	val_150	102
+273	val_273	102
+224		102
+369		102
+66	val_66	102
+128		102
+213	val_213	102
+146	val_146	102
+406	val_406	102
+		102
+		102
+		102
 238	val_238	100
 		100
 311	val_311	100
@@ -148,31 +173,6 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=102
 		101
 		101
 		101
-238	val_238	102
-		102
-311	val_311	102
-	val_27	102
-	val_165	102
-	val_409	102
-255	val_255	102
-278	val_278	102
-98	val_98	102
-	val_484	102
-	val_265	102
-	val_193	102
-401	val_401	102
-150	val_150	102
-273	val_273	102
-224		102
-369		102
-66	val_66	102
-128		102
-213	val_213	102
-146	val_146	102
-406	val_406	102
-		102
-		102
-		102
 PREHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from partition_test_partitioned where dt >=100 and dt <= 102
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned
@@ -219,6 +219,31 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 #### A masked pattern was here ####
+238	val_238	102
+		102
+311	val_311	102
+	val_27	102
+	val_165	102
+	val_409	102
+255	val_255	102
+278	val_278	102
+98	val_98	102
+	val_484	102
+	val_265	102
+	val_193	102
+401	val_401	102
+150	val_150	102
+273	val_273	102
+224		102
+369		102
+66	val_66	102
+128		102
+213	val_213	102
+146	val_146	102
+406	val_406	102
+		102
+		102
+		102
 238	val_238	100
 		100
 311	val_311	100
@@ -269,28 +294,3 @@ POSTHOOK: Input: default@partition_test_partitioned@dt=102
 		101
 		101
 		101
-238	val_238	102
-		102
-311	val_311	102
-	val_27	102
-	val_165	102
-	val_409	102
-255	val_255	102
-278	val_278	102
-98	val_98	102
-	val_484	102
-	val_265	102
-	val_193	102
-401	val_401	102
-150	val_150	102
-273	val_273	102
-224		102
-369		102
-66	val_66	102
-128		102
-213	val_213	102
-146	val_146	102
-406	val_406	102
-		102
-		102
-		102

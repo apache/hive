@@ -17,6 +17,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.CommonRelSubExprRule;
+import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
@@ -30,8 +31,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionRegistry
 import com.google.common.collect.Multimap;
 
 import java.util.function.Predicate;
-
-import static org.apache.calcite.plan.RelRule.Config.EMPTY;
 
 /**
  * Rule for saving relational expressions that appear more than once in a query tree to the planner context.
@@ -47,7 +46,7 @@ public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
       o -> o.operand(Project.class).predicate(new InterestingRelNodePredicate()).anyInputs());
 
   private CommonRelSubExprRegisterRule(OperandTransform operands) {
-    super(EMPTY.withOperandSupplier(operands).as(Config.class));
+    super(new CommonRelSubExprRegisterRule.Config().withOperandSupplier(operands).as(Config.class));
   }
 
   @Override
@@ -81,4 +80,10 @@ public final class CommonRelSubExprRegisterRule extends CommonRelSubExprRule {
     }
   }
 
+  private static class Config extends HiveRuleConfig implements CommonRelSubExprRule.Config {
+    @Override
+    public RelOptRule toRule() {
+      return new CommonRelSubExprRegisterRule(this.operandSupplier());
+    }
+  }
 }
