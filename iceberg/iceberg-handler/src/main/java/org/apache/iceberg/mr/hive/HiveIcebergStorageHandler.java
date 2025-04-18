@@ -2161,12 +2161,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if ((hmsTable.getAsOfVersion() != null || hmsTable.getAsOfTimestamp() != null) &&
-            hasUndergonePartitionEvolution(hmsTable) ||
-        !hmsTable.getTTable().isSetId()) {
+    if (!hmsTable.getTTable().isSetId()) {
       return false;
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
+
+    boolean isTimeTravel = snapshot != null && !snapshot.equals(table.currentSnapshot());
+    if (isTimeTravel && hasUndergonePartitionEvolution(table)) {
+      return false;
+    }
     return table.spec().isPartitioned();
   }
 
