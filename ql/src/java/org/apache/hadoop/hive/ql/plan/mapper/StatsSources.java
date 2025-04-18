@@ -85,8 +85,8 @@ public class StatsSources {
       List<RelTreeSignature> rSig = e.getAll(RelTreeSignature.class);
 
       if (stat.size() > 1 || sig.size() > 1) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(String.format("expected(stat-sig) 1-1, got {}-{} ;", stat.size(), sig.size()));
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("expected(stat-sig) 1-1, got %d-%d ;", stat.size(), sig.size()));
         for (OperatorStats s : stat) {
           sb.append(s);
           sb.append(";");

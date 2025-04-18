@@ -14191,7 +14191,7 @@ public class ObjectStore implements RawStore, Configurable {
         execution.setStartTime(now);
         execution.setEndTime(now);
         execution.setLastUpdateTime(now);
-        execution.setErrorMessage(String.format("Disabling query after {} consequtive failures", autoDisableCount));
+        execution.setErrorMessage(String.format("Disabling query after %d consecutive failures", autoDisableCount));
         pm.makePersistent(execution);
       }
       if (skipCount > 0) {
