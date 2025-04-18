@@ -130,24 +130,25 @@ public class HCatLoader extends HCatBaseLoader {
         job.getCredentials().addAll(crd);
       }
     } else {
-      Job clone = new Job(job.getConfiguration());
-      HCatInputFormat.setInput(job, dbName, tableName, getPartitionFilterString());
+      try (Job clone = new Job(job.getConfiguration())) {
+        HCatInputFormat.setInput(job, dbName, tableName, getPartitionFilterString());
 
-      InputJobInfo inputJobInfo = HCatUtil.getLastInputJobInfosFromConf(job.getConfiguration());
+        InputJobInfo inputJobInfo = HCatUtil.getLastInputJobInfosFromConf(job.getConfiguration());
 
-      SpecialCases.addSpecialCasesParametersForHCatLoader(job.getConfiguration(),
-          inputJobInfo.getTableInfo());
+        SpecialCases.addSpecialCasesParametersForHCatLoader(job.getConfiguration(),
+                inputJobInfo.getTableInfo());
 
-      // We will store all the new /changed properties in the job in the
-      // udf context, so the the HCatInputFormat.setInput method need not
-      //be called many times.
-      for (Entry<String, String> keyValue : job.getConfiguration()) {
-        String oldValue = clone.getConfiguration().getRaw(keyValue.getKey());
-        if ((oldValue == null) || (keyValue.getValue().equals(oldValue) == false)) {
-          udfProps.put(keyValue.getKey(), keyValue.getValue());
+        // We will store all the new /changed properties in the job in the
+        // udf context, so the the HCatInputFormat.setInput method need not
+        //be called many times.
+        for (Entry<String, String> keyValue : job.getConfiguration()) {
+          String oldValue = clone.getConfiguration().getRaw(keyValue.getKey());
+          if ((oldValue == null) || (keyValue.getValue().equals(oldValue) == false)) {
+            udfProps.put(keyValue.getKey(), keyValue.getValue());
+          }
         }
       }
-      udfProps.put(HCatConstants.HCAT_PIG_LOADER_LOCATION_SET, true);
+        udfProps.put(HCatConstants.HCAT_PIG_LOADER_LOCATION_SET, true);
 
       //Store credentials in a private hash map and not the udf context to
       // make sure they are not public.
