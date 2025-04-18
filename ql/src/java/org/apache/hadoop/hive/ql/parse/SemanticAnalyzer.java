@@ -10658,11 +10658,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (String leftAlias : joinTree.getLeftAliases()) {
           if (mapTbl.equalsIgnoreCase(leftAlias)) {
             mapTable = true;
+            break;
           }
         }
         for (String rightAlias : joinTree.getRightAliases()) {
           if (mapTbl.equalsIgnoreCase(rightAlias)) {
             mapTable = true;
+            break;
           }
         }
 
@@ -12143,6 +12145,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (String unSampleTbl : unSampleTbls) {
           if (tabName.equalsIgnoreCase(unSampleTbl)) {
             unsample = true;
+            break;
           }
         }
 
