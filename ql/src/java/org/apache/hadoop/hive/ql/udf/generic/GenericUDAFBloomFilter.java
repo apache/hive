@@ -124,9 +124,9 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
 
       public BloomFilterBuf(long expectedEntries, long maxEntries) {
         if (expectedEntries > maxEntries) {
-          bloomFilter = new BloomKFilter(maxEntries);
+          bloomFilter = BloomKFilter.build(maxEntries);
         } else {
-          bloomFilter = new BloomKFilter(expectedEntries);
+          bloomFilter = BloomKFilter.build(expectedEntries);
         }
       }
 

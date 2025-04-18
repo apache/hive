@@ -292,7 +292,7 @@ class TextDescTableFormatter extends DescTableFormatter {
         return String.format("SnapshotContext{snapshotId=%d}", snapshotContext.getSnapshotId());
       };
     } else if (snapshot != null && snapshot.getValidTxnList() != null) {
-      ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(snapshot.getValidTxnList());
+      ValidTxnWriteIdList validReaderWriteIdList = ValidTxnWriteIdList.fromValue(snapshot.getValidTxnList());
       return qualifiedTableName -> {
         ValidWriteIdList writeIdList = validReaderWriteIdList.getTableValidWriteIdList(qualifiedTableName);
         return writeIdList != null ? writeIdList.toString().replace(qualifiedTableName, "") : "Unknown";

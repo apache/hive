@@ -63,7 +63,7 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
 
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
-    ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(rqst.getValidWriteIdlist());
+    ValidWriteIdList validWriteIdList = ValidReaderWriteIdList.fromValue(rqst.getValidWriteIdlist());
 
     NamedParameterJdbcTemplate npjdbcTemplate = jdbcResource.getJdbcTemplate();
     // Check if this txn state is already replicated for this given table. If yes, then it is

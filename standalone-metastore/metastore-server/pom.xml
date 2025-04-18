@@ -449,13 +449,13 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs</artifactId>
-                <version>4.0.3</version>
+                <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
             <configuration>
@@ -472,7 +472,7 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
