@@ -230,9 +230,9 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         }
         tableNames.add(tableMeta.getTableName());
       });
-      TableFilterContext     tableFilterContext     = new TableFilterContext(dbName, tableNames);
+      TableFilterContext tableFilterContext = TableFilterContext.createFromTableMetas(dbName, tableMetas);
       HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = tableFilterContext.getAuthzContext();
-      final List<String>  filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, dbName, tableNames);
+      final List<String> filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, dbName, tableNames);
       if (!CollectionUtils.isEmpty(filteredTableNames)) {
         Set<String> filteredTabs = new HashSet<>(filteredTableNames);
         LOG.debug("<== HiveMetaStoreAuthorizer.filterTableMetas() : {}", filteredTabs);
