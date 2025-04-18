@@ -143,8 +143,9 @@ public class HMSTablePropertyHelper {
     if (uuid != null) {
       parameters.put(TableProperties.UUID, uuid);
     }
-
-    obsoleteProps.forEach(parameters::remove);
+    if (obsoleteProps != null) {
+      obsoleteProps.forEach(parameters::remove);
+    }
 
     parameters.put(BaseMetastoreTableOperations.TABLE_TYPE_PROP, tableType);
     parameters.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, newMetadataLocation);
