@@ -420,13 +420,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // FUNCTION_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1238 = iprot.readListBegin();
-                struct.function_names = new java.util.ArrayList<java.lang.String>(_list1238.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1239;
-                for (int _i1240 = 0; _i1240 < _list1238.size; ++_i1240)
+                org.apache.thrift.protocol.TList _list1246 = iprot.readListBegin();
+                struct.function_names = new java.util.ArrayList<java.lang.String>(_list1246.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1247;
+                for (int _i1248 = 0; _i1248 < _list1246.size; ++_i1248)
                 {
-                  _elem1239 = iprot.readString();
-                  struct.function_names.add(_elem1239);
+                  _elem1247 = iprot.readString();
+                  struct.function_names.add(_elem1247);
                 }
                 iprot.readListEnd();
               }
@@ -438,14 +438,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // FUNCTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1241 = iprot.readListBegin();
-                struct.functions = new java.util.ArrayList<Function>(_list1241.size);
-                @org.apache.thrift.annotation.Nullable Function _elem1242;
-                for (int _i1243 = 0; _i1243 < _list1241.size; ++_i1243)
+                org.apache.thrift.protocol.TList _list1249 = iprot.readListBegin();
+                struct.functions = new java.util.ArrayList<Function>(_list1249.size);
+                @org.apache.thrift.annotation.Nullable Function _elem1250;
+                for (int _i1251 = 0; _i1251 < _list1249.size; ++_i1251)
                 {
-                  _elem1242 = new Function();
-                  _elem1242.read(iprot);
-                  struct.functions.add(_elem1242);
+                  _elem1250 = new Function();
+                  _elem1250.read(iprot);
+                  struct.functions.add(_elem1250);
                 }
                 iprot.readListEnd();
               }
@@ -472,9 +472,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(FUNCTION_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.function_names.size()));
-            for (java.lang.String _iter1244 : struct.function_names)
+            for (java.lang.String _iter1252 : struct.function_names)
             {
-              oprot.writeString(_iter1244);
+              oprot.writeString(_iter1252);
             }
             oprot.writeListEnd();
           }
@@ -486,9 +486,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(FUNCTIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.functions.size()));
-            for (Function _iter1245 : struct.functions)
+            for (Function _iter1253 : struct.functions)
             {
-              _iter1245.write(oprot);
+              _iter1253.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -523,18 +523,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetFunction_names()) {
         {
           oprot.writeI32(struct.function_names.size());
-          for (java.lang.String _iter1246 : struct.function_names)
+          for (java.lang.String _iter1254 : struct.function_names)
           {
-            oprot.writeString(_iter1246);
+            oprot.writeString(_iter1254);
           }
         }
       }
       if (struct.isSetFunctions()) {
         {
           oprot.writeI32(struct.functions.size());
-          for (Function _iter1247 : struct.functions)
+          for (Function _iter1255 : struct.functions)
           {
-            _iter1247.write(oprot);
+            _iter1255.write(oprot);
           }
         }
       }
@@ -546,27 +546,27 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list1248 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.function_names = new java.util.ArrayList<java.lang.String>(_list1248.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1249;
-          for (int _i1250 = 0; _i1250 < _list1248.size; ++_i1250)
+          org.apache.thrift.protocol.TList _list1256 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.function_names = new java.util.ArrayList<java.lang.String>(_list1256.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1257;
+          for (int _i1258 = 0; _i1258 < _list1256.size; ++_i1258)
           {
-            _elem1249 = iprot.readString();
-            struct.function_names.add(_elem1249);
+            _elem1257 = iprot.readString();
+            struct.function_names.add(_elem1257);
           }
         }
         struct.setFunction_namesIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list1251 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.functions = new java.util.ArrayList<Function>(_list1251.size);
-          @org.apache.thrift.annotation.Nullable Function _elem1252;
-          for (int _i1253 = 0; _i1253 < _list1251.size; ++_i1253)
+          org.apache.thrift.protocol.TList _list1259 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.functions = new java.util.ArrayList<Function>(_list1259.size);
+          @org.apache.thrift.annotation.Nullable Function _elem1260;
+          for (int _i1261 = 0; _i1261 < _list1259.size; ++_i1261)
           {
-            _elem1252 = new Function();
-            _elem1252.read(iprot);
-            struct.functions.add(_elem1252);
+            _elem1260 = new Function();
+            _elem1260.read(iprot);
+            struct.functions.add(_elem1260);
           }
         }
         struct.setFunctionsIsSet(true);
