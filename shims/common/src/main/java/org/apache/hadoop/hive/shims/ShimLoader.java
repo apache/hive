@@ -87,7 +87,9 @@ public abstract class ShimLoader {
         }
       }
     }
-    return hadoopShims;
+    synchronized (ShimLoader.class) {
+      return loadShims(HADOOP_SHIM_CLASSES, HadoopShims.class);
+    }
   }
 
 
