@@ -37,10 +37,7 @@ import org.apache.hadoop.yarn.exceptions.YarnException;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class WebHCatJTShim23 implements WebHCatJTShim {
@@ -51,19 +48,36 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   /**
    * Create a connection to the Job Tracker.
    */
-  public WebHCatJTShim23(final Configuration conf, final UserGroupInformation ugi)
-          throws IOException {
-    try {
-    this.conf = conf;
-    jc = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
-      public JobClient run() throws IOException, InterruptedException  {
-        //create this in doAs() so that it gets a security context based passed in 'ugi'
-        return new JobClient(conf);
-      }
-    });
+  public static WebHCatJTShim createInstance(final Configuration conf, final UserGroupInformation ugi)
+      throws IOException {
+    int[] flag = new int[1];
+    ArrayList<String> eMessage = new ArrayList<>();
+    WebHCatJTShim webHCatJTShim = new WebHCatJTShim23(conf, ugi, flag, eMessage);
+    if (flag[0] == -1) {
+      throw new IOException("Failed to create job Client" + eMessage.get(0));
+    } else if (flag[0] == -2) {
+      throw new RuntimeException("Failed to create job Client" + eMessage.get(0));
     }
-    catch(InterruptedException ex) {
-      throw new RuntimeException("Failed to create JobClient", ex);
+    return webHCatJTShim;
+  }
+
+  private WebHCatJTShim23(final Configuration conf, final UserGroupInformation ugi, int[] flag,
+      ArrayList<String> eMessage) {
+    this.conf = new Configuration(conf);
+    try {
+      this.jc = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
+        public JobClient run() throws IOException, InterruptedException {
+          //create this in doAs() so that it gets a security context based passed in 'ugi'
+          return new JobClient(conf);
+        }
+      });
+    } catch (InterruptedException ex) {
+      eMessage.add(ex.getMessage());
+      flag[0] = -2;
+      this.jc = null;
+    } catch (IOException ex) {
+      flag[0] = -1;
+      this.jc = null;
     }
   }
 

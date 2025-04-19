@@ -251,6 +251,7 @@ git merge origin/target
       }
       stage('Prechecks') {
         def spotbugsProjects = [
+            ":hive-shims",
             ":hive-storage-api",
             ":hive-service-rpc"
         ]

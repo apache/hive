@@ -194,9 +194,8 @@ public static class HadoopFileStatus {
   private final FileStatus fileStatus;
   private final AclStatus aclStatus;
 
-  public HadoopFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException {
+  private HadoopFileStatus(Configuration conf, FileSystem fs, FileStatus fileStatus, Path file) {
 
-    FileStatus fileStatus = fs.getFileStatus(file);
     AclStatus aclStatus = null;
     if (Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true")) {
       //Attempt extended Acl operations only if its enabled, but don't fail the operation regardless.
@@ -211,8 +210,22 @@ public static class HadoopFileStatus {
     this.aclStatus = aclStatus;
   }
 
+  public static HadoopFileStatus createInstance(Configuration conf, FileSystem fs, Path file) throws IOException {
+    FileStatus fileStatus = fs.getFileStatus(file);
+    return new HadoopFileStatus(conf, fs, fileStatus, file);
+  }
+
   public FileStatus getFileStatus() {
-    return fileStatus;
+    Path symlink;
+    try {
+      symlink = fileStatus.getSymlink();
+    } catch (IOException e) {
+      symlink = null;
+    }
+    FileStatus fs = fileStatus;
+    return new FileStatus(fs.getLen(), fs.isDirectory(), fs.getReplication(), fs.getBlockSize(),
+        fs.getModificationTime(), fs.getAccessTime(), fs.getPermission(), fs.getOwner(), fs.getGroup(), symlink,
+        fs.getPath());
   }
 
   public List<AclEntry> getAclEntries() {

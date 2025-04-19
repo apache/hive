@@ -796,7 +796,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       HadoopShims.HdfsEncryptionShim shim
               = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
       if (!shim.isPathEncrypted(location)) {
-        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
+        HdfsUtils.HadoopFileStatus status = HdfsUtils.HadoopFileStatus.createInstance(conf, fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
         FileUtils.moveToTrash(fs, location, conf, isSkipTrash);
