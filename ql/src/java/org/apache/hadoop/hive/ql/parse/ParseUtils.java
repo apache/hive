@@ -556,8 +556,9 @@ public final class ParseUtils {
       throws SemanticException, ParseException {
     final Context ctx = new Context(conf);
     ctx.setIsLoadingMaterializedView(true);
+    final QueryState qs = new QueryState.Builder().withHiveConf(conf).build();
     final ASTNode ast = parse(viewQuery, ctx);
-    final CalcitePlanner analyzer = getAnalyzer(conf, ctx);
+    final BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.get(qs, ast);
     analyzer.analyze(ast, ctx);
     return analyzer.getResultSchema();
   }

@@ -87,9 +87,6 @@ public class TestGenericUDTFGetSQLSchema {
 
   @Test
   public void testWithDDL() throws Exception {
-    // Set the execution engine to mr to avoid the NPE exception in stats flow
-    // TODO: HIVE-28618: TestGenericUDTFGetSQLSchema to run on Tez
-    conf.set("hive.execution.engine", "mr");
     invokeUDTFAndTest("show tables", new String[]{});
   }
 
