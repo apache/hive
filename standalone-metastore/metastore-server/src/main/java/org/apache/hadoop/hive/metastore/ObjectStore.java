@@ -561,17 +561,10 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean openTransaction() {
     openTrasactionCalls++;
-    if (openTrasactionCalls == 1) {
+    if (currentTransaction == null || !currentTransaction.isActive()){
       currentTransaction = pm.currentTransaction();
       currentTransaction.begin();
       transactionStatus = TXN_STATUS.OPEN;
-    } else {
-      // openTransactionCalls > 1 means this is an interior transaction
-      // We should already have a transaction created that is active.
-      if ((currentTransaction == null) || (!currentTransaction.isActive())){
-        throw new RuntimeException("openTransaction called in an interior"
-            + " transaction scope, but currentTransaction is not active.");
-      }
     }
 
     boolean result = currentTransaction.isActive();
@@ -662,7 +655,7 @@ public class ObjectStore implements RawStore, Configurable {
         currentTransaction.rollback();
       }
     } finally {
-      openTrasactionCalls = 0;
+      openTrasactionCalls--;
       transactionStatus = TXN_STATUS.ROLLBACK;
       // remove all detached objects from the cache, since the transaction is
       // being rolled back they are no longer relevant, and this prevents them
