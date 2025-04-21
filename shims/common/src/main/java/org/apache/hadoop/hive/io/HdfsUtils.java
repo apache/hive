@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 
+import org.apache.hadoop.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,9 +195,8 @@ public static class HadoopFileStatus {
   private final FileStatus fileStatus;
   private final AclStatus aclStatus;
 
-  public HadoopFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException {
+  private HadoopFileStatus(Configuration conf, FileSystem fs, FileStatus fileStatus, Path file) {
 
-    FileStatus fileStatus = fs.getFileStatus(file);
     AclStatus aclStatus = null;
     if (Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true")) {
       //Attempt extended Acl operations only if its enabled, but don't fail the operation regardless.
@@ -211,6 +211,12 @@ public static class HadoopFileStatus {
     this.aclStatus = aclStatus;
   }
 
+  public static HadoopFileStatus createInstance(Configuration conf, FileSystem fs, Path file) throws IOException {
+    FileStatus fileStatus = fs.getFileStatus(file);
+    return new HadoopFileStatus(conf, fs, fileStatus, file);
+  }
+
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended")
   public FileStatus getFileStatus() {
     return fileStatus;
   }

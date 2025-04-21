@@ -51,20 +51,25 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   /**
    * Create a connection to the Job Tracker.
    */
-  public WebHCatJTShim23(final Configuration conf, final UserGroupInformation ugi)
-          throws IOException {
+  public static WebHCatJTShim createInstance(final Configuration conf, final UserGroupInformation ugi)
+      throws IOException {
+    JobClient jc;
     try {
-    this.conf = conf;
-    jc = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
-      public JobClient run() throws IOException, InterruptedException  {
-        //create this in doAs() so that it gets a security context based passed in 'ugi'
-        return new JobClient(conf);
-      }
-    });
-    }
-    catch(InterruptedException ex) {
+      jc = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
+        public JobClient run() throws IOException, InterruptedException {
+          //create this in doAs() so that it gets a security context based passed in 'ugi'
+          return new JobClient(conf);
+        }
+      });
+    } catch (InterruptedException ex) {
       throw new RuntimeException("Failed to create JobClient", ex);
     }
+    return new WebHCatJTShim23(conf, jc);
+  }
+
+  private WebHCatJTShim23(final Configuration conf, final JobClient jc) {
+    this.conf = new Configuration(conf);
+    this.jc = jc;
   }
 
   /**
