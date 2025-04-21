@@ -31,7 +31,7 @@
     <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.4</iceberg.avro.version>
     <iceberg.checkstyle.plugin.version>3.5.0</iceberg.checkstyle.plugin.version>
-    <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
+    <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
     <google.errorprone.version>2.29.2</google.errorprone.version>
     <assertj.version>3.24.2</assertj.version>
     <awaitility.version>4.2.1</awaitility.version>
@@ -242,7 +242,9 @@
         <version>${spotless.maven.plugin.version}</version>
         <configuration>
           <skip>${validate.skip}</skip>
+          <argLine>--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</argLine>
           <java>
+            <removeUnusedImports/>
             <importOrder>
               <!-- normal imports, static imports -->
               <order>,\# </order>
