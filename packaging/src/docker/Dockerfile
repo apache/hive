@@ -76,8 +76,7 @@ RUN set -ex; \
 ENV HADOOP_HOME=/opt/hadoop \
     HIVE_HOME=/opt/hive \
     TEZ_HOME=/opt/tez \
-    HIVE_VER=$HIVE_VERSION \
-    HADOOP_CLIENT_OPTS=" --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED"
+    HIVE_VER=$HIVE_VERSION
 
 ENV PATH=$HIVE_HOME/bin:$HADOOP_HOME/bin:$PATH
 
