@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.metrics2.MetricsSystem;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +44,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 
 import static java.lang.Integer.parseInt;
 import static org.junit.Assert.assertEquals;
@@ -60,18 +59,6 @@ public class TestLlapDaemon {
       "LlapDaemonJvmMetrics-" + MetricsUtils.getHostName(),
       MetricsUtils.METRICS_PROCESS_NAME
   };
-
-  private static List<InstanceField> allDeclaredFieldsOf(Object testInstance) {
-    List<InstanceField> result = new ArrayList<>();
-    for (Class<?> clazz = testInstance.getClass();
-         clazz != Object.class;
-         clazz = clazz.getSuperclass()) {
-      for (Field field : clazz.getDeclaredFields()) {
-        result.add(new InstanceField(field, testInstance));
-      }
-    }
-    return result;
-  }
 
   public static final String TEST_LOCAL_DIR = new File(System.getProperty("java.io.tmpdir") +
       File.separator + TestLlapDaemon.class.getCanonicalName()
@@ -192,7 +179,7 @@ public class TestLlapDaemon {
   }
 
   static <T> void trySetMock(Object o, Class<T> clazz, T mock) {
-    List<InstanceField> instanceFields = allDeclaredFieldsOf(o).stream()
+    List<InstanceField> instanceFields = ReflectionUtil.allDeclaredFieldsOf(o).stream()
         .filter(instanceField -> clazz.isAssignableFrom(instanceField.jdkField().getType())).toList();
     if (instanceFields.size() != 1) {
       throw new RuntimeException("Mocking is only supported, if only one field is assignable from the given class.");
