@@ -24,12 +24,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.mockito.internal.util.reflection.InstanceField;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -181,5 +184,17 @@ public class ReflectionUtil {
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException("Cannot make static final field %s modifiable".formatted(field));
     }
+  }
+
+  public static List<InstanceField> allDeclaredFieldsOf(Object testInstance) {
+    List<InstanceField> result = new ArrayList<>();
+    for (Class<?> clazz = testInstance.getClass();
+         clazz != Object.class;
+         clazz = clazz.getSuperclass()) {
+      for (Field field : clazz.getDeclaredFields()) {
+        result.add(new InstanceField(field, testInstance));
+      }
+    }
+    return result;
   }
 }
