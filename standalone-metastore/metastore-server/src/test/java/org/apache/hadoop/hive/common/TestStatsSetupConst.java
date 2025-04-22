@@ -73,7 +73,7 @@ public class TestStatsSetupConst {
     StatsSetupConst.setBasicStatsState(params0, String.valueOf(true));
     StatsSetupConst.setColumnStatsState(params0, Lists.newArrayList("Foo"));
 
-    assertEquals("{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"Foo\":\"true\"}}",params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+    assertEquals("{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"foo\":\"true\"}}",params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
   }
 
   @Test
@@ -109,6 +109,6 @@ public class TestStatsSetupConst {
     Map<String, String> params=new HashMap<>();
     StatsSetupConst.setBasicStatsState(params, String.valueOf(false));
     StatsSetupConst.setColumnStatsState(params, Lists.newArrayList("Foo"));
-    assertEquals("{\"COLUMN_STATS\":{\"Foo\":\"true\"}}",params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+    assertEquals("{\"COLUMN_STATS\":{\"foo\":\"true\"}}",params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
   }
 }

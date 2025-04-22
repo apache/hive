@@ -98,7 +98,7 @@
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
-    <maven.shade.plugin.version>3.5.0</maven.shade.plugin.version>
+    <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
@@ -158,7 +158,7 @@
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
-    <jetty.version>9.4.45.v20220203</jetty.version>
+    <jetty.version>9.4.57.v20241219</jetty.version>
     <jersey.version>1.19.4</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
@@ -171,7 +171,7 @@
     <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
-    <kudu.version>1.12.0</kudu.version>
+    <kudu.version>1.17.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
@@ -192,7 +192,7 @@
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.14.4</parquet.version>
+    <parquet.version>1.15.1</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
@@ -222,7 +222,7 @@
     <json-path.version>2.9.0</json-path.version>
     <janino.version>3.1.12</janino.version>
     <datasketches.version>1.2.0</datasketches.version>
-    <spotbugs.version>4.0.3</spotbugs.version>
+    <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
     <aws-java-sdk.version>1.12.720</aws-java-sdk.version>
@@ -784,7 +784,7 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-runner</artifactId>
+        <artifactId>apache-jsp</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
@@ -2034,11 +2034,11 @@
       <id>spotbugs</id>
       <build>
         <plugins>
-          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.0.0:spotbugs -->
+          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:spotbugs -->
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -2061,7 +2061,7 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>

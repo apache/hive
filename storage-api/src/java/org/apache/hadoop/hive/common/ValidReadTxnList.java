@@ -59,8 +59,10 @@ public class ValidReadTxnList implements ValidTxnList {
     this.highWatermark = highWatermark;
   }
 
-  public ValidReadTxnList(String value) {
-    readFromString(value);
+  public static ValidReadTxnList fromValue(String value) {
+    ValidReadTxnList txnList = new ValidReadTxnList();
+    txnList.readFromString(value);
+    return txnList;
   }
 
   @Override

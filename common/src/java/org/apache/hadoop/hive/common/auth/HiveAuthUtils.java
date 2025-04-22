@@ -33,7 +33,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TSSLTransportFactory.TSSLTransportParameters;
 import org.apache.thrift.transport.TServerSocket;

@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.Test;
 
 public class TestWarehouseDnsPath {

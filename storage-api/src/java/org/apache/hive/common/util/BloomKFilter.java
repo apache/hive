@@ -59,18 +59,27 @@ public class BloomKFilter {
     }
   }
 
-  public BloomKFilter(long maxNumEntries) {
+  private BloomKFilter(int k, long m, int totalBlockCount, long[] arr) {
+    this.k = k;
+    this.m = m;
+    this.bitSet = BitSet.build(arr);
+    this.totalBlockCount = totalBlockCount;
+  }
+
+  public static BloomKFilter build(long maxNumEntries) {
     checkArgument(maxNumEntries > 0, "expectedEntries should be > 0");
     long numBits = optimalNumOfBits(maxNumEntries, DEFAULT_FPP);
-    this.k = optimalNumOfHashFunctions(maxNumEntries, numBits);
+    int k = optimalNumOfHashFunctions(maxNumEntries, numBits);
     long nLongs = (long) Math.ceil((double) numBits / (double) Long.SIZE);
     // additional bits to pad long array to block size
     long padLongs = DEFAULT_BLOCK_SIZE - nLongs % DEFAULT_BLOCK_SIZE;
-    this.m = (nLongs + padLongs) * Long.SIZE;
-    this.bitSet = new BitSet(m);
-    checkArgument((bitSet.data.length % DEFAULT_BLOCK_SIZE) == 0, "bitSet has to be block aligned");
-    this.totalBlockCount = bitSet.data.length / DEFAULT_BLOCK_SIZE;
+    long m = (nLongs + padLongs) * Long.SIZE;
+    long[] marr = new long[(int) Math.ceil((double) m / (double) Long.SIZE)];
+    checkArgument((marr.length % DEFAULT_BLOCK_SIZE) == 0, "bitSet has to be block aligned");
+    int totalBlockCount = marr.length / DEFAULT_BLOCK_SIZE;
+    return new BloomKFilter(k, m, totalBlockCount, marr);
   }
+
 
   /**
    * A constructor to support rebuilding the BloomFilter from a serialized representation.
@@ -79,11 +88,14 @@ public class BloomKFilter {
    */
   public BloomKFilter(long[] bits, int numFuncs) {
     super();
-    bitSet = new BitSet(bits);
+    bitSet = BitSet.build(bits);
     this.m = bits.length * Long.SIZE;
     this.k = numFuncs;
-    checkArgument((bitSet.data.length % DEFAULT_BLOCK_SIZE) == 0, "bitSet has to be block aligned");
     this.totalBlockCount = bitSet.data.length / DEFAULT_BLOCK_SIZE;
+  }
+  public static BloomKFilter build(long[] bits, int numFuncs) {
+    checkArgument((bits.length % DEFAULT_BLOCK_SIZE) == 0, "bitSet has to be block aligned");
+    return new BloomKFilter(bits, numFuncs);
   }
   static int optimalNumOfHashFunctions(long n, long m) {
     return Math.max(1, (int) Math.round((double) m / n * Math.log(2)));
@@ -327,7 +339,7 @@ public class BloomKFilter {
       for (int i = 0; i < bitsetArrayLen; i++) {
         data[i] = dataInputStream.readLong();
       }
-      return new BloomKFilter(data, numHashFunc);
+      return BloomKFilter.build(data, numHashFunc);
     } catch (RuntimeException e) {
       throw new IOException("Unable to deserialize BloomKFilter", e);
     }
@@ -382,7 +394,7 @@ public class BloomKFilter {
     ByteArrayOutputStream bytesOut = null;
     try {
       bytesOut = new ByteArrayOutputStream();
-      BloomKFilter bf = new BloomKFilter(expectedEntries);
+      BloomKFilter bf = BloomKFilter.build(expectedEntries);
       BloomKFilter.serialize(bytesOut, bf);
       return bytesOut.toByteArray();
     } catch (Exception err) {
@@ -399,19 +411,12 @@ public class BloomKFilter {
   public static class BitSet {
     private final long[] data;
 
-    public BitSet(long bits) {
-      this(new long[(int) Math.ceil((double) bits / (double) Long.SIZE)]);
-    }
-
-    /**
-     * Deserialize long array as bit set.
-     *
-     * @param data - bit array
-     */
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Ref external obj for efficiency")
-    public BitSet(long[] data) {
-      assert data.length > 0 : "data length is zero!";
+    private BitSet(long[] data) {
       this.data = data;
+    }
+    public static BitSet build(long[] data) {
+      assert data.length > 0 : "data length is zero!";
+      return new BitSet(data);
     }
 
     /**

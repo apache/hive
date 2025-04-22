@@ -104,14 +104,14 @@
     <curator.version>5.7.1</curator.version>
     <zookeeper.version>3.8.4</zookeeper.version>
     <cron-utils.version>9.2.1</cron-utils.version>
-    <spotbugs.version>4.0.3</spotbugs.version>
+    <spotbugs.version>4.8.6</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <pac4j-core.version>4.5.8</pac4j-core.version>
     <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
-    <jetty.version>9.4.45.v20220203</jetty.version>
+    <jetty.version>9.4.57.v20241219</jetty.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
@@ -630,11 +630,11 @@
       <id>spotbugs</id>
       <build>
         <plugins>
-          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.0.0:spotbugs -->
+          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:spotbugs -->
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -648,6 +648,7 @@
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>
@@ -657,12 +658,13 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
               <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
             </configuration>
           </plugin>
         </plugins>

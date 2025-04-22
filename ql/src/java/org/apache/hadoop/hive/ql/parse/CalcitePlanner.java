@@ -3800,9 +3800,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         groupByOutputRowResolver.setIsExprResolver(true);
 
         if (hasGrpByAstExprs) {
+          groupByInputRowResolver.setCheckForAmbiguity(true);
           // 4. Construct GB Keys (ExprNode)
-          for (int i = 0; i < groupByNodes.size(); ++i) {
-            ASTNode groupByNode = groupByNodes.get(i);
+          for (ASTNode groupByNode : groupByNodes) {
             Map<ASTNode, RexNode> astToRexNodeMap = genAllRexNode(
                 groupByNode, groupByInputRowResolver, cluster.getRexBuilder());
             RexNode groupByExpression = astToRexNodeMap.get(groupByNode);
@@ -3814,6 +3814,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             addToGBExpr(groupByOutputRowResolver, groupByInputRowResolver, groupByNode,
                 groupByExpression, groupByExpressions, outputColumnNames);
           }
+          groupByInputRowResolver.setCheckForAmbiguity(false);
         }
 
         // 5. GroupingSets, Cube, Rollup
@@ -4180,6 +4181,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3. Construct new Row Resolver with everything from below.
       RowResolver out_rwsch = new RowResolver();
+      out_rwsch.setExprResolver(inputRR.getIsExprResolver());
       if (!RowResolver.add(out_rwsch, inputRR)) {
         LOG.warn(ERROR_MESSAGE_DUPLICATES_DETECTED);
       }

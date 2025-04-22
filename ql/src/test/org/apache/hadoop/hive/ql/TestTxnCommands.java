@@ -78,7 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -404,6 +404,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       throws Exception, MetaException, TException, NoSuchObjectException {
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    hiveConf.setBoolean("hive.txn.xlock.write", true);
     // Need to close the thread local Hive object so that configuration change is reflected to HMS.
     Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
