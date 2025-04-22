@@ -3179,7 +3179,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      LOG.error("Failed to delete directory: " + path, e);
+      LOG.error("Failed to delete directory: {}", path, e);
     }
   }
 
