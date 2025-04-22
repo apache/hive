@@ -803,7 +803,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       StorerInfo storer = InternalUtil.extractStorerInfo(table.getTTable().getSd(),
           table.getParameters());
 
-      HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, tblPath);
+      HdfsUtils.HadoopFileStatus status = HdfsUtils.HadoopFileStatus.createInstance(conf, fs, tblPath);
 
       List<Partition> partitionsToAdd = new ArrayList<Partition>();
       if (!dynamicPartitioningUsed) {

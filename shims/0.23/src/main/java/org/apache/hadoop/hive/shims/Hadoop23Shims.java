@@ -288,7 +288,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Shim for MiniMrCluster
    */
-  public class MiniMrShim implements HadoopShims.MiniMrShim {
+  public static class MiniMrShim implements HadoopShims.MiniMrShim {
 
     private final MiniMRCluster mr;
     private final Configuration conf;
@@ -300,7 +300,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public MiniMrShim(Configuration conf, int numberOfTaskTrackers,
                       String nameNode, int numDir) throws IOException {
-      this.conf = conf;
+      this.conf = new Configuration(conf);
 
       JobConf jConf = new JobConf(conf);
       jConf.set("yarn.scheduler.capacity.root.queues", "default");
@@ -349,12 +349,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return new MiniTezLocalShim(conf, usingLlap);
   }
 
-  public class MiniTezLocalShim extends Hadoop23Shims.MiniMrShim {
+  public static class MiniTezLocalShim extends Hadoop23Shims.MiniMrShim {
     private final Configuration conf;
     private final boolean isLlap;
 
     public MiniTezLocalShim(Configuration conf, boolean usingLlap) {
-      this.conf = conf;
+      this.conf = new Configuration(conf);
       this.isLlap = usingLlap;
       setupConfiguration(conf);
     }
@@ -401,7 +401,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Shim for MiniTezCluster
    */
-  public class MiniTezShim extends Hadoop23Shims.MiniMrShim {
+  public static class MiniTezShim extends Hadoop23Shims.MiniMrShim {
 
     private final MiniTezCluster mr;
     private final Configuration conf;
@@ -553,6 +553,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public static class MiniDFSShim implements HadoopShims.MiniDFSShim {
     private final MiniDFSCluster cluster;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended")
     public MiniDFSShim(MiniDFSCluster cluster) {
       this.cluster = cluster;
     }
@@ -670,7 +671,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
   @Override
   public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
-    return new WebHCatJTShim23(conf, ugi);//this has state, so can't be cached
+    return WebHCatJTShim23.createInstance(conf, ugi);//this has state, so can't be cached
   }
 
   private static final class HdfsFileStatusWithIdImpl implements HdfsFileStatusWithId {
@@ -761,9 +762,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   static class ProxyFileSystem23 extends ProxyFileSystem {
-    public ProxyFileSystem23(FileSystem fs) {
-      super(fs);
-    }
     public ProxyFileSystem23(FileSystem fs, URI uri) {
       super(fs, uri);
     }
@@ -774,12 +772,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
 
     @Override
-    public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
-      throws FileNotFoundException, IOException {
+    public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f) throws FileNotFoundException, IOException {
+      final RemoteIterator<LocatedFileStatus> remoteIterator =
+          ProxyFileSystem23.super.listLocatedStatus(ProxyFileSystem23.super.swizzleParamPath(f));
       return new RemoteIterator<LocatedFileStatus>() {
-        private final RemoteIterator<LocatedFileStatus> stats =
-            ProxyFileSystem23.super.listLocatedStatus(
-                ProxyFileSystem23.super.swizzleParamPath(f));
+        private final RemoteIterator<LocatedFileStatus> stats = remoteIterator;
 
         @Override
         public boolean hasNext() throws IOException {
@@ -789,8 +786,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         @Override
         public LocatedFileStatus next() throws IOException {
           LocatedFileStatus result = stats.next();
-          return new LocatedFileStatus(
-              ProxyFileSystem23.super.swizzleFileStatus(result, false),
+          return new LocatedFileStatus(ProxyFileSystem23.super.swizzleFileStatus(result, false),
               result.getBlockLocations());
         }
       };
@@ -1005,6 +1001,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     private final DistributedFileSystem dfs;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "intended")
     public StoragePolicyShim(DistributedFileSystem fs) {
       this.dfs = fs;
     }
@@ -1334,10 +1331,17 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     private final Configuration conf;
 
-    public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
+    public static HdfsEncryptionShim createInstance(URI uri, Configuration conf) throws IOException {
+      HdfsAdmin hadmin = new HdfsAdmin(uri, conf);
+      KeyProvider keyP = hadmin.getKeyProvider();
+      HdfsEncryptionShim hdfsEncryptionShim = new HdfsEncryptionShim(conf);
+      hdfsEncryptionShim.hdfsAdmin = hadmin;
+      hdfsEncryptionShim.keyProvider = keyP;
+      return hdfsEncryptionShim;
+    }
+
+    private HdfsEncryptionShim(Configuration conf) {
       this.conf = conf;
-      this.hdfsAdmin = new HdfsAdmin(uri, conf);
-      this.keyProvider = this.hdfsAdmin.getKeyProvider();
     }
 
     @Override
@@ -1527,7 +1531,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     if (isHdfsEncryptionSupported()) {
       URI uri = fs.getUri();
       if ("hdfs".equals(uri.getScheme()) && fs instanceof DistributedFileSystem) {
-        return new HdfsEncryptionShim(uri, conf);
+        return HdfsEncryptionShim.createInstance(uri, conf);
       }
     }
 
@@ -1598,7 +1602,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     try {
       Subject origSubject = (Subject) getSubjectMethod.invoke(baseUgi);
-      
       Subject subject = new Subject(false, origSubject.getPrincipals(),
           cloneCredentials(origSubject.getPublicCredentials()),
           cloneCredentials(origSubject.getPrivateCredentials()));
@@ -1616,7 +1619,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
     return set;
   }
-  
+
   private static Boolean hdfsErasureCodingSupport;
 
   /**

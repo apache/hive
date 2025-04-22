@@ -48,10 +48,6 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     localFs = new LocalFileSystem();
   }
 
-  public ProxyLocalFileSystem(FileSystem fs) {
-    throw new RuntimeException("Unsupported Constructor");
-  }
-
   @Override
   public void initialize(URI name, Configuration conf) throws IOException {
     // create a proxy for the local filesystem
@@ -120,7 +116,8 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     private String algorithmName;
 
     public PFileChecksum(MD5Hash md5, String algorithmName) {
-      this.md5 = md5;
+      this.md5 = new MD5Hash();
+      this.md5.set(md5);
       this.algorithmName = algorithmName;
     }
 
