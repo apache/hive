@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -558,6 +561,7 @@ public final class ObjectInspectorUtils {
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
     Field[] f = c.getDeclaredFields();
     ArrayList<Field> af = new ArrayList<Field>();
+    Arrays.sort(f, Comparator.comparingInt(ObjectInspectorUtils::getSlotValue));
     for (int i = 0; i < f.length; ++i) {
       if (!Modifier.isStatic(f[i].getModifiers())) {
         af.add(f[i]);
@@ -1651,5 +1655,21 @@ public final class ObjectInspectorUtils {
 
   private ObjectInspectorUtils() {
     // prevent instantiation
+  }
+
+  /**
+   * Returns slot value used for ordering the fields to make it deterministic
+   * @param field : field of a given class
+   * @return int slot
+   */
+  private static int getSlotValue(Field field) {
+    try {
+      var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+      VarHandle slotHandle = lookup.findVarHandle(Field.class, "slot", int.class);
+      return (int) slotHandle.get(field);
+    } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
+      LOG.error("Error getting a slot value:", e);
+      throw new RuntimeException("Error getting a slot value");
+    }
   }
 }
