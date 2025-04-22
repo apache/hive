@@ -361,8 +361,10 @@ public class Context {
     assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
     ASTNode query = (ASTNode) insert.getParent();
     assert query != null && query.getType() == HiveParser.TOK_QUERY;
-
-    int tokFromIdx = query.getFirstChildWithType(HiveParser.TOK_FROM).getChildIndex();
+    ASTNode from = (ASTNode) query.getFirstChildWithType(HiveParser.TOK_FROM);
+    assert from != null : "Couldn't find a child of type FROM in the AST";
+    
+    int tokFromIdx = from.getChildIndex();
     for (int childIdx = tokFromIdx + 1; childIdx < query.getChildCount(); childIdx++) {
       assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
       if (insert == query.getChild(childIdx)) {
