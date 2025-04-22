@@ -3252,7 +3252,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MPartition mpart = getMPartition(catName, dbName, tblName, partVals, null);
       if (mpart == null) {
-        commitTransaction();
+        success = commitTransaction();
         throw new NoSuchObjectException("partition values="
             + partVals.toString());
       }
