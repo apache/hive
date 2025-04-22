@@ -3412,6 +3412,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
                                                     int maxParts, String userName,
                                                     List<String> groupNames) throws TException {
