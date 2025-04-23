@@ -362,7 +362,13 @@ public class Context {
     ASTNode query = (ASTNode) insert.getParent();
     assert query != null && query.getType() == HiveParser.TOK_QUERY;
     ASTNode from = (ASTNode) query.getFirstChildWithType(HiveParser.TOK_FROM);
-    assert from != null : "Couldn't find a child of type FROM in the AST";
+    
+    if (from == null) {
+      // We are here when TOK_FROM is missing from the AST.
+      // This can happen for merge queries with a predicate like `<joining_column> is null`
+      // in the matched clause.
+      return DestClausePrefix.MERGE;
+    }
     
     int tokFromIdx = from.getChildIndex();
     for (int childIdx = tokFromIdx + 1; childIdx < query.getChildCount(); childIdx++) {
