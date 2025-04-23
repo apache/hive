@@ -1134,8 +1134,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (NoSuchObjectException e) {
       if (!ifExists) {
         throw new NoSuchObjectException(e.getMessage());
-      } else {
-        ms.rollbackTransaction();
       }
     } finally {
       if (success) {
@@ -1213,6 +1211,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean madeExternalDir = false;
     boolean isReplicated = isDbReplicationTarget(db);
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+    boolean openTransaction = false;
     try {
       firePreEvent(new PreCreateDatabaseEvent(db, this));
       //reinstate location uri for metastore db.
@@ -1286,7 +1285,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
 
-      ms.openTransaction();
+      openTransaction = ms.openTransaction();
       ms.createDatabase(db);
 
       if (!transactionalListeners.isEmpty()) {
@@ -1299,7 +1298,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       success = ms.commitTransaction();
     } finally {
       if (!success) {
-        ms.rollbackTransaction();
+        if (openTransaction) {
+          ms.rollbackTransaction();
+        }
 
         if (db.getCatalogName() != null && !db.getCatalogName().
             equals(Warehouse.DEFAULT_CATALOG_NAME)) {

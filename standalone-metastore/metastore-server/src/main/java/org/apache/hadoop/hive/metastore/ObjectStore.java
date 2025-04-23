@@ -3247,12 +3247,10 @@ public class ObjectStore implements RawStore, Configurable {
   public Partition getPartitionWithAuth(String catName, String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
-    boolean success = false;
     try {
       openTransaction();
       MPartition mpart = getMPartition(catName, dbName, tblName, partVals, null);
       if (mpart == null) {
-        success = commitTransaction();
         throw new NoSuchObjectException("partition values="
             + partVals.toString());
       }
@@ -3267,10 +3265,9 @@ public class ObjectStore implements RawStore, Configurable {
         part.setPrivileges(partAuth);
       }
 
-      success = commitTransaction();
       return part;
     } finally {
-      rollbackAndCleanup(success, null);
+      commitTransaction();
     }
   }
 
