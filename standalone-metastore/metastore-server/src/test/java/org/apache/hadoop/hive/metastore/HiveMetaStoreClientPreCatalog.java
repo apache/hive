@@ -3208,6 +3208,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<String> getTables(String catName, String dbName, String tablePattern) throws
           TException {
     throw new UnsupportedOperationException();

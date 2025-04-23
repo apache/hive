@@ -1096,14 +1096,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // PARTITION_KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list698 = iprot.readListBegin();
-                struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list698.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem699;
-                for (int _i700 = 0; _i700 < _list698.size; ++_i700)
+                org.apache.thrift.protocol.TList _list706 = iprot.readListBegin();
+                struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list706.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem707;
+                for (int _i708 = 0; _i708 < _list706.size; ++_i708)
                 {
-                  _elem699 = new FieldSchema();
-                  _elem699.read(iprot);
-                  struct.partitionKeys.add(_elem699);
+                  _elem707 = new FieldSchema();
+                  _elem707.read(iprot);
+                  struct.partitionKeys.add(_elem707);
                 }
                 iprot.readListEnd();
               }
@@ -1131,14 +1131,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 6: // PARTITION_ORDER
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list701 = iprot.readListBegin();
-                struct.partitionOrder = new java.util.ArrayList<FieldSchema>(_list701.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem702;
-                for (int _i703 = 0; _i703 < _list701.size; ++_i703)
+                org.apache.thrift.protocol.TList _list709 = iprot.readListBegin();
+                struct.partitionOrder = new java.util.ArrayList<FieldSchema>(_list709.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem710;
+                for (int _i711 = 0; _i711 < _list709.size; ++_i711)
                 {
-                  _elem702 = new FieldSchema();
-                  _elem702.read(iprot);
-                  struct.partitionOrder.add(_elem702);
+                  _elem710 = new FieldSchema();
+                  _elem710.read(iprot);
+                  struct.partitionOrder.add(_elem710);
                 }
                 iprot.readListEnd();
               }
@@ -1206,9 +1206,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter704 : struct.partitionKeys)
+          for (FieldSchema _iter712 : struct.partitionKeys)
           {
-            _iter704.write(oprot);
+            _iter712.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1231,9 +1231,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PARTITION_ORDER_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionOrder.size()));
-            for (FieldSchema _iter705 : struct.partitionOrder)
+            for (FieldSchema _iter713 : struct.partitionOrder)
             {
-              _iter705.write(oprot);
+              _iter713.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -1285,9 +1285,9 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.partitionKeys.size());
-        for (FieldSchema _iter706 : struct.partitionKeys)
+        for (FieldSchema _iter714 : struct.partitionKeys)
         {
-          _iter706.write(oprot);
+          _iter714.write(oprot);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -1322,9 +1322,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPartitionOrder()) {
         {
           oprot.writeI32(struct.partitionOrder.size());
-          for (FieldSchema _iter707 : struct.partitionOrder)
+          for (FieldSchema _iter715 : struct.partitionOrder)
           {
-            _iter707.write(oprot);
+            _iter715.write(oprot);
           }
         }
       }
@@ -1350,14 +1350,14 @@ package org.apache.hadoop.hive.metastore.api;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list708 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list708.size);
-        @org.apache.thrift.annotation.Nullable FieldSchema _elem709;
-        for (int _i710 = 0; _i710 < _list708.size; ++_i710)
+        org.apache.thrift.protocol.TList _list716 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list716.size);
+        @org.apache.thrift.annotation.Nullable FieldSchema _elem717;
+        for (int _i718 = 0; _i718 < _list716.size; ++_i718)
         {
-          _elem709 = new FieldSchema();
-          _elem709.read(iprot);
-          struct.partitionKeys.add(_elem709);
+          _elem717 = new FieldSchema();
+          _elem717.read(iprot);
+          struct.partitionKeys.add(_elem717);
         }
       }
       struct.setPartitionKeysIsSet(true);
@@ -1372,14 +1372,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list711 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.partitionOrder = new java.util.ArrayList<FieldSchema>(_list711.size);
-          @org.apache.thrift.annotation.Nullable FieldSchema _elem712;
-          for (int _i713 = 0; _i713 < _list711.size; ++_i713)
+          org.apache.thrift.protocol.TList _list719 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.partitionOrder = new java.util.ArrayList<FieldSchema>(_list719.size);
+          @org.apache.thrift.annotation.Nullable FieldSchema _elem720;
+          for (int _i721 = 0; _i721 < _list719.size; ++_i721)
           {
-            _elem712 = new FieldSchema();
-            _elem712.read(iprot);
-            struct.partitionOrder.add(_elem712);
+            _elem720 = new FieldSchema();
+            _elem720.read(iprot);
+            struct.partitionOrder.add(_elem720);
           }
         }
         struct.setPartitionOrderIsSet(true);
