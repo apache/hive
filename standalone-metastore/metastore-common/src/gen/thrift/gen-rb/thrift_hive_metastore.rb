@@ -276,6 +276,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_databases failed: unknown result')
     end
 
+    def get_databases_req(request)
+      send_get_databases_req(request)
+      return recv_get_databases_req()
+    end
+
+    def send_get_databases_req(request)
+      send_message('get_databases_req', Get_databases_req_args, :request => request)
+    end
+
+    def recv_get_databases_req()
+      result = receive_message(Get_databases_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_databases_req failed: unknown result')
+    end
+
     def alter_database(dbname, db)
       send_alter_database(dbname, db)
       recv_alter_database()
@@ -4893,6 +4909,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_all_databases', seqid)
     end
 
+    def process_get_databases_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_databases_req_args)
+      result = Get_databases_req_result.new()
+      begin
+        result.success = @handler.get_databases_req(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_databases_req', seqid)
+    end
+
     def process_alter_database(seqid, iprot, oprot)
       args = read_args(iprot, Alter_database_args)
       result = Alter_database_result.new()
@@ -8750,6 +8777,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_databases_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetDatabaseObjectsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_databases_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetDatabaseObjectsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

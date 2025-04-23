@@ -259,6 +259,16 @@ public interface RawStore extends Configurable {
   List<String> getAllDatabases(String catalogName) throws MetaException;
 
   /**
+   * Get all database objects in a catalog having names that match a pattern.
+   *
+   * @param catalogName name of the catalog to search for databases in
+   * @param pattern     pattern that database names should match
+   * @return list of {@link Database} objects that match the pattern in the given catalog
+   * @throws MetaException something went wrong, usually with the database
+   */
+  List<Database> getDatabaseObjects(String catalogName, String pattern) throws MetaException;
+
+  /**
    * Create a dataconnector.
    * @param dataConnector dataconnector to create.
    * @throws InvalidObjectException not sure it actually ever throws this.

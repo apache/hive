@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // FOREIGN_KEY_COLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list528 = iprot.readListBegin();
-                struct.foreignKeyCols = new java.util.ArrayList<SQLForeignKey>(_list528.size);
-                @org.apache.thrift.annotation.Nullable SQLForeignKey _elem529;
-                for (int _i530 = 0; _i530 < _list528.size; ++_i530)
+                org.apache.thrift.protocol.TList _list536 = iprot.readListBegin();
+                struct.foreignKeyCols = new java.util.ArrayList<SQLForeignKey>(_list536.size);
+                @org.apache.thrift.annotation.Nullable SQLForeignKey _elem537;
+                for (int _i538 = 0; _i538 < _list536.size; ++_i538)
                 {
-                  _elem529 = new SQLForeignKey();
-                  _elem529.read(iprot);
-                  struct.foreignKeyCols.add(_elem529);
+                  _elem537 = new SQLForeignKey();
+                  _elem537.read(iprot);
+                  struct.foreignKeyCols.add(_elem537);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(FOREIGN_KEY_COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.foreignKeyCols.size()));
-          for (SQLForeignKey _iter531 : struct.foreignKeyCols)
+          for (SQLForeignKey _iter539 : struct.foreignKeyCols)
           {
-            _iter531.write(oprot);
+            _iter539.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.foreignKeyCols.size());
-        for (SQLForeignKey _iter532 : struct.foreignKeyCols)
+        for (SQLForeignKey _iter540 : struct.foreignKeyCols)
         {
-          _iter532.write(oprot);
+          _iter540.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, AddForeignKeyRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list533 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.foreignKeyCols = new java.util.ArrayList<SQLForeignKey>(_list533.size);
-        @org.apache.thrift.annotation.Nullable SQLForeignKey _elem534;
-        for (int _i535 = 0; _i535 < _list533.size; ++_i535)
+        org.apache.thrift.protocol.TList _list541 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.foreignKeyCols = new java.util.ArrayList<SQLForeignKey>(_list541.size);
+        @org.apache.thrift.annotation.Nullable SQLForeignKey _elem542;
+        for (int _i543 = 0; _i543 < _list541.size; ++_i543)
         {
-          _elem534 = new SQLForeignKey();
-          _elem534.read(iprot);
-          struct.foreignKeyCols.add(_elem534);
+          _elem542 = new SQLForeignKey();
+          _elem542.read(iprot);
+          struct.foreignKeyCols.add(_elem542);
         }
       }
       struct.setForeignKeyColsIsSet(true);

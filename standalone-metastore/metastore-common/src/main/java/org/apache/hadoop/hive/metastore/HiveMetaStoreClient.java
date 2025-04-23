@@ -2301,6 +2301,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException {
+    if (!request.isSetCatalogName()) {
+      request.setCatalogName(getDefaultCatalog(conf));
+    }
+
+    GetDatabaseObjectsResponse response = client.get_databases_req(request);
+
+    response.setDatabases(FilterUtils.filterDatabaseObjectsIfEnabled(
+        isClientFilterEnabled, filterHook, response.getDatabases()));
+    return response;
+  }
+
+  @Override
   public List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
       throws TException {
     // TODO should we add capabilities here as well as it returns Partition objects

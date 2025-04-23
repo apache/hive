@@ -96,6 +96,28 @@ public class FilterUtils {
   }
 
   /**
+   * Filter the list of database objects if filtering is enabled. Otherwise, return original list
+   *
+   * @param isFilterEnabled true: filtering is enabled; false: filtering is disabled.
+   * @param filterHook:     the object that does filtering
+   * @param databases:      the list of database objects to filter
+   * @return the list of database objects that current user has access if filtering is enabled;
+   * otherwise, the original list
+   * @throws MetaException
+   */
+  public static List<Database> filterDatabaseObjectsIfEnabled(
+      boolean isFilterEnabled,
+      MetaStoreFilterHook filterHook,
+      List<Database> databases) throws MetaException {
+
+    if (isFilterEnabled) {
+      return filterHook.filterDatabaseObjects(databases);
+    }
+
+    return databases;
+  }
+
+  /**
    * Filter the list of dataconnectors if filtering is enabled. Otherwise, return original list
    * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
    * @param filterHook: the object that does filtering
