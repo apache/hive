@@ -976,11 +976,20 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean supportsPartitionAwareOptimization(org.apache.hadoop.hive.ql.metadata.Table table) {
-    if (hasUndergonePartitionEvolution(table)) {
-      // Don't support complex cases yet
+    final Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+    final Snapshot snapshot = IcebergTableUtil.getTableSnapshot(icebergTable, table);
+    if (snapshot == null) {
+      LOG.info("Don't support Partition-Aware Optimization because an unknown snapshot is specified");
       return false;
     }
-    final List<TransformSpec> specs = getPartitionTransformSpec(table);
+
+    final Set<Integer> partitionSpecIds = IcebergTableUtil.getPartitionSpecIds(snapshot, icebergTable.io());
+    if (partitionSpecIds.size() != 1) {
+      LOG.info("Don't support Partition-Aware Optimization when multiple partition specs are combined");
+      return false;
+    }
+    final int partitionSpecId = partitionSpecIds.iterator().next();
+    final List<TransformSpec> specs = IcebergTableUtil.getTransformSpecs(icebergTable, partitionSpecId);
     // Currently, we support the only bucket transform
     return specs.stream().anyMatch(IcebergTableUtil::isBucket);
   }
@@ -988,13 +997,20 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public PartitionAwareOptimizationCtx createPartitionAwareOptimizationContext(
       org.apache.hadoop.hive.ql.metadata.Table table) {
+    final Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+    final Snapshot snapshot = Objects.requireNonNull(IcebergTableUtil.getTableSnapshot(icebergTable, table));
+    final Set<Integer> partitionSpecIds = IcebergTableUtil.getPartitionSpecIds(snapshot, icebergTable.io());
+    Preconditions.checkArgument(partitionSpecIds.size() == 1);
+    final int partitionSpecId = partitionSpecIds.iterator().next();
+
     // Currently, we support the only bucket transform
     final List<String> bucketColumnNames = Lists.newArrayList();
     final List<Integer> numBuckets = Lists.newArrayList();
-    getPartitionTransformSpec(table).stream().filter(IcebergTableUtil::isBucket).forEach(spec -> {
-      bucketColumnNames.add(spec.getColumnName());
-      numBuckets.add(spec.getTransformParam().get());
-    });
+    IcebergTableUtil.getTransformSpecs(icebergTable, partitionSpecId).stream().filter(IcebergTableUtil::isBucket)
+        .forEach(spec -> {
+          bucketColumnNames.add(spec.getColumnName());
+          numBuckets.add(spec.getTransformParam().get());
+        });
 
     if (bucketColumnNames.isEmpty()) {
       return null;
