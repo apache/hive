@@ -24,7 +24,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.OptionalInt;
 import java.util.stream.IntStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
@@ -98,17 +97,17 @@ public class HiveIcebergSplit extends FileSplit
   }
 
   @Override
-  public OptionalInt getBucketId() {
+  public int getBucketId() {
     final StructLike key = innerSplit.taskGroup().groupingKey();
     if (key.size() == 0) {
-      return OptionalInt.empty();
+      throw new IllegalStateException("The grouping key is empty though a bucket id is requested");
     }
     final int[] bucketIds = IntStream
         .range(0, key.size())
         .map(i -> key.get(i, Integer.class))
         .toArray();
     final int hashCode = IcebergBucketFunction.getHashCode(bucketIds);
-    return OptionalInt.of(ObjectInspectorUtils.getBucketNumber(hashCode, numBuckets));
+    return ObjectInspectorUtils.getBucketNumber(hashCode, numBuckets);
   }
 
   @Override

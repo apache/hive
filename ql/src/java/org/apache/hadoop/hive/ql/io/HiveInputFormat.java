@@ -71,6 +71,7 @@ import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.Preconditions;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.Ref;
@@ -174,7 +175,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     public OptionalInt getBucketId() {
       if (inputSplit instanceof PartitionAwareSplit) {
-        return ((PartitionAwareSplit) inputSplit).getBucketId();
+        final int bucketId = ((PartitionAwareSplit) inputSplit).getBucketId();
+        Preconditions.checkArgument(bucketId >= 0);
+        return OptionalInt.of(bucketId);
       }
 
       final int bucketId = Utilities.parseSplitBucket(inputSplit);

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.util.OptionalInt;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 
 /**
@@ -27,8 +26,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 @Unstable
 public interface PartitionAwareSplit {
   /**
-   * Returns the bucket number of this split. OptionalInt.empty if this is not a bucketed split.
+   * Returns the bucket number of this split
    */
   @Unstable
-  OptionalInt getBucketId();
+  int getBucketId();
 }
