@@ -85,12 +85,12 @@ FROM `default`.`dst_union22_delta`
 WHERE `k0` <= 50 AND `ds` = '1'
 UNION ALL
 SELECT `t2`.`k1`, `t2`.`k2`, `t4`.`k3`, `t4`.`k4`
-FROM (SELECT `k1`, `k2`, `ds` = '1' AS `=`
+FROM (SELECT `k1`, `k2`, `ds` = '1' AS `EXPR$0`
 FROM `default`.`dst_union22`
 WHERE `k1` > 20) AS `t2`
 LEFT JOIN (SELECT `k1`, `k3`, `k4`
 FROM `default`.`dst_union22_delta`
-WHERE `k0` > 50 AND (`k1` > 20 AND `ds` = '1')) AS `t4` ON `t2`.`=` AND `t2`.`k1` = `t4`.`k1`
+WHERE `k0` > 50 AND `k1` > 20 AND `ds` = '1') AS `t4` ON `t2`.`EXPR$0` AND `t2`.`k1` = `t4`.`k1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

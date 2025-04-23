@@ -388,7 +388,7 @@ POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[OR(=($1, _UTF-16LE'a         '), =($1, _UTF-16LE'bb        '), =($1, _UTF-16LE'aa        '), =($1, _UTF-16LE'bbb       '), =($1, _UTF-16LE'ab        '), =($1, _UTF-16LE'ba        '), =($1, _UTF-16LE'aaa       '), =($1, _UTF-16LE'abc       '), =($1, _UTF-16LE'bc        '), =($1, _UTF-16LE'ac        '), =($1, _UTF-16LE'bca       '), =($1, _UTF-16LE'cab       '), =($1, _UTF-16LE'cb        '), =($1, _UTF-16LE'ca        '), =($1, _UTF-16LE'cbc       '), =($1, _UTF-16LE'z         '))])
+  HiveFilter(condition=[IN($1, _UTF-16LE'a', _UTF-16LE'aa', _UTF-16LE'aaa', _UTF-16LE'ab', _UTF-16LE'abc', _UTF-16LE'ac', _UTF-16LE'ba', _UTF-16LE'bb', _UTF-16LE'bbb', _UTF-16LE'bc', _UTF-16LE'bca', _UTF-16LE'ca', _UTF-16LE'cab', _UTF-16LE'cb', _UTF-16LE'cbc', _UTF-16LE'z')])
     HiveTableScan(table=[[default, ax]], table:alias=[ax])
 
 PREHOOK: query: explain select count(*) from ax where t in
@@ -417,10 +417,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ax
-                  filterExpr: ((t = 'a         ') or (t = 'bb        ') or (t = 'aa        ') or (t = 'bbb       ') or (t = 'ab        ') or (t = 'ba        ') or (t = 'aaa       ') or (t = 'abc       ') or (t = 'bc        ') or (t = 'ac        ') or (t = 'bca       ') or (t = 'cab       ') or (t = 'cb        ') or (t = 'ca        ') or (t = 'cbc       ') or (t = 'z         ')) (type: boolean)
+                  filterExpr: (t) IN ('a         ', 'aa        ', 'aaa       ', 'ab        ', 'abc       ', 'ac        ', 'ba        ', 'bb        ', 'bbb       ', 'bc        ', 'bca       ', 'ca        ', 'cab       ', 'cb        ', 'cbc       ', 'z         ') (type: boolean)
                   Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((t = 'a         ') or (t = 'bb        ') or (t = 'aa        ') or (t = 'bbb       ') or (t = 'ab        ') or (t = 'ba        ') or (t = 'aaa       ') or (t = 'abc       ') or (t = 'bc        ') or (t = 'ac        ') or (t = 'bca       ') or (t = 'cab       ') or (t = 'cb        ') or (t = 'ca        ') or (t = 'cbc       ') or (t = 'z         ')) (type: boolean)
+                    predicate: (t) IN ('a         ', 'aa        ', 'aaa       ', 'ab        ', 'abc       ', 'ac        ', 'ba        ', 'bb        ', 'bbb       ', 'bc        ', 'bca       ', 'ca        ', 'cab       ', 'cb        ', 'cbc       ', 'z         ') (type: boolean)
                     Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE

@@ -95,7 +95,6 @@ import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
-import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -169,6 +168,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggeste
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggesterFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
@@ -177,7 +177,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveJoinSwapConstraintsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveLoptOptimizeJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveEmptySingleRules;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
@@ -1622,7 +1624,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
        * recreate cluster, so that it picks up the additional traitDef
        */
       RelOptPlanner planner = createPlanner(conf, statsSource, ctx.isExplainPlan());
-      final RexBuilder rexBuilder = cluster.getRexBuilder();
+      final RexBuilder rexBuilder = new RexBuilder(new HiveTypeFactory());
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
       this.cluster = optCluster;
@@ -1754,6 +1756,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
         }
       }
+      calcitePlan = applySearchExpandTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.HIVE_SORT_PREDICATES);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
         calcitePlan = calcitePlan.accept(new HiveFilterSortPredicates(noColsMissingStats));
@@ -1763,6 +1767,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
       return calcitePlan;
+    }
+
+    private RelNode applySearchExpandTransforms(RelNode basePlan, RelMetadataProvider mdProvider,
+        RexExecutor executor) {
+      HepProgramBuilder searchProgram = new HepProgramBuilder();
+      searchProgram.addRuleCollection(ImmutableList.of(HiveSearchRules.FILTER_SEARCH_EXPAND,
+          HiveSearchRules.PROJECT_SEARCH_EXPAND,
+          HiveSearchRules.JOIN_SEARCH_EXPAND));
+      return executeProgram(basePlan, searchProgram.build(), mdProvider, executor);
     }
 
     /**
@@ -2154,7 +2167,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Map<List<String>, Integer> tableOccurrences = RelOptUtil.findAllTables(ctePlan).stream()
           .map(RelOptTable::getQualifiedName)
           .collect(Collectors.toMap(Function.identity(), v -> 1, Integer::sum));
-      CteRuleConfig cteConfig = CteRuleConfig.DEFAULT
+      CteRuleConfig cteConfig = CteRuleConfig.config()
           .withReferenceThreshold(referenceThreshold)
           .withTableOccurrences(tableOccurrences);
       HepProgram spoolProgram = HepProgram.builder()
@@ -2277,7 +2290,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           rules.toArray(new RelOptRule[0]));
       // Join reordering
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
-          new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
+          new JoinToMultiJoinRule(HiveJoin.class), HiveLoptOptimizeJoinRule.INSTANCE);
 
       RelNode calciteOptimizedPlan;
       try {
@@ -2357,6 +2370,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
             HiveWindowingLastValueRewrite.INSTANCE);
       }
+
+      // Expand SEARCH since JDBC (and potentially other federation rules) do not know how to handle it.
+      generatePartialProgram(program,
+          true,
+          HepMatchOrder.DEPTH_FIRST,
+          HiveSearchRules.PROJECT_SEARCH_EXPAND,
+          HiveSearchRules.FILTER_SEARCH_EXPAND,
+          HiveSearchRules.JOIN_SEARCH_EXPAND);
 
       // 7. Apply Druid transformation rules
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,

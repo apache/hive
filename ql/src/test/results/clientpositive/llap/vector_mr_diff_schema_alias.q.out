@@ -322,10 +322,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_n2
-                  filterExpr: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
+                  filterExpr: ((s_state) IN ('AL', 'KS', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
+                    predicate: ((s_state) IN ('AL', 'KS', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int), s_state (type: string)

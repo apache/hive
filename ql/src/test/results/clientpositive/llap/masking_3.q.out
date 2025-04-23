@@ -2532,10 +2532,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 CBO PLAN:
 HiveProject(key=[$5], value=[$6], key1=[$0], value1=[$1], ds=[$2], hr=[$3])
   HiveJoin(condition=[=($7, $4)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(key=[$0], value=[$1], ds=[$2], hr=[$3], CAST=[CAST($0):DOUBLE])
+    HiveProject(key=[$0], value=[$1], ds=[$2], hr=[$3], EXPR$0=[CAST($0):DOUBLE])
       HiveFilter(condition=[IS NOT NULL(CAST($0):DOUBLE)])
         HiveTableScan(table=[[default, srcpart]], table:alias=[srcpart])
-    HiveProject(key=[$0], value=[$1], CAST=[CAST($0):DOUBLE])
+    HiveProject(key=[$0], value=[$1], EXPR$0=[CAST($0):DOUBLE])
       HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
         HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
           HiveFilter(condition=[IS NOT NULL(CAST($0):DOUBLE)])

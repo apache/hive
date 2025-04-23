@@ -54,7 +54,7 @@ CBO PLAN:
 HiveProject(bd_id=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(bd_id=[$0])
-      HiveFilter(condition=[AND(OR(=($0, 8), <>($0, 8)), OR(AND(=($0, 8), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, 9), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))), IS NOT NULL($0))])
+      HiveFilter(condition=[AND(OR(AND(=($0, 8), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, 9), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))), IS NOT NULL($0))])
         HiveTableScan(table=[[default, tablea]], table:alias=[t])
     HiveProject($f0=[$0])
       HiveFilter(condition=[=($1, 2)])

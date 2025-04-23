@@ -156,7 +156,7 @@ public class TestCounterMapping {
     OpTreeSignature filterSig = pm.lookup(OpTreeSignature.class, fos.get(0));
     Object pred = filterSig.getSig().getSigMap().get("getPredicateString");
 
-    assertEquals("((u = 1) or (u = 2)) (type: boolean)", pred);
+    assertEquals("(u) IN (1, 2) (type: boolean)", pred);
 
   }
 

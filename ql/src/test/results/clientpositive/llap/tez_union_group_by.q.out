@@ -159,7 +159,7 @@ HiveJoin(condition=[=($1, $0)], joinType=[right], algorithm=[none], cost=[not av
         HiveProject(t=[$0], st=[$1])
           HiveFilter(condition=[IS NOT NULL($0)])
             HiveTableScan(table=[[default, v_n15]], table:alias=[v_n15])
-  HiveProject(u=[$0])
+  HiveProject($f0=[$0])
     HiveFilter(condition=[<=($1, _UTF-16LE'2014-09-02')])
       HiveAggregate(group=[{0}], agg#0=[min($1)])
         HiveProject(u=[$0], date=[$1])

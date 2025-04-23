@@ -74,4 +74,9 @@ public class HiveSqlSumEmptyIsZeroAggFunction extends SqlAggFunction {
     }
     return super.unwrap(clazz);
   }
+
+  @Override
+  public SqlAggFunction getRollup() {
+    return this;
+  }
 }
