@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -91,7 +90,7 @@ public final class StatsUpdater {
             if (compactionQueueName != null && compactionQueueName.length() > 0) {
                 conf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
             }
-            SessionState sessionState = DriverUtils.setUpSessionState(conf, userName, true);
+            SessionState sessionState = DriverUtils.setUpAndStartSessionState(conf, userName);
             DriverUtils.runOnDriver(conf, sessionState, sb.toString());
         } catch (Throwable t) {
             LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +

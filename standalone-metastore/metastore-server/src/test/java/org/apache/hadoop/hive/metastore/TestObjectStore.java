@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -941,6 +942,31 @@ public class TestObjectStore {
           Collections.singletonList("test_part_col"));
     }
     Assert.assertEquals(0, stat.size());
+  }
+
+  @Test
+  public void testAggrStatsUseDB() throws Exception {
+    Configuration conf2 = MetastoreConf.newMetastoreConf(conf);
+    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_BITVECTOR, false);
+    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_KLL, false);
+    objectStore.setConf(conf2);
+
+    createPartitionedTable(true, true);
+
+    AggrStats aggrStats;
+    try (AutoCloseable c = deadline()) {
+      aggrStats = objectStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"), ENGINE);
+    }
+    List<ColumnStatisticsObj> stats = aggrStats.getColStats();
+    Assert.assertEquals(1, stats.size());
+    Assert.assertEquals(3, aggrStats.getPartsFound());
+
+    ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
+        .low(3L).high(4L).build();
+    assertEqualStatistics(expectedStats, computedStats);
   }
 
   /**

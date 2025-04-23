@@ -86,7 +86,7 @@ public class TestVectorUDAFBloomFilterMerge {
 
   private byte[] getBloomKFilterBytesFromStringValues(int expectedEntries, String... values)
       throws IOException {
-    BloomKFilter bf = new BloomKFilter(expectedEntries);
+    BloomKFilter bf = BloomKFilter.build(expectedEntries);
     for (String val : values) {
       bf.addString(val);
     }

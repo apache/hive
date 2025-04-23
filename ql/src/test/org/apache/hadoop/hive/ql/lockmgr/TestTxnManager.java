@@ -62,7 +62,7 @@ class TestTxnManager extends DummyTxnManager {
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
                                               String validTxnList) throws LockException {
     // Format : <txnId>$<table_name>:<hwm>:<minOpenWriteId>:<open_writeids>:<abort_writeids>
-    return new ValidTxnWriteIdList(getCurrentTxnId() + DOLLAR.toString() + "db.table" + COLON +
+    return ValidTxnWriteIdList.fromValue(getCurrentTxnId() + DOLLAR.toString() + "db.table" + COLON +
         getCurrentTxnId() + COLON +
         getCurrentTxnId() + COLON +
         getCurrentTxnId() + COLON);

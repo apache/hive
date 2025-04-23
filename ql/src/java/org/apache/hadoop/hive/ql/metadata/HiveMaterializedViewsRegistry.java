@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
@@ -167,12 +168,10 @@ public final class HiveMaterializedViewsRegistry {
 
     @Override
     public void run() {
-      SessionState ss = new SessionState(db.getConf());
-      ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
-      SessionState.start(ss);
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
+        DriverUtils.setUpAndStartSessionState(db.getConf());
+        perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
             RelOptMaterialization existingMV = getRewritingMaterializedView(

@@ -1,0 +1,62 @@
+PREHOOK: query: create table source_table2(date_col date, string_col string, decimal_col decimal(38,0)) clustered by (decimal_col) into 7 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source_table2
+POSTHOOK: query: create table source_table2(date_col date, string_col string, decimal_col decimal(38,0)) clustered by (decimal_col) into 7 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source_table2
+PREHOOK: query: insert into table source_table2 values
+('2022-08-30', 'pipeline', '50000000000000000005905545593'), ('2022-08-16', 'pipeline', '50000000000000000005905545593'), ('2022-09-01', 'pipeline', '50000000000000000006008686831'), ('2022-08-30', 'pipeline', '50000000000000000005992620837'), ('2022-09-01', 'pipeline', '50000000000000000005992620837'), ('2022-09-01', 'pipeline', '50000000000000000005992621067'),
+('2022-08-30', 'pipeline', '50000000000000000005992621067')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source_table2
+POSTHOOK: query: insert into table source_table2 values
+('2022-08-30', 'pipeline', '50000000000000000005905545593'), ('2022-08-16', 'pipeline', '50000000000000000005905545593'), ('2022-09-01', 'pipeline', '50000000000000000006008686831'), ('2022-08-30', 'pipeline', '50000000000000000005992620837'), ('2022-09-01', 'pipeline', '50000000000000000005992620837'), ('2022-09-01', 'pipeline', '50000000000000000005992621067'),
+('2022-08-30', 'pipeline', '50000000000000000005992621067')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source_table2
+POSTHOOK: Lineage: source_table2.date_col SCRIPT []
+POSTHOOK: Lineage: source_table2.decimal_col SCRIPT []
+POSTHOOK: Lineage: source_table2.string_col SCRIPT []
+PREHOOK: query: create table target_table2(date_col date, string_col string, decimal_col decimal(38,0)) clustered by (decimal_col) into 7 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target_table2
+POSTHOOK: query: create table target_table2(date_col date, string_col string, decimal_col decimal(38,0)) clustered by (decimal_col) into 7 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target_table2
+PREHOOK: query: insert into table target_table2 values
+('2017-05-17', 'pipeline', '50000000000000000000441610525'), ('2018-12-20', 'pipeline', '50000000000000000001048981030'), ('2020-06-30', 'pipeline', '50000000000000000002332575516'), ('2021-08-16', 'pipeline', '50000000000000000003897973989'), ('2017-06-06', 'pipeline', '50000000000000000000449148729'), ('2017-09-08', 'pipeline', '50000000000000000000525378314'),
+('2022-08-30', 'pipeline', '50000000000000000005905545593'), ('2022-08-16', 'pipeline', '50000000000000000005905545593'), ('2018-05-03', 'pipeline', '50000000000000000000750826355'), ('2020-01-10', 'pipeline', '50000000000000000001816579677'), ('2021-11-01', 'pipeline', '50000000000000000004269423714'), ('2017-11-07', 'pipeline', '50000000000000000000585901787'),
+('2019-10-15', 'pipeline', '50000000000000000001598843430'), ('2020-04-01', 'pipeline', '50000000000000000002035795461'), ('2020-02-24', 'pipeline', '50000000000000000001932600185'), ('2020-04-27', 'pipeline', '50000000000000000002108160849'), ('2016-07-05', 'pipeline', '50000000000000000000054405114'), ('2020-06-02', 'pipeline', '50000000000000000002234387967'),
+('2020-08-21', 'pipeline', '50000000000000000002529168758'), ('2021-02-17', 'pipeline', '50000000000000000003158511687')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@target_table2
+POSTHOOK: query: insert into table target_table2 values
+('2017-05-17', 'pipeline', '50000000000000000000441610525'), ('2018-12-20', 'pipeline', '50000000000000000001048981030'), ('2020-06-30', 'pipeline', '50000000000000000002332575516'), ('2021-08-16', 'pipeline', '50000000000000000003897973989'), ('2017-06-06', 'pipeline', '50000000000000000000449148729'), ('2017-09-08', 'pipeline', '50000000000000000000525378314'),
+('2022-08-30', 'pipeline', '50000000000000000005905545593'), ('2022-08-16', 'pipeline', '50000000000000000005905545593'), ('2018-05-03', 'pipeline', '50000000000000000000750826355'), ('2020-01-10', 'pipeline', '50000000000000000001816579677'), ('2021-11-01', 'pipeline', '50000000000000000004269423714'), ('2017-11-07', 'pipeline', '50000000000000000000585901787'),
+('2019-10-15', 'pipeline', '50000000000000000001598843430'), ('2020-04-01', 'pipeline', '50000000000000000002035795461'), ('2020-02-24', 'pipeline', '50000000000000000001932600185'), ('2020-04-27', 'pipeline', '50000000000000000002108160849'), ('2016-07-05', 'pipeline', '50000000000000000000054405114'), ('2020-06-02', 'pipeline', '50000000000000000002234387967'),
+('2020-08-21', 'pipeline', '50000000000000000002529168758'), ('2021-02-17', 'pipeline', '50000000000000000003158511687')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target_table2
+POSTHOOK: Lineage: target_table2.date_col SCRIPT []
+POSTHOOK: Lineage: target_table2.decimal_col SCRIPT []
+POSTHOOK: Lineage: target_table2.string_col SCRIPT []
+PREHOOK: query: select * from target_table2 t inner join (select distinct date_col, 'pipeline' string_col, decimal_col from source_table2 where coalesce(decimal_col,'') = '50000000000000000005905545593') s on s.date_col = t.date_col AND s.string_col = t.string_col AND s.decimal_col = t.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table2
+PREHOOK: Input: default@target_table2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table2 t inner join (select distinct date_col, 'pipeline' string_col, decimal_col from source_table2 where coalesce(decimal_col,'') = '50000000000000000005905545593') s on s.date_col = t.date_col AND s.string_col = t.string_col AND s.decimal_col = t.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table2
+POSTHOOK: Input: default@target_table2
+#### A masked pattern was here ####
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593

@@ -23,6 +23,7 @@ import java.security.PrivilegedExceptionAction;
 
 import org.apache.hadoop.hive.thrift.TFilterTransport;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.SuppressFBWarnings;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
@@ -38,6 +39,7 @@ import org.apache.thrift.transport.TTransportException;
  public class TUGIAssumingTransport extends TFilterTransport {
    protected UserGroupInformation ugi;
 
+   @SuppressFBWarnings(value= "EI_EXPOSE_REP2", justification = "intended")
    public TUGIAssumingTransport(TTransport wrapped, UserGroupInformation ugi) {
      super(wrapped);
      this.ugi = ugi;

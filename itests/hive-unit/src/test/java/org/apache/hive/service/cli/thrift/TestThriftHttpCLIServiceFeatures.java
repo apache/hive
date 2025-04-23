@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClie
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -231,8 +231,7 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
   }
 
   private static String getHttpUrl() {
-    return transportMode + "://" + host + ":"
-        + port +
+    return transportMode + "://" + IPStackUtils.concatHostPort(host, port) +
         "/" + thriftHttpPath + "/";
   }
 

@@ -1816,7 +1816,7 @@ class MetaStoreDirectSql {
 
   private BloomFilter createPartsBloomFilter(int maxPartsPerCacheNode, double fpp,
       List<String> partNames) {
-    BloomFilter bloomFilter = new BloomFilter(maxPartsPerCacheNode, fpp);
+    BloomFilter bloomFilter = BloomFilter.build(maxPartsPerCacheNode, fpp);
     for (String partName : partNames) {
       bloomFilter.add(partName.getBytes());
     }
@@ -1994,7 +1994,7 @@ class MetaStoreDirectSql {
     // Extrapolation is not needed.
     if (areAllPartsFound) {
       queryText = commonPrefix + " and \"COLUMN_NAME\" in (" + makeParams(colNames.size()) + ")"
-          + " and \"PARTITION_NAME\" in (" + makeParams(partNames.size()) + ")"
+          + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
           + " and \"ENGINE\" = ? "
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
