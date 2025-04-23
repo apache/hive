@@ -198,6 +198,7 @@ public class LlapOutputFormatService {
       LOG.debug("registering socket for: " + id);
       int maxPendingWrites = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES);
+      @SuppressWarnings("rawtypes")
       RecordWriter writer = new LlapRecordWriter(id,
           new ChunkedOutputStream(
               new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites), sendBufferSize, id));
