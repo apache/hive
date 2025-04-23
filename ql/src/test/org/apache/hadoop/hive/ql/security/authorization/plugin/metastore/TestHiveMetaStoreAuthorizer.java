@@ -44,10 +44,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.io.File;
+import java.util.stream.Collectors;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /*
@@ -370,6 +373,112 @@ public class TestHiveMetaStoreAuthorizer {
       String err = e.getMessage();
       if (StringUtils.isNotEmpty(err)) {
         assert (true);
+      }
+    }
+  }
+
+  @Test
+  public void testGetDatabaseObjects_UnauthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      Database db = new DatabaseBuilder()
+          .setName(dbName)
+          .build(conf);
+      hmsHandler.create_database(db);
+      GetDatabaseObjectsRequest request = new GetDatabaseObjectsRequest();
+      request.setCatalogName("hive");
+      hmsHandler.get_databases_req(request);
+      fail("Expected exception for unauthorized user");
+    } catch (Exception e) {
+      String err = e.getMessage();
+      assertTrue("Exception message should contain operation type",
+          err.contains("Operation type") && err.contains("not allowed for user:" + unAuthorizedUser));
+    } finally {
+      UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(superUser));
+      try {
+        hmsHandler.drop_database(dbName, true, false);
+      } catch (Exception e) {
+        // Ignore cleanup errors
+      }
+    }
+  }
+
+  @Test
+  public void testGetDatabaseObjects_AuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      Database db = new DatabaseBuilder()
+          .setName(dbName)
+          .setOwnerName(authorizedUser)
+          .build(conf);
+      hmsHandler.create_database(db);
+      GetDatabaseObjectsRequest request = new GetDatabaseObjectsRequest();
+      request.setCatalogName("hive");
+      GetDatabaseObjectsResponse response = hmsHandler.get_databases_req(request);
+
+      assertNotNull("Response should not be null", response);
+      assertNotNull("Databases list should not be null", response.getDatabases());
+      assertTrue("Should find the created database",
+          response.getDatabases().stream().anyMatch(d -> d.getName().equals(dbName)));
+    } finally {
+      try {
+        hmsHandler.drop_database(dbName, true, false);
+      } catch (Exception e) {
+        // Ignore cleanup errors
+      }
+    }
+  }
+
+  @Test
+  public void testGetDatabaseObjects_WithPattern() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    String testDb1 = "test_db1";
+    String testDb2 = "test_db2";
+    String otherDb = "other_db";
+
+    try {
+      // Create test databases
+      Database db1 = new DatabaseBuilder()
+          .setName(testDb1)
+          .setOwnerName(authorizedUser)
+          .build(conf);
+      hmsHandler.create_database(db1);
+
+      Database db2 = new DatabaseBuilder()
+          .setName(testDb2)
+          .setOwnerName(authorizedUser)
+          .build(conf);
+      hmsHandler.create_database(db2);
+
+      Database db3 = new DatabaseBuilder()
+          .setName(otherDb)
+          .setOwnerName(authorizedUser)
+          .build(conf);
+      hmsHandler.create_database(db3);
+
+      // Fetch database objects with pattern
+      GetDatabaseObjectsRequest request = new GetDatabaseObjectsRequest();
+      request.setCatalogName("hive");
+      request.setPattern("test_*");
+      GetDatabaseObjectsResponse response = hmsHandler.get_databases_req(request);
+
+      assertNotNull("Response should not be null", response);
+      assertNotNull("Databases list should not be null", response.getDatabases());
+
+      List<String> dbNames = response.getDatabases().stream()
+          .map(Database::getName)
+          .collect(Collectors.toList());
+
+      assertTrue("Should find test_db1", dbNames.contains(testDb1));
+      assertTrue("Should find test_db2", dbNames.contains(testDb2));
+      assertFalse("Should not find other_db", dbNames.contains(otherDb));
+    } finally {
+      try {
+        hmsHandler.drop_database(testDb1, true, false);
+        hmsHandler.drop_database(testDb2, true, false);
+        hmsHandler.drop_database(otherDb, true, false);
+      } catch (Exception e) {
+        // Ignore cleanup errors
       }
     }
   }
