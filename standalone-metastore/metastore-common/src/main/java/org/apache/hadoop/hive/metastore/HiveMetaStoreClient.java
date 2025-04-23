@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
@@ -79,6 +80,8 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.http.HttpException;
@@ -377,6 +380,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 return null;
               }
             });
+        Collection<Token<? extends TokenIdentifier>> tokens = UserGroupInformation.getCurrentUser().getTokens();
+        for (Token<? extends TokenIdentifier> token : tokens) {
+          if (token.getKind().equals(DelegationTokenIdentifier.HIVE_DELEGATION_KIND)) {
+            // We have a delegation token for current user, so we can use it to connect to the metastore
+            LOG.info("Found delegation token for " + proxyUser);
+            return;
+          }
+        }
+
         String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
         String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
         SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
