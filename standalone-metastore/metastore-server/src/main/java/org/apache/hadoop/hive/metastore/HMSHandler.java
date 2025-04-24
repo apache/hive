@@ -1931,11 +1931,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       response.setDatabases(dbs);
     } catch (Exception e) {
       ex = e;
-      if (e instanceof MetaException) {
-        throw (MetaException) e;
-      } else {
-        throw newMetaException(e);
-      }
+      throw newMetaException(e);
     } finally {
       endFunction("get_databases_req", dbs != null, ex);
     }
