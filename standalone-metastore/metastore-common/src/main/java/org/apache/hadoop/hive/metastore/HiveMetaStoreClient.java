@@ -72,7 +72,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
@@ -80,8 +79,6 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.http.HttpException;
@@ -511,22 +508,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         promoteRandomMetaStoreURI();
       }
 
-      String tokenSig = MetastoreConf.getVar(conf, ConfVars.TOKEN_SIGNATURE);
-      try {
-        tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
-        if (tokenStrForm != null) {
-          renewDelegationToken(tokenStrForm);
-        } else {
-          generateProxyUserDelegationToken();
-        }
-      } catch (Exception e) {
-        LOG.error("Error while setting delegation token while reconnecting.", e);
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else {
-          throw new MetaException(e.getMessage());
-        }
-      }
+      generateProxyUserDelegationToken();
 
       open();
     }
