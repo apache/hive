@@ -394,7 +394,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
             delegationTokenPropString);
         MetastoreConf.setVar(this.conf, ConfVars.TOKEN_SIGNATURE, delegationTokenPropString);
-        close();
       } catch (Exception e) {
         LOG.error("Error while setting delegation token for " + proxyUser, e);
         if (e instanceof MetaException) {
@@ -402,6 +401,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         } else {
           throw new MetaException(e.getMessage());
         }
+      } finally {
+        close();
       }
     }
   }
