@@ -47,10 +47,10 @@ import java.util.Objects;
  *   <li>{@link HiveIn}, {@link HiveBetween}.</li>
  * </ul>
  * Below you can find an example from the transformation of a SEARCH expression of INTEGER type.
- * <pre>
+ * <pre>{@code
  * Input: SEARCH($9, Sarg[1, 2, 3, [10..15], (20..+∞)])
  * Output: OR(IN($9, 1, 2, 3), BETWEEN(false, $9, 10, 15), >($9, 20))
- * </pre>
+ * }</pre>
  *
  * @param <C> type of the Sarg literal
  */
