@@ -107,9 +107,7 @@ public class CachedStore implements RawStore, Configurable {
   private static int MAX_RETRIES = 10;
   // This is set to true only after prewarm is complete
   private static AtomicBoolean isCachePrewarmed = new AtomicBoolean(false);
-  // This is set to true only if we were able to cache all the metadata.
-  // We may not be able to cache all metadata if we hit CACHED_RAW_STORE_MAX_CACHE_MEMORY limit.
-  private static AtomicBoolean isCachedAllMetadata = new AtomicBoolean(false);
+
   private static TablesPendingPrewarm tblsPendingPrewarm = new TablesPendingPrewarm();
   private RawStore rawStore = null;
   private Configuration conf;
