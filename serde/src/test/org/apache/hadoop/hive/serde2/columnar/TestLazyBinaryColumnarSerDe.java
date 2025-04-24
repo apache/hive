@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import org.junit.Assert;
 import junit.framework.TestCase;
@@ -165,7 +166,7 @@ public class TestLazyBinaryColumnarSerDe {
     outerStruct.mByte  = 101;
     outerStruct.mShort = 2002;
     outerStruct.mInt = 3003;
-    outerStruct.mLong = 4004l;
+    outerStruct.mLong = ddd;
     outerStruct.mFloat = 5005.01f;
     outerStruct.mDouble = 6006.001d;
     outerStruct.mString = "";
@@ -234,7 +235,7 @@ public class TestLazyBinaryColumnarSerDe {
     outerStruct.mArray = new ArrayList<InnerStruct>(2);
     outerStruct.mArray.add(is1);
     outerStruct.mArray.add(is2);
-    outerStruct.mMap = new HashMap<String, InnerStruct>();
+    outerStruct.mMap = new LinkedHashMap<String, InnerStruct>(); //fixed line
     outerStruct.mMap.put(null, new InnerStruct(13, 14l));
     outerStruct.mMap.put(new String("fifteen"), null);
     outerStruct.mStruct = new InnerStruct(null, null);
