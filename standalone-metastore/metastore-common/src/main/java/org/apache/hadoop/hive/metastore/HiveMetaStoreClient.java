@@ -380,15 +380,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 return null;
               }
             });
-        Collection<Token<? extends TokenIdentifier>> tokens = UserGroupInformation.getCurrentUser().getTokens();
-        for (Token<? extends TokenIdentifier> token : tokens) {
-          if (token.getKind().equals(DelegationTokenIdentifier.HIVE_DELEGATION_KIND)) {
-            // We have a delegation token for current user, so we can use it to connect to the metastore
-            LOG.info("Found delegation token for " + proxyUser);
-            return;
-          }
-        }
-
         String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
         String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
         SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
@@ -520,7 +511,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         promoteRandomMetaStoreURI();
       }
 
-      generateProxyUserDelegationToken();
+      String tokenSig = MetastoreConf.getVar(conf, ConfVars.TOKEN_SIGNATURE);
+      try {
+        tokenStrForm = SecurityUtils.getTokenStrForm(tokenSig);
+        if (tokenStrForm != null) {
+          renewDelegationToken(tokenStrForm);
+        } else {
+          generateProxyUserDelegationToken();
+        }
+      } catch (Exception e) {
+        LOG.error("Error while setting delegation token while reconnecting.", e);
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw new MetaException(e.getMessage());
+        }
+      }
 
       open();
     }
