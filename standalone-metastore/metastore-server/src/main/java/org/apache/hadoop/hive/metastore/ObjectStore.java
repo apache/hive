@@ -1069,11 +1069,9 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MDatabase.class, filterBuilder.toString());
       query.setOrdering("name ascending");
       Collection<MDatabase> mDBs = (Collection<MDatabase>) query.executeWithArray(parameterVals.toArray(new String[0]));
-
       for (MDatabase mdb : mDBs) {
         databases.add(convertToDatabase(mdb));
       }
-
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
