@@ -6453,9 +6453,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (Exception e) { /* ignore */ }
 
     try {
-      ret = getMS().getAllTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      ret = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+      if (getIfServerFilterenabled()) {
+        List<TableMeta> filteredTableMetas = get_table_meta(dbname, "*", null);
+        ret = filteredTableMetas.stream()
+            .map(TableMeta::getTableName)
+            .collect(Collectors.toList());
+      } else {
+        ret = getMS().getAllTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      }
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
