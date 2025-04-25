@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,12 +29,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.TimeValidator;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,58 +96,12 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         String dbPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN);
         String tablePattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_PATTERN);
         String tableTypes = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_TYPES);
-        Set<String> tableTypesSet = new HashSet<>();
-        for (String type : tableTypes.split(",")) {
-          try {
-            tableTypesSet.add(TableType.valueOf(type.trim().toUpperCase()).name());
-          } catch (IllegalArgumentException e) {
-            // ignore
-            LOG.warn("Unknown table type: {}", type);
-          }
-        }
-        // if tableTypes is empty, then a list with single empty string has to specified to scan no tables.
-        // specifying empty here is equivalent to disabling the partition discovery altogether as it scans no tables.
-        if (tableTypesSet.isEmpty()) {
-          LOG.info("Skipping partition management as no table types specified");
-          return;
-        }
-
-        StringBuilder filterBuilder = new StringBuilder()
-            .append(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
-            .append("discover__partitions").append(" like \"true\" ");
-        boolean external = tableTypesSet.contains(TableType.EXTERNAL_TABLE.name());
-        boolean managed = tableTypesSet.contains(TableType.MANAGED_TABLE.name());
-        if (!managed && external) {
-          // only for external tables
-          filterBuilder.append(" and ").append(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_TYPE)
-              .append(" = \"").append(TableType.EXTERNAL_TABLE.name()).append("\" ");
-        } else if (managed && !external) {
-          // only for managed tables
-          filterBuilder.append(" and ").append(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_TYPE)
-              .append(" = \"").append(TableType.MANAGED_TABLE.name()).append("\" ");
-        }
-        if (!tablePattern.trim().isEmpty()) {
-          filterBuilder.append(" and ")
-              .append(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME)
-              .append(" like \"").append(tablePattern.replaceAll("\\*", ".*")).append("\"");
-        }
-
-        List<String> databases = msc.getDatabases(catalogName, dbPattern);
-        List<TableName> candidates = new ArrayList<>();
-        for (String db : databases) {
-          Database database = msc.getDatabase(catalogName, db);
-          if (MetaStoreUtils.checkIfDbNeedsToBeSkipped(database)) {
-            LOG.debug("Skipping table under database: {}", db);
-            continue;
-          }
-          if (MetaStoreUtils.isDbBeingPlannedFailedOver(database)) {
-            LOG.info("Skipping table belongs to database {} being failed over.", db);
-            continue;
-          }
-          List<String> tablesNames = msc.listTableNamesByFilter(catalogName, db,
-              filterBuilder.toString(), -1);
-          tablesNames.forEach(tablesName -> candidates.add(TableName.fromString(tablesName, catalogName, db)));
-        }
+        List<TableName> candidates =
+            new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(tableTypes)
+                .tableCondition(
+                    hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "discover__partitions like \"true\" ")
+                .build()
+                .getTables();
 
         if (candidates.isEmpty()) {
           LOG.info("Got empty table list in catalog: {}, dbPattern: {}", catalogName, dbPattern);
