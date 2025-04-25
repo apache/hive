@@ -105,7 +105,9 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService";
-
+  @VisibleForTesting
+  static final String ICEBERG_TABLE_SNAPSHOT_EXPIRY_SERVICE_CLASS =
+      "org.apache.iceberg.mr.hive.metastore.task.IcebergHouseKeeperService";
   public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
           "metastore.authentication.ldap.userMembershipKey";
   public static final String METASTORE_RETRYING_HANDLER_CLASS =
@@ -916,6 +918,22 @@ public class MetastoreConf {
     HMS_HANDLER_PROXY_CLASS("metastore.hmshandler.proxy", "hive.metastore.hmshandler.proxy",
         METASTORE_RETRYING_HANDLER_CLASS,
         "The proxy class name of HMSHandler, default is RetryingHMSHandler."),
+    ICEBERG_TABLE_EXPIRY_INTERVAL("metastore.iceberg.table.expiry.interval",
+        "hive.metastore.iceberg.table.expiry.interval", 3600, TimeUnit.SECONDS,
+        "Time interval describing how often the iceberg table expiry service runs."),
+    ICEBERG_TABLE_EXPIRY_CATALOG_NAME("metastore.iceberg.table.expiry.catalog.name",
+        "hive.metastore.iceberg.table.expiry.catalog.name", "hive",
+        "Iceberg table expiry service looks for tables under the specified catalog name"),
+    ICEBERG_TABLE_EXPIRY_DATABASE_PATTERN("metastore.iceberg.table.expiry.database.pattern",
+        "hive.metastore.iceberg.table.expiry.database.pattern", "none",
+        "Iceberg table expiry service searches for tables using the specified database pattern. " +
+            "By default, the pattern is set to 'none', which results in no matches (this is intentional" +
+            "to avoid expensive metastore calls unless explicitly configured by the user)."),
+    ICEBERG_TABLE_EXPIRY_TABLE_PATTERN("metastore.iceberg.table.expiry.table.pattern",
+        "hive.metastore.iceberg.table.expiry.table.pattern", "none",
+        "Iceberg table expiry service tables for tables using the specified table pattern. " +
+            "By default, the pattern is set to 'none', which results in no matches (this is intentional" +
+            "to avoid expensive metastore calls unless explicitly configured by the user)."),
     IDENTIFIER_FACTORY("datanucleus.identifierFactory",
         "datanucleus.identifierFactory", "datanucleus1",
         "Name of the identifier factory to use when generating table/column names etc. \n" +
@@ -1493,7 +1511,8 @@ public class MetastoreConf {
             ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
             MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
-            PARTITION_MANAGEMENT_TASK_CLASS,
+            PARTITION_MANAGEMENT_TASK_CLASS + "," +
+            ICEBERG_TABLE_SNAPSHOT_EXPIRY_SERVICE_CLASS,
         "Comma-separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
