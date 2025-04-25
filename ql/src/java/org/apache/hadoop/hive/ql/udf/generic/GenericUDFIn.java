@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
-import com.esotericsoftware.minlog.Log;
-
 /**
  * GenericUDFIn
  *
