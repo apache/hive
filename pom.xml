@@ -1924,7 +1924,7 @@
             <additionalDependency>
               <groupId>io.dropwizard.metrics</groupId>
               <artifactId>metrics-core</artifactId>
-              <version>3.1.0</version>
+              <version>${dropwizard.version}</version>
             </additionalDependency>
           </additionalDependencies>
         </configuration>
