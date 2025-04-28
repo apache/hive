@@ -49,7 +49,7 @@ public class IcebergMergeTaskProperties implements MergeTaskProperties {
     if (jobContextList.isEmpty()) {
       return null;
     }
-    List<ContentFile> contentFiles = HiveIcebergOutputCommitter.getInstance().getOutputContentFiles(jobContextList);
+    List<ContentFile<?>> contentFiles = HiveIcebergOutputCommitter.getInstance().getOutputContentFiles(jobContextList);
     Properties pathToContentFile = new Properties();
     contentFiles.forEach(contentFile ->
         pathToContentFile.put(new Path(String.valueOf(contentFile.path())), contentFile));
