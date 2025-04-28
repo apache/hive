@@ -10280,7 +10280,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deletePartitionColumnStats(catName, dbName, tableName, partNames, colNames, engine);
+        if (directSql.deletePartitionColumnStats(catName, dbName, tableName, partNames, colNames, engine)){
+          directSql.updateColumnStatsAccurateForPartitions(catName, dbName, getTable(), partNames, colNames);
+          return true;
+        }
+        return false;
       }
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
@@ -10351,6 +10355,9 @@ public class ObjectStore implements RawStore, Configurable {
       } finally {
         b.closeAllQueries();
       }
+      // Update COLUMN_STATS_ACCURATE after stats are dropped
+      Table tbl = getTable(catName, dbName, tableName);
+      directSql.updateColumnStatsAccurateForPartitions(catName, dbName, tbl, partNames, colNames);
       ret = commitTransaction();
     } finally {
       rollbackAndCleanup(ret, null);
@@ -10373,7 +10380,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deleteTableColumnStatistics(getTable().getId(), colNames, engine);
+        if (directSql.deleteTableColumnStatistics(getTable().getId(), colNames, engine)){
+          directSql.updateColumnStatsAccurateForTable(getTable(), colNames);
+          return true;
+        }
+        return false;
       }
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
@@ -10427,6 +10438,16 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
             + tableName + " col=" + String.join(", ", colNames));
+      }
+      if (mStatsObjColl != null) {
+        pm.deletePersistentAll(mStatsObjColl);
+        // Update COLUMN_STATS_ACCURATE to reflect the deletion
+        Table tbl = getTable(catName, dbName, tableName);
+        // Use the original colNames (can be null or empty)
+        directSql.updateColumnStatsAccurateForTable(tbl, colNames);
+      } else {
+        throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+                " table=" + tableName + " col=" + (colNames != null ? String.join(", ", colNames) : "ALL"));
       }
       ret = commitTransaction();
     } finally {
