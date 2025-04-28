@@ -1921,10 +1921,10 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> parameterVals = new ArrayList<>();
       appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
       if (dbNames != null && !dbNames.equals("*")) {
-        appendPatternCondition(filterBuilder, "database.name", dbNames, parameterVals);
+        appendPatternConditionCaseSensitive(filterBuilder, "database.name", dbNames, parameterVals);
       }
       if (tableNames != null && !tableNames.equals("*")) {
-        appendPatternCondition(filterBuilder, "tableName", tableNames, parameterVals);
+        appendPatternConditionCaseSensitive(filterBuilder, "tableName", tableNames, parameterVals);
       }
       if (tableTypes != null && !tableTypes.isEmpty()) {
         appendSimpleCondition(filterBuilder, "tableType", tableTypes.toArray(new String[0]), parameterVals);
@@ -1984,6 +1984,17 @@ public class ObjectStore implements RawStore, Configurable {
 
   private StringBuilder appendCondition(StringBuilder builder,
       String fieldName, String[] elements, boolean pattern, List<String> parameters) {
+    return appendCondition(builder, fieldName, elements, pattern, parameters, false);
+  }
+
+  private StringBuilder appendPatternConditionCaseSensitive(StringBuilder builder,
+      String fieldName, String elements, List<String> parameters) {
+    elements = normalizeIdentifier(elements);
+    return appendCondition(builder, fieldName, elements.split("\\|"), true, parameters, true);
+  }
+
+  private StringBuilder appendCondition(StringBuilder builder,
+      String fieldName, String[] elements, boolean pattern, List<String> parameters, boolean caseSensitive) {
     if (builder.length() > 0) {
       builder.append(" && ");
     }
@@ -1991,7 +2002,10 @@ public class ObjectStore implements RawStore, Configurable {
     int length = builder.length();
     for (String element : elements) {
       if (pattern) {
-        element = "(?i)" + element.replaceAll("\\*", ".*");
+        element = element.replaceAll("\\*", ".*");
+        if (!caseSensitive) {
+          element = "(?i)" + element;
+        }
       }
       parameters.add(element);
       if (builder.length() > length) {
