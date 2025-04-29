@@ -29,19 +29,19 @@ create table ice_orc_wo_evo (
     first_name string, 
     last_name string
  )
-partitioned by (dept_id bigint, 
+partitioned by (dept_id decimal(10, 2),
                 city string, 
                 registration_date date)
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
-insert into ice_orc_wo_evo VALUES ('fn1','ln1',1,'London','2024-03-11');
-insert into ice_orc_wo_evo VALUES ('fn2','ln2',1,'London','2024-03-11');
-insert into ice_orc_wo_evo VALUES ('fn3','ln3',1,'London','2024-03-11');
-insert into ice_orc_wo_evo VALUES ('fn4','ln4',1,'London','2024-03-11');
-insert into ice_orc_wo_evo VALUES ('fn5','ln5',2,'Paris','2024-02-16');
-insert into ice_orc_wo_evo VALUES ('fn6','ln6',2,'Paris','2024-02-16');
-insert into ice_orc_wo_evo VALUES ('fn7','ln7',2,'Paris','2024-02-16');
+insert into ice_orc_wo_evo VALUES ('fn1','ln1',100.10,'London','2024-03-11');
+insert into ice_orc_wo_evo VALUES ('fn2','ln2',100.10,'London','2024-03-11');
+insert into ice_orc_wo_evo VALUES ('fn3','ln3',100.10,'London','2024-03-11');
+insert into ice_orc_wo_evo VALUES ('fn4','ln4',100.10,'London','2024-03-11');
+insert into ice_orc_wo_evo VALUES ('fn5','ln5',203.20,'Paris','2024-02-16');
+insert into ice_orc_wo_evo VALUES ('fn6','ln6',203.20,'Paris','2024-02-16');
+insert into ice_orc_wo_evo VALUES ('fn7','ln7',203.20,'Paris','2024-02-16');
 
 update ice_orc_wo_evo set last_name = 'ln1a' where first_name='fn1';
 update ice_orc_wo_evo set last_name = 'ln2a' where first_name='fn2';
@@ -56,15 +56,15 @@ delete from ice_orc_wo_evo where last_name in ('ln1a', 'ln2a', 'ln7a');
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
 
-explain alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
-alter table ice_orc_wo_evo PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
+explain alter table ice_orc_wo_evo PARTITION (dept_id=100.10, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
+alter table ice_orc_wo_evo PARTITION (dept_id=100.10, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
 show compactions order by 'partition';
 
-explain alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
-alter table ice_orc_wo_evo PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
+explain alter table ice_orc_wo_evo PARTITION (dept_id=203.20, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
+alter table ice_orc_wo_evo PARTITION (dept_id=203.20, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;

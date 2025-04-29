@@ -13,7 +13,7 @@ POSTHOOK: Input: database:ice_comp
 PREHOOK: query: create table ice_orc (
     first_name string, 
     last_name string,
-    dept_id bigint
+    is_remote boolean
  )
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
@@ -23,42 +23,42 @@ PREHOOK: Output: ice_comp@ice_orc
 POSTHOOK: query: create table ice_orc (
     first_name string, 
     last_name string,
-    dept_id bigint
+    is_remote boolean
  )
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:ice_comp
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc VALUES ('fn1','ln1', 1)
+PREHOOK: query: insert into ice_orc VALUES ('fn1','ln1', true)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: ice_comp@ice_orc
-POSTHOOK: query: insert into ice_orc VALUES ('fn1','ln1', 1)
+POSTHOOK: query: insert into ice_orc VALUES ('fn1','ln1', true)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc VALUES ('fn2','ln2', 1)
+PREHOOK: query: insert into ice_orc VALUES ('fn2','ln2', true)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: ice_comp@ice_orc
-POSTHOOK: query: insert into ice_orc VALUES ('fn2','ln2', 1)
+POSTHOOK: query: insert into ice_orc VALUES ('fn2','ln2', true)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc VALUES ('fn3','ln3', 1)
+PREHOOK: query: insert into ice_orc VALUES ('fn3','ln3', true)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: ice_comp@ice_orc
-POSTHOOK: query: insert into ice_orc VALUES ('fn3','ln3', 1)
+POSTHOOK: query: insert into ice_orc VALUES ('fn3','ln3', true)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc VALUES ('fn4','ln4', 1)
+PREHOOK: query: insert into ice_orc VALUES ('fn4','ln4', true)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: ice_comp@ice_orc
-POSTHOOK: query: insert into ice_orc VALUES ('fn4','ln4', 1)
+POSTHOOK: query: insert into ice_orc VALUES ('fn4','ln4', true)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc
@@ -70,45 +70,45 @@ POSTHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
-PREHOOK: query: alter table ice_orc set partition spec(dept_id)
+PREHOOK: query: alter table ice_orc set partition spec(is_remote)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: ice_comp@ice_orc
-POSTHOOK: query: alter table ice_orc set partition spec(dept_id)
+POSTHOOK: query: alter table ice_orc set partition spec(is_remote)
 POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: ice_comp@ice_orc
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
+PREHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn5','ln5')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: ice_comp@ice_orc@dept_id=2
-POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
+PREHOOK: Output: ice_comp@ice_orc@is_remote=false
+POSTHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn5','ln5')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
-PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
+POSTHOOK: Output: ice_comp@ice_orc@is_remote=false
+PREHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn6','ln6')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: ice_comp@ice_orc@dept_id=2
-POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
+PREHOOK: Output: ice_comp@ice_orc@is_remote=false
+POSTHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn6','ln6')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
-PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
+POSTHOOK: Output: ice_comp@ice_orc@is_remote=false
+PREHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn7','ln7')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: ice_comp@ice_orc@dept_id=2
-POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
+PREHOOK: Output: ice_comp@ice_orc@is_remote=false
+POSTHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn7','ln7')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
-PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
+POSTHOOK: Output: ice_comp@ice_orc@is_remote=false
+PREHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn8','ln8')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: ice_comp@ice_orc@dept_id=2
-POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
+PREHOOK: Output: ice_comp@ice_orc@is_remote=false
+POSTHOOK: query: insert into ice_orc PARTITION(is_remote=false) VALUES ('fn8','ln8')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
+POSTHOOK: Output: ice_comp@ice_orc@is_remote=false
 PREHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
 PREHOOK: type: QUERY
 PREHOOK: Input: ice_comp@ice_orc
@@ -125,10 +125,10 @@ POSTHOOK: query: select * from ice_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
-fn1	ln1	1
-fn2	ln2	1
-fn5	ln5	2
-fn6	ln6	2
+fn1	ln1	true
+fn2	ln2	true
+fn5	ln5	false
+fn6	ln6	false
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ice_comp@ice_orc
@@ -138,11 +138,11 @@ POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
+is_remote           	boolean             	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
-dept_id             	IDENTITY            	 
+is_remote           	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
 Database:           	ice_comp            	 
@@ -151,15 +151,15 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"first_name\":\"true\",\"is_remote\":\"true\",\"last_name\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	compactor.threshold.target.size	1500                
-	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"is_remote\",\"required\":false,\"type\":\"boolean\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"deleted-data-files\":\"2\",\"deleted-records\":\"2\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"is_remote\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -207,10 +207,10 @@ POSTHOOK: query: select * from ice_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
-fn1	ln1	1
-fn2	ln2	1
-fn5	ln5	2
-fn6	ln6	2
+fn1	ln1	true
+fn2	ln2	true
+fn5	ln5	false
+fn6	ln6	false
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ice_comp@ice_orc
@@ -220,11 +220,11 @@ POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
+is_remote           	boolean             	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
-dept_id             	IDENTITY            	 
+is_remote           	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
 Database:           	ice_comp            	 
@@ -233,15 +233,15 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"first_name\":\"true\",\"is_remote\":\"true\",\"last_name\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	compactor.threshold.target.size	1500                
-	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"is_remote\",\"required\":false,\"type\":\"boolean\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
-	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"is_remote\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
@@ -274,5 +274,5 @@ PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
-#Masked#	ice_comp	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	ice_comp	ice_orc	is_remote=false	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
 #Masked#	ice_comp	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 

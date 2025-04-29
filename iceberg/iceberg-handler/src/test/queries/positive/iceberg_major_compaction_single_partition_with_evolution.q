@@ -29,42 +29,42 @@ create table ice_orc (
     last_name string,
     registration_date date
  )
-partitioned by (dept_id bigint, 
+partitioned by (dept_id float, 
                 city string)
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
-insert into ice_orc partition(dept_id=1, city='London') VALUES 
+insert into ice_orc partition(dept_id=1.5, city='London') VALUES 
 ('fn1','ln1','2024-03-11'),
 ('fn2','ln2','2024-03-11');
 
-insert into ice_orc partition(dept_id=1, city='London') VALUES 
+insert into ice_orc partition(dept_id=1.5, city='London') VALUES 
 ('fn3','ln3','2024-03-11'),
 ('fn4','ln4','2024-03-11');
 
-insert into ice_orc partition(dept_id=2, city='Paris') VALUES
+insert into ice_orc partition(dept_id=2.1, city='Paris') VALUES
 ('fn5','ln5','2024-02-16'),
 ('fn6','ln6','2024-02-16');
 
-insert into ice_orc partition(dept_id=2, city='Paris') VALUES
+insert into ice_orc partition(dept_id=2.1, city='Paris') VALUES
 ('fn7','ln7','2024-02-16'),
 ('fn8','ln8','2024-02-16');
 
 alter table ice_orc set partition spec(dept_id, city, registration_date);
 
-insert into ice_orc partition(dept_id=1, city='London', registration_date='2024-03-11') VALUES 
+insert into ice_orc partition(dept_id=1.5, city='London', registration_date='2024-03-11') VALUES 
 ('fn9','ln9'),
 ('fn10','ln10');
 
-insert into ice_orc partition(dept_id=1, city='London', registration_date='2024-03-11') VALUES 
+insert into ice_orc partition(dept_id=1.5, city='London', registration_date='2024-03-11') VALUES 
 ('fn11','ln11'),
 ('fn12','ln12');
 
-insert into ice_orc partition(dept_id=2, city='Paris', registration_date='2024-02-16') VALUES
+insert into ice_orc partition(dept_id=2.1, city='Paris', registration_date='2024-02-16') VALUES
 ('fn13','ln13'),
 ('fn14','ln14');
 
-insert into ice_orc partition(dept_id=2, city='Paris', registration_date='2024-02-16') VALUES
+insert into ice_orc partition(dept_id=2.1, city='Paris', registration_date='2024-02-16') VALUES
 ('fn15','ln15'),
 ('fn16','ln16');
 
@@ -73,26 +73,26 @@ delete from ice_orc where last_name in ('ln1', 'ln3', 'ln5', 'ln7', 'ln9', 'ln11
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
-alter table ice_orc PARTITION (dept_id=1, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
+explain alter table ice_orc PARTITION (dept_id=1.5, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
+alter table ice_orc PARTITION (dept_id=1.5, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
-alter table ice_orc PARTITION (dept_id=2, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
+explain alter table ice_orc PARTITION (dept_id=2.1, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
+alter table ice_orc PARTITION (dept_id=2.1, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc PARTITION (dept_id=1, city='London') COMPACT 'major' and wait;
-alter table ice_orc PARTITION (dept_id=1, city='London') COMPACT 'major' and wait;
+explain alter table ice_orc PARTITION (dept_id=1.5, city='London') COMPACT 'major' and wait;
+alter table ice_orc PARTITION (dept_id=1.5, city='London') COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc PARTITION (dept_id=2, city='Paris') COMPACT 'major' and wait;
-alter table ice_orc PARTITION (dept_id=2, city='Paris') COMPACT 'major' and wait;
+explain alter table ice_orc PARTITION (dept_id=2.1, city='Paris') COMPACT 'major' and wait;
+alter table ice_orc PARTITION (dept_id=2.1, city='Paris') COMPACT 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;

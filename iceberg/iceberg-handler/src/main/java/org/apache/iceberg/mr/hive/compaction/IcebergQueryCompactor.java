@@ -22,6 +22,10 @@ package org.apache.iceberg.mr.hive.compaction;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -38,10 +42,15 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
+import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.mr.hive.compaction.evaluator.CompactionEvaluator;
+import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +58,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
 
   private static final Logger LOG = LoggerFactory.getLogger(IcebergQueryCompactor.class.getName());
 
+  @SuppressWarnings("checkstyle:CyclomaticComplexity")
   @Override
   public boolean run(CompactorContext context) throws IOException, HiveException, InterruptedException {
 
@@ -96,16 +106,46 @@ public class IcebergQueryCompactor extends QueryCompactor  {
         throw new HiveException(ErrorMsg.COMPACTION_NO_PARTITION);
       }
     } else {
-      long partitionHash = IcebergTableUtil.getPartitionHash(icebergTable, partSpec);
+      Pair<Integer, StructProjection> partSpecPair =
+          IcebergTableUtil.getPartitionSpecIdAndStruct(icebergTable, partSpec);
+      int partitionSpecId = partSpecPair.getKey();
+      StructProjection partitionValues = partSpecPair.getValue();
+
+      HiveConf.setBoolVar(conf, ConfVars.HIVE_CONVERT_JOIN, false);
+      conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
       conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());
 
       Map<String, String> partSpecMap = new LinkedHashMap<>();
       Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
 
-      compactionQuery = String.format("insert overwrite table %1$s select * from %1$s where %2$s=%3$d " +
-              "and %4$s is not null %5$s %6$s", compactTableName, VirtualColumn.PARTITION_HASH.getName(), partitionHash,
-          VirtualColumn.FILE_PATH.getName(), fileSizePredicate == null ? "" : "and " + fileSizePredicate, orderBy);
+      Types.StructType partitionType = Partitioning.partitionType(icebergTable);
+      String partitionCondition = IntStream.range(0, partitionType.fields().size())
+          .mapToObj(i -> {
+            Types.NestedField field = partitionType.fields().get(i);
+            String name = "`partition`." + HiveUtils.unparseIdentifier(field.name());
+            String type = field.type().toString().equalsIgnoreCase("long") ? "bigint" :
+                field.type().toString();
+
+            Object value = partitionValues.get(i, Object.class);
+            if (type.equalsIgnoreCase("date") && value != null) {
+              value = String.format("date_add('1970-01-01', %s)", value);
+              type = "int";
+            }
+
+            String literal = value == null ? "NULL" : TypeInfoUtils.convertStringToLiteralForSQL(
+                value.toString(), ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(type))
+                    .getPrimitiveCategory()
+            );
+            return name + (Objects.equals(literal, "NULL") ? " IS NULL" : "=" + literal);
+          })
+          .collect(Collectors.joining(" and "));
+
+      compactionQuery = String.format("INSERT OVERWRITE TABLE %1$s SELECT * FROM %1$s " +
+            "WHERE %2$s IN (SELECT FILE_PATH FROM %1$s.FILES WHERE %3$s AND SPEC_ID=%5$d) AND %4$s = %5$d %6$s %7$s",
+        compactTableName, VirtualColumn.FILE_PATH.getName(), partitionCondition,
+        VirtualColumn.PARTITION_SPEC_ID.getName(), partitionSpecId,
+        fileSizePredicate == null ? "" : "AND " + fileSizePredicate, orderBy);
     }
 
     SessionState sessionState = setupQueryCompactionSession(conf, ci, tblProperties);
