@@ -317,7 +317,7 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   public void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException {
-    boolean runInTxn = compactionTxnId > -1;
+    boolean runInTxn = compactionTxnId > 0;
     jdbcResource.execute(
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = :highestWriteId, " +
             "\"CQ_RUN_AS\" = :runAs, \"CQ_TXN_ID\" = :txnId, \"CQ_TYPE\" = :type WHERE \"CQ_ID\" = :id",

@@ -66,8 +66,8 @@ public class IcebergCompactionService extends CompactionService {
         return false;
       }
       ci.type = type;
-      msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), -1);
     }
+    msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), 0);
 
     if (ci.runAs == null) {
       ci.runAs = TxnUtils.findUserToRunAs(table.getSd().getLocation(), table, conf);
