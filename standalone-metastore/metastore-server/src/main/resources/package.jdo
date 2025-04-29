@@ -115,6 +115,22 @@
       </field>
     </class>
 
+    <class name="MColumn" identity-type="application" table="COLUMNS_V2" detachable="true" objectid-class="MColumn$PK">
+      <foreign-key name="CD_ID" delete-action="cascade"/>
+      <field name="cd" primary-key="true">
+        <column name="CD_ID"/>
+      </field>
+      <field name="name" primary-key="true">
+        <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="type">
+        <column name="TYPE_NAME" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="comment">
+        <column name="COMMENT" length="256" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+    </class>
+
     <class name="MType" table="TYPES" detachable="true">  
       <field name="name" >  
         <column name="TYPE_NAME" length="128" jdbc-type="VARCHAR"/>  
@@ -364,32 +380,16 @@
       </field>
     </class>
 
-    <class name="MColumnDescriptor" identity-type="datastore" table="CDS" detachable="true">
-      <datastore-identity>
-        <column name="CD_ID"/>
-      </datastore-identity>
-      <field name="cols" persistence-modifier="persistent" table="COLUMNS_V2">
-        <collection element-type="MFieldSchema" dependent-element="true" />
-        <join>
-          <primary-key name="SQL110922153006740">
-            <column name="CD_ID"/>
-            <column name="COLUMN_NAME"/>
-          </primary-key>
-          <column name="CD_ID"/>
-        </join>
-        <element>
-          <embedded>
-            <field name="name">
-              <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
-            </field>
-            <field name="type">
-              <column name="TYPE_NAME" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
-            </field>
-            <field name="comment">
-              <column name="COMMENT" length="256" jdbc-type="VARCHAR" allows-null="true"/>
-            </field>
-          </embedded>
-        </element>
+    <class name="MColumnDescriptor" identity-type="application" table="CDS" detachable="true">
+      <field name="id" primary-key="true" value-strategy="native">
+        <column name="CD_ID" jdbc-type="BIGINT" />
+      </field>
+      <field name="fields" mapped-by="cd">
+        <order column="INTEGER_IDX"/>
+        <collection element-type="MColumn" dependent-element="true" />
+      </field>
+      <field name="columns" persistence-modifier="none">
+        <collection element-type="MFieldSchema" dependent-element="true" default-fetch-group="false"/>
       </field>
     </class>
 
