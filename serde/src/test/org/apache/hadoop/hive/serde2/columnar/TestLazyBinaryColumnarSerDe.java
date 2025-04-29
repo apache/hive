@@ -166,7 +166,7 @@ public class TestLazyBinaryColumnarSerDe {
     outerStruct.mByte  = 101;
     outerStruct.mShort = 2002;
     outerStruct.mInt = 3003;
-    outerStruct.mLong = ddd;
+    outerStruct.mLong = 40041;
     outerStruct.mFloat = 5005.01f;
     outerStruct.mDouble = 6006.001d;
     outerStruct.mString = "";
