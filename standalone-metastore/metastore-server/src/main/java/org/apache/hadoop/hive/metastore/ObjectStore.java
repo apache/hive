@@ -622,13 +622,13 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
-    openTrasactionCalls--;
-    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
 
-    if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
+    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
+    if ((openTrasactionCalls == 1) && currentTransaction.isActive()) {
       transactionStatus = TXN_STATUS.COMMITED;
       currentTransaction.commit();
     }
+    openTrasactionCalls--;
     return true;
   }
 
@@ -3247,28 +3247,38 @@ public class ObjectStore implements RawStore, Configurable {
   public Partition getPartitionWithAuth(String catName, String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
-    try {
-      openTransaction();
-      MPartition mpart = getMPartition(catName, dbName, tblName, partVals, null);
-      if (mpart == null) {
-        throw new NoSuchObjectException("partition values="
-            + partVals.toString());
-      }
-      MTable mtbl = mpart.getTable();
-
-      Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()));
-      if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-        String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
-            .getPartitionKeys()), partVals);
-        PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(catName, dbName,
-            tblName, partName, user_name, group_names);
-        part.setPrivileges(partAuth);
+    return new GetHelper<Partition>(catName, dbName, tblName, false, true) {
+      @Override
+      protected String describeResult() {
+        return "partition with auth";
       }
 
-      return part;
-    } finally {
-      commitTransaction();
-    }
+      @Override
+      protected Partition getSqlResult(GetHelper<Partition> ctx) throws MetaException {
+        throw new UnsupportedOperationException("UnsupportedOperationException");
+      }
+
+      @Override
+      protected Partition getJdoResult(GetHelper<Partition> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        MPartition mpart = getMPartition(catName, dbName, tblName, partVals, null);
+        if (mpart == null) {
+          throw new NoSuchObjectException("partition values="
+              + partVals.toString());
+        }
+        MTable mtbl = mpart.getTable();
+
+        Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()));
+        if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+          String partName = Warehouse.makePartName(convertToFieldSchemas(mtbl
+              .getPartitionKeys()), partVals);
+          PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, dbName,
+              tblName, partName, user_name, group_names);
+          part.setPrivileges(partAuth);
+        }
+        return part;
+      }
+    }.run(false);
   }
 
   private List<Partition> convertToParts(String catName, String dbName, String tblName,

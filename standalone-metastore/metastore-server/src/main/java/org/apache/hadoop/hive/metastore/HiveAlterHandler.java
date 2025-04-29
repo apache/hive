@@ -141,6 +141,22 @@ public class HiveAlterHandler implements AlterHandler {
       throw new InvalidOperationException(errMsg);
     }
 
+    // Switching tables between catalogs is not allowed.
+    if (!catName.equalsIgnoreCase(newt.getCatName())) {
+      throw new InvalidOperationException("Tables cannot be moved between catalogs, old catalog" +
+          catName + ", new catalog " + newt.getCatName());
+    }
+
+    boolean rename = false;
+    // check if table with the new name already exists
+    if (!newTblName.equals(name) || !newDbName.equals(dbname)) {
+      if (msdb.getTable(catName, newDbName, newTblName, null) != null) {
+        throw new InvalidOperationException("new table " + newDbName
+            + "." + newTblName + " already exists");
+      }
+      rename = true;
+    }
+
     Path srcPath = null;
     FileSystem srcFs;
     Path destPath = null;
@@ -158,29 +174,6 @@ public class HiveAlterHandler implements AlterHandler {
     Map<String, String> txnAlterTableEventResponses = Collections.emptyMap();
 
     try {
-      boolean rename = false;
-      List<Partition> parts;
-
-      // Switching tables between catalogs is not allowed.
-      if (!catName.equalsIgnoreCase(newt.getCatName())) {
-        throw new InvalidOperationException("Tables cannot be moved between catalogs, old catalog" +
-            catName + ", new catalog " + newt.getCatName());
-      }
-
-      // check if table with the new name already exists
-      if (!newTblName.equals(name) || !newDbName.equals(dbname)) {
-        if (msdb.getTable(catName, newDbName, newTblName, null) != null) {
-          throw new InvalidOperationException("new table " + newDbName
-              + "." + newTblName + " already exists");
-        }
-        rename = true;
-      }
-
-      String expectedKey = environmentContext != null && environmentContext.getProperties() != null ?
-              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_KEY) : null;
-      String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
-              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
-
       msdb.openTransaction();
       // get old table
       // Note: we don't verify stats here; it's done below in alterTableUpdateTableColumnStats.
@@ -191,6 +184,10 @@ public class HiveAlterHandler implements AlterHandler {
             TableName.getQualified(catName, dbname, name) + " doesn't exist");
       }
 
+      String expectedKey = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_KEY) : null;
+      String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
       if (expectedKey != null && expectedValue != null) {
         String newValue = newt.getParameters().get(expectedKey);
         if (newValue == null) {
@@ -263,6 +260,7 @@ public class HiveAlterHandler implements AlterHandler {
       List<ColumnStatistics> columnStatistics = getColumnStats(msdb, oldt);
       columnStatistics = deleteTableColumnStats(msdb, oldt, newt, columnStatistics);
 
+      List<Partition> parts;
       if (!isRenameIcebergTable &&
           (replDataLocationChanged || renamedManagedTable || renamedTranslatedToExternalTable ||
               renamedExternalTable)) {

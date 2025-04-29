@@ -914,23 +914,24 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new InvalidObjectException("You must specify a path for the catalog");
       }
 
-      RawStore ms = getMS();
       Path catPath = new Path(catalog.getLocationUri());
       boolean madeDir = false;
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
-      try {
-        firePreEvent(new PreCreateCatalogEvent(this, catalog));
-        if (!wh.isDir(catPath)) {
-          if (!wh.mkdirs(catPath)) {
-            throw new MetaException("Unable to create catalog path " + catPath +
-                ", failed to create catalog " + catalog.getName());
-          }
-          madeDir = true;
+      firePreEvent(new PreCreateCatalogEvent(this, catalog));
+      if (!wh.isDir(catPath)) {
+        if (!wh.mkdirs(catPath)) {
+          throw new MetaException("Unable to create catalog path " + catPath +
+              ", failed to create catalog " + catalog.getName());
         }
+        madeDir = true;
+      }
+
+      RawStore ms = getMS();
+      try {
+        ms.openTransaction();
         // set the create time of catalog
         long time = System.currentTimeMillis() / 1000;
         catalog.setCreateTime((int) time);
-        ms.openTransaction();
         ms.createCatalog(catalog);
 
         // Create a default database inside the catalog
@@ -964,7 +965,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               transactionalListenersResponses, ms);
         }
       }
-      success = true;
     } catch (AlreadyExistsException|InvalidObjectException|MetaException e) {
       ex = e;
       throw e;
@@ -983,12 +983,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     GetCatalogResponse oldCat = null;
 
     try {
+      ms.openTransaction();
       oldCat = get_catalog(new GetCatalogRequest(rqst.getName()));
       // Above should have thrown NoSuchObjectException if there is no such catalog
       assert oldCat != null && oldCat.getCatalog() != null;
       firePreEvent(new PreAlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), this));
-
-      ms.openTransaction();
       ms.alterCatalog(rqst.getName(), rqst.getNewCat());
 
       if (!transactionalListeners.isEmpty()) {
@@ -1929,9 +1928,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
     try {
-      firePreEvent(new PreCreateDataConnectorEvent(connector, this));
-
       ms.openTransaction();
+      firePreEvent(new PreCreateDataConnectorEvent(connector, this));
       ms.createDataConnector(connector);
 
       if (!transactionalListeners.isEmpty()) {
