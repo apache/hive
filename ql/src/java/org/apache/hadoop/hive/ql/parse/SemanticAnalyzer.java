@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMIC_PARTITION_CONVERT;
@@ -11988,13 +11989,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // put virtual columns into RowResolver.
-      List<VirtualColumn> vcList = new ArrayList<>();
-      if (!tab.isNonNative()) {
-        vcList.addAll(VirtualColumn.getRegistry(conf));
-      }
-      if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab)) {
-        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
-      }
+      List<VirtualColumn> vcList = getVirtualColumns(tab);
 
       vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
               vc.getTypeInfo(), alias, true, vc.getIsHidden()
@@ -12191,6 +12186,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.debug("Created Table Plan for {} {}", alias, op);
 
     return output;
+  }
+
+  public List<VirtualColumn> getVirtualColumns(Table tab) {
+    List<VirtualColumn> virtualColumns = new ArrayList<>();
+    if (!tab.isNonNative()) {
+      virtualColumns.addAll(VirtualColumn.getRegistry(conf));
+    }
+    if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab)) {
+      virtualColumns.addAll(tab.getStorageHandler().acidVirtualColumns());
+    }
+    if (tab.isNonNative() && tab.getStorageHandler().areSnapshotsSupported() &&
+        isBlank(tab.getMetaTable())) {
+      virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
+    }
+    
+    return virtualColumns;
   }
 
   boolean isSkewedCol(String alias, QB qb, String colName) {

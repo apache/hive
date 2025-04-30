@@ -3092,33 +3092,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
           partitionColumns.add(colInfo);
         }
 
-        final TableType tableType = obtainTableType(tabMetaData);
-
         // 3.3 Add column info corresponding to virtual columns
-        List<VirtualColumn> virtualCols = new ArrayList<>();
-        if (tableType == TableType.NATIVE) {
-          virtualCols = VirtualColumn.getRegistry(conf);
-          if (AcidUtils.isNonNativeAcidTable(tabMetaData)) {
-            virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
-          }
-          if (tabMetaData.isNonNative() && tabMetaData.getStorageHandler().areSnapshotsSupported() &&
-              isBlank(tabMetaData.getMetaTable())) {
-            virtualCols.add(VirtualColumn.SNAPSHOT_ID);
-          }
-          for (VirtualColumn vc : virtualCols) {
-            colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
-                vc.getIsHidden());
-            rr.put(tableAlias, vc.getName().toLowerCase(), colInfo);
-            cInfoLst.add(colInfo);
-          }
-        }
+        List<VirtualColumn> virtualCols = getVirtualColumns(tabMetaData);
+
+        virtualCols
+            .forEach(vc ->
+                rr.put(tableAlias, vc.getName().toLowerCase(),
+                    new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true, vc.getIsHidden())
+                )
+            );
 
         // 4. Build operator
         Map<String, String> tabPropsFromQuery = qb.getTabPropsForAlias(tableAlias);
         HiveTableScan.HiveTableScanTrait tableScanTrait = HiveTableScan.HiveTableScanTrait.from(tabPropsFromQuery);
         RelOptHiveTable optTable;
-        if (tableType == TableType.DRUID ||
-                (tableType == TableType.JDBC && tabMetaData.getProperty(Constants.JDBC_TABLE) != null)) {
+        if (tabMetaData.isDruidTable() ||
+                (tabMetaData.isJdbcTable() && tabMetaData.getProperty(Constants.JDBC_TABLE) != null)) {
           // Create case sensitive columns list
           List<String> originalColumnNames =
                   ((StandardStructObjectInspector)rowObjectInspector).getOriginalColumnNames();
@@ -3136,7 +3125,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
           fullyQualifiedTabName.add(tabMetaData.getTableName());
 
-          if (tableType == TableType.DRUID) {
+          if (tabMetaData.isDruidTable()) {
             // Build Druid query
             String address = HiveConf.getVar(conf,
                   HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
@@ -3288,24 +3277,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return true;
-    }
-
-    private TableType obtainTableType(Table tabMetaData) {
-      if (tabMetaData.getStorageHandler() != null) {
-        final String storageHandlerStr = tabMetaData.getStorageHandler().toString();
-        if (storageHandlerStr
-            .equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
-          return TableType.DRUID;
-        }
-
-        if (storageHandlerStr
-            .equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)) {
-          return TableType.JDBC;
-        }
-
-      }
-
-      return TableType.NATIVE;
     }
 
     private RelNode genFilterRelNode(ASTNode filterNode, RelNode srcRel,
@@ -5383,12 +5354,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     HiveTezModelRelMetadataProvider.DEFAULT.register(HIVE_REL_NODE_CLASSES);
     HiveMaterializationRelMetadataProvider.DEFAULT.register(HIVE_REL_NODE_CLASSES);
     HiveRelFieldTrimmer.initializeFieldTrimmerClass(HIVE_REL_NODE_CLASSES);
-  }
-
-  private enum TableType {
-    DRUID,
-    NATIVE,
-    JDBC
   }
 
   private class OrderByRelBuilder {
