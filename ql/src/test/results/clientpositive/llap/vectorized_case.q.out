@@ -55,7 +55,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
+                  filterExpr: (csmallint) IN (418S, 10583S, 12205S) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -64,8 +64,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 1:smallint, values [418, 12205, 10583])
-                    predicate: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
+                        predicateExpression: FilterLongColumnInList(col 1:smallint, values [418, 10583, 12205])
+                    predicate: (csmallint) IN (418S, 10583S, 12205S) (type: boolean)
                     Statistics: Num rows: 7 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE ('c') END (type: string), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE ('c') END (type: string)
@@ -209,7 +209,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
+                  filterExpr: (csmallint) IN (418S, 10583S, 12205S) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -218,8 +218,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 1:smallint, values [418, 12205, 10583])
-                    predicate: (csmallint) IN (418S, 12205S, 10583S) (type: boolean)
+                        predicateExpression: FilterLongColumnInList(col 1:smallint, values [418, 10583, 12205])
+                    predicate: (csmallint) IN (418S, 10583S, 12205S) (type: boolean)
                     Statistics: Num rows: 7 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN ('b') ELSE (null) END (type: string), CASE WHEN ((csmallint = 418S)) THEN ('a') WHEN ((csmallint = 12205S)) THEN (null) ELSE ('c') END (type: string)

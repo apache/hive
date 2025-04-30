@@ -58,10 +58,10 @@ CBO PLAN:
 HiveProject(string_col=[$0])
   HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(string_col=[$0])
-      HiveFilter(condition=[IN($0, _UTF-16LE'AAA111':VARCHAR(14) CHARACTER SET "UTF-16LE", _UTF-16LE'BBB222':VARCHAR(14) CHARACTER SET "UTF-16LE")])
+      HiveFilter(condition=[AND(IS NOT NULL($0), IN($0, _UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET "UTF-16LE"))])
         HiveTableScan(table=[[default, l_table]], table:alias=[l_table])
     HiveProject(string_col=[$0])
-      HiveFilter(condition=[IN($0, _UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET "UTF-16LE")])
+      HiveFilter(condition=[AND(IS NOT NULL($0), IN($0, _UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET "UTF-16LE"))])
         HiveTableScan(table=[[default, r_table]], table:alias=[r_table])
 
 PREHOOK: query: SELECT l_table.string_col from l_table, r_table

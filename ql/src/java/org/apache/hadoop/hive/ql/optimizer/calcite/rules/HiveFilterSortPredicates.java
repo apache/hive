@@ -34,6 +34,7 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
 import org.slf4j.Logger;
@@ -240,9 +241,6 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
         case BETWEEN:
           return 3d;
 
-        case IN:
-          return 2d * (call.getOperands().size() - 1);
-
         case AND:
         case OR:
           return 1d * call.getOperands().size();
@@ -253,6 +251,9 @@ public class HiveFilterSortPredicates extends RelHomogeneousShuttle {
           return 8d;
 
         default:
+          if (HiveIn.INSTANCE.equals(call.op)) {
+            return 2d * (call.getOperands().size() - 1);
+          }
           // By default, we give this heuristic value to unrecognized functions.
           // The idea is that those functions will be more expensive to evaluate
           // than the simple functions considered above.

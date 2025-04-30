@@ -109,10 +109,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and ((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28))) (type: boolean)
+                  filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_dom is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 1168784 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and ((d_dom >= 1) or (d_dom <= 3) or (d_dom >= 25) or (d_dom <= 28))) (type: boolean)
+                    predicate: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_dom is not null) (type: boolean)
                     Statistics: Num rows: 249 Data size: 3984 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_date_sk (type: bigint)
@@ -167,10 +167,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County', 'Fairfield County', 'Jackson County', 'Barrow County', 'Pennington County') (type: boolean)
+                  filterExpr: (s_county) IN ('Barrow County', 'Fairfield County', 'Huron County', 'Jackson County', 'Kittitas County', 'Maverick County', 'Mobile County', 'Pennington County') (type: boolean)
                   Statistics: Num rows: 1704 Data size: 180624 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County', 'Fairfield County', 'Jackson County', 'Barrow County', 'Pennington County') (type: boolean)
+                    predicate: (s_county) IN ('Barrow County', 'Fairfield County', 'Huron County', 'Jackson County', 'Kittitas County', 'Maverick County', 'Mobile County', 'Pennington County') (type: boolean)
                     Statistics: Num rows: 107 Data size: 11342 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: s_store_sk (type: bigint)

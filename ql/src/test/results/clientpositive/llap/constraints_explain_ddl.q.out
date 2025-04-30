@@ -116,7 +116,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -133,9 +133,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: customer_removal_n0
-          filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+          filterExpr: (c_nation) IN ('INDIA', 'USA') (type: boolean)
           Filter Operator
-            predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+            predicate: (c_nation) IN ('INDIA', 'USA') (type: boolean)
             Select Operator
               expressions: c_custkey (type: bigint)
               outputColumnNames: _col0
@@ -187,7 +187,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -204,9 +204,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: customer_removal_n0
-          filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+          filterExpr: (c_nation) IN ('INDIA', 'USA') (type: boolean)
           Filter Operator
-            predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+            predicate: (c_nation) IN ('INDIA', 'USA') (type: boolean)
             Select Operator
               expressions: c_custkey (type: bigint)
               outputColumnNames: _col0
@@ -1349,7 +1349,7 @@ EXPLAIN VECTORIZED SELECT count(c_custkey) from customer_removal_n0 where c_nati
 group by c_custkey, c_nation;
 CBO PLAN:HiveProject(_o__c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
-    HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+    HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
       HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -1372,10 +1372,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_removal_n0
-                  filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+                  filterExpr: (c_nation) IN ('INDIA', 'USA') (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+                    predicate: (c_nation) IN ('INDIA', 'USA') (type: boolean)
                     Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_custkey (type: bigint)
@@ -4402,7 +4402,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
           HiveTableScan(table=[[default, customer]], table:alias=[customer])
-        HiveProject(ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+        HiveProject(ss_customer_sk=[$3], $f7=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
           HiveFilter(condition=[IS NOT NULL($3)])
             HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
@@ -4800,7 +4800,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
           HiveTableScan(table=[[default, customer]], table:alias=[customer])
-        HiveProject(ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+        HiveProject(ss_customer_sk=[$3], $f7=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
           HiveFilter(condition=[IS NOT NULL($3)])
             HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
@@ -5353,7 +5353,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
             HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
               HiveTableScan(table=[[default, customer]], table:alias=[customer])
             HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-              HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+              HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], $f8=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
                 HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
               HiveProject(d_date_sk=[$0])
@@ -5366,7 +5366,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
               HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
                 HiveTableScan(table=[[default, customer]], table:alias=[customer])
               HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-                HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+                HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], $f8=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
                   HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
                     HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                 HiveProject(d_date_sk=[$0])

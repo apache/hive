@@ -170,13 +170,13 @@ STAGE PLANS:
                     predicate: member is not null (type: boolean)
                     Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: member (type: bigint), if(((attr > 1L) or attr is null), attr, null) (type: bigint)
+                      expressions: member (type: bigint), if((attr is null or (attr > 1L)), attr, null) (type: bigint)
                       outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 7]
-                          selectExpressions: IfExprColumnNull(col 6:boolean, col 1:bigint, null)(children: ColOrCol(col 4:boolean, col 5:boolean)(children: LongColGreaterLongScalar(col 1:bigint, val 1) -> 4:boolean, IsNull(col 1:bigint) -> 5:boolean) -> 6:boolean, col 1:bigint) -> 7:bigint
+                          selectExpressions: IfExprColumnNull(col 6:boolean, col 1:bigint, null)(children: ColOrCol(col 4:boolean, col 5:boolean)(children: IsNull(col 1:bigint) -> 4:boolean, LongColGreaterLongScalar(col 1:bigint, val 1) -> 5:boolean) -> 6:boolean, col 1:bigint) -> 7:bigint
                       Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
