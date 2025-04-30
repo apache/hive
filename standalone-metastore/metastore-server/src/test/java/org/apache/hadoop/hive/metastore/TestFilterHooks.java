@@ -113,6 +113,9 @@ public class TestFilterHooks {
 
     @Override
     public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
       return tableMetas;
     }
 
