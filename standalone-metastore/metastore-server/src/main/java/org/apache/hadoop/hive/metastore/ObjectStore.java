@@ -11299,12 +11299,20 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (rqst.isSetEventTypeList()) {
         filterBuilder.append(" && (");
-        for (String eventType : rqst.getEventTypeList()) {
-          parameterVals.add(eventType);
-          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
-          filterBuilder.append("eventType == para" + parameterVals.size() + " || ");
+//        for (String eventType : rqst.getEventTypeList()) {
+//          parameterVals.add(eventType);
+//          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+//          filterBuilder.append("eventType == para" + parameterVals.size() + " || ");
+//        }
+        List<String> normalizedEventTypes = new ArrayList<>();
+        for (String eventType : rqst.getEventTypeList()){
+          // trim the extra spaces, and change to lowercase
+          normalizedEventTypes.add(normalizeIdentifier(eventType));
         }
-        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        parameterVals.add(normalizedEventTypes);
+        filterBuilder.append("param" + parameterVals.size() + ".contains(eventType)");
+        parameterBuilder.append(", java.util.Collection param" + parameterVals.size());
+//        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
         filterBuilder.append(") ");
       }
       if (rqst.isSetEventTypeSkipList()) {
