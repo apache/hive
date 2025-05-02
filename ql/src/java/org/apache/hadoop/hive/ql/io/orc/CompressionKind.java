@@ -27,7 +27,8 @@ public enum CompressionKind {
   NONE(org.apache.orc.CompressionKind.NONE),
   ZLIB(org.apache.orc.CompressionKind.ZLIB),
   SNAPPY(org.apache.orc.CompressionKind.SNAPPY),
-  LZO(org.apache.orc.CompressionKind.LZO);
+  LZO(org.apache.orc.CompressionKind.LZO),
+  ZSTD(org.apache.orc.CompressionKind.ZSTD);
 
   CompressionKind(org.apache.orc.CompressionKind underlying) {
     this.underlying = underlying;

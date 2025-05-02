@@ -107,9 +107,9 @@ POSTHOOK: query: select * from ctas_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: partition_cols_dedup@ctas_table_1
 #### A masked pattern was here ####
-3	3	3	3333	333	33
 1	1	1	1111	111	11
 2	2	2	2222	222	22
+3	3	3	3333	333	33
 4	4	4	4444	444	44
 5	5	5	5555	555	55
 PREHOOK: query: create table insert_overwrite_table (c1 int, c2 int) partitioned by (p1 int, p2 int)
