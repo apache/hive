@@ -12190,7 +12190,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public List<VirtualColumn> getVirtualColumns(Table tab) {
     List<VirtualColumn> virtualColumns = new ArrayList<>();
-    if (!tab.isNonNative()) {
+    if (tab.isNative()) {
       virtualColumns.addAll(VirtualColumn.getRegistry(conf));
     }
     if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab)) {

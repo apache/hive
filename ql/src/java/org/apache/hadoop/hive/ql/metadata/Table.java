@@ -1373,4 +1373,8 @@ public class Table implements Serializable {
   public boolean isJdbcTable() {
     return isNonNative() && getStorageHandler().toString().equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID);
   }
+  
+  public boolean isNative() {
+    return !isNonNative();
+  }
 }
