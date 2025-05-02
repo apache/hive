@@ -344,7 +344,7 @@ STAGE PLANS:
         TableScan
           alias: tbl_pred
           Filter Operator
-            predicate: ((t > -2Y) and (t < 0Y) and t is not null) (type: boolean)
+            predicate: ((t > -2Y) and (t < 0Y)) (type: boolean)
             Limit
               Number of rows: 10
               Select Operator
@@ -378,9 +378,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: tbl_pred
-          filterExpr: ((t > -2Y) and (t < 0Y) and t is not null) (type: boolean)
+          filterExpr: ((t > -2Y) and (t < 0Y)) (type: boolean)
           Filter Operator
-            predicate: ((t > -2Y) and (t < 0Y) and t is not null) (type: boolean)
+            predicate: ((t > -2Y) and (t < 0Y)) (type: boolean)
             Limit
               Number of rows: 10
               Select Operator

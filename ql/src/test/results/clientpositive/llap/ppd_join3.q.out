@@ -43,10 +43,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                  filterExpr: (((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 330 Data size: 28710 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -64,10 +64,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1')) and key is not null) or ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null)) (type: boolean)
+                  filterExpr: (((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1'))) or ((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1')) and key is not null) (type: boolean)
+                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1'))) (type: boolean)
                     Statistics: Num rows: 330 Data size: 58740 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -80,7 +80,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 330 Data size: 28710 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 330 Data size: 58740 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1788,10 +1788,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                  filterExpr: (((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 330 Data size: 28710 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -1809,10 +1809,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1')) and key is not null) or ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null)) (type: boolean)
+                  filterExpr: (((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1'))) or ((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1')) and key is not null) (type: boolean)
+                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and ((value <> 'val_500') or (key > '1'))) (type: boolean)
                     Statistics: Num rows: 330 Data size: 58740 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -1825,7 +1825,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 330 Data size: 28710 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '13') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((key > '0') and (key < '1')) or ((key > '1') and (key < '11')) or ((key > '13') and (key < '4')) or ((key > '11') and (key < '12')) or ((key > '12') and (key < '13')) or ((key > '4') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 330 Data size: 58740 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

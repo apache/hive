@@ -106,7 +106,7 @@ FROM `default`.`my_table_0001`
 WHERE (`col_7` IS NULL OR CAST(`col_7` AS DOUBLE) IS NOT NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
-WHERE `col_24` IS NOT NULL AND `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
+WHERE `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
 LEFT JOIN (SELECT `col_1`, `col_22`, `col_23`
 FROM `default`.`my_table_0001_00`
 WHERE `col_1` IS NOT NULL) AS `t4` ON `t0`.`col_1` = `t4`.`col_1`
@@ -265,7 +265,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__879
-                  filterExpr: (col_24 is not null or (col_24 is not null and (col_24) IN ('part1', 'part2', 'part3'))) (type: boolean)
+                  filterExpr: (col_24 is not null or (col_24) IN ('part1', 'part2', 'part3')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -289,7 +289,7 @@ STAGE PLANS:
                         auto parallelism: true
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (col_24 is not null and (col_24) IN ('part1', 'part2', 'part3')) (type: boolean)
+                    predicate: (col_24) IN ('part1', 'part2', 'part3') (type: boolean)
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col_24 (type: string), col_21 (type: string)

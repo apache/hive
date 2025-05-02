@@ -80,10 +80,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
-                  filterExpr: ((a) IN (1, 2, 3) and a is not null) (type: boolean)
+                  filterExpr: (a) IN (1, 2, 3) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((a) IN (1, 2, 3) and a is not null) (type: boolean)
+                    predicate: (a) IN (1, 2, 3) (type: boolean)
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), (a * a) (type: int), (a) IN (1, 2) (type: boolean), (a) IN (2, 3) (type: boolean)
@@ -102,10 +102,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  filterExpr: ((b) IN (1, 2, 3) and b is not null) (type: boolean)
+                  filterExpr: (b) IN (1, 2, 3) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((b) IN (1, 2, 3) and b is not null) (type: boolean)
+                    predicate: (b) IN (1, 2, 3) (type: boolean)
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: b (type: int), (b + 3) (type: int), (b) IN (1, 2) (type: boolean), (b) IN (2, 3) (type: boolean)

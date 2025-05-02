@@ -164,13 +164,13 @@ Stage-0
                     Select Operator [SEL_52] (rows=387 width=178)
                       Output:["_col0","_col1"]
                       Filter Operator [FIL_51] (rows=387 width=178)
-                        predicate:(((key < '0') or ((key > '0') and (key < '100')) or (key > '100')) and key is not null and value is not null)
+                        predicate:(((key < '0') or ((key > '0') and (key < '100')) or (key > '100')) and value is not null)
                         TableScan [TS_3] (rows=500 width=178)
                           default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                 <-Select Operator [SEL_55] (rows=387 width=269)
                     Output:["_col0","_col1","_col2"]
                     Filter Operator [FIL_54] (rows=387 width=269)
-                      predicate:(((key1 < '0') or ((key1 > '0') and (key1 < '100')) or (key1 > '100')) and key1 is not null and key2 is not null)
+                      predicate:(((key1 < '0') or ((key1 > '0') and (key1 < '100')) or (key1 > '100')) and key2 is not null)
                       TableScan [TS_0] (rows=500 width=269)
                         default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value"]
 
@@ -360,13 +360,13 @@ Stage-0
                     Select Operator [SEL_32] (rows=387 width=178)
                       Output:["_col0","_col1"]
                       Filter Operator [FIL_31] (rows=387 width=178)
-                        predicate:(((key < '0') or ((key > '0') and (key < '100')) or (key > '100')) and key is not null)
+                        predicate:((key < '0') or (key > '100') or ((key > '0') and (key < '100')))
                         TableScan [TS_3] (rows=500 width=178)
                           default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                 <-Select Operator [SEL_35] (rows=387 width=269)
                     Output:["_col0","_col1","_col2"]
                     Filter Operator [FIL_34] (rows=387 width=269)
-                      predicate:(((key1 < '0') or ((key1 > '0') and (key1 < '100')) or (key1 > '100')) and key1 is not null)
+                      predicate:((key1 < '0') or (key1 > '100') or ((key1 > '0') and (key1 < '100')))
                       TableScan [TS_0] (rows=500 width=269)
                         default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","key2","value"]
 

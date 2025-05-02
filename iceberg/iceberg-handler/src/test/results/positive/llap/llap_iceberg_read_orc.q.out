@@ -359,11 +359,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: o
-                  filterExpr: ((((quantity > 0) and (quantity < 39)) or ((quantity > 39) and (quantity < 69)) or (quantity > 70)) and quantity is not null and itemid is not null) (type: boolean)
+                  filterExpr: ((((quantity > 0) and (quantity < 39)) or ((quantity > 39) and (quantity < 69)) or (quantity > 70)) and itemid is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:itemid, smallTablePos:1, keyRatio:0.9523809523809523
                   Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((quantity > 0) and (quantity < 39)) or ((quantity > 39) and (quantity < 69)) or (quantity > 70)) and quantity is not null and itemid is not null) (type: boolean)
+                    predicate: ((((quantity > 0) and (quantity < 39)) or ((quantity > 39) and (quantity < 69)) or (quantity > 70)) and itemid is not null) (type: boolean)
                     Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: quantity (type: int), itemid (type: int)

@@ -43,10 +43,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and key is not null) or ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null)) (type: boolean)
+                  filterExpr: ((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400')) or ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: ((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 386 Data size: 68708 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -78,10 +78,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and key is not null and value is not null) (type: boolean)
+                  filterExpr: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and key is not null and value is not null) (type: boolean)
+                    predicate: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
                     Statistics: Num rows: 386 Data size: 68708 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1733,10 +1733,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and key is not null) or ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null)) (type: boolean)
+                  filterExpr: ((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400')) or ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: ((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 386 Data size: 68708 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1768,10 +1768,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and key is not null and value is not null) (type: boolean)
+                  filterExpr: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and key is not null and value is not null) (type: boolean)
+                    predicate: (((key < '14') or ((key > '14') and (key < '302')) or ((key > '302') and (key < '305')) or ((key > '305') and (key < '311')) or ((key > '311') and (key < '400'))) and ((value <> 'val_50') or (key > '1')) and value is not null) (type: boolean)
                     Statistics: Num rows: 386 Data size: 68708 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
