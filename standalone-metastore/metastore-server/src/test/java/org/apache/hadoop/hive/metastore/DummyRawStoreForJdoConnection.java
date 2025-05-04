@@ -533,6 +533,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return false;
   }
 
+  @Override public String getExprStringByExpr(String catName, String dbName, String tblName, byte[] expr)
+      throws MetaException, NoSuchObjectException {
+    return null;
+  }
+
   @Override
   public int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
     throws MetaException, NoSuchObjectException {

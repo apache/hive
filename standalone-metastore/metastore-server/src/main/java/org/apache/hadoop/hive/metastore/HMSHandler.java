@@ -7605,7 +7605,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       PartitionsByExprRequest req) throws TException {
     String dbName = req.getDbName(), tblName = req.getTblName();
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-    startTableFunction("get_partitions_spec_by_expr", catName, dbName, tblName);
+    String exprString = getMS().getExprStringByExpr(catName, dbName, tblName, req.getExpr());
+    String defaultPartitionName = req.isSetDefaultPartitionName() ? req.getDefaultPartitionName() : "";
+    int maxParts = req.getMaxParts();
+    startPartitionFunction("get_partitions_by_expr", catName, dbName, tblName, maxParts, exprString, defaultPartitionName);
     fireReadTablePreEvent(catName, dbName, tblName);
     PartitionsSpecByExprResult ret = null;
     Exception ex = null;
@@ -7635,10 +7638,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       PartitionsByExprRequest req) throws TException {
     String dbName = req.getDbName(), tblName = req.getTblName();
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-    String expr = req.isSetExpr() ? Arrays.toString((req.getExpr())) : "";
+    String exprString = getMS().getExprStringByExpr(catName, dbName, tblName, req.getExpr());
     String defaultPartitionName = req.isSetDefaultPartitionName() ? req.getDefaultPartitionName() : "";
     int maxParts = req.getMaxParts();
-    startPartitionFunction("get_partitions_by_expr", catName, dbName, tblName, maxParts, expr, defaultPartitionName);
+    startPartitionFunction("get_partitions_by_expr", catName, dbName, tblName, maxParts, exprString, defaultPartitionName);
     fireReadTablePreEvent(catName, dbName, tblName);
     PartitionsByExprResult ret = null;
     Exception ex = null;

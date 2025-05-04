@@ -35,7 +35,7 @@ public class PartFilterExprUtil {
   private static final Logger LOG = LoggerFactory.getLogger(PartFilterExprUtil.class.getName());
 
 
-  public static ExpressionTree makeExpressionTree(PartitionExpressionProxy expressionProxy,
+  public static String getExpressionString(PartitionExpressionProxy expressionProxy,
       byte[] expr, String defaultPartitionName, Configuration conf) throws MetaException {
     // We will try pushdown first, so make the filter. This will also validate the expression,
     // if serialization fails we will throw incompatible metastore error to the client.
@@ -59,7 +59,7 @@ public class PartFilterExprUtil {
     //       If forcing everyone to use thick client is out of the question, maybe we could
     //       parse the filter into standard hive expressions and not all this separate tree
     //       Filter.g stuff. That way this method and ...ByFilter would just be merged.
-    return PartFilterExprUtil.makeExpressionTree(filter);
+    return filter;
   }
 
 
