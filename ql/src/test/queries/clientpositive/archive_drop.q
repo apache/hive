@@ -12,10 +12,14 @@ insert overwrite table test_db.test_tbl partition (dt='2025-04-01', hr='13') sel
 show partitions test_db.test_tbl;
 
 alter table test_db.test_tbl archive partition (dt='2025-04-01');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/test_db.db/test_tbl/dt=2025-04-01/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/test_db.db/test_tbl/dt=2025-04-01/data.har/;
 
 show partitions test_db.test_tbl;
 
 alter table test_db.test_tbl drop partition (dt='2025-04-01',hr='12');
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/test_db.db/test_tbl/dt=2025-04-01/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/test_db.db/test_tbl/dt=2025-04-01/data.har/;
 
 show partitions test_db.test_tbl;
 

@@ -63,6 +63,10 @@ POSTHOOK: Input: test_db@test_tbl
 POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=11
 POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
 POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=13
+Found 1 items
+#### A masked pattern was here ####
+Found 4 items
+#### A masked pattern was here ####
 PREHOOK: query: show partitions test_db.test_tbl
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: test_db@test_tbl
@@ -80,6 +84,10 @@ POSTHOOK: query: alter table test_db.test_tbl drop partition (dt='2025-04-01',hr
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: test_db@test_tbl
 POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
+Found 1 items
+#### A masked pattern was here ####
+Found 4 items
+#### A masked pattern was here ####
 PREHOOK: query: show partitions test_db.test_tbl
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: test_db@test_tbl
