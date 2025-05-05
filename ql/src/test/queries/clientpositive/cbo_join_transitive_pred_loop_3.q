@@ -1,5 +1,3 @@
-set hive.optimize.join.disjunctive.transitive.predicates.pushdown=false;
-
 CREATE TABLE tableA (
   bd_id      bigint,
   quota_type string

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRule;
@@ -61,11 +60,8 @@ import com.google.common.collect.Sets;
  */
 public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
-  private final boolean allowDisjunctivePredicates;
-
-  public HiveJoinPushTransitivePredicatesRule(Class<? extends Join> clazz, boolean allowDisjunctivePredicates) {
+  public HiveJoinPushTransitivePredicatesRule(Class<? extends Join> clazz) {
     super(operand(clazz, any()));
-    this.allowDisjunctivePredicates = allowDisjunctivePredicates;
   }
 
   @Override
@@ -135,17 +131,6 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     //  i) those that have been pushed already as stored in the join,
     //  ii) those that were already in the subtree rooted at child.
     List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids);
-
-    // Disjunctive predicates, when merged with other existing predicates, might become redundant but RexSimplify still
-    // cannot simplify them. This situation generally leads to OOM, since these new predicates keep getting inferred
-    // between the LHS and the RHS recursively, they grow by getting merged with existing predicates, but they can
-    // never be simplified by RexSimplify, in this way the fix-point is never reached.
-    // This restriction can be lifted if RexSimplify gets more powerful, and it can handle such cases.
-    if (!allowDisjunctivePredicates) {
-      toPush = toPush.stream()
-          .filter(e -> !HiveCalciteUtil.hasDisjuction(e))
-          .collect(Collectors.toList());
-    }
 
     return ImmutableList.copyOf(toPush);
   }

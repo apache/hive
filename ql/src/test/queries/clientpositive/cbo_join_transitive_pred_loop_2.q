@@ -1,5 +1,3 @@
-set hive.optimize.join.disjunctive.transitive.predicates.pushdown=false;
-
 CREATE EXTERNAL TABLE table2 (
   tenant_id int
 ) PARTITIONED BY (date_key int)
