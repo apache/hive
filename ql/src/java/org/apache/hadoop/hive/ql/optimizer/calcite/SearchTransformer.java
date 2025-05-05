@@ -132,25 +132,26 @@ public class SearchTransformer<C extends Comparable<C>> {
         } else {
           return call;
         }
-      case IS_NULL:
-      case IS_NOT_NULL:
-      case CASE:
-      case COALESCE:
-        // Everything below must be transformed with the UNKNOWN handler
+      case SEARCH:
+        return new SearchTransformer<>(rexBuilder, call, this.unknownContext).transform();
+      default:
+        // Some calls (e.g., IS [NOT] NULL, COALESCE) are sensitive to changes in the 3-valued
+        // logic (notably nulls). In such cases, the nullability of the operands is important,
+        // and it is unsafe to make simplifications based on the general unknown context.
+        // Instead of adding extra handlers for each special case we pick a more conservative
+        // approach and use the RexUnknownAs.UNKNOWN context for anything that is not a simple
+        // conjunction, disjunction, and SEARCH.
+        // Switch the unknown context, to preserve unknown/null semantics below this call.
         RexUnknownAs previousContext = this.unknownContext;
         this.unknownContext = RexUnknownAs.UNKNOWN;
         clonedOperands = visitList(call.operands, update);
-        // Restore the original handler once we finish with the operands.
+        // Restore the original context once we finish with the call operands.
         this.unknownContext = previousContext;
         if (update[0]) {
           return rexBuilder.makeCall(call.op, clonedOperands);
         } else {
           return call;
         }
-      case SEARCH:
-        return new SearchTransformer<>(rexBuilder, call, this.unknownContext).transform();
-      default:
-        return super.visitCall(call);
       }
     }
   }
