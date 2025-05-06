@@ -57,7 +57,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
@@ -3151,7 +3150,7 @@ public class ObjectStore implements RawStore, Configurable {
     openTransaction();
     
     int batch = batchSize == NO_BATCHING ? 1 : (partNames.size() + batchSize) / batchSize;
-    AtomicInteger batchIdx = new AtomicInteger(1);
+    AtomicLong batchIdx = new AtomicLong(1);
     AtomicLong timeSpent = new AtomicLong(0);
     String prefix = "Dropping partitions, batch: ";
     try {

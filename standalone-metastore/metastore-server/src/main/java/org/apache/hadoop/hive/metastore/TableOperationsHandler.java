@@ -83,20 +83,26 @@ public class TableOperationsHandler<T extends TBase> {
   private final ExecutorService executor_;
   private final boolean async;
   private Future<?> future;
+  private boolean tableDataShouldBeDeleted;
+  private Path tblPath;
+  private Table tbl;
+  private TableName tableName;
   private volatile Object result;
-  private String messageFormat;
+  private String logMsgPrefix;
   private final AtomicBoolean aborted = new AtomicBoolean();
 
-  private TableOperationsHandler(String id) {
+  private TableOperationsHandler(String id) throws TException, IOException {
     this(null, false, null);
     this.id = id;
   }
 
-  private TableOperationsHandler(IHMSHandler handler, boolean async, T request) {
+  private TableOperationsHandler(IHMSHandler handler, boolean async, T request)
+       throws TException, IOException {
     this.id = UUID.randomUUID().toString();
     this.handler_ = handler;
     this.request_ = request;
     this.async = async;
+    OPID_TO_HANDLER.put(id, this);
     if (async) {
       this.executor_ = Executors.newFixedThreadPool(1, r -> {
         Thread thread = new Thread(r);
@@ -107,48 +113,28 @@ public class TableOperationsHandler<T extends TBase> {
     } else {
       this.executor_ = MoreExecutors.newDirectExecutorService();
     }
-    this.runDropOperation();
-    OPID_TO_HANDLER.put(id, this);
+    this.runTableOperation();
   }
 
-  public List<Path> dropTable() throws TException, IOException {
+  public DropTableResult dropTable() throws TException {
     DropTableRequest dropReq = (DropTableRequest) request_;
     boolean success = false;
-    boolean tableDataShouldBeDeleted = true;
-    Path tblPath = null;
     List<Path> partPaths = null;
-    Table tbl = null;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
     Database db = null;
     boolean isReplicated = false;
     RawStore ms = handler_.getMS();
     try {
       ms.openTransaction();
-      String name = normalizeIdentifier(dropReq.getTableName());
-      String dbname = normalizeIdentifier(dropReq.getDbName());
-      String catName =
-          normalizeIdentifier(dropReq.isSetCatalogName() ? dropReq.getCatalogName() : getDefaultCatalog(handler_.getConf()));
-      TableName tableName = new TableName(catName, dbname, name);
-
-      checkInterrupted();
+      String catName = tableName.getCat();
+      String dbname = tableName.getDb();
+      String name = tableName.getTable();
       // HIVE-25282: Drop/Alter table in REMOTE db should fail
       db = ms.getDatabase(catName, dbname);
       if (MetaStoreUtils.isDatabaseRemote(db)) {
         throw new MetaException("Drop table in REMOTE database " + db.getName() + " is not allowed");
       }
       isReplicated = isDbReplicationTarget(db);
-
-      // drop any partitions
-      GetTableRequest req = new GetTableRequest(dbname, name);
-      req.setCatName(catName);
-      tbl = handler_.get_table_core(req);
-      if (tbl == null) {
-        throw new NoSuchObjectException(tableName + " doesn't exist");
-      }
-
-      if (tbl.getSd() == null) {
-        throw new MetaException("Table metadata is corrupted");
-      }
 
       checkInterrupted();
       // Check if table is part of a materialized view.
@@ -161,20 +147,9 @@ public class TableOperationsHandler<T extends TBase> {
 
       ((HMSHandler) handler_).firePreEvent(new PreDropTableEvent(tbl, dropReq.isDeleteData(), handler_));
 
-      tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, dropReq.isDeleteData());
-      if (tbl.getSd().getLocation() != null) {
-        tblPath = new Path(tbl.getSd().getLocation());
-      }
-      if (tableDataShouldBeDeleted && tblPath != null) {
-        if (!handler_.getWh().isWritable(tblPath.getParent())) {
-          throw new MetaException(tableName + " not deleted since " +
-              tblPath.getParent() + " is not writable by " +
-              SecurityUtils.getUser());
-        }
-      }
       state = new StringBuffer();
       // Drop the partitions and get a list of locations which need to be deleted
-      if (tbl.getPartitionKeysSize() > 0) {
+      if (dropReq.isDropPartitions()) {
         checkInterrupted();
         List<String> locations = ms.dropAllPartitionsAndGetLocations(tableName,
             tblPath != null ? handler_.getWh().getDnsPath(tblPath).toString() : null, state);
@@ -200,21 +175,13 @@ public class TableOperationsHandler<T extends TBase> {
         checkInterrupted();
         success = ms.commitTransaction();
       }
+      return new DropTableResult(partPaths, success,
+          isMustPurge(dropReq.getEnvContext(), tbl), ReplChangeManager.shouldEnableCm(db, tbl));
     } finally {
       try {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (tableDataShouldBeDeleted) {
-          boolean ifPurge = isMustPurge(dropReq.getEnvContext(), tbl);
-          // Data needs deletion. Check if trash may be skipped.
-          // Delete the data in the partitions which have other locations
-          state = new StringBuffer("Deleting partition directories: " + (partPaths != null ? partPaths.size() : 0));
-          ((HMSHandler) handler_).deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
-          // Delete the data in the table
-          state = new StringBuffer("Deleting table directory: " + tblPath);
-          ((HMSHandler) handler_).deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
         }
-
         if (!handler_.getListeners().isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(handler_.getListeners(), EventMessage.EventType.DROP_TABLE,
               new DropTableEvent(tbl, success, dropReq.isDeleteData(), handler_, isReplicated), dropReq.getEnvContext(),
@@ -224,43 +191,42 @@ public class TableOperationsHandler<T extends TBase> {
         OPID_CLEANER.schedule(() -> OPID_TO_HANDLER.remove(id), 1, TimeUnit.HOURS);
       }
     }
-    return partPaths;
   }
 
   public TableOpResp toTableOpResp() throws TException {
     if (future == null) {
-      throw new IllegalStateException(String.format(messageFormat, " hasn't started yet"));
+      throw new IllegalStateException(logMsgPrefix + " hasn't started yet");
     }
     try {
       result = async ? future.get(100, TimeUnit.MILLISECONDS) : future.get();
     } catch (TimeoutException e) {
       // No Op, return to the caller since long polling timeout has expired
-      LOG.trace(String.format(messageFormat, " Long polling timed out"));
+      LOG.trace("{} Long polling timed out", logMsgPrefix);
     } catch (CancellationException e) {
       // The background operation thread was cancelled
-      LOG.trace(String.format(messageFormat, "The background operation was cancelled"));
+      LOG.trace("{} The background operation was cancelled", logMsgPrefix);
     } catch (ExecutionException | InterruptedException e) {
       // No op, we will deal with this exception later
-      LOG.error(String.format(messageFormat, "failed"), e);
+      LOG.error(logMsgPrefix + " Failed", e);
       if (e.getCause() instanceof Exception && !aborted.get()) {
         throw handleException((Exception) e.getCause()).throwIfInstance(TException.class).defaultMetaException();
       }
       String errorMsg = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-      throw new MetaException(String.format(messageFormat, "failed") + " with " + errorMsg);
+      throw new MetaException(logMsgPrefix + " failed with " + errorMsg);
     }
 
     TableOpResp resp = new TableOpResp(id);
     if (future.isDone()) {
       resp.setFinished(true);
-      resp.setMessage(String.format(messageFormat, future.isCancelled() ? "canceled" : "done"));
+      resp.setMessage(logMsgPrefix + (future.isCancelled() ? " Canceled" : " Done"));
     } else {
-      resp.setMessage(String.format(messageFormat, "in-progress, state - " + state));
+      resp.setMessage(logMsgPrefix + " In-progress, state - " + state);
     }
     return resp;
   }
 
   static Optional<TableOperationsHandler<?>>
-      ofCache(String opId, boolean shouldCancel) throws TException {
+      ofCache(String opId, boolean shouldCancel) throws TException, IOException {
     TableOperationsHandler<?> tableOp = null;
     if (opId != null) {
       tableOp = OPID_TO_HANDLER.get(opId);
@@ -287,18 +253,45 @@ public class TableOperationsHandler<T extends TBase> {
   }
 
   static <T extends TBase> TableOperationsHandler<?>
-      ofNew(IHMSHandler handler, boolean async, T req) {
+      ofNew(IHMSHandler handler, boolean async, T req) throws TException, IOException {
     return new TableOperationsHandler<>(handler, async, req);
   }
 
-  private void runDropOperation() {
-    if (request_ instanceof DropTableRequest) {
-      DropTableRequest dropReq = (DropTableRequest) request_;
-      this.messageFormat =
-          "Drop on table " + dropReq.getDbName() + "." + dropReq.getTableName() + ": %s";
-      this.future = executor_.submit(this::dropTable);
+  private void runTableOperation() throws TException, IOException {
+    try {
+      // currently this class only supports the drop table, we can the alter table if possible in the future
+      if (request_ instanceof DropTableRequest dropReq) {
+        // drop any partitions
+        String catName = normalizeIdentifier(
+            dropReq.isSetCatalogName() ? dropReq.getCatalogName() : getDefaultCatalog(handler_.getConf()));
+        String name = normalizeIdentifier(dropReq.getTableName());
+        String dbname = normalizeIdentifier(dropReq.getDbName());
+        tableName = new TableName(catName, dbname, name);
+        logMsgPrefix = "Drop " + id + " on table " + tableName + ":";
+        GetTableRequest req = new GetTableRequest(dropReq.getDbName(), dropReq.getTableName());
+        req.setCatName(catName);
+        tbl = handler_.get_table_core(req);
+        if (tbl == null) {
+          throw new NoSuchObjectException(tableName + " doesn't exist");
+        }
+        if (tbl.getSd() == null) {
+          throw new MetaException("Table metadata is corrupted");
+        }
+        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, dropReq.isDeleteData());
+        if (tbl.getSd().getLocation() != null) {
+          tblPath = new Path(tbl.getSd().getLocation());
+        }
+        if (tableDataShouldBeDeleted && tblPath != null) {
+          if (!handler_.getWh().isWritable(tblPath.getParent())) {
+            throw new MetaException(
+                tableName + " not deleted since " + tblPath.getParent() + " is not writable by " + SecurityUtils.getUser());
+          }
+        }
+        this.future = executor_.submit(this::dropTable);
+      }
+    } finally {
+      this.executor_.shutdown();
     }
-    this.executor_.shutdown();
   }
 
   public void cancelOperation() {
@@ -310,7 +303,7 @@ public class TableOperationsHandler<T extends TBase> {
     executor_.shutdownNow();
   }
 
-  public List<Path> getDropTableResult() throws TException {
+  public DropTableResult getDropTableResult() throws TException {
     if (!(request_ instanceof DropTableRequest)) {
       throw new IllegalStateException("Current operation " + id + "is not a drop table operation");
     }
@@ -318,7 +311,7 @@ public class TableOperationsHandler<T extends TBase> {
     if (!resp.isFinished()) {
       throw new IllegalStateException("Result is un-available as the operation " + id + " is still running");
     }
-    return (List<Path>) result;
+    return (DropTableResult) result;
   }
 
   public void checkInterrupted() throws MetaException {
@@ -331,5 +324,39 @@ public class TableOperationsHandler<T extends TBase> {
   @VisibleForTesting
   public static boolean containsOp(String opId) {
     return OPID_TO_HANDLER.containsKey(opId);
+  }
+
+  public boolean tableDataShouldBeDeleted() {
+    return tableDataShouldBeDeleted;
+  }
+
+  public Path getTablePath() {
+    return tblPath;
+  }
+
+  public static class DropTableResult {
+    private final boolean success;
+    private final boolean ifPurge;
+    private final boolean shouldEnableCm;
+    private final List<Path> partPaths;
+    public DropTableResult(List<Path> partPaths, boolean success,
+        boolean ifPurge, boolean shouldEnableCm) {
+      this.partPaths = partPaths;
+      this.success = success;
+      this.ifPurge = ifPurge;
+      this.shouldEnableCm = shouldEnableCm;
+    }
+    public boolean success() {
+      return success;
+    }
+    public boolean ifPurge() {
+      return ifPurge;
+    }
+    public boolean shouldEnableCm() {
+      return shouldEnableCm;
+    }
+    public List<Path> getPartPaths() {
+      return partPaths;
+    }
   }
 }

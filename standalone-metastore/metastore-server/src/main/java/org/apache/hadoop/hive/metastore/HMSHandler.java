@@ -1662,50 +1662,40 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         drop_package(new DropPackageRequest(req.getCatalogName(), req.getName(), pkgName));
       }
 
-      final int tableBatchSize = MetastoreConf.getIntVar(conf,
-          ConfVars.BATCH_RETRIEVE_MAX);
-
+      final int tableBatchSize = MetastoreConf.getIntVar(conf, ConfVars.BATCH_RETRIEVE_MAX);
       // First pass will drop the materialized views
       List<String> materializedViewNames = getTablesByTypeCore(req.getCatalogName(), req.getName(), ".*",
           TableType.MATERIALIZED_VIEW.toString());
       Batchable.runBatched(tableBatchSize, materializedViewNames, new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws Exception {
-          List<Table> materializedViews;
-          try {
-            materializedViews = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), input);
-          } catch (UnknownDBException e) {
-            throw new MetaException(e.getMessage());
-          }
+          List<Table> materializedViews = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), input);
+          for (Table materializedView : materializedViews) {
+            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(materializedView, req.isSoftDelete());
 
-          if (materializedViews != null && !materializedViews.isEmpty()) {
-            for (Table materializedView : materializedViews) {
-              boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(materializedView, req.isSoftDelete());
+            if (materializedView.getSd().getLocation() != null && !isSoftDelete) {
+              Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
 
-              if (materializedView.getSd().getLocation() != null && !isSoftDelete) {
-                Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
-
-                if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) || req.isSoftDelete()) {
-                  if (!wh.isWritable(materializedViewPath.getParent())) {
-                    throw new MetaException("Database metadata not deleted since table: " +
-                        materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
-                        " which is not writable by " + SecurityUtils.getUser());
-                  }
-                  tablePaths.add(materializedViewPath);
+              if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) || req.isSoftDelete()) {
+                if (!wh.isWritable(materializedViewPath.getParent())) {
+                  throw new MetaException("Database metadata not deleted since table: " +
+                      materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
+                      " which is not writable by " + SecurityUtils.getUser());
                 }
+                tablePaths.add(materializedViewPath);
               }
-              EnvironmentContext context = null;
-              if (isSoftDelete) {
-                context = new EnvironmentContext();
-                context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
-              }
-              // Drop the materialized view but not its data
-              drop_table_with_environment_context(
-                  req.getName(), materializedView.getTableName(), false, context);
-
-              // Remove from all tables
-              uniqueTableNames.remove(materializedView.getTableName());
             }
+            EnvironmentContext context = null;
+            if (isSoftDelete) {
+              context = new EnvironmentContext();
+              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
+            }
+            // Drop the materialized view but not its data
+            drop_table_with_environment_context(
+                req.getName(), materializedView.getTableName(), false, context);
+
+            // Remove from all tables
+            uniqueTableNames.remove(materializedView.getTableName());
           }
           return null;
         }
@@ -1715,48 +1705,45 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       Batchable.runBatched(tableBatchSize, new ArrayList<>(uniqueTableNames), new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws Exception {
-          List<Table> tables;
-          try {
-            tables = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), input);
-          } catch (UnknownDBException e) {
-            throw new MetaException(e.getMessage());
-          }
+          List<Table> tables = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), input);
+          for (Table table : tables) {
+            // If the table is not external and it might not be in a subdirectory of the database
+            // add it's locations to the list of paths to delete
+            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, req.isSoftDelete());
+            boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, req.isDeleteData())
+                && !isSoftDelete;
 
-          if (tables != null && !tables.isEmpty()) {
-            for (Table table : tables) {
-              // If the table is not external and it might not be in a subdirectory of the database
-              // add it's locations to the list of paths to delete
-              boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, req.isSoftDelete());
-              boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, req.isDeleteData())
-                  && !isSoftDelete;
-
-              boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
-              if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
-                Path tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
-                if (!isManagedTable || req.isSoftDelete()) {
-                  if (!wh.isWritable(tablePath.getParent())) {
-                    throw new MetaException(
-                        "Database metadata not deleted since table: " + table.getTableName() + " has a parent location "
-                            + tablePath.getParent() + " which is not writable by " + SecurityUtils.getUser());
-                  }
-                  tablePaths.add(tablePath);
+            boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
+            if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
+              Path tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
+              if (!isManagedTable || req.isSoftDelete()) {
+                if (!wh.isWritable(tablePath.getParent())) {
+                  throw new MetaException(
+                      "Database metadata not deleted since table: " + table.getTableName() + " has a parent location "
+                          + tablePath.getParent() + " which is not writable by " + SecurityUtils.getUser());
                 }
+                tablePaths.add(tablePath);
               }
+            }
 
-              EnvironmentContext context = null;
-              if (isSoftDelete) {
-                context = new EnvironmentContext();
-                context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
-                req.setDeleteManagedDir(false);
-              }
-              DropTableRequest dropRequest = new DropTableRequest(table.getDbName(), table.getTableName());
-              dropRequest.setCatalogName(table.getCatName());
-              dropRequest.setEnvContext(context);
-              // Drop the table but not its data
-              dropRequest.setDeleteData(false);
-              dropRequest.setDropPartitions(true);
-              List<Path> partPaths = TableOperationsHandler.ofNew(HMSHandler.this, false, dropRequest).getDropTableResult();
-              partitionPaths.addAll(tableDataShouldBeDeleted ? partPaths : Collections.emptyList());
+            EnvironmentContext context = null;
+            if (isSoftDelete) {
+              context = new EnvironmentContext();
+              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
+              req.setDeleteManagedDir(false);
+            }
+            DropTableRequest dropRequest = new DropTableRequest(table.getDbName(), table.getTableName());
+            dropRequest.setCatalogName(table.getCatName());
+            dropRequest.setEnvContext(context);
+            // Drop the table but not its data
+            dropRequest.setDeleteData(false);
+            dropRequest.setDropPartitions(true);
+            TableOperationsHandler.DropTableResult result =
+                TableOperationsHandler.ofNew(HMSHandler.this, false, dropRequest).getDropTableResult();
+            if (tableDataShouldBeDeleted
+                && result.success()
+                && result.getPartPaths() != null) {
+              partitionPaths.addAll(result.getPartPaths());
             }
           }
           return null;
@@ -2962,7 +2949,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
+  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
     if (tablePath != null) {
       deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
     }
@@ -2996,7 +2983,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
+  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
     if (partPaths != null && !partPaths.isEmpty()) {
       for (Path partPath : partPaths) {
         deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
@@ -3089,9 +3076,24 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      TableOperationsHandler<?> tableOp = TableOperationsHandler.ofCache(dropTableReq.getId(), dropTableReq.isCancel())
-          .orElseGet(() -> TableOperationsHandler.ofNew(this, dropTableReq.isAsyncDrop(), dropTableReq));
-      return tableOp.toTableOpResp();
+      TableOperationsHandler<?> tableOp;
+      Optional<TableOperationsHandler<?>> fromCache = TableOperationsHandler.ofCache(dropTableReq.getId(), dropTableReq.isCancel());
+      if (fromCache.isPresent()) {
+        tableOp = fromCache.get();
+      } else {
+        tableOp = TableOperationsHandler.ofNew(this, dropTableReq.isAsyncDrop(), dropTableReq);
+      }
+      TableOpResp tableOpResp = tableOp.toTableOpResp();
+      TableOperationsHandler.DropTableResult result;
+      if (tableOpResp.isFinished() && tableOp.tableDataShouldBeDeleted() &&
+          (result = tableOp.getDropTableResult()).success()) {
+        // Data needs deletion. Check if trash may be skipped.
+        // Delete the data in the partitions which have other locations
+        deletePartitionData(result.getPartPaths(), result.ifPurge(), result.shouldEnableCm());
+        // Delete the data in the table
+        deleteTableData(tableOp.getTablePath(), result.ifPurge(), result.shouldEnableCm());
+      }
+      return tableOpResp;
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)

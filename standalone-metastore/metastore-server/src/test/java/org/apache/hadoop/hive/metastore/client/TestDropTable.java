@@ -258,7 +258,7 @@ public class TestDropTable extends MetaStoreClientTest {
       assertTrue(TableOperationsHandler.containsOp(dropTableReq.getId()));
       resp = iface.drop_table_req(dropTableReq);
       assertTrue(resp.isFinished());
-      assertTrue(resp.getMessage().contains("Drop on table " + tableName + ": canceled"));
+      assertTrue(resp.getMessage().contains("table " + table.getCatName() + "."+ tableName + ": Canceled"));
     }
 
     PartitionsRequest req = new PartitionsRequest();
