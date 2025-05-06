@@ -62,9 +62,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:11819
-maxFileSize:5812
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended t_auth_load
@@ -97,9 +97,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:11819
-maxFileSize:5812
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended t_auth_load2

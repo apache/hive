@@ -107,9 +107,9 @@ partitioned:false
 partitionColumns:
 totalNumberFiles:1
 totalNumberErasureCodedFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 ECHO SHOW TBLPROPERTIES erasure_table2
