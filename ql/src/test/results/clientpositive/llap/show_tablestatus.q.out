@@ -32,9 +32,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED from default LIKE `src`
@@ -49,9 +49,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED LIKE `src`
@@ -66,9 +66,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED LIKE `src_`
@@ -91,9 +91,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 tableName:srcpart
@@ -104,9 +104,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:4
-totalFileSize:23248
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED from default LIKE "%"
@@ -121,9 +121,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 tableName:srcpart
@@ -134,9 +134,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:4
-totalFileSize:23248
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11)
@@ -151,9 +151,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED from default LIKE src
@@ -168,8 +168,8 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 

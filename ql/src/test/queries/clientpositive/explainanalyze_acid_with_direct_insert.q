@@ -3,6 +3,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.acid.direct.insert.enabled=true;
 
 -- SORT_QUERY_RESULTS
+-- MASK_DATA_SIZE
 
 drop table if exists analyze_acid_table;
 create table analyze_acid_table (id int) stored as orc tblproperties('transactional'='true');

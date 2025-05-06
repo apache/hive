@@ -358,9 +358,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo\_n4"
@@ -375,9 +375,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo_n_
@@ -392,9 +392,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "foo_n4"
@@ -409,9 +409,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'foo_n4'
@@ -426,9 +426,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `foo_n4`
@@ -443,9 +443,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE 'ba%'
@@ -460,9 +460,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 tableName:baz
@@ -473,9 +473,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE "ba%"
@@ -490,9 +490,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 tableName:baz
@@ -503,9 +503,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba%`
@@ -520,9 +520,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 tableName:baz
@@ -533,9 +533,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE `ba_`
@@ -550,9 +550,9 @@ columns:struct columns { i32 a}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: CREATE DATABASE `database`
