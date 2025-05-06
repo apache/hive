@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
@@ -1804,13 +1805,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * </ul>
    * @param tableProps table properties, must be not null
    */
-  private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
+  private static void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
     Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
+    String tableMeta = tableProps.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY);
+    boolean isMetaTable = tableMeta != null && IcebergMetadataTables.isValidMetaTable(tableMeta);
     if (FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
-        isValidMetadataTable(tableProps.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY)) ||
+        isMetaTable ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
         !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
-      conf.setBoolean(ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
+      try {
+        Hive.get(false).getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
