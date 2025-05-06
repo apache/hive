@@ -52,7 +52,7 @@ public class LlapTaskUmbilicalServer {
   private Map<String, int[]> tokenRefMap = new HashMap<String, int[]>();
 
   public LlapTaskUmbilicalServer(Configuration conf, LlapTaskUmbilicalProtocol umbilical, int numHandlers) throws IOException {
-    jobTokenSecretManager = new JobTokenSecretManager();
+    jobTokenSecretManager = new JobTokenSecretManager(conf);
 
     String[] portRange =
         conf.get(HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname)
