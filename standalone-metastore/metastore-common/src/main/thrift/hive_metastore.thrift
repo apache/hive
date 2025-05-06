@@ -439,7 +439,7 @@ struct Database {
 }
 
 struct GetDatabaseObjectsRequest {
-  1: required string catalogName,
+  1: optional string catalogName,
   2: optional string pattern
 }
 

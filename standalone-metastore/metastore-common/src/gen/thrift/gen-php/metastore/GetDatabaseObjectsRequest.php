@@ -23,7 +23,7 @@ class GetDatabaseObjectsRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'catalogName',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         2 => array(

@@ -4423,8 +4423,6 @@ class GetDatabaseObjectsRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.catalogName is None:
-            raise TProtocolException(message='Required field catalogName is unset!')
         return
 
     def __repr__(self):

@@ -7584,6 +7584,7 @@ GetDatabaseObjectsRequest::~GetDatabaseObjectsRequest() noexcept {
 
 void GetDatabaseObjectsRequest::__set_catalogName(const std::string& val) {
   this->catalogName = val;
+__isset.catalogName = true;
 }
 
 void GetDatabaseObjectsRequest::__set_pattern(const std::string& val) {
@@ -7609,7 +7610,6 @@ uint32_t GetDatabaseObjectsRequest::read(::apache::thrift::protocol::TProtocol* 
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_catalogName = false;
 
   while (true)
   {
@@ -7622,7 +7622,7 @@ uint32_t GetDatabaseObjectsRequest::read(::apache::thrift::protocol::TProtocol* 
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->catalogName);
-          isset_catalogName = true;
+          this->__isset.catalogName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -7644,8 +7644,6 @@ uint32_t GetDatabaseObjectsRequest::read(::apache::thrift::protocol::TProtocol* 
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_catalogName)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -7654,10 +7652,11 @@ uint32_t GetDatabaseObjectsRequest::write(::apache::thrift::protocol::TProtocol*
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("GetDatabaseObjectsRequest");
 
-  xfer += oprot->writeFieldBegin("catalogName", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->catalogName);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.catalogName) {
+    xfer += oprot->writeFieldBegin("catalogName", ::apache::thrift::protocol::T_STRING, 1);
+    xfer += oprot->writeString(this->catalogName);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.pattern) {
     xfer += oprot->writeFieldBegin("pattern", ::apache::thrift::protocol::T_STRING, 2);
     xfer += oprot->writeString(this->pattern);
@@ -7689,7 +7688,7 @@ GetDatabaseObjectsRequest& GetDatabaseObjectsRequest::operator=(const GetDatabas
 void GetDatabaseObjectsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "GetDatabaseObjectsRequest(";
-  out << "catalogName=" << to_string(catalogName);
+  out << "catalogName="; (__isset.catalogName ? (out << to_string(catalogName)) : (out << "<null>"));
   out << ", " << "pattern="; (__isset.pattern ? (out << to_string(pattern)) : (out << "<null>"));
   out << ")";
 }
