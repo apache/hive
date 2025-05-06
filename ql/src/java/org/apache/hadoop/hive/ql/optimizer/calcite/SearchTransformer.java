@@ -144,14 +144,10 @@ public class SearchTransformer<C extends Comparable<C>> {
         // Switch the unknown context, to preserve unknown/null semantics below this call.
         RexUnknownAs previousContext = this.unknownContext;
         this.unknownContext = RexUnknownAs.UNKNOWN;
-        clonedOperands = visitList(call.operands, update);
+        RexNode newCall = super.visitCall(call);
         // Restore the original context once we finish with the call operands.
         this.unknownContext = previousContext;
-        if (update[0]) {
-          return rexBuilder.makeCall(call.op, clonedOperands);
-        } else {
-          return call;
-        }
+        return newCall;
       }
     }
   }
