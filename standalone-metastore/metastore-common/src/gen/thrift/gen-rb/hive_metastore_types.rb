@@ -1833,14 +1833,13 @@ class GetDatabaseObjectsRequest
   PATTERN = 2
 
   FIELDS = {
-    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName'},
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
     PATTERN => {:type => ::Thrift::Types::STRING, :name => 'pattern', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catalogName is unset!') unless @catalogName
   end
 
   ::Thrift::Struct.generate_accessors self

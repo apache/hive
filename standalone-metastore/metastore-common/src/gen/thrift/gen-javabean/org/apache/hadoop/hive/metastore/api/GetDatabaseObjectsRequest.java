@@ -17,7 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new GetDatabaseObjectsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetDatabaseObjectsRequestTupleSchemeFactory();
 
-  private @org.apache.thrift.annotation.Nullable java.lang.String catalogName; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String catalogName; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String pattern; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -84,11 +84,11 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.PATTERN};
+  private static final _Fields optionals[] = {_Fields.CATALOG_NAME,_Fields.PATTERN};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.CATALOG_NAME, new org.apache.thrift.meta_data.FieldMetaData("catalogName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.CATALOG_NAME, new org.apache.thrift.meta_data.FieldMetaData("catalogName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PATTERN, new org.apache.thrift.meta_data.FieldMetaData("pattern", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -97,13 +97,6 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public GetDatabaseObjectsRequest() {
-  }
-
-  public GetDatabaseObjectsRequest(
-    java.lang.String catalogName)
-  {
-    this();
-    this.catalogName = catalogName;
   }
 
   /**
@@ -323,13 +316,15 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("GetDatabaseObjectsRequest(");
     boolean first = true;
 
-    sb.append("catalogName:");
-    if (this.catalogName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.catalogName);
+    if (isSetCatalogName()) {
+      sb.append("catalogName:");
+      if (this.catalogName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catalogName);
+      }
+      first = false;
     }
-    first = false;
     if (isSetPattern()) {
       if (!first) sb.append(", ");
       sb.append("pattern:");
@@ -346,10 +341,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetCatalogName()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'catalogName' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
   }
 
@@ -417,9 +408,11 @@ package org.apache.hadoop.hive.metastore.api;
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.catalogName != null) {
-        oprot.writeFieldBegin(CATALOG_NAME_FIELD_DESC);
-        oprot.writeString(struct.catalogName);
-        oprot.writeFieldEnd();
+        if (struct.isSetCatalogName()) {
+          oprot.writeFieldBegin(CATALOG_NAME_FIELD_DESC);
+          oprot.writeString(struct.catalogName);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.pattern != null) {
         if (struct.isSetPattern()) {
@@ -445,12 +438,17 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetDatabaseObjectsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.catalogName);
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetPattern()) {
+      if (struct.isSetCatalogName()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetPattern()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetCatalogName()) {
+        oprot.writeString(struct.catalogName);
+      }
       if (struct.isSetPattern()) {
         oprot.writeString(struct.pattern);
       }
@@ -459,10 +457,12 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetDatabaseObjectsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.catalogName = iprot.readString();
-      struct.setCatalogNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
+      java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
+        struct.catalogName = iprot.readString();
+        struct.setCatalogNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.pattern = iprot.readString();
         struct.setPatternIsSet(true);
       }

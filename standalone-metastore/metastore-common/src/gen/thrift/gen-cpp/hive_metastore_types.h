@@ -3685,7 +3685,8 @@ void swap(Database &a, Database &b);
 std::ostream& operator<<(std::ostream& out, const Database& obj);
 
 typedef struct _GetDatabaseObjectsRequest__isset {
-  _GetDatabaseObjectsRequest__isset() : pattern(false) {}
+  _GetDatabaseObjectsRequest__isset() : catalogName(false), pattern(false) {}
+  bool catalogName :1;
   bool pattern :1;
 } _GetDatabaseObjectsRequest__isset;
 
@@ -3711,7 +3712,9 @@ class GetDatabaseObjectsRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const GetDatabaseObjectsRequest & rhs) const
   {
-    if (!(catalogName == rhs.catalogName))
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
       return false;
     if (__isset.pattern != rhs.__isset.pattern)
       return false;
