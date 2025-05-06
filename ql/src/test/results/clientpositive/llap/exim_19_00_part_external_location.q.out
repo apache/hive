@@ -113,9 +113,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:2
-totalFileSize:34
-maxFileSize:23
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like exim_employee_n2 partition (emp_country="in", emp_state="tn")
@@ -130,9 +130,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like exim_employee_n2 partition (emp_country="in", emp_state="ka")
@@ -147,9 +147,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:1
-totalFileSize:23
-maxFileSize:23
-minFileSize:23
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####

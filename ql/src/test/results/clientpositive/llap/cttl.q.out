@@ -1,5 +1,5 @@
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       4316 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists students
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -78,5 +78,5 @@ POSTHOOK: Input: default@students
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@students
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       4316 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 #### A masked pattern was here ####

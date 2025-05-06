@@ -1,5 +1,5 @@
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###         16 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo/in1.txt
+-rw-r--r--   3 ### USER ### ### GROUP ###         ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###Foo/in1.txt
 PREHOOK: query: create external table table_external (c1 int, c2 int)
 partitioned by (day string)
 location 'hdfs://### HDFS PATH ###'
