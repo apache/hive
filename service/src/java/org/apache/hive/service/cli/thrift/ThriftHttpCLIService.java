@@ -123,6 +123,8 @@ public class ThriftHttpCLIService extends ThriftCLIService {
           hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE);
       conf.setRequestHeaderSize(requestHeaderSize);
       conf.setResponseHeaderSize(responseHeaderSize);
+      conf.setSendServerVersion(false);
+      conf.setSendXPoweredBy(false);
       final HttpConnectionFactory http = new HttpConnectionFactory(conf) {
         public Connection newConnection(Connector connector, EndPoint endPoint) {
           Connection connection = super.newConnection(connector, endPoint);
