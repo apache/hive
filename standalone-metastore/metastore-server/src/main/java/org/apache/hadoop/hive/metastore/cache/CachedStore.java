@@ -1185,6 +1185,29 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache.listCachedDatabases(catName);
   }
 
+  @Override
+  public List<Database> getDatabaseObjects(String catName, String pattern) throws MetaException {
+    if (!sharedCache.isDatabaseCachePrewarmed() || (canUseEvents && rawStore.isActiveTransaction())) {
+      return rawStore.getDatabaseObjects(catName, pattern);
+    }
+
+    List<String> dbNames;
+    if (pattern == null || pattern.equals("*")) {
+      dbNames = sharedCache.listCachedDatabases(catName);
+    } else {
+      dbNames = sharedCache.listCachedDatabases(catName, pattern);
+    }
+
+    List<Database> databases = new ArrayList<>(dbNames.size());
+    for (String dbName : dbNames) {
+      Database db = sharedCache.getDatabaseFromCache(catName, dbName);
+      if (db != null) {
+        databases.add(db);
+      }
+    }
+    return databases;
+  }
+
   @Override public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
     rawStore.createDataConnector(connector);
   }

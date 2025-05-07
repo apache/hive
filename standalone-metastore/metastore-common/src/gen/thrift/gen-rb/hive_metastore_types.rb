@@ -327,6 +327,10 @@ class DropCatalogRequest; end
 
 class Database; end
 
+class GetDatabaseObjectsRequest; end
+
+class GetDatabaseObjectsResponse; end
+
 class SerDeInfo; end
 
 class Order; end
@@ -1818,6 +1822,41 @@ class Database
     unless @type.nil? || ::DatabaseType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetDatabaseObjectsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATALOGNAME = 1
+  PATTERN = 2
+
+  FIELDS = {
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
+    PATTERN => {:type => ::Thrift::Types::STRING, :name => 'pattern', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetDatabaseObjectsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DATABASES = 1
+
+  FIELDS = {
+    DATABASES => {:type => ::Thrift::Types::LIST, :name => 'databases', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Database}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field databases is unset!') unless @databases
   end
 
   ::Thrift::Struct.generate_accessors self

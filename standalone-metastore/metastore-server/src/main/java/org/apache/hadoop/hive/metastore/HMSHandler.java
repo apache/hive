@@ -1888,13 +1888,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> ret = null;
     Exception ex = null;
     try {
-      if (parsedDbNamed[DB_NAME] == null) {
-        ret = getMS().getAllDatabases(parsedDbNamed[CAT_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
-      } else {
-        ret = getMS().getDatabases(parsedDbNamed[CAT_NAME], parsedDbNamed[DB_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
+      GetDatabaseObjectsRequest req = new GetDatabaseObjectsRequest();
+      req.setCatalogName(parsedDbNamed[CAT_NAME]);
+      if (parsedDbNamed[DB_NAME] != null) {
+        req.setPattern(parsedDbNamed[DB_NAME]);
       }
+
+      GetDatabaseObjectsResponse response = get_databases_req(req);
+      ret = response.getDatabases().stream()
+          .map(Database::getName)
+          .collect(Collectors.toList());
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
@@ -1908,6 +1911,32 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<String> get_all_databases() throws MetaException {
     // get_databases filters results already. No need to filter here
     return get_databases(MetaStoreUtils.prependCatalogToDbName(null, null, conf));
+  }
+
+  @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)
+      throws MetaException {
+    String pattern = request.isSetPattern() ? request.getPattern() : null;
+    String catName = request.isSetCatalogName() ? request.getCatalogName() : getDefaultCatalog(conf);
+
+    startFunction("get_databases_req", ": catalogName=" + catName + " pattern=" + pattern);
+
+    GetDatabaseObjectsResponse response = new GetDatabaseObjectsResponse();
+    List<Database> dbs = null;
+    Exception ex = null;
+
+    try {
+      dbs = getMS().getDatabaseObjects(catName, pattern);
+      dbs = FilterUtils.filterDatabaseObjectsIfEnabled(isServerFilterEnabled, filterHook, dbs);
+      response.setDatabases(dbs);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_databases_req", dbs != null, ex);
+    }
+
+    return response;
   }
 
   private void create_dataconnector_core(RawStore ms, final DataConnector connector)

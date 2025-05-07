@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // COMPACTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list926 = iprot.readListBegin();
-                struct.compacts = new java.util.ArrayList<ShowCompactResponseElement>(_list926.size);
-                @org.apache.thrift.annotation.Nullable ShowCompactResponseElement _elem927;
-                for (int _i928 = 0; _i928 < _list926.size; ++_i928)
+                org.apache.thrift.protocol.TList _list934 = iprot.readListBegin();
+                struct.compacts = new java.util.ArrayList<ShowCompactResponseElement>(_list934.size);
+                @org.apache.thrift.annotation.Nullable ShowCompactResponseElement _elem935;
+                for (int _i936 = 0; _i936 < _list934.size; ++_i936)
                 {
-                  _elem927 = new ShowCompactResponseElement();
-                  _elem927.read(iprot);
-                  struct.compacts.add(_elem927);
+                  _elem935 = new ShowCompactResponseElement();
+                  _elem935.read(iprot);
+                  struct.compacts.add(_elem935);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COMPACTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compacts.size()));
-          for (ShowCompactResponseElement _iter929 : struct.compacts)
+          for (ShowCompactResponseElement _iter937 : struct.compacts)
           {
-            _iter929.write(oprot);
+            _iter937.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.compacts.size());
-        for (ShowCompactResponseElement _iter930 : struct.compacts)
+        for (ShowCompactResponseElement _iter938 : struct.compacts)
         {
-          _iter930.write(oprot);
+          _iter938.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowCompactResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list931 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.compacts = new java.util.ArrayList<ShowCompactResponseElement>(_list931.size);
-        @org.apache.thrift.annotation.Nullable ShowCompactResponseElement _elem932;
-        for (int _i933 = 0; _i933 < _list931.size; ++_i933)
+        org.apache.thrift.protocol.TList _list939 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.compacts = new java.util.ArrayList<ShowCompactResponseElement>(_list939.size);
+        @org.apache.thrift.annotation.Nullable ShowCompactResponseElement _elem940;
+        for (int _i941 = 0; _i941 < _list939.size; ++_i941)
         {
-          _elem932 = new ShowCompactResponseElement();
-          _elem932.read(iprot);
-          struct.compacts.add(_elem932);
+          _elem940 = new ShowCompactResponseElement();
+          _elem940.read(iprot);
+          struct.compacts.add(_elem940);
         }
       }
       struct.setCompactsIsSet(true);
