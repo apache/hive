@@ -42,7 +42,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -1364,14 +1363,6 @@ public class Table implements Serializable {
     sourceTable.setUpdatedCount(0L);
     sourceTable.setDeletedCount(0L);
     return sourceTable;
-  }
-  
-  public boolean isDruidTable() {
-    return isNonNative() && getStorageHandler().toString().equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID);
-  }
-  
-  public boolean isJdbcTable() {
-    return isNonNative() && getStorageHandler().toString().equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID);
   }
   
   public boolean isNative() {
