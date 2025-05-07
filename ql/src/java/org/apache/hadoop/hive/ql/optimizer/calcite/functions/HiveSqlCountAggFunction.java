@@ -31,13 +31,13 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
 import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.SqlSplittableAggFunction.CountSplitter;
-import org.apache.calcite.sql.SqlSplittableAggFunction.Registry;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableIntList;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -125,5 +125,11 @@ public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggreg
           new HiveSqlSumEmptyIsZeroAggFunction(isDistinct, returnTypeInference, operandTypeInference, operandTypeChecker),
           false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
     }
+  }
+
+  @Override
+  public @Nullable SqlAggFunction getRollup() {
+    return new HiveSqlSumEmptyIsZeroAggFunction(isDistinct(), getReturnTypeInference(), getOperandTypeInference(),
+        getOperandTypeChecker());
   }
 }

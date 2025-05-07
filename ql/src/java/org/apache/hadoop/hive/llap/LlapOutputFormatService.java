@@ -198,16 +198,10 @@ public class LlapOutputFormatService {
       LOG.debug("registering socket for: " + id);
       int maxPendingWrites = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES);
-      boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
       @SuppressWarnings("rawtypes")
-      RecordWriter writer = null;
-      if(useArrow) {
-        writer = new LlapArrowRecordWriter(new WritableByteChannelAdapter(ctx, maxPendingWrites, id));
-      } else {
-        writer = new LlapRecordWriter(id,
+      RecordWriter writer = new LlapRecordWriter(id,
           new ChunkedOutputStream(
-            new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites), sendBufferSize, id));
-      }
+              new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites), sendBufferSize, id));
       boolean isFailed = true;
       synchronized (lock) {
         if (!writers.containsKey(id)) {

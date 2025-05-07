@@ -37,7 +37,6 @@ import org.apache.calcite.rel.rules.materialize.MaterializedViewProjectAggregate
 import org.apache.calcite.rel.rules.materialize.MaterializedViewOnlyAggregateRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
@@ -138,11 +137,6 @@ public class HiveMaterializedViewRule {
     protected SqlFunction getFloorSqlFunction(TimeUnitRange flag) {
       return HiveRelBuilder.getFloorSqlFunction(flag);
     }
-
-    @Override
-    public SqlAggFunction getRollup(SqlAggFunction aggregation) {
-      return HiveRelBuilder.getRollup(aggregation);
-    }
   }
 
   protected static class HiveMaterializedViewOnlyAggregateRule extends MaterializedViewOnlyAggregateRule {
@@ -154,11 +148,6 @@ public class HiveMaterializedViewRule {
     @Override
     protected SqlFunction getFloorSqlFunction(TimeUnitRange flag) {
       return HiveRelBuilder.getFloorSqlFunction(flag);
-    }
-
-    @Override
-    public SqlAggFunction getRollup(SqlAggFunction aggregation) {
-      return HiveRelBuilder.getRollup(aggregation);
     }
   }
 

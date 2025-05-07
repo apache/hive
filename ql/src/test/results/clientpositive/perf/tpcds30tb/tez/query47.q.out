@@ -101,10 +101,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2000, 1999, 2001) and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
+                  filterExpr: ((d_year) IN (1999, 2000, 2001) and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 1168784 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((d_year) IN (2000, 1999, 2001) and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
+                    predicate: ((d_year) IN (1999, 2000, 2001) and ((d_year = 2000) or (struct(d_year,d_moy)) IN (const struct(1999,12), const struct(2001,1)))) (type: boolean)
                     Statistics: Num rows: 428 Data size: 6848 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_date_sk (type: bigint), d_year (type: int), d_moy (type: int)

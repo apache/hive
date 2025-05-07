@@ -710,16 +710,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_stats
-                  filterExpr: ((e > 0) and d NOT BETWEEN 3.0 AND 7.0) (type: boolean)
+                  filterExpr: (((d < 3.0) or (d > 7.0)) and (e > 0)) (type: boolean)
                   Statistics: Num rows: 15 Data size: 1732 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((e > 0) and d NOT BETWEEN 3.0 AND 7.0) (type: boolean)
-                    Statistics: Num rows: 12 Data size: 1388 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (((d < 3.0) or (d > 7.0)) and (e > 0)) (type: boolean)
+                    Statistics: Num rows: 10 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 12 Data size: 1388 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 10 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.9166667
+                        minReductionHashAggr: 0.9
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

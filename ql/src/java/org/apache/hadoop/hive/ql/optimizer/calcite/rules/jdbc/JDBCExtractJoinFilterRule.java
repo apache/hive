@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.rules.AbstractJoinExtractFilterRule;
+import org.apache.calcite.rel.rules.JoinExtractFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -35,6 +36,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
 public final class JDBCExtractJoinFilterRule extends AbstractJoinExtractFilterRule {
   //~ Static fields/initializers ---------------------------------------------
+  private static final AbstractJoinExtractFilterRule.Config DEFAULT =
+      JoinExtractFilterRule.Config.DEFAULT.withOperandSupplier(b0 -> b0.operand(HiveJoin.class)
+              .inputs(b1 -> b1.operand(HiveJdbcConverter.class).anyInputs(),
+                  b2 -> b2.operand(HiveJdbcConverter.class).anyInputs()))
+          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+          .withDescription("JDBCExtractJoinFilterRule")
+          .as(AbstractJoinExtractFilterRule.Config.class);
   public static final JDBCExtractJoinFilterRule INSTANCE = new JDBCExtractJoinFilterRule();
 
   //~ Constructors -----------------------------------------------------------
@@ -43,10 +51,7 @@ public final class JDBCExtractJoinFilterRule extends AbstractJoinExtractFilterRu
    * Creates an JoinExtractFilterRule.
    */
   public JDBCExtractJoinFilterRule() {
-    super(operand(HiveJoin.class,
-            operand(HiveJdbcConverter.class, any()),
-            operand(HiveJdbcConverter.class, any())),
-          HiveRelFactories.HIVE_BUILDER, null);
+    super(DEFAULT);
   }
 
   //~ Methods ----------------------------------------------------------------

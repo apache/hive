@@ -105,7 +105,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (1, '101'),  (2, '202'),  (3, '303'),  (4, '404'),  (5, '505')]))
+FROM TABLE(INLINE(ARRAY[(1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

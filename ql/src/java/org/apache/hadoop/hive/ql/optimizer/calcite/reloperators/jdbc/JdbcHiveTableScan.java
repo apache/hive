@@ -29,6 +29,9 @@ import org.apache.calcite.rel.RelNode;
 
 import org.apache.calcite.rel.RelWriter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+
+import com.google.common.collect.ImmutableList;
+
 /**
  * Relational expression representing a scan of a HiveDB collection.
  *
@@ -42,7 +45,7 @@ public class JdbcHiveTableScan extends JdbcTableScan {
 
   public JdbcHiveTableScan(RelOptCluster cluster, RelOptTable table, JdbcTable jdbcTable,
       JdbcConvention jdbcConvention, HiveTableScan hiveTableScan) {
-    super(cluster, table, jdbcTable, jdbcConvention);
+    super(cluster, ImmutableList.of(), table, jdbcTable, jdbcConvention);
     this.hiveTableScan= hiveTableScan;
   }
 

@@ -404,10 +404,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: (i_current_price BETWEEN 36 AND 45 and (i_color) IN ('maroon              ', 'burnished           ', 'dim                 ', 'steel               ', 'navajo              ', 'chocolate           ')) (type: boolean)
+                  filterExpr: (i_current_price BETWEEN 36 AND 45 and (i_color) IN ('burnished           ', 'chocolate           ', 'dim                 ', 'maroon              ', 'navajo              ', 'steel               ')) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 145861408 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (i_current_price BETWEEN 36 AND 45 and (i_color) IN ('maroon              ', 'burnished           ', 'dim                 ', 'steel               ', 'navajo              ', 'chocolate           ')) (type: boolean)
+                    predicate: (i_current_price BETWEEN 36 AND 45 and (i_color) IN ('burnished           ', 'chocolate           ', 'dim                 ', 'maroon              ', 'navajo              ', 'steel               ')) (type: boolean)
                     Statistics: Num rows: 8535 Data size: 2694708 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i_item_sk (type: bigint), i_product_name (type: char(50))
