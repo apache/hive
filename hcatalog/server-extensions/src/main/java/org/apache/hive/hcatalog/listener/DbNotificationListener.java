@@ -871,6 +871,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         );
     event.setTableName(tableName);
     event.setDbName(dbName);
+    event.setCatName(getDefaultCatalog(conf));
     try {
       addNotificationLog(event, allocWriteIdEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {
@@ -1042,7 +1043,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         msgEncoder.getSerializer().serialize(msg));
     event.setDbName(commitCompactionEvent.getDbname());
     event.setTableName(commitCompactionEvent.getTableName());
-
+    event.setCatName(getDefaultCatalog(conf));
     try {
       addNotificationLog(event, commitCompactionEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {
