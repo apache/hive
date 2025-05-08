@@ -46,10 +46,6 @@ public class MColumnDescriptor {
     return columns;
   }
 
-  public void setColumns(List<MColumn> columns) {
-    this.columns = columns;
-  }
-
   public List<MFieldSchema> getCols() {
     List<MFieldSchema> schemas = new ArrayList<>();
     if (getColumns() != null) {
