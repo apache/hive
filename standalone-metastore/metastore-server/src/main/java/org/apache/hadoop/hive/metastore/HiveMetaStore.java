@@ -395,6 +395,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE));
     httpServerConf.setResponseHeaderSize(
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE));
+    httpServerConf.setSendServerVersion(false);
+    httpServerConf.setSendXPoweredBy(false);
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
