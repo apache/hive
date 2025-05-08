@@ -521,7 +521,7 @@ public class IcebergTableUtil {
     }
   }
 
-  public static Pair<Integer, StructProjection> getPartitionSpecIdAndStruct(Table icebergTable, String partitionPath)
+  public static Pair<Integer, StructProjection> getPartitionStructWithSpecId(Table icebergTable, String partitionPath)
       throws IOException {
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);

@@ -29,7 +29,7 @@ create table ice_orc_wo_evo (
     first_name string, 
     last_name string
  )
-partitioned by (dept_id decimal(10, 2),
+partitioned by (cost decimal(10, 2),
                 city string, 
                 registration_date date)
 stored by iceberg stored as orc 
@@ -56,15 +56,15 @@ delete from ice_orc_wo_evo where last_name in ('ln1a', 'ln2a', 'ln7a');
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
 
-explain alter table ice_orc_wo_evo PARTITION (dept_id=100.10, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
-alter table ice_orc_wo_evo PARTITION (dept_id=100.10, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
+explain alter table ice_orc_wo_evo PARTITION (cost=100.10, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
+alter table ice_orc_wo_evo PARTITION (cost=100.10, city='London', registration_date='2024-03-11') COMPACT 'major' and wait;
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;
 show compactions order by 'partition';
 
-explain alter table ice_orc_wo_evo PARTITION (dept_id=203.20, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
-alter table ice_orc_wo_evo PARTITION (dept_id=203.20, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
+explain alter table ice_orc_wo_evo PARTITION (cost=203.20, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
+alter table ice_orc_wo_evo PARTITION (cost=203.20, city='Paris', registration_date='2024-02-16') COMPACT 'major' and wait;
 
 select * from ice_orc_wo_evo;
 describe formatted ice_orc_wo_evo;

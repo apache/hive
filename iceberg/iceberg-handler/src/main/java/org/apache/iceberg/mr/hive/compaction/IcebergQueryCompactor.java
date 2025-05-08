@@ -47,8 +47,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.mr.hive.compaction.evaluator.CompactionEvaluator;
+import org.apache.iceberg.mr.mapreduce.HiveIdentityPartitionConverters;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
@@ -107,9 +109,9 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       }
     } else {
       Pair<Integer, StructProjection> partSpecPair =
-          IcebergTableUtil.getPartitionSpecIdAndStruct(icebergTable, partSpec);
-      int partitionSpecId = partSpecPair.getKey();
-      StructProjection partitionValues = partSpecPair.getValue();
+          IcebergTableUtil.getPartitionStructWithSpecId(icebergTable, partSpec);
+      int specId = partSpecPair.getKey();
+      StructProjection partition = partSpecPair.getValue();
 
       HiveConf.setBoolVar(conf, ConfVars.HIVE_CONVERT_JOIN, false);
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
@@ -124,18 +126,11 @@ public class IcebergQueryCompactor extends QueryCompactor  {
           .mapToObj(i -> {
             Types.NestedField field = partitionType.fields().get(i);
             String name = "`partition`." + HiveUtils.unparseIdentifier(field.name());
-            String type = field.type().toString().equalsIgnoreCase("long") ? "bigint" :
-                field.type().toString();
-
-            Object value = partitionValues.get(i, Object.class);
-            if (type.equalsIgnoreCase("date") && value != null) {
-              value = String.format("date_add('1970-01-01', %s)", value);
-              type = "int";
-            }
-
-            String literal = value == null ? "NULL" : TypeInfoUtils.convertStringToLiteralForSQL(
-                value.toString(), ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(type))
-                    .getPrimitiveCategory()
+            String type = HiveSchemaUtil.convertToTypeString(field.type());
+            Object value = HiveIdentityPartitionConverters.convertConstant(field.type(),
+                partition.get(i, Object.class));
+            String literal = value == null ? "NULL" : TypeInfoUtils.convertStringToLiteralForSQL(value.toString(),
+                ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(type)).getPrimitiveCategory()
             );
             return name + (Objects.equals(literal, "NULL") ? " IS NULL" : "=" + literal);
           })
@@ -144,7 +139,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       compactionQuery = String.format("INSERT OVERWRITE TABLE %1$s SELECT * FROM %1$s " +
             "WHERE %2$s IN (SELECT FILE_PATH FROM %1$s.FILES WHERE %3$s AND SPEC_ID=%5$d) AND %4$s = %5$d %6$s %7$s",
         compactTableName, VirtualColumn.FILE_PATH.getName(), partitionCondition,
-        VirtualColumn.PARTITION_SPEC_ID.getName(), partitionSpecId,
+        VirtualColumn.PARTITION_SPEC_ID.getName(), specId,
         fileSizePredicate == null ? "" : "AND " + fileSizePredicate, orderBy);
     }
 
