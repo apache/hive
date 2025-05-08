@@ -85,6 +85,8 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideProps;
+
 /**
  * Class to do compactions via an MR job.  This has to be in the ql package rather than metastore
  * .compactions package with all of it's relatives because it needs access to the actual input
@@ -109,7 +111,6 @@ public class MRCompactor implements Compactor {
   private static final String DIRS_TO_SEARCH = "hive.compactor.dirs.to.search";
   private static final String TMPDIR = "_tmp";
   private static final String TBLPROPS_PREFIX = "tblprops.";
-  private static final String COMPACTOR_PREFIX = "compactor.";
 
   private JobConf mrJob;  // the MR job for compaction
   private IMetaStoreClient msc;
@@ -166,7 +167,7 @@ public class MRCompactor implements Compactor {
     job.set(TABLE_PROPS, new StringableMap(t.getParameters()).toString());
     job.setInt(NUM_BUCKETS, sd.getNumBuckets());
     job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIds.toString());
-    overrideMRProps(job, t.getParameters()); // override MR properties from tblproperties if applicable
+    overrideProps(job, t.getParameters()); // override MR properties from tblproperties if applicable
     if (ci.properties != null) {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
@@ -201,7 +202,7 @@ public class MRCompactor implements Compactor {
    */
   private void overrideTblProps(JobConf job, Map<String, String> tblproperties, String properties) {
     StringableMap stringableMap = new StringableMap(properties);
-    overrideMRProps(job, stringableMap);
+    overrideProps(job, stringableMap);
     // mingle existing tblproperties with those specified on the ALTER TABLE command
     for (String key : stringableMap.keySet()) {
       if (key.startsWith(TBLPROPS_PREFIX)) {
@@ -211,21 +212,6 @@ public class MRCompactor implements Compactor {
     }
     // re-set TABLE_PROPS with reloaded tblproperties
     job.set(TABLE_PROPS, new StringableMap(tblproperties).toString());
-  }
-
-  /**
-   * Parse tblproperties to override relevant properties of compactor MR job with specified values.
-   * For example, compactor.mapreuce.map.memory.mb=1024
-   * @param job the compactor MR job
-   * @param properties table properties
-   */
-  private void overrideMRProps(JobConf job, Map<String, String> properties) {
-    for (String key : properties.keySet()) {
-      if (key.startsWith(COMPACTOR_PREFIX)) {
-        String mrKey = key.substring(10); // 10 is the length of "compactor." We only keep the rest.
-        job.set(mrKey, properties.get(key));
-      }
-    }
   }
 
   /**

@@ -89,10 +89,15 @@ import static java.lang.String.format;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
-public class CompactorUtil {
+public final class CompactorUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CompactorUtil.class);
   public static final String COMPACTOR = "compactor";
+  public static final String COMPACTOR_PREFIX = COMPACTOR + ".";
   private static final String COMPACTOR_THRESHOLD_PREFIX = "compactorthreshold.";
+
+  private CompactorUtil() {
+
+  }
 
   /**
    * List of accepted properties for defining the compactor's job queue.
@@ -579,4 +584,20 @@ public class CompactorUtil {
     }
     return poolName;
   }
+
+  /**
+   * Parse tblproperties to override relevant properties of compactor job with specified values.
+   * For example, compactor.mapreuce.map.memory.mb=1024 or compactor.tez.am.view-acls
+   * @param conf the compactor job
+   * @param properties table properties
+   */
+  public static void overrideProps(Configuration conf, Map<String, String> properties) {
+    for (String key : properties.keySet()) {
+      if (key.startsWith(COMPACTOR_PREFIX)) {
+        String mrKey = key.substring(10); // 10 is the length of "compactor." We only keep the rest.
+        conf.set(mrKey, properties.get(key));
+      }
+    }
+  }
+
 }

@@ -32,6 +32,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideProps;
+
 /**
  *  Updates table/partition statistics.
  *  Intended to run after a successful compaction.
@@ -54,15 +57,13 @@ public final class StatsUpdater {
      */
     public void gatherStats(CompactionInfo ci, HiveConf hiveConf,
                             String userName, String compactionQueueName,
-                            IMetaStoreClient msc) {
+                            IMetaStoreClient msc, Map<String, String> tableProperties) {
         try {
             if (msc == null) {
                 throw new IllegalArgumentException("Metastore client is missing");
             }
 
-            HiveConf conf = new HiveConf(hiveConf);
-            //so that Driver doesn't think it's already in a transaction
-            conf.unset(ValidTxnList.VALID_TXNS_KEY);
+            HiveConf conf = createConfiguration(hiveConf, compactionQueueName, tableProperties, ci.getProperties());
 
             //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
             // compute statistics for columns viewtime
@@ -86,15 +87,34 @@ public final class StatsUpdater {
             } else {
                 sb.append(" noscan");
             }
-            LOG.info(ci + ": running '" + sb + "'");
-            if (compactionQueueName != null && compactionQueueName.length() > 0) {
-                conf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
-            }
+
+            LOG.info("{}: running '{}'", ci, sb);
             SessionState sessionState = DriverUtils.setUpAndStartSessionState(conf, userName);
             DriverUtils.runOnDriver(conf, sessionState, sb.toString());
         } catch (Throwable t) {
-            LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
-                    ") failed due to: " + t.getMessage(), t);
+          LOG.error("{}: gatherStats({},{},{}) failed due to: {}",
+                  ci, ci.dbname, ci.tableName, ci.partName, t.getMessage(), t);
         }
+    }
+
+    HiveConf createConfiguration(
+            HiveConf sourceConf,
+            String compactionQueueName,
+            Map<String, String> tableProperties,
+            Map<String, String> ciProperties) {
+
+        HiveConf conf = new HiveConf(sourceConf);
+
+        //so that Driver doesn't think it's already in a transaction
+        conf.unset(ValidTxnList.VALID_TXNS_KEY);
+
+        overrideProps(conf, tableProperties);
+        overrideProps(conf, ciProperties);
+
+        if (isNotBlank(compactionQueueName)) {
+            conf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
+        }
+
+        return conf;
     }
 }
