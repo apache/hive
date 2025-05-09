@@ -3094,7 +3094,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final TableType tableType = obtainTableType(tabMetaData);
 
         // 3.3 Add column info corresponding to virtual columns
-        List<VirtualColumn> virtualCols = getVirtualColumns(tabMetaData);
+        List<VirtualColumn> virtualCols = tabMetaData.getVirtualColumns(conf);
 
         virtualCols
             .forEach(vc ->
