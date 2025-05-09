@@ -635,19 +635,6 @@ public class MapOperator extends AbstractMapOperator {
           }
         }
         break;
-        case ROWOFFSET: {
-          long current = ctx.getIoCxt().getCurrentRow();
-          LongWritable old = (LongWritable) vcValues[i];
-          if (old == null) {
-            old = new LongWritable(current);
-            vcValues[i] = old;
-            continue;
-          }
-          if (current != old.get()) {
-            old.set(current);
-          }
-        }
-        break;
         case RAWDATASIZE:
           long current = 0L;
           SerDeStats stats = deserializer.getSerDeStats();
