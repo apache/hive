@@ -53,6 +53,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.ql.exec.util.JavaVersionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.tez.dag.api.OutputCommitterDescriptor;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
@@ -710,28 +711,7 @@ public class DagUtils {
   private static String getContainerJavaOpts(Configuration conf) {
     String baseJavaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS);
     String trimmedOpts = baseJavaOpts != null ? baseJavaOpts.trim() : "";
-    String javaOpts = String.join(" ",
-        trimmedOpts,
-        "--add-opens=java.base/java.net=ALL-UNNAMED",
-        "--add-opens=java.base/java.util=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang=ALL-UNNAMED",
-        "--add-opens=java.base/java.io=ALL-UNNAMED",
-        "--add-opens java.base/java.lang=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
-        "--add-opens=java.base/java.math=ALL-UNNAMED",
-        "--add-opens=java.base/java.nio=ALL-UNNAMED",
-        "--add-opens=java.base/java.text=ALL-UNNAMED",
-        "--add-opens=java.base/java.time=ALL-UNNAMED",
-        "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
-        "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
-        "--add-opens=java.sql/java.sql=ALL-UNNAMED",
-        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
-        "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
-    );
+    String javaOpts = String.join(" ", trimmedOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded());
 
     String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_LOG_LEVEL);
     List<String> logProps = Lists.newArrayList();

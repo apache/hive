@@ -36,6 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.util.JavaVersionUtils;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
@@ -511,30 +512,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
   }
   private void setJobOptions(JobConf job) {
-    String commonAddOpens = String.join(" ",
-        "--add-opens=java.base/java.net=ALL-UNNAMED",
-        "--add-opens=java.base/java.util=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang=ALL-UNNAMED",
-        "--add-opens=java.base/java.io=ALL-UNNAMED",
-        "--add-opens java.base/java.lang=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
-        "--add-opens=java.base/java.math=ALL-UNNAMED",
-        "--add-opens=java.base/java.nio=ALL-UNNAMED",
-        "--add-opens=java.base/java.text=ALL-UNNAMED",
-        "--add-opens=java.base/java.time=ALL-UNNAMED",
-        "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
-        "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
-        "--add-opens=java.sql/java.sql=ALL-UNNAMED",
-        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
-        "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
-    );
-    job.set("yarn.app.mapreduce.am.command-opts", commonAddOpens);
-    job.set("mapreduce.map.java.opts", commonAddOpens);
-    job.set("mapreduce.reduce.java.opts", commonAddOpens);
+      String commonAddOpens = JavaVersionUtils.getAddOpensFlagsIfNeeded();
+      if(!commonAddOpens.isEmpty()){
+          job.set("yarn.app.mapreduce.am.command-opts", commonAddOpens);
+          job.set("mapreduce.map.java.opts", commonAddOpens);
+          job.set("mapreduce.reduce.java.opts", commonAddOpens);
+      }
   }
 
   private void handleSampling(Context context, MapWork mWork, JobConf job)

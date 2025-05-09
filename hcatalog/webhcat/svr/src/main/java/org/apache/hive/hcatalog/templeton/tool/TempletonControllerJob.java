@@ -169,14 +169,23 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
   }
 
   private String addJavaOpensPackages(String amJavaOpts) {
+    final int JAVA_SPEC_VER = Math.max(8, Integer.parseInt(
+        System.getProperty("java.specification.version").split("\\.")[0]));
+    if(JAVA_SPEC_VER >=9) {
+      return String.join(" ", amJavaOpts, getJavaAddOpenOptions());
+    } else {
+      return amJavaOpts;
+    }
+  }
+  private String getJavaAddOpenOptions() {
     return String.join(" ",
-        amJavaOpts,
         "--add-opens=java.base/java.net=ALL-UNNAMED",
         "--add-opens=java.base/java.util=ALL-UNNAMED",
         "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
         "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
         "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens java.base/java.lang=ALL-UNNAMED",
         "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
         "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
         "--add-opens=java.base/java.math=ALL-UNNAMED",
