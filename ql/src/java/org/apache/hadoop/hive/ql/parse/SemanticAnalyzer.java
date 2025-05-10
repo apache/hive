@@ -315,7 +315,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitive
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -4999,6 +5001,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (isUDTF) {
       output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb, output, outerLV);
+
+      if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
+              && qb.getParseInfo().getDestSchemaForClause(dest) != null) {
+        List<ExprNodeDesc> trfColList = transformColList(colList);
+
+        selectStar = selectStar && exprList.getChildCount() == posn + 1;
+
+        out_rwsch = handleInsertStatementSpec(trfColList, dest, opParseCtx.get(output).getRowResolver(), qb, selExprList);
+
+        List<String> trfColumnNames = new ArrayList<>();
+        Map<String, ExprNodeDesc> trfColExprMap = new HashMap<>();
+        for (int i = 0; i < trfColList.size(); i++) {
+          String outputCol = getColumnInternalName(i);
+          trfColExprMap.put(outputCol, trfColList.get(i));
+          trfColumnNames.add(outputCol);
+        }
+
+        output = putOpInsertMap(OperatorFactory.getAndMakeChild(
+                new SelectDesc(trfColList, trfColumnNames, selectStar), new RowSchema(
+                        out_rwsch.getColumnInfos()), output), out_rwsch);
+
+        output.setColumnExprMap(trfColExprMap);
+      }
     }
 
     LOG.debug("Created Select Plan row schema: {}", out_rwsch);
@@ -5058,6 +5083,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return newOutputRR;
   }
 
+  List<ExprNodeDesc> transformColList(List<ExprNodeDesc> colList) {
+    List<ExprNodeDesc> trfColList = new ArrayList<>();
+    List<String> fieldNames = ((StructTypeInfo) ((ListTypeInfo) colList.get(0).getTypeInfo()).getListElementTypeInfo()).getAllStructFieldNames();
+    List<TypeInfo> typeInfos = ((StructTypeInfo) ((ListTypeInfo) colList.get(0).getTypeInfo()).getListElementTypeInfo()).getAllStructFieldTypeInfos();
+    int cols = fieldNames.size();
+
+    for (int i = 0; i < cols; i++) {
+      ExprNodeColumnDesc colDesc = new ExprNodeColumnDesc();
+      colDesc.setColumn(fieldNames.get(i));
+      colDesc.setTypeInfo(typeInfos.get(i));
+      trfColList.add(colDesc);
+    }
+
+    return trfColList;
+  }
+
   /**
    * This modifies the Select projections when the Select is part of an insert statement and
    * the insert statement specifies a column list for the target table, e.g.
@@ -5084,6 +5125,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return outputRR;
     }
     if(targetTableSchema.size() != col_list.size()) {
+      if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
+              && col_list.get(0).getClass().equals(ExprNodeGenericFuncDesc.class)
+              && targetTableSchema.size() == transformColList(col_list).size()){
+        return outputRR;
+      }
       Table target = qb.getMetaData().getDestTableForAlias(dest);
       Partition partition = target == null ? qb.getMetaData().getDestPartitionForAlias(dest) : null;
       throw new SemanticException(generateErrorMessage(selExprList,
