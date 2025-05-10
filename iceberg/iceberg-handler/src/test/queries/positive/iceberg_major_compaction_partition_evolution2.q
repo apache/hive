@@ -29,23 +29,23 @@ use ice_comp;
 create table ice_orc (
     first_name string, 
     last_name string,
-    dept_id bigint
+    is_remote boolean
  )
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
-insert into ice_orc VALUES ('fn1','ln1', 1);
-insert into ice_orc VALUES ('fn2','ln2', 1);
-insert into ice_orc VALUES ('fn3','ln3', 1);
-insert into ice_orc VALUES ('fn4','ln4', 1);
+insert into ice_orc VALUES ('fn1','ln1', true);
+insert into ice_orc VALUES ('fn2','ln2', true);
+insert into ice_orc VALUES ('fn3','ln3', true);
+insert into ice_orc VALUES ('fn4','ln4', true);
 delete from ice_orc where last_name in ('ln3', 'ln4');
 
-alter table ice_orc set partition spec(dept_id);
+alter table ice_orc set partition spec(is_remote);
 
-insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5');
-insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6');
-insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7');
-insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8');
+insert into ice_orc PARTITION(is_remote=false) VALUES ('fn5','ln5');
+insert into ice_orc PARTITION(is_remote=false) VALUES ('fn6','ln6');
+insert into ice_orc PARTITION(is_remote=false) VALUES ('fn7','ln7');
+insert into ice_orc PARTITION(is_remote=false) VALUES ('fn8','ln8');
 delete from ice_orc where last_name in ('ln7', 'ln8');
 
 select * from ice_orc;

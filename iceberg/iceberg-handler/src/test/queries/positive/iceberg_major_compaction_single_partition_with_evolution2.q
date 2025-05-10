@@ -28,16 +28,16 @@ set hive.merge.tezfiles=true;
 create table ice_orc (
     a string
  )
-partitioned by (b bigint)
+partitioned by (b double)
 stored by iceberg stored as orc 
 tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
-insert into ice_orc partition(b=1) VALUES 
+insert into ice_orc partition(b=1.01) VALUES 
 ('a1'),
 ('a2'),
 ('a3');
 
-insert into ice_orc partition(b=1) VALUES
+insert into ice_orc partition(b=1.01) VALUES
 ('a4'),
 ('a5'),
 ('a6');
@@ -45,20 +45,20 @@ insert into ice_orc partition(b=1) VALUES
 alter table ice_orc set partition spec(a);
 
 insert into ice_orc partition (a='a') VALUES 
-(1),
-(2),
-(3);
+(1.01),
+(2.83),
+(3.32);
 
 insert into ice_orc partition (a='a') VALUES 
-(4),
-(5),
-(6);
+(4.45),
+(5.1),
+(6.4567);
 
 select * from ice_orc;
 describe formatted ice_orc;
 
 delete from ice_orc where a in ('a2', 'a4');
-delete from ice_orc where b in (3, 6);
+delete from ice_orc where b in (3.32, 6.4567);
 
 select * from ice_orc;
 describe formatted ice_orc;
@@ -69,8 +69,8 @@ alter table ice_orc partition(a='a') compact 'major' and wait;
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc partition(b=1) compact 'major' and wait;
-alter table ice_orc partition(b=1) compact 'major' and wait;
+explain alter table ice_orc partition(b=1.01) compact 'major' and wait;
+alter table ice_orc partition(b=1.01) compact 'major' and wait;
 
 select * from ice_orc;
 describe formatted ice_orc;

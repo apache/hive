@@ -31,6 +31,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
@@ -520,7 +521,8 @@ public class IcebergTableUtil {
     }
   }
 
-  public static long getPartitionHash(Table icebergTable, String partitionPath) throws IOException {
+  public static Pair<Integer, StructProjection> getPartitionStructWithSpecId(Table icebergTable, String partitionPath)
+      throws IOException {
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
 
@@ -533,10 +535,10 @@ public class IcebergTableUtil {
             PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
                 Partitioning.partitionType(icebergTable), spec.partitionType());
             String path = spec.partitionToPath(partitionData);
-            return Maps.immutableEntry(path, data);
+            return Maps.immutableEntry(path, Pair.of(spec.specId(), data));
           })
           .filter(e -> e.getKey().equals(partitionPath))
-          .transform(e -> IcebergAcidUtil.computeHash(e.getValue()))
+          .transform(Map.Entry::getValue)
           .get(0);
     }
   }
