@@ -255,6 +255,7 @@ public class WriteEntity extends Entity implements Serializable {
       case SET_SERDE:
         // alter table {table_name} [PARTITION ({partition_spec})] set serde '{serde_class_name}'
       case ADDCOLS:
+      case DROP_COLUMN:
       case REPLACE_COLUMNS:
         // alter table {table_name} [partition ({partition_spec})] add/replace columns ({col_name} {data_type})
       case RENAME_COLUMN:

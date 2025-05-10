@@ -1,0 +1,36 @@
+PREHOOK: query: create external table ice_tbl (
+  strcol string,
+  intcol integer,
+  pcol string,
+  datecol date
+) partitioned by spec (pcol, datecol)
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: create external table ice_tbl (
+  strcol string,
+  intcol integer,
+  pcol string,
+  datecol date
+) partitioned by spec (pcol, datecol)
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: show columns in ice_tbl
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@ice_tbl
+POSTHOOK: query: show columns in ice_tbl
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@ice_tbl
+field
+strcol              
+intcol              
+pcol                
+datecol             
+PREHOOK: query: alter table ice_tbl drop column misscol
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: default@ice_tbl
+FAILED: Execution Error, return code 10328 from org.apache.hadoop.hive.ql.ddl.DDLTask. Invalid column name misscol

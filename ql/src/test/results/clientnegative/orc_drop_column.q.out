@@ -1,0 +1,38 @@
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: show columns in tbl_orc
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show columns in tbl_orc
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_orc
+field
+a                   
+b                   
+c                   
+d                   
+PREHOOK: query: alter table tbl_orc drop column c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc drop column c cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: alter table tbl_orc drop column c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+FAILED: Execution Error, return code 10328 from org.apache.hadoop.hive.ql.ddl.DDLTask. Invalid column name c

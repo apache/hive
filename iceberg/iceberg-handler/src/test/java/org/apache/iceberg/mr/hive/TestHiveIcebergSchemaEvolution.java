@@ -256,6 +256,47 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
   }
 
   @Test
+  public void testDropColumnFromIcebergTable() throws IOException {
+    Table icebergTable =
+        testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    // drop a column
+    icebergTable.updateSchema().deleteColumn("last_name").commit();
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // We need to update columns for non-Hive catalogs
+      shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    }
+
+    Schema customerSchemaWithAge = new Schema(optional(1, "customer_id", Types.LongType.get()),
+        optional(2, "first_name", Types.StringType.get(), "This is first name"));
+
+    icebergTable = testTables.loadTable(TableIdentifier.of("default", "customers"));
+    List<Record> newCustomerWithAge =
+        TestHelper.RecordsBuilder.newInstance(customerSchemaWithAge).add(3L, "James").add(4L, "Lily").build();
+
+    testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, fileFormat, null, newCustomerWithAge);
+
+    TestHelper.RecordsBuilder customersWithAgeBuilder =
+        TestHelper.RecordsBuilder.newInstance(customerSchemaWithAge).add(0L, "Alice").add(1L, "Bob").add(2L, "Trudy")
+            .add(3L, "James").add(4L, "Lily");
+    List<Record> customersWithAge = customersWithAgeBuilder.build();
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM default.customers");
+    HiveIcebergTestUtils.validateData(customersWithAge, HiveIcebergTestUtils.valueForRow(customerSchemaWithAge, rows),
+        0);
+
+    shell.executeStatement("INSERT INTO default.customers values (5L, 'Lily'), (6L, 'Roni')");
+
+    customersWithAgeBuilder.add(5L, "Lily").add(6L, "Roni");
+    customersWithAge = customersWithAgeBuilder.build();
+    rows = shell.executeStatement("SELECT * FROM default.customers");
+    HiveIcebergTestUtils.validateData(customersWithAge, HiveIcebergTestUtils.valueForRow(customerSchemaWithAge, rows),
+        0);
+  }
+
+  @Test
   public void testAddColumnToIcebergTable() throws IOException {
     // Create an Iceberg table with the columns customer_id, first_name and last_name with some initial data.
     Table icebergTable = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,

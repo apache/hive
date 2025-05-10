@@ -16,71 +16,71 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.column.replace;
+package org.apache.hadoop.hive.ql.ddl.table.column.drop;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.table.AlterTableUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Operation process of replacing two columns.
+ * Operation process of dropping column.
  */
-public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperation<AlterTableReplaceColumnsDesc> {
-  public AlterTableReplaceColumnsOperation(DDLOperationContext context, AlterTableReplaceColumnsDesc desc) {
+public class AlterTableDropColumnOperation extends AbstractAlterTableOperation<AlterTableDropColumnDesc> {
+
+  public AlterTableDropColumnOperation(DDLOperationContext context, AlterTableDropColumnDesc desc) {
     super(context, desc);
   }
-
-  private static final Set<String> VALID_SERIALIZATION_LIBS = ImmutableSet.of(
-      MetadataTypedColumnsetSerDe.class.getName(), LazySimpleSerDe.class.getName(), ColumnarSerDe.class.getName(),
-      ParquetHiveSerDe.class.getName(), OrcSerde.class.getName(), "org.apache.iceberg.mr.hive.HiveIcebergSerDe");
 
   @Override
   protected void doAlteration(Table table, Partition partition) throws HiveException {
     StorageDescriptor sd = getStorageDescriptor(table, partition);
-    // change SerDe to LazySimpleSerDe if it is columnsetSerDe
     String serializationLib = sd.getSerdeInfo().getSerializationLib();
+    AvroSerdeUtils.handleAlterTableForAvro(context.getConf(), serializationLib, table.getTTable().getParameters());
+
     if ("org.apache.hadoop.hive.serde.thrift.columnsetSerDe".equals(serializationLib)) {
-      context.getConsole().printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
+      context.getConsole().printInfo("Dropping column for columnsetSerDe and changing to LazySimpleSerDe");
       sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
-    } else if (!VALID_SERIALIZATION_LIBS.contains(serializationLib)) {
-      throw new HiveException(ErrorMsg.CANNOT_REPLACE_COLUMNS, desc.getDbTableName());
     }
 
-    // adding columns and limited integer type promotion is not supported for ORC schema evolution
-    boolean isOrcSchemaEvolution = serializationLib.equals(OrcSerde.class.getName()) &&
-        AlterTableUtils.isSchemaEvolutionEnabled(table, context.getConf());
+    boolean isOrcSchemaEvolution =
+        serializationLib.equals(OrcSerde.class.getName()) && AlterTableUtils.isSchemaEvolutionEnabled(table,
+            context.getConf());
     if (isOrcSchemaEvolution) {
-      List<FieldSchema> existingCols = sd.getCols();
-      List<FieldSchema> replaceCols = desc.getNewColumns();
-
-      if (replaceCols.size() < existingCols.size()) {
-        throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, desc.getDbTableName());
-      }
+      throw new HiveException(ErrorMsg.CANNOT_DROP_COLUMN, desc.getDbTableName());
     }
 
-    boolean droppingColumns = desc.getNewColumns().size() < sd.getCols().size();
-    if (ParquetHiveSerDe.isParquetTable(table) && AlterTableUtils.isSchemaEvolutionEnabled(table, context.getConf()) &&
-        !desc.isCascade() && droppingColumns && table.isPartitioned()) {
-      LOG.warn("Cannot drop columns from a partitioned parquet table without the CASCADE option");
+    if (ParquetHiveSerDe.isParquetTable(table) && AlterTableUtils.isSchemaEvolutionEnabled(table,
+        context.getConf()) && !desc.isCascade() && table.isPartitioned()) {
+      LOG.warn("Cannot drop column from a partitioned parquet table without the CASCADE option");
       throw new HiveException(ErrorMsg.DROP_COLUMN_UNCASCADED, desc.getDbTableName());
     }
 
-    sd.setCols(desc.getNewColumns());
+    List<FieldSchema> cols = new ArrayList<>(sd.getCols());
+    boolean removed = cols.removeIf(col -> col.getName().equalsIgnoreCase(desc.getColName()));
+    if (!removed) {
+      if (desc.isIfExists()) {
+        return;
+      }
+      throw new HiveException(ErrorMsg.INVALID_COLUMN_NAME, desc.getColName());
+    }
+
+    sd.setCols(cols);
   }
 }

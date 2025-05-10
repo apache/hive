@@ -167,7 +167,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       .of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
       BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
   static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
-      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
+      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN, AlterTableType.DROP_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS, AlterTableType.RENAME, AlterTableType.EXECUTE, AlterTableType.CREATE_BRANCH,
       AlterTableType.CREATE_TAG, AlterTableType.DROP_BRANCH, AlterTableType.RENAME_BRANCH, AlterTableType.DROPPARTITION,
@@ -503,6 +503,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
       assertNotMigratedTable(hmsTable.getParameters(), currentAlterTableOp.getName().toUpperCase());
       handleReplaceColumns(hmsTable);
+    } else if (AlterTableType.DROP_COLUMN.equals(currentAlterTableOp)) {
+      assertNotMigratedTable(hmsTable.getParameters(), currentAlterTableOp.getName().toUpperCase());
+      handleDropColumn(hmsTable);
     } else if (AlterTableType.RENAME_COLUMN.equals(currentAlterTableOp)) {
       // passing in the "CHANGE COLUMN" string instead, since RENAME COLUMN is not part of SQL syntax (not to mention
       // that users can change data types or reorder columns too with this alter op type, so its name is misleading..)
@@ -641,6 +644,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           preAlterTableProperties.partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else if (currentAlterTableOp != null) {
       switch (currentAlterTableOp) {
+        case DROP_COLUMN:
         case REPLACE_COLUMNS:
         case RENAME_COLUMN:
         case ADDCOLS:
@@ -945,6 +949,21 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())), addedCol.getComment());
     }
     updateSchema.commit();
+  }
+
+  private void handleDropColumn(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
+    List<FieldSchema> hmsCols = hmsTable.getSd().getCols();
+    List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
+
+    List<FieldSchema> removedCols = HiveSchemaUtil.getSchemaDiff(icebergCols, hmsCols, false).getMissingFromSecond();
+    if (removedCols.isEmpty()) {
+      return;
+    }
+
+    transaction = icebergTable.newTransaction();
+    transaction.updateSchema().deleteColumn(removedCols.get(0).getName()).commit();
+    LOG.info("handleDropColumn: Dropping the following column for Iceberg table {}, col: {}", hmsTable.getTableName(),
+        removedCols);
   }
 
   private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {

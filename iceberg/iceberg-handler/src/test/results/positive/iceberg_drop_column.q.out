@@ -1,0 +1,305 @@
+PREHOOK: query: create external table ice_tbl (
+  strcol string,
+  intcol integer,
+  pcol string,
+  datecol date
+) partitioned by spec (pcol, datecol)
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: create external table ice_tbl (
+  strcol string,
+  intcol integer,
+  pcol string,
+  datecol date
+) partitioned by spec (pcol, datecol)
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: desc ice_tbl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_tbl
+POSTHOOK: query: desc ice_tbl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_tbl
+col_name	data_type	comment
+strcol              	string              	                    
+intcol              	int                 	                    
+pcol                	string              	                    
+datecol             	date                	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+pcol                	IDENTITY            	 
+datecol             	IDENTITY            	 
+PREHOOK: query: insert into ice_tbl values ('str', 1, 'xya', '2027-01-20')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, 'xya', '2027-01-20')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 1, 'xyz', '2026-07-19')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, 'xyz', '2026-07-19')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 1, 'xyb', '2025-07-18')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, 'xyb', '2025-07-18')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 2, 'yzb', '2023-07-26')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 2, 'yzb', '2023-07-26')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 1, 'yab', '2023-07-26')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, 'yab', '2023-07-26')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 1, 'yzb', '2023-07-26')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, 'yzb', '2023-07-26')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 2, 'xyz', '2026-07-19')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 2, 'xyz', '2026-07-19')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 1, 'abc', '2019-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, 'abc', '2019-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 1, 'a"ab', '2019-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, 'a"ab', '2019-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: insert into ice_tbl values ('str', 1, "a'ab", '2019-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: insert into ice_tbl values ('str', 1, "a'ab", '2019-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl
+_col0	_col1	_col2	_col3
+PREHOOK: query: show partitions ice_tbl
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ice_tbl
+POSTHOOK: query: show partitions ice_tbl
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ice_tbl
+partition
+pcol=a%22ab/datecol=2019-02-07
+pcol=a%27ab/datecol=2019-02-07
+pcol=abc/datecol=2019-02-07
+pcol=xya/datecol=2027-01-20
+pcol=xyb/datecol=2025-07-18
+pcol=xyz/datecol=2026-07-19
+pcol=yab/datecol=2023-07-26
+pcol=yzb/datecol=2023-07-26
+PREHOOK: query: show columns in ice_tbl
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@ice_tbl
+POSTHOOK: query: show columns in ice_tbl
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@ice_tbl
+field
+strcol              
+intcol              
+pcol                
+datecol             
+PREHOOK: query: select * from ice_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ice_tbl.strcol	ice_tbl.intcol	ice_tbl.pcol	ice_tbl.datecol
+str	1	a"ab	2019-02-07
+str	1	a'ab	2019-02-07
+str	1	abc	2019-02-07
+str	1	xya	2027-01-20
+str	1	xyb	2025-07-18
+str	1	xyz	2026-07-19
+str	1	yab	2023-07-26
+str	1	yzb	2023-07-26
+str	2	xyz	2026-07-19
+str	2	yzb	2023-07-26
+PREHOOK: query: explain alter table ice_tbl drop column intcol
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: explain alter table ice_tbl drop column intcol
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: default@ice_tbl
+Explain
+Stage-0
+  Drop Column{"column name:":"intcol","table name:":"default.ice_tbl"}
+
+PREHOOK: query: alter table ice_tbl drop column intcol
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: alter table ice_tbl drop column intcol
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: show columns in ice_tbl
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@ice_tbl
+POSTHOOK: query: show columns in ice_tbl
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@ice_tbl
+field
+strcol              
+pcol                
+datecol             
+PREHOOK: query: select * from ice_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ice_tbl.strcol	ice_tbl.pcol	ice_tbl.datecol
+str	a"ab	2019-02-07
+str	a'ab	2019-02-07
+str	abc	2019-02-07
+str	xya	2027-01-20
+str	xyb	2025-07-18
+str	xyz	2026-07-19
+str	xyz	2026-07-19
+str	yab	2023-07-26
+str	yzb	2023-07-26
+str	yzb	2023-07-26
+PREHOOK: query: explain alter table ice_tbl drop column if exists intcol
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: explain alter table ice_tbl drop column if exists intcol
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: default@ice_tbl
+Explain
+Stage-0
+  Drop Column{"column name:":"intcol","table name:":"default.ice_tbl"}
+
+PREHOOK: query: alter table ice_tbl drop column if exists intcol
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: alter table ice_tbl drop column if exists intcol
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: show columns in ice_tbl
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@ice_tbl
+POSTHOOK: query: show columns in ice_tbl
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@ice_tbl
+field
+strcol              
+pcol                
+datecol             
+PREHOOK: query: select * from ice_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ice_tbl.strcol	ice_tbl.pcol	ice_tbl.datecol
+str	a"ab	2019-02-07
+str	a'ab	2019-02-07
+str	abc	2019-02-07
+str	xya	2027-01-20
+str	xyb	2025-07-18
+str	xyz	2026-07-19
+str	xyz	2026-07-19
+str	yab	2023-07-26
+str	yzb	2023-07-26
+str	yzb	2023-07-26
+PREHOOK: query: alter table ice_tbl drop column if exists strcol
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: default@ice_tbl
+POSTHOOK: query: alter table ice_tbl drop column if exists strcol
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: default@ice_tbl
+PREHOOK: query: show columns in ice_tbl
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@ice_tbl
+POSTHOOK: query: show columns in ice_tbl
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@ice_tbl
+field
+pcol                
+datecol             
+PREHOOK: query: select * from ice_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ice_tbl.pcol	ice_tbl.datecol
+a"ab	2019-02-07
+a'ab	2019-02-07
+abc	2019-02-07
+xya	2027-01-20
+xyb	2025-07-18
+xyz	2026-07-19
+xyz	2026-07-19
+yab	2023-07-26
+yzb	2023-07-26
+yzb	2023-07-26
