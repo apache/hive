@@ -287,7 +287,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
     if (success && compactionService.computeStats()) {
       statsUpdater.gatherStats(ci, conf, CompactorUtil.runJobAsSelf(ci.runAs) ? ci.runAs : table.getOwner(),
-          CompactorUtil.getCompactorJobQueueName(conf, ci, table), msc);
+          CompactorUtil.getCompactorJobQueueName(conf, ci, table), msc, table.getParameters());
     }
     return success;
   }
