@@ -1795,7 +1795,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // corelated sub query.
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
       final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
-      final boolean allowDisjunctivePredicates = conf.getBoolVar(ConfVars.HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN);
 
       final HepProgramBuilder program = new HepProgramBuilder();
 
@@ -1899,9 +1898,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
       rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
       rules.add(HiveJoinAddNotNullRule.INSTANCE_ANTIJOIN);
-      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveJoin.class, allowDisjunctivePredicates));
-      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveSemiJoin.class, allowDisjunctivePredicates));
-      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class, allowDisjunctivePredicates));
+      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveJoin.class));
+      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveSemiJoin.class));
+      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class));
       rules.add(HiveSortMergeRule.INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_LIMIT_INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_EXCHANGE_INSTANCE);
