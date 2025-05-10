@@ -216,7 +216,7 @@ public class HiveStringUtils {
     }
     StringBuilder s = new StringBuilder();
     for(int i = start; i < end; i++) {
-      s.append(String.format("%02x", bytes[i]));
+      s.append("%02x".formatted(bytes[i]));
     }
     return s.toString();
   }
@@ -259,7 +259,7 @@ public class HiveStringUtils {
   /**
    * @param str
    *          The string array to be parsed into an URI array.
-   * @return <tt>null</tt> if str is <tt>null</tt>, else the URI array
+   * @return <pre>null</pre> if str is <pre>null</pre>, else the URI array
    *         equivalent to str.
    * @throws IllegalArgumentException
    *           If any string in str violates RFC&nbsp;2396.

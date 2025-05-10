@@ -110,7 +110,7 @@ public class TablePropertySummary extends IcebergSummaryRetriever {
     public WriteFormatSummary() {
       defaultCompressionCodec = Maps.newHashMap();
       defaultCompressionCodec.put(PARQUET, "zstd");
-      defaultCompressionCodec.put("orc", "zlib");
+      defaultCompressionCodec.put("orc", "zstd");
       defaultCompressionCodec.put("avro", "gzip");
     }
 

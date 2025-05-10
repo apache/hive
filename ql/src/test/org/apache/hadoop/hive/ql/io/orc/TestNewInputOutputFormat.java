@@ -203,7 +203,7 @@ public class TestNewInputOutputFormat {
     Reader reader = OrcFile.createReader(outputFilePath,
         OrcFile.readerOptions(conf).filesystem(localFs));
     assertTrue(reader.getNumberOfRows() == rownum);
-    assertEquals(reader.getCompression(), CompressionKind.ZLIB);
+    assertEquals(reader.getCompression(), CompressionKind.ZSTD);
     StructObjectInspector soi =
         (StructObjectInspector)reader.getObjectInspector();
     StructTypeInfo ti =

@@ -80,7 +80,7 @@ PREHOOK: Input: default@bloomtest
 #### A masked pattern was here ####
 File Version:#Masked#
 Rows: 1
-Compression: ZLIB
+Compression: ZSTD
 Compression size: 32768
 Calendar: Julian/Gregorian
 Type: struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint,row:struct<msisdn:string,imsi:varchar(20),imei:bigint,cell_id:bigint>>
@@ -113,32 +113,32 @@ File Statistics:
   Column 10: count: 1 hasNull: false bytesOnDisk: 7 min: 12345 max: 12345 sum: 12345
 
 Stripes:
-  Stripe: offset: 3 data: 75 rows: 1 tail: 100 index: 597
+  Stripe: offset: 3 data: 75 rows: 1 tail: 133 index: 480
     Stream: column 0 section ROW_INDEX start: 3 length 11
     Stream: column 1 section ROW_INDEX start: 14 length 24
     Stream: column 2 section ROW_INDEX start: 38 length 24
-    Stream: column 3 section ROW_INDEX start: 62 length 29
-    Stream: column 4 section ROW_INDEX start: 91 length 24
-    Stream: column 5 section ROW_INDEX start: 115 length 24
-    Stream: column 6 section ROW_INDEX start: 139 length 11
-    Stream: column 7 section ROW_INDEX start: 150 length 31
-    Stream: column 7 section BLOOM_FILTER_UTF8 start: 181 length 111
-    Stream: column 8 section ROW_INDEX start: 292 length 31
-    Stream: column 8 section BLOOM_FILTER_UTF8 start: 323 length 111
-    Stream: column 9 section ROW_INDEX start: 434 length 29
-    Stream: column 10 section ROW_INDEX start: 463 length 29
-    Stream: column 10 section BLOOM_FILTER_UTF8 start: 492 length 108
-    Stream: column 1 section DATA start: 600 length 6
-    Stream: column 2 section DATA start: 606 length 6
-    Stream: column 3 section DATA start: 612 length 9
-    Stream: column 4 section DATA start: 621 length 6
-    Stream: column 5 section DATA start: 627 length 6
-    Stream: column 7 section DATA start: 633 length 8
-    Stream: column 7 section LENGTH start: 641 length 6
-    Stream: column 8 section DATA start: 647 length 8
-    Stream: column 8 section LENGTH start: 655 length 6
-    Stream: column 9 section DATA start: 661 length 7
-    Stream: column 10 section DATA start: 668 length 7
+    Stream: column 3 section ROW_INDEX start: 62 length 36
+    Stream: column 4 section ROW_INDEX start: 98 length 24
+    Stream: column 5 section ROW_INDEX start: 122 length 24
+    Stream: column 6 section ROW_INDEX start: 146 length 11
+    Stream: column 7 section ROW_INDEX start: 157 length 36
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 193 length 66
+    Stream: column 8 section ROW_INDEX start: 259 length 36
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 295 length 66
+    Stream: column 9 section ROW_INDEX start: 361 length 30
+    Stream: column 10 section ROW_INDEX start: 391 length 30
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 421 length 62
+    Stream: column 1 section DATA start: 483 length 6
+    Stream: column 2 section DATA start: 489 length 6
+    Stream: column 3 section DATA start: 495 length 9
+    Stream: column 4 section DATA start: 504 length 6
+    Stream: column 5 section DATA start: 510 length 6
+    Stream: column 7 section DATA start: 516 length 8
+    Stream: column 7 section LENGTH start: 524 length 6
+    Stream: column 8 section DATA start: 530 length 8
+    Stream: column 8 section LENGTH start: 538 length 6
+    Stream: column 9 section DATA start: 544 length 7
+    Stream: column 10 section DATA start: 551 length 7
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -183,6 +183,7 @@ Stripes:
       Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
 
 File length: #Masked# bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 
@@ -197,7 +198,7 @@ ________________________________________________________________________________
 #### A masked pattern was here ####
 File Version:#Masked#
 Rows: 1
-Compression: ZLIB
+Compression: ZSTD
 Compression size: 32768
 Calendar: Julian/Gregorian
 Type: struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint,row:struct<msisdn:string,imsi:varchar(20),imei:bigint,cell_id:bigint>>
@@ -230,32 +231,32 @@ File Statistics:
   Column 10: count: 1 hasNull: false bytesOnDisk: 7 min: 2345 max: 2345 sum: 2345
 
 Stripes:
-  Stripe: offset: 3 data: 73 rows: 1 tail: 103 index: 595
+  Stripe: offset: 3 data: 73 rows: 1 tail: 134 index: 455
     Stream: column 0 section ROW_INDEX start: 3 length 11
     Stream: column 1 section ROW_INDEX start: 14 length 24
     Stream: column 2 section ROW_INDEX start: 38 length 24
-    Stream: column 3 section ROW_INDEX start: 62 length 29
-    Stream: column 4 section ROW_INDEX start: 91 length 24
-    Stream: column 5 section ROW_INDEX start: 115 length 24
-    Stream: column 6 section ROW_INDEX start: 139 length 11
-    Stream: column 7 section ROW_INDEX start: 150 length 30
-    Stream: column 7 section BLOOM_FILTER_UTF8 start: 180 length 112
-    Stream: column 8 section ROW_INDEX start: 292 length 30
-    Stream: column 8 section BLOOM_FILTER_UTF8 start: 322 length 112
-    Stream: column 9 section ROW_INDEX start: 434 length 27
-    Stream: column 10 section ROW_INDEX start: 461 length 27
-    Stream: column 10 section BLOOM_FILTER_UTF8 start: 488 length 110
-    Stream: column 1 section DATA start: 598 length 6
-    Stream: column 2 section DATA start: 604 length 6
-    Stream: column 3 section DATA start: 610 length 9
-    Stream: column 4 section DATA start: 619 length 6
-    Stream: column 5 section DATA start: 625 length 6
-    Stream: column 7 section DATA start: 631 length 7
-    Stream: column 7 section LENGTH start: 638 length 6
-    Stream: column 8 section DATA start: 644 length 7
-    Stream: column 8 section LENGTH start: 651 length 6
-    Stream: column 9 section DATA start: 657 length 7
-    Stream: column 10 section DATA start: 664 length 7
+    Stream: column 3 section ROW_INDEX start: 62 length 36
+    Stream: column 4 section ROW_INDEX start: 98 length 24
+    Stream: column 5 section ROW_INDEX start: 122 length 24
+    Stream: column 6 section ROW_INDEX start: 146 length 11
+    Stream: column 7 section ROW_INDEX start: 157 length 34
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 191 length 61
+    Stream: column 8 section ROW_INDEX start: 252 length 34
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 286 length 61
+    Stream: column 9 section ROW_INDEX start: 347 length 27
+    Stream: column 10 section ROW_INDEX start: 374 length 27
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 401 length 57
+    Stream: column 1 section DATA start: 458 length 6
+    Stream: column 2 section DATA start: 464 length 6
+    Stream: column 3 section DATA start: 470 length 9
+    Stream: column 4 section DATA start: 479 length 6
+    Stream: column 5 section DATA start: 485 length 6
+    Stream: column 7 section DATA start: 491 length 7
+    Stream: column 7 section LENGTH start: 498 length 6
+    Stream: column 8 section DATA start: 504 length 7
+    Stream: column 8 section LENGTH start: 511 length 6
+    Stream: column 9 section DATA start: 517 length 7
+    Stream: column 10 section DATA start: 524 length 7
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -300,6 +301,7 @@ Stripes:
       Stripe level merge: numHashFunctions: 6 bitCount: 81472 popCount: 6 loadFactor: 0.0001 expectedFpp: 1.5953551E-25
 
 File length: #Masked# bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 

@@ -95,7 +95,7 @@ PREHOOK: Input: default@orc_ppd_n0
 #### A masked pattern was here ####
 File Version:#Masked#
 Rows: 1049
-Compression: ZLIB
+Compression: ZSTD
 Compression size: 262144
 Calendar: Julian/Gregorian
 Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
@@ -103,76 +103,76 @@ Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 1049 hasNull: false
-    Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
-    Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
-    Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
-    Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
-    Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-    Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+    Column 1: count: 1046 hasNull: true bytesOnDisk: 1024 min: -3 max: 124 sum: 62430
+    Column 2: count: 1046 hasNull: true bytesOnDisk: 1525 min: 256 max: 511 sum: 398889
+    Column 3: count: 1049 hasNull: false bytesOnDisk: 1707 min: 65536 max: 65791 sum: 68881051
+    Column 4: count: 1049 hasNull: false bytesOnDisk: 1827 min: 4294967296 max: 4294967551 sum: 4505420825953
+    Column 5: count: 1049 hasNull: false bytesOnDisk: 3404 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+    Column 6: count: 1049 hasNull: false bytesOnDisk: 3465 min: 0.02 max: 49.85 sum: 26286.349999999977
     Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
-    Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
-    Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
-    Column 10: count: 1049 hasNull: false bytesOnDisk: 2181 min: 0.08 max: 99.94 sum: 53646.16
-    Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
+    Column 8: count: 1049 hasNull: false bytesOnDisk: 3394 min:  max: zach zipper sum: 13443
+    Column 9: count: 1049 hasNull: false bytesOnDisk: 1848 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
+    Column 10: count: 1049 hasNull: false bytesOnDisk: 2224 min: 0.08 max: 99.94 sum: 53646.16
+    Column 11: count: 1049 hasNull: false bytesOnDisk: 2517 sum: 13278
 
 File Statistics:
   Column 0: count: 1049 hasNull: false
-  Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
-  Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
-  Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
-  Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
-  Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-  Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+  Column 1: count: 1046 hasNull: true bytesOnDisk: 1024 min: -3 max: 124 sum: 62430
+  Column 2: count: 1046 hasNull: true bytesOnDisk: 1525 min: 256 max: 511 sum: 398889
+  Column 3: count: 1049 hasNull: false bytesOnDisk: 1707 min: 65536 max: 65791 sum: 68881051
+  Column 4: count: 1049 hasNull: false bytesOnDisk: 1827 min: 4294967296 max: 4294967551 sum: 4505420825953
+  Column 5: count: 1049 hasNull: false bytesOnDisk: 3404 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+  Column 6: count: 1049 hasNull: false bytesOnDisk: 3465 min: 0.02 max: 49.85 sum: 26286.349999999977
   Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
-  Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
-  Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
-  Column 10: count: 1049 hasNull: false bytesOnDisk: 2181 min: 0.08 max: 99.94 sum: 53646.16
-  Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
+  Column 8: count: 1049 hasNull: false bytesOnDisk: 3394 min:  max: zach zipper sum: 13443
+  Column 9: count: 1049 hasNull: false bytesOnDisk: 1848 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
+  Column 10: count: 1049 hasNull: false bytesOnDisk: 2224 min: 0.08 max: 99.94 sum: 53646.16
+  Column 11: count: 1049 hasNull: false bytesOnDisk: 2517 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22405 rows: 1049 tail: 239 index: 13620
+  Stripe: offset: 3 data: 23072 rows: 1049 tail: 262 index: 13074
     Stream: column 0 section ROW_INDEX start: 3 length 20
-    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 43
-    Stream: column 1 section ROW_INDEX start: 66 length 58
-    Stream: column 1 section BLOOM_FILTER_UTF8 start: 124 length 1091
-    Stream: column 2 section ROW_INDEX start: 1215 length 58
-    Stream: column 2 section BLOOM_FILTER_UTF8 start: 1273 length 1372
-    Stream: column 3 section ROW_INDEX start: 2645 length 61
-    Stream: column 3 section BLOOM_FILTER_UTF8 start: 2706 length 1374
-    Stream: column 4 section ROW_INDEX start: 4080 length 69
-    Stream: column 4 section BLOOM_FILTER_UTF8 start: 4149 length 1375
-    Stream: column 5 section ROW_INDEX start: 5524 length 78
-    Stream: column 5 section BLOOM_FILTER_UTF8 start: 5602 length 1824
-    Stream: column 6 section ROW_INDEX start: 7426 length 85
-    Stream: column 6 section BLOOM_FILTER_UTF8 start: 7511 length 1795
-    Stream: column 7 section ROW_INDEX start: 9306 length 41
-    Stream: column 7 section BLOOM_FILTER_UTF8 start: 9347 length 43
-    Stream: column 8 section ROW_INDEX start: 9390 length 86
-    Stream: column 8 section BLOOM_FILTER_UTF8 start: 9476 length 1653
-    Stream: column 9 section ROW_INDEX start: 11129 length 63
-    Stream: column 9 section BLOOM_FILTER_UTF8 start: 11192 length 80
-    Stream: column 10 section ROW_INDEX start: 11272 length 80
-    Stream: column 10 section BLOOM_FILTER_UTF8 start: 11352 length 1802
-    Stream: column 11 section ROW_INDEX start: 13154 length 47
-    Stream: column 11 section BLOOM_FILTER_UTF8 start: 13201 length 422
-    Stream: column 1 section PRESENT start: 13623 length 17
-    Stream: column 1 section DATA start: 13640 length 962
-    Stream: column 2 section PRESENT start: 14602 length 17
-    Stream: column 2 section DATA start: 14619 length 1441
-    Stream: column 3 section DATA start: 16060 length 1704
-    Stream: column 4 section DATA start: 17764 length 1998
-    Stream: column 5 section DATA start: 19762 length 2925
-    Stream: column 6 section DATA start: 22687 length 3323
-    Stream: column 7 section DATA start: 26010 length 137
-    Stream: column 8 section DATA start: 26147 length 1572
-    Stream: column 8 section LENGTH start: 27719 length 310
-    Stream: column 8 section DICTIONARY_DATA start: 28029 length 1548
-    Stream: column 9 section DATA start: 29577 length 19
-    Stream: column 9 section SECONDARY start: 29596 length 1783
-    Stream: column 10 section DATA start: 31379 length 2166
-    Stream: column 10 section SECONDARY start: 33545 length 15
-    Stream: column 11 section DATA start: 33560 length 1877
-    Stream: column 11 section LENGTH start: 35437 length 591
+    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 37
+    Stream: column 1 section ROW_INDEX start: 60 length 60
+    Stream: column 1 section BLOOM_FILTER_UTF8 start: 120 length 1049
+    Stream: column 2 section ROW_INDEX start: 1169 length 64
+    Stream: column 2 section BLOOM_FILTER_UTF8 start: 1233 length 1292
+    Stream: column 3 section ROW_INDEX start: 2525 length 62
+    Stream: column 3 section BLOOM_FILTER_UTF8 start: 2587 length 1272
+    Stream: column 4 section ROW_INDEX start: 3859 length 75
+    Stream: column 4 section BLOOM_FILTER_UTF8 start: 3934 length 1299
+    Stream: column 5 section ROW_INDEX start: 5233 length 87
+    Stream: column 5 section BLOOM_FILTER_UTF8 start: 5320 length 1764
+    Stream: column 6 section ROW_INDEX start: 7084 length 87
+    Stream: column 6 section BLOOM_FILTER_UTF8 start: 7171 length 1745
+    Stream: column 7 section ROW_INDEX start: 8916 length 43
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 8959 length 37
+    Stream: column 8 section ROW_INDEX start: 8996 length 87
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 9083 length 1590
+    Stream: column 9 section ROW_INDEX start: 10673 length 84
+    Stream: column 9 section BLOOM_FILTER_UTF8 start: 10757 length 71
+    Stream: column 10 section ROW_INDEX start: 10828 length 84
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 10912 length 1765
+    Stream: column 11 section ROW_INDEX start: 12677 length 47
+    Stream: column 11 section BLOOM_FILTER_UTF8 start: 12724 length 353
+    Stream: column 1 section PRESENT start: 13077 length 17
+    Stream: column 1 section DATA start: 13094 length 1007
+    Stream: column 2 section PRESENT start: 14101 length 17
+    Stream: column 2 section DATA start: 14118 length 1508
+    Stream: column 3 section DATA start: 15626 length 1707
+    Stream: column 4 section DATA start: 17333 length 1827
+    Stream: column 5 section DATA start: 19160 length 3404
+    Stream: column 6 section DATA start: 22564 length 3465
+    Stream: column 7 section DATA start: 26029 length 137
+    Stream: column 8 section DATA start: 26166 length 1520
+    Stream: column 8 section LENGTH start: 27686 length 342
+    Stream: column 8 section DICTIONARY_DATA start: 28028 length 1532
+    Stream: column 9 section DATA start: 29560 length 24
+    Stream: column 9 section SECONDARY start: 29584 length 1824
+    Stream: column 10 section DATA start: 31408 length 2209
+    Stream: column 10 section SECONDARY start: 33617 length 15
+    Stream: column 11 section DATA start: 33632 length 1916
+    Stream: column 11 section LENGTH start: 35548 length 601
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -270,7 +270,8 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
-File length: 36995 bytes
+File length: 37211 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -293,7 +294,7 @@ PREHOOK: Input: default@orc_ppd_n0
 #### A masked pattern was here ####
 File Version:#Masked#
 Rows: 1049
-Compression: ZLIB
+Compression: ZSTD
 Compression size: 262144
 Calendar: Julian/Gregorian
 Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
@@ -301,76 +302,76 @@ Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 1049 hasNull: false
-    Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
-    Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
-    Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
-    Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
-    Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-    Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+    Column 1: count: 1046 hasNull: true bytesOnDisk: 1024 min: -3 max: 124 sum: 62430
+    Column 2: count: 1046 hasNull: true bytesOnDisk: 1525 min: 256 max: 511 sum: 398889
+    Column 3: count: 1049 hasNull: false bytesOnDisk: 1707 min: 65536 max: 65791 sum: 68881051
+    Column 4: count: 1049 hasNull: false bytesOnDisk: 1827 min: 4294967296 max: 4294967551 sum: 4505420825953
+    Column 5: count: 1049 hasNull: false bytesOnDisk: 3404 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+    Column 6: count: 1049 hasNull: false bytesOnDisk: 3465 min: 0.02 max: 49.85 sum: 26286.349999999977
     Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
-    Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
-    Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
-    Column 10: count: 1049 hasNull: false bytesOnDisk: 2181 min: 0.08 max: 99.94 sum: 53646.16
-    Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
+    Column 8: count: 1049 hasNull: false bytesOnDisk: 3394 min:  max: zach zipper sum: 13443
+    Column 9: count: 1049 hasNull: false bytesOnDisk: 1848 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
+    Column 10: count: 1049 hasNull: false bytesOnDisk: 2224 min: 0.08 max: 99.94 sum: 53646.16
+    Column 11: count: 1049 hasNull: false bytesOnDisk: 2517 sum: 13278
 
 File Statistics:
   Column 0: count: 1049 hasNull: false
-  Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
-  Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
-  Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
-  Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
-  Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-  Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+  Column 1: count: 1046 hasNull: true bytesOnDisk: 1024 min: -3 max: 124 sum: 62430
+  Column 2: count: 1046 hasNull: true bytesOnDisk: 1525 min: 256 max: 511 sum: 398889
+  Column 3: count: 1049 hasNull: false bytesOnDisk: 1707 min: 65536 max: 65791 sum: 68881051
+  Column 4: count: 1049 hasNull: false bytesOnDisk: 1827 min: 4294967296 max: 4294967551 sum: 4505420825953
+  Column 5: count: 1049 hasNull: false bytesOnDisk: 3404 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+  Column 6: count: 1049 hasNull: false bytesOnDisk: 3465 min: 0.02 max: 49.85 sum: 26286.349999999977
   Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
-  Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
-  Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
-  Column 10: count: 1049 hasNull: false bytesOnDisk: 2181 min: 0.08 max: 99.94 sum: 53646.16
-  Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
+  Column 8: count: 1049 hasNull: false bytesOnDisk: 3394 min:  max: zach zipper sum: 13443
+  Column 9: count: 1049 hasNull: false bytesOnDisk: 1848 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
+  Column 10: count: 1049 hasNull: false bytesOnDisk: 2224 min: 0.08 max: 99.94 sum: 53646.16
+  Column 11: count: 1049 hasNull: false bytesOnDisk: 2517 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22405 rows: 1049 tail: 239 index: 13620
+  Stripe: offset: 3 data: 23072 rows: 1049 tail: 262 index: 13074
     Stream: column 0 section ROW_INDEX start: 3 length 20
-    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 43
-    Stream: column 1 section ROW_INDEX start: 66 length 58
-    Stream: column 1 section BLOOM_FILTER_UTF8 start: 124 length 1091
-    Stream: column 2 section ROW_INDEX start: 1215 length 58
-    Stream: column 2 section BLOOM_FILTER_UTF8 start: 1273 length 1372
-    Stream: column 3 section ROW_INDEX start: 2645 length 61
-    Stream: column 3 section BLOOM_FILTER_UTF8 start: 2706 length 1374
-    Stream: column 4 section ROW_INDEX start: 4080 length 69
-    Stream: column 4 section BLOOM_FILTER_UTF8 start: 4149 length 1375
-    Stream: column 5 section ROW_INDEX start: 5524 length 78
-    Stream: column 5 section BLOOM_FILTER_UTF8 start: 5602 length 1824
-    Stream: column 6 section ROW_INDEX start: 7426 length 85
-    Stream: column 6 section BLOOM_FILTER_UTF8 start: 7511 length 1795
-    Stream: column 7 section ROW_INDEX start: 9306 length 41
-    Stream: column 7 section BLOOM_FILTER_UTF8 start: 9347 length 43
-    Stream: column 8 section ROW_INDEX start: 9390 length 86
-    Stream: column 8 section BLOOM_FILTER_UTF8 start: 9476 length 1653
-    Stream: column 9 section ROW_INDEX start: 11129 length 63
-    Stream: column 9 section BLOOM_FILTER_UTF8 start: 11192 length 80
-    Stream: column 10 section ROW_INDEX start: 11272 length 80
-    Stream: column 10 section BLOOM_FILTER_UTF8 start: 11352 length 1802
-    Stream: column 11 section ROW_INDEX start: 13154 length 47
-    Stream: column 11 section BLOOM_FILTER_UTF8 start: 13201 length 422
-    Stream: column 1 section PRESENT start: 13623 length 17
-    Stream: column 1 section DATA start: 13640 length 962
-    Stream: column 2 section PRESENT start: 14602 length 17
-    Stream: column 2 section DATA start: 14619 length 1441
-    Stream: column 3 section DATA start: 16060 length 1704
-    Stream: column 4 section DATA start: 17764 length 1998
-    Stream: column 5 section DATA start: 19762 length 2925
-    Stream: column 6 section DATA start: 22687 length 3323
-    Stream: column 7 section DATA start: 26010 length 137
-    Stream: column 8 section DATA start: 26147 length 1572
-    Stream: column 8 section LENGTH start: 27719 length 310
-    Stream: column 8 section DICTIONARY_DATA start: 28029 length 1548
-    Stream: column 9 section DATA start: 29577 length 19
-    Stream: column 9 section SECONDARY start: 29596 length 1783
-    Stream: column 10 section DATA start: 31379 length 2166
-    Stream: column 10 section SECONDARY start: 33545 length 15
-    Stream: column 11 section DATA start: 33560 length 1877
-    Stream: column 11 section LENGTH start: 35437 length 591
+    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 37
+    Stream: column 1 section ROW_INDEX start: 60 length 60
+    Stream: column 1 section BLOOM_FILTER_UTF8 start: 120 length 1049
+    Stream: column 2 section ROW_INDEX start: 1169 length 64
+    Stream: column 2 section BLOOM_FILTER_UTF8 start: 1233 length 1292
+    Stream: column 3 section ROW_INDEX start: 2525 length 62
+    Stream: column 3 section BLOOM_FILTER_UTF8 start: 2587 length 1272
+    Stream: column 4 section ROW_INDEX start: 3859 length 75
+    Stream: column 4 section BLOOM_FILTER_UTF8 start: 3934 length 1299
+    Stream: column 5 section ROW_INDEX start: 5233 length 87
+    Stream: column 5 section BLOOM_FILTER_UTF8 start: 5320 length 1764
+    Stream: column 6 section ROW_INDEX start: 7084 length 87
+    Stream: column 6 section BLOOM_FILTER_UTF8 start: 7171 length 1745
+    Stream: column 7 section ROW_INDEX start: 8916 length 43
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 8959 length 37
+    Stream: column 8 section ROW_INDEX start: 8996 length 87
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 9083 length 1590
+    Stream: column 9 section ROW_INDEX start: 10673 length 84
+    Stream: column 9 section BLOOM_FILTER_UTF8 start: 10757 length 71
+    Stream: column 10 section ROW_INDEX start: 10828 length 84
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 10912 length 1765
+    Stream: column 11 section ROW_INDEX start: 12677 length 47
+    Stream: column 11 section BLOOM_FILTER_UTF8 start: 12724 length 353
+    Stream: column 1 section PRESENT start: 13077 length 17
+    Stream: column 1 section DATA start: 13094 length 1007
+    Stream: column 2 section PRESENT start: 14101 length 17
+    Stream: column 2 section DATA start: 14118 length 1508
+    Stream: column 3 section DATA start: 15626 length 1707
+    Stream: column 4 section DATA start: 17333 length 1827
+    Stream: column 5 section DATA start: 19160 length 3404
+    Stream: column 6 section DATA start: 22564 length 3465
+    Stream: column 7 section DATA start: 26029 length 137
+    Stream: column 8 section DATA start: 26166 length 1520
+    Stream: column 8 section LENGTH start: 27686 length 342
+    Stream: column 8 section DICTIONARY_DATA start: 28028 length 1532
+    Stream: column 9 section DATA start: 29560 length 24
+    Stream: column 9 section SECONDARY start: 29584 length 1824
+    Stream: column 10 section DATA start: 31408 length 2209
+    Stream: column 10 section SECONDARY start: 33617 length 15
+    Stream: column 11 section DATA start: 33632 length 1916
+    Stream: column 11 section LENGTH start: 35548 length 601
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -468,7 +469,8 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
-File length: 36995 bytes
+File length: 37211 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -503,7 +505,7 @@ PREHOOK: Input: default@orc_ppd_part@ds=2015/hr=10
 #### A masked pattern was here ####
 File Version:#Masked#
 Rows: 1049
-Compression: ZLIB
+Compression: ZSTD
 Compression size: 262144
 Calendar: Julian/Gregorian
 Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:string,ts:timestamp,dec:decimal(4,2),bin:binary>
@@ -511,76 +513,76 @@ Type: struct<t:tinyint,si:smallint,i:int,b:bigint,f:float,d:double,bo:boolean,s:
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 1049 hasNull: false
-    Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
-    Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
-    Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
-    Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
-    Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-    Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+    Column 1: count: 1046 hasNull: true bytesOnDisk: 1024 min: -3 max: 124 sum: 62430
+    Column 2: count: 1046 hasNull: true bytesOnDisk: 1525 min: 256 max: 511 sum: 398889
+    Column 3: count: 1049 hasNull: false bytesOnDisk: 1707 min: 65536 max: 65791 sum: 68881051
+    Column 4: count: 1049 hasNull: false bytesOnDisk: 1827 min: 4294967296 max: 4294967551 sum: 4505420825953
+    Column 5: count: 1049 hasNull: false bytesOnDisk: 3404 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+    Column 6: count: 1049 hasNull: false bytesOnDisk: 3465 min: 0.02 max: 49.85 sum: 26286.349999999977
     Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
-    Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
-    Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
-    Column 10: count: 1049 hasNull: false bytesOnDisk: 2181 min: 0.08 max: 99.94 sum: 53646.16
-    Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
+    Column 8: count: 1049 hasNull: false bytesOnDisk: 3394 min:  max: zach zipper sum: 13443
+    Column 9: count: 1049 hasNull: false bytesOnDisk: 1848 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
+    Column 10: count: 1049 hasNull: false bytesOnDisk: 2224 min: 0.08 max: 99.94 sum: 53646.16
+    Column 11: count: 1049 hasNull: false bytesOnDisk: 2517 sum: 13278
 
 File Statistics:
   Column 0: count: 1049 hasNull: false
-  Column 1: count: 1046 hasNull: true bytesOnDisk: 979 min: -3 max: 124 sum: 62430
-  Column 2: count: 1046 hasNull: true bytesOnDisk: 1458 min: 256 max: 511 sum: 398889
-  Column 3: count: 1049 hasNull: false bytesOnDisk: 1704 min: 65536 max: 65791 sum: 68881051
-  Column 4: count: 1049 hasNull: false bytesOnDisk: 1998 min: 4294967296 max: 4294967551 sum: 4505420825953
-  Column 5: count: 1049 hasNull: false bytesOnDisk: 2925 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
-  Column 6: count: 1049 hasNull: false bytesOnDisk: 3323 min: 0.02 max: 49.85 sum: 26286.349999999977
+  Column 1: count: 1046 hasNull: true bytesOnDisk: 1024 min: -3 max: 124 sum: 62430
+  Column 2: count: 1046 hasNull: true bytesOnDisk: 1525 min: 256 max: 511 sum: 398889
+  Column 3: count: 1049 hasNull: false bytesOnDisk: 1707 min: 65536 max: 65791 sum: 68881051
+  Column 4: count: 1049 hasNull: false bytesOnDisk: 1827 min: 4294967296 max: 4294967551 sum: 4505420825953
+  Column 5: count: 1049 hasNull: false bytesOnDisk: 3404 min: 0.07999999821186066 max: 99.91999816894531 sum: 52744.70002820343
+  Column 6: count: 1049 hasNull: false bytesOnDisk: 3465 min: 0.02 max: 49.85 sum: 26286.349999999977
   Column 7: count: 1049 hasNull: false bytesOnDisk: 137 true: 526
-  Column 8: count: 1049 hasNull: false bytesOnDisk: 3430 min:  max: zach zipper sum: 13443
-  Column 9: count: 1049 hasNull: false bytesOnDisk: 1802 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
-  Column 10: count: 1049 hasNull: false bytesOnDisk: 2181 min: 0.08 max: 99.94 sum: 53646.16
-  Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
+  Column 8: count: 1049 hasNull: false bytesOnDisk: 3394 min:  max: zach zipper sum: 13443
+  Column 9: count: 1049 hasNull: false bytesOnDisk: 1848 min: 2013-03-01 09:11:58.70307 max: 2013-03-01 09:11:58.703325
+  Column 10: count: 1049 hasNull: false bytesOnDisk: 2224 min: 0.08 max: 99.94 sum: 53646.16
+  Column 11: count: 1049 hasNull: false bytesOnDisk: 2517 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22405 rows: 1049 tail: 239 index: 13620
+  Stripe: offset: 3 data: 23072 rows: 1049 tail: 262 index: 13074
     Stream: column 0 section ROW_INDEX start: 3 length 20
-    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 43
-    Stream: column 1 section ROW_INDEX start: 66 length 58
-    Stream: column 1 section BLOOM_FILTER_UTF8 start: 124 length 1091
-    Stream: column 2 section ROW_INDEX start: 1215 length 58
-    Stream: column 2 section BLOOM_FILTER_UTF8 start: 1273 length 1372
-    Stream: column 3 section ROW_INDEX start: 2645 length 61
-    Stream: column 3 section BLOOM_FILTER_UTF8 start: 2706 length 1374
-    Stream: column 4 section ROW_INDEX start: 4080 length 69
-    Stream: column 4 section BLOOM_FILTER_UTF8 start: 4149 length 1375
-    Stream: column 5 section ROW_INDEX start: 5524 length 78
-    Stream: column 5 section BLOOM_FILTER_UTF8 start: 5602 length 1824
-    Stream: column 6 section ROW_INDEX start: 7426 length 85
-    Stream: column 6 section BLOOM_FILTER_UTF8 start: 7511 length 1795
-    Stream: column 7 section ROW_INDEX start: 9306 length 41
-    Stream: column 7 section BLOOM_FILTER_UTF8 start: 9347 length 43
-    Stream: column 8 section ROW_INDEX start: 9390 length 86
-    Stream: column 8 section BLOOM_FILTER_UTF8 start: 9476 length 1653
-    Stream: column 9 section ROW_INDEX start: 11129 length 63
-    Stream: column 9 section BLOOM_FILTER_UTF8 start: 11192 length 80
-    Stream: column 10 section ROW_INDEX start: 11272 length 80
-    Stream: column 10 section BLOOM_FILTER_UTF8 start: 11352 length 1802
-    Stream: column 11 section ROW_INDEX start: 13154 length 47
-    Stream: column 11 section BLOOM_FILTER_UTF8 start: 13201 length 422
-    Stream: column 1 section PRESENT start: 13623 length 17
-    Stream: column 1 section DATA start: 13640 length 962
-    Stream: column 2 section PRESENT start: 14602 length 17
-    Stream: column 2 section DATA start: 14619 length 1441
-    Stream: column 3 section DATA start: 16060 length 1704
-    Stream: column 4 section DATA start: 17764 length 1998
-    Stream: column 5 section DATA start: 19762 length 2925
-    Stream: column 6 section DATA start: 22687 length 3323
-    Stream: column 7 section DATA start: 26010 length 137
-    Stream: column 8 section DATA start: 26147 length 1572
-    Stream: column 8 section LENGTH start: 27719 length 310
-    Stream: column 8 section DICTIONARY_DATA start: 28029 length 1548
-    Stream: column 9 section DATA start: 29577 length 19
-    Stream: column 9 section SECONDARY start: 29596 length 1783
-    Stream: column 10 section DATA start: 31379 length 2166
-    Stream: column 10 section SECONDARY start: 33545 length 15
-    Stream: column 11 section DATA start: 33560 length 1877
-    Stream: column 11 section LENGTH start: 35437 length 591
+    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 37
+    Stream: column 1 section ROW_INDEX start: 60 length 60
+    Stream: column 1 section BLOOM_FILTER_UTF8 start: 120 length 1049
+    Stream: column 2 section ROW_INDEX start: 1169 length 64
+    Stream: column 2 section BLOOM_FILTER_UTF8 start: 1233 length 1292
+    Stream: column 3 section ROW_INDEX start: 2525 length 62
+    Stream: column 3 section BLOOM_FILTER_UTF8 start: 2587 length 1272
+    Stream: column 4 section ROW_INDEX start: 3859 length 75
+    Stream: column 4 section BLOOM_FILTER_UTF8 start: 3934 length 1299
+    Stream: column 5 section ROW_INDEX start: 5233 length 87
+    Stream: column 5 section BLOOM_FILTER_UTF8 start: 5320 length 1764
+    Stream: column 6 section ROW_INDEX start: 7084 length 87
+    Stream: column 6 section BLOOM_FILTER_UTF8 start: 7171 length 1745
+    Stream: column 7 section ROW_INDEX start: 8916 length 43
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 8959 length 37
+    Stream: column 8 section ROW_INDEX start: 8996 length 87
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 9083 length 1590
+    Stream: column 9 section ROW_INDEX start: 10673 length 84
+    Stream: column 9 section BLOOM_FILTER_UTF8 start: 10757 length 71
+    Stream: column 10 section ROW_INDEX start: 10828 length 84
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 10912 length 1765
+    Stream: column 11 section ROW_INDEX start: 12677 length 47
+    Stream: column 11 section BLOOM_FILTER_UTF8 start: 12724 length 353
+    Stream: column 1 section PRESENT start: 13077 length 17
+    Stream: column 1 section DATA start: 13094 length 1007
+    Stream: column 2 section PRESENT start: 14101 length 17
+    Stream: column 2 section DATA start: 14118 length 1508
+    Stream: column 3 section DATA start: 15626 length 1707
+    Stream: column 4 section DATA start: 17333 length 1827
+    Stream: column 5 section DATA start: 19160 length 3404
+    Stream: column 6 section DATA start: 22564 length 3465
+    Stream: column 7 section DATA start: 26029 length 137
+    Stream: column 8 section DATA start: 26166 length 1520
+    Stream: column 8 section LENGTH start: 27686 length 342
+    Stream: column 8 section DICTIONARY_DATA start: 28028 length 1532
+    Stream: column 9 section DATA start: 29560 length 24
+    Stream: column 9 section SECONDARY start: 29584 length 1824
+    Stream: column 10 section DATA start: 31408 length 2209
+    Stream: column 10 section SECONDARY start: 33617 length 15
+    Stream: column 11 section DATA start: 33632 length 1916
+    Stream: column 11 section LENGTH start: 35548 length 601
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -678,7 +680,8 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
-File length: 36995 bytes
+File length: 37211 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

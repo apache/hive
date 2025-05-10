@@ -548,8 +548,36 @@ public class TezSessionState {
       conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_ENV, env);
     }
 
-    conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS,
-        org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
+    // Define all the required --add-opens flags
+    String addOpens = String.join(" ",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+        "--add-opens=java.base/java.math=ALL-UNNAMED",
+        "--add-opens=java.base/java.nio=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/java.time=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
+        "--add-opens=java.sql/java.sql=ALL-UNNAMED",
+        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+        "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
+    );
+
+    // Fetch default MR AM opts (e.g. memory, GC settings)
+    String mrAmJavaOpts = org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf);
+
+    // Combine both
+    String combinedOpts = addOpens + " " + mrAmJavaOpts;
+
+    // Set the Tez AM launch command options
+    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, combinedOpts);
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);

@@ -701,6 +701,7 @@ public class SessionState implements ISessionAuthState {
   }
 
   private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
+    System.setProperty("orc.compression.zstd.impl", "java");
     setCurrentSessionState(startSs);
 
     if (!startSs.isStarted.compareAndSet(false, true)) {

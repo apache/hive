@@ -370,7 +370,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           job.setNumReduceTasks(1);
         }
       }
-
+      setJobOptions(job);
       jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
@@ -509,6 +509,32 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     if (work.getMinSplitSizePerRack() != null) {
       HiveConf.setLongVar(job, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE_PER_RACK, work.getMinSplitSizePerRack());
     }
+  }
+  private void setJobOptions(JobConf job) {
+    String commonAddOpens = String.join(" ",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+        "--add-opens=java.base/java.math=ALL-UNNAMED",
+        "--add-opens=java.base/java.nio=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/java.time=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
+        "--add-opens=java.sql/java.sql=ALL-UNNAMED",
+        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+        "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
+    );
+    job.set("yarn.app.mapreduce.am.command-opts", commonAddOpens);
+    job.set("mapreduce.map.java.opts", commonAddOpens);
+    job.set("mapreduce.reduce.java.opts", commonAddOpens);
   }
 
   private void handleSampling(Context context, MapWork mWork, JobConf job)

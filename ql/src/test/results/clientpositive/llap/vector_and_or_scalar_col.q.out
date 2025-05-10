@@ -146,9 +146,9 @@ POSTHOOK: query: select null or dt1 is not null from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-true
-true
 NULL
+true
+true
 PREHOOK: query: select '*** non-vectorized null or dt1 is not null ***'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -166,9 +166,9 @@ POSTHOOK: query: select null or dt1 is not null from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-true
-true
 NULL
+true
+true
 PREHOOK: query: explain vectorization detail select false or dt1 is not null from vector_and_or
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_and_or
@@ -258,9 +258,9 @@ POSTHOOK: query: select false or dt1 is not null from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-true
-true
 false
+true
+true
 PREHOOK: query: select '*** non-vectorized false or dt1 is not null ***'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -278,9 +278,9 @@ POSTHOOK: query: select false or dt1 is not null from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-true
-true
 false
+true
+true
 PREHOOK: query: explain vectorization detail select dt1 = dt1 from vector_and_or
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_and_or
@@ -370,9 +370,9 @@ POSTHOOK: query: select dt1 = dt1 from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-true
-true
 NULL
+true
+true
 PREHOOK: query: select '*** non-vectorized dt1=dt1 ***'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -390,9 +390,9 @@ POSTHOOK: query: select dt1 = dt1 from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-true
-true
 NULL
+true
+true
 PREHOOK: query: select '*** AND ***'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -491,9 +491,9 @@ POSTHOOK: query: select null and dt1 is null from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-false
-false
 NULL
+false
+false
 PREHOOK: query: select '*** non-vectorized null and dt1 is null ***'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -511,9 +511,9 @@ POSTHOOK: query: select null and dt1 is null from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-false
-false
 NULL
+false
+false
 PREHOOK: query: explain vectorization detail select true and dt1 is null from vector_and_or
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_and_or
@@ -715,9 +715,9 @@ POSTHOOK: query: select dt1 != dt1 from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-false
-false
 NULL
+false
+false
 PREHOOK: query: select '*** non-vectorized dt1!=dt1 ***'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -735,6 +735,6 @@ POSTHOOK: query: select dt1 != dt1 from vector_and_or
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_and_or
 #### A masked pattern was here ####
-false
-false
 NULL
+false
+false
