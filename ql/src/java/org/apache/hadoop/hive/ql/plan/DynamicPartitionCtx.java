@@ -26,9 +26,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -52,7 +53,7 @@ public class DynamicPartitionCtx implements Serializable {
   private String defaultPartName; // default partition name in case of null or empty value
   private int maxPartsPerNode;    // maximum dynamic partitions created per mapper/reducer
   private Pattern whiteListPattern;
-  private boolean hasCustomSortExprs = false;
+  private boolean hasCustomSortExpr = false;
   /**
    * Expressions describing a custom way of sorting the table before write. Expressions can reference simple
    * column descriptions or a tree of expressions containing more columns and UDFs.
@@ -90,7 +91,7 @@ public class DynamicPartitionCtx implements Serializable {
     this.spPath = null;
     String confVal;
     try {
-      confVal = Hive.get().getMetaConf(ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname);
+      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getHiveName());
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -103,8 +104,8 @@ public class DynamicPartitionCtx implements Serializable {
   public DynamicPartitionCtx(Map<String, String> partSpec, String defaultPartName,
       int maxParts) throws SemanticException {
     this.partSpec = partSpec;
-    this.spNames = new ArrayList<String>();
-    this.dpNames = new ArrayList<String>();
+    this.spNames = new ArrayList<>();
+    this.dpNames = new ArrayList<>();
     this.numBuckets = 0;
     this.maxPartsPerNode = maxParts;
     this.defaultPartName = defaultPartName;
@@ -125,7 +126,7 @@ public class DynamicPartitionCtx implements Serializable {
     }
     String confVal;
     try {
-      confVal = Hive.get().getMetaConf(ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname);
+      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getHiveName());
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -147,8 +148,8 @@ public class DynamicPartitionCtx implements Serializable {
     this.defaultPartName = dp.defaultPartName;
     this.maxPartsPerNode = dp.maxPartsPerNode;
     this.whiteListPattern = dp.whiteListPattern;
-    this.customSortExpressions = dp.customSortExpressions;
-    this.hasCustomSortExprs = dp.customSortExpressions != null && !dp.customSortExpressions.isEmpty();
+    this.customSortExpressions = new LinkedList<>();
+    addCustomSortExpressions(dp.customSortExpressions);
     this.customSortOrder = dp.customSortOrder;
     this.customSortNullOrder = dp.customSortNullOrder;
   }
@@ -241,8 +242,11 @@ public class DynamicPartitionCtx implements Serializable {
     return customSortExpressions;
   }
 
-  public void setCustomSortExpressions(List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExpressions) {
-    this.customSortExpressions = customSortExpressions;
+  public void addCustomSortExpressions(List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExpressions) {
+    if (!CollectionUtils.isEmpty(customSortExpressions)) {
+      this.hasCustomSortExpr = true;
+      this.customSortExpressions.addAll(customSortExpressions);
+    }
   }
 
   public List<Integer> getCustomSortOrder() {
@@ -261,11 +265,7 @@ public class DynamicPartitionCtx implements Serializable {
     this.customSortNullOrder = customSortNullOrder;
   }
 
-  public boolean hasCustomSortExprs() {
-    return hasCustomSortExprs;
-  }
-
-  public void setHasCustomSortExprs(boolean hasCustomSortExprs) {
-    this.hasCustomSortExprs = hasCustomSortExprs;
+  public boolean hasCustomSortExpression() {
+    return hasCustomSortExpr;
   }
 }
