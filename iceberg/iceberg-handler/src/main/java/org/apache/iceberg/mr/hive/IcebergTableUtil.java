@@ -20,16 +20,20 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -77,11 +81,18 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.puffin.BlobMetadata;
+import org.apache.iceberg.puffin.Puffin;
+import org.apache.iceberg.puffin.PuffinReader;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ByteBuffers;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
@@ -545,6 +556,33 @@ public class IcebergTableUtil {
     TransformSpec spec = TransformSpec.fromString(transformName.toUpperCase(),
         table.schema().findColumnName(sourceId));
     return spec;
+  }
+
+  public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
+    List<T> colStats = Lists.newArrayList();
+
+    Optional<Path> statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
+    if (!statsPath.isPresent()) {
+      return colStats;
+    }
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath.toString())).build()) {
+      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
+
+      if (filter != null) {
+        blobMetadata = blobMetadata.stream().filter(filter)
+          .collect(Collectors.toList());
+      }
+      Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
+      LOG.info("Using col stats from : {}", statsPath);
+
+      while (it.hasNext()) {
+        byte[] byteBuffer = ByteBuffers.toByteArray(it.next());
+        colStats.add(SerializationUtils.deserialize(byteBuffer));
+      }
+    } catch (Exception e) {
+      LOG.warn(" Unable to read col stats: ", e);
+    }
+    return colStats;
   }
 
 }
