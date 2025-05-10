@@ -1842,6 +1842,58 @@ public class TestObjectStore {
     }
   }
 
+  @Test
+  public void testNestedTransaction() throws Exception {
+    List<String> partNames = Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2");
+    createPartitionedTable(true, false);
+    Assert.assertEquals(3, objectStore.getPartitionCount());
+
+    objectStore.openTransaction();
+    try {
+      objectStore.new GetHelper<Object>(DEFAULT_CATALOG_NAME, DB1, TABLE1, true, false) {
+        @Override
+        protected String describeResult() {
+          return "Test nested transaction";
+        }
+        @Override
+        protected Object getSqlResult(ObjectStore.GetHelper<Object> ctx) throws MetaException {
+          try (AutoCloseable c = deadline()) {
+            objectStore.dropPartitionsInternal(ctx.catName, ctx.dbName, ctx.tblName, partNames, true,
+                false);
+            Assert.assertEquals(0, objectStore.getPartitionCount());
+          } catch (Exception e) {
+            throw new MetaException(e.getMessage());
+          }
+          throw new MetaException("fallback it");
+        }
+
+        @Override
+        protected Object getJdoResult(ObjectStore.GetHelper<Object> ctx)
+            throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+          throw new UnsupportedOperationException("Unimplemented method 'getJdoResult'");
+        }
+      }.run(false);
+    } catch (MetaException e) {
+      // expected
+      Assert.assertEquals(3, objectStore.getPartitionCount());
+    }
+
+    // new operation after rollback
+    {
+      objectStore.openTransaction();
+      try (AutoCloseable c = deadline()) {
+        objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+            Arrays.asList("test_part_col=a1"), true, true);
+      } catch (Exception e) {
+        throw new MetaException(e.getMessage());
+      }
+      objectStore.commitTransaction();
+    }
+    objectStore.commitTransaction();
+
+    Assert.assertEquals(2, objectStore.getPartitionCount());
+  }
+
   /**
    * Helper method to check whether the Java system properties were set correctly in {@link ObjectStore#configureSSL(Configuration)}
    * @param useSSL whether or not SSL is enabled
