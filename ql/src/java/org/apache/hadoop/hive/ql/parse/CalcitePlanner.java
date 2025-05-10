@@ -3097,7 +3097,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // 3.3 Add column info corresponding to virtual columns
         List<VirtualColumn> virtualCols = new ArrayList<>();
         if (tableType == TableType.NATIVE) {
-          virtualCols = VirtualColumn.getRegistry(conf);
+          virtualCols = VirtualColumn.getRegistry();
           if (AcidUtils.isNonNativeAcidTable(tabMetaData)) {
             virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
           }
