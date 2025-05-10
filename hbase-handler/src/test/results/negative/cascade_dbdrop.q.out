@@ -19,8 +19,8 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:hbasedb
 POSTHOOK: Output: hbaseDB@hbase_table_0
 Found 2 items
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: DROP DATABASE IF EXISTS hbaseDB CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:hbasedb

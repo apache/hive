@@ -112,8 +112,8 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_nonacid_directinsert_flattened
 POSTHOOK: Output: default@union_target_nonacid_directinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_nonacid_directinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_nonacid_directinsert_flattened)union_target_nonacid_directinsert_flattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        311 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_nonacid_directinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_nonacid_directinsert_flattened
@@ -223,9 +223,9 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_directinsert_flattened
 POSTHOOK: Output: default@union_target_mm_directinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_directinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_directinsert_flattened)union_target_mm_directinsert_flattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        306 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_directinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_directinsert_flattened
@@ -335,10 +335,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_directinsert_flattened
 POSTHOOK: Output: default@union_target_acid_directinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_directinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_directinsert_flattened)union_target_acid_directinsert_flattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          1 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        699 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_directinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_directinsert_flattened
@@ -448,9 +448,9 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_flattened
 POSTHOOK: Output: default@union_target_mm_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_flattened)union_target_mm_flattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        293 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_flattened
@@ -560,10 +560,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_flattened
 POSTHOOK: Output: default@union_target_acid_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_flattened)union_target_acid_flattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          1 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        699 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_flattened
@@ -673,10 +673,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_unflattened
 POSTHOOK: Output: default@union_target_mm_unflattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_unflattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_unflattened)union_target_mm_unflattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        295 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_unflattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_unflattened
@@ -786,10 +786,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_unflattened
 POSTHOOK: Output: default@union_target_acid_unflattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_unflattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_unflattened)union_target_acid_unflattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          1 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        699 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_unflattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_unflattened
@@ -899,10 +899,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_directinsert_unflattened
 POSTHOOK: Output: default@union_target_mm_directinsert_unflattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_directinsert_unflattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_directinsert_unflattened)union_target_mm_directinsert_unflattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        308 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_directinsert_unflattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_directinsert_unflattened
@@ -1012,10 +1012,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_nondirectinsert_flattened
 POSTHOOK: Output: default@union_target_acid_nondirectinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_nondirectinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_nondirectinsert_flattened)union_target_acid_nondirectinsert_flattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          1 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        699 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_nondirectinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_nondirectinsert_flattened

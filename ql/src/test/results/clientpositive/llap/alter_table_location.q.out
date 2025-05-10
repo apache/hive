@@ -24,9 +24,9 @@ columns:struct columns { i32 a, string b}
 partitioned:false
 partitionColumns:
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####

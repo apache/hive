@@ -51,6 +51,7 @@ public class QOutProcessor {
   public static final String HDFS_DATE_MASK = "### HDFS DATE ###";
   public static final String HDFS_USER_MASK = "### USER ###";
   public static final String HDFS_GROUP_MASK = "### GROUP ###";
+  public static final String HDFS_SIZE_MASK = "### SIZE ###";
 
   public static final String MASK_PATTERN = "#### A masked pattern was here ####";
   public static final String PARTIAL_MASK_PATTERN = "#### A PARTIAL masked pattern was here ####";
@@ -67,6 +68,9 @@ public class QOutProcessor {
   private static final PatternReplacementPair MASK_LINEAGE = new PatternReplacementPair(
       Pattern.compile("POSTHOOK: Lineage: .*"),
       "POSTHOOK: Lineage: ###Masked###");
+
+  public static final String MASK_1 = "$1#Masked#";
+  public static final String MASK_2 = "$1#Masked#$2";
   
   private FsType fsType = FsType.LOCAL;
 
@@ -353,10 +357,14 @@ public class QOutProcessor {
       {
         add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*",
             "### BLOBSTORE_STAGING_PATH ###"));
-        add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX, String.format("%s %s$3$4 %s $6%s",
-            HDFS_USER_MASK, HDFS_GROUP_MASK, HDFS_DATE_MASK, HDFS_MASK)));
+        add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX, String.format("%s %s$3%s %s $6%s",
+            HDFS_USER_MASK, HDFS_GROUP_MASK, HDFS_SIZE_MASK, HDFS_DATE_MASK, HDFS_MASK)));
         add(toPatternPair(PATH_HDFS_REGEX, String.format("$1%s", HDFS_MASK)));
-        add(toPatternPair("(.*totalSize\\s*=*\\s*)\\d+\\s*(.*)", "$1#Masked#$2"));
+        add(toPatternPair("(.*totalSize\\s*=*\\s*)\\d+\\s*(.*)", MASK_2));
+        add(toPatternPair("(.*File raw data size:*\\s*)\\d+\\s*bytes(.*)", MASK_2));
+        add(toPatternPair("(totalFileSize:\\s*)\\d+", MASK_1));
+        add(toPatternPair("(maxFileSize:\\s*)\\d+", MASK_1));
+        add(toPatternPair("(minFileSize:\\s*)\\d+", MASK_1));
       }
     };
   }

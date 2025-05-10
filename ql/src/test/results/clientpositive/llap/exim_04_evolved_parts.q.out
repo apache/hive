@@ -184,9 +184,9 @@ columns:struct columns { i32 emp_id, string emp_name, string emp_dob, string emp
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:0
-totalFileSize:0
-maxFileSize:0
-minFileSize:0
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####
