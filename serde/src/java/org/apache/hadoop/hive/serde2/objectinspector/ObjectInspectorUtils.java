@@ -558,6 +558,12 @@ public final class ObjectInspectorUtils {
    */
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
     Field[] f = c.getDeclaredFields();
+    Arrays.sort(f, new Comparator<Field>() {
+      @Override
+      public int compare(Field a, Field b) {
+        return a.getName().compareTo(b.getName());
+      }
+    });
     ArrayList<Field> af = new ArrayList<Field>();
     Arrays.sort(f, Comparator.comparingInt(ObjectInspectorUtils::getSlotValue));
     for (int i = 0; i < f.length; ++i) {
