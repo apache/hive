@@ -3242,6 +3242,32 @@ class MetaStoreDirectSql {
     }
   }
 
+  public Long getTableId(String dbName, String tableName) throws MetaException {
+    String queryText;
+    Long result;
+    switch (dbType.dbType) {
+      case MYSQL:
+      case POSTGRES:
+      case DERBY:
+      default:
+        // @formatter:off
+        queryText = ""
+                + "select t.\"TBL_ID\" from " + TBLS + " t "
+                + " join " + DBS + " d on t.\"DB_ID\" = d.\"DB_ID\" "
+                + " where "
+                + " d.\"NAME\" = " + dbName
+                + " and t.\"TBL_NAME\" = " + tableName;
+        // @formatter:on
+    }
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      result = executeWithArray(query.getInnerQuery(), null, queryText);
+    } catch (Throwable t) {
+      throw new MetaException("Failed to fetch table ID: " + t.getMessage());
+    }
+    return result;
+  }
+
+
   public boolean deleteTableColumnStatistics(long tableId, List<String> colNames, String engine) {
     String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = " + tableId;
     if (colNames != null && !colNames.isEmpty()) {
