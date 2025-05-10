@@ -261,7 +261,7 @@ public class TestTypeInfoToSchema {
   public void createAvroTimestampSchema() {
     final String specificSchema = "{" +
       "\"type\":\"long\"," +
-      "\"logicalType\":\"timestamp-millis\"}";
+      "\"logicalType\":\"timestamp-micros\"}";
     String expectedSchema = genSchema(specificSchema);
 
     Assert.assertEquals("Test for timestamp in avro schema failed",
