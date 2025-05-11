@@ -391,19 +391,21 @@ class AvroDeserializer {
       }
       LogicalType logicalType = fileSchema.getLogicalType();
       Timestamp timestamp;
-      if (logicalType != null && logicalType.getName().equals(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
+      if (logicalType != null && logicalType.getName().equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
         timestamp = Timestamp.ofEpochMicro((Long) datum);
       } else {
         timestamp = Timestamp.ofEpochMilli((Long) datum);
       }
       timestamp = TimestampTZUtil.convertTimestampToZone(
               timestamp, ZoneOffset.UTC, convertToTimeZone, legacyConversion);
-      if (!skipProlepticConversion && logicalType != null && logicalType.getName().equals(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
-        timestamp = Timestamp.ofEpochMicro(
-            CalendarUtils.convertTimeToProlepticMicros(timestamp.toEpochMicro()));
-      } else if (!skipProlepticConversion) {
-        timestamp = Timestamp.ofEpochMilli(
-                CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));
+      if (!skipProlepticConversion) {
+        if (logicalType != null && logicalType.getName().equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
+          timestamp = Timestamp.ofEpochMicro(
+                  CalendarUtils.convertTimeToProlepticMicros(timestamp.toEpochMicro()));
+        } else {
+          timestamp = Timestamp.ofEpochMilli(
+                  CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));
+        }
       }
       return timestamp;
     }
