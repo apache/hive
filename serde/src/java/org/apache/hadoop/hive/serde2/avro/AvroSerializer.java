@@ -233,7 +233,7 @@ class AvroSerializer {
       Timestamp timestamp =
         ((TimestampObjectInspector) fieldOI).getPrimitiveJavaObject(structFieldData);
       LogicalType logicalType = schema.getLogicalType();
-      if (logicalType != null && logicalType.getName().equals(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
+      if (logicalType != null && logicalType.getName().equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
         long micros = defaultProleptic ? timestamp.toEpochMicro() :
                 CalendarUtils.convertTimeToHybridMicros(timestamp.toEpochMicro());
         timestamp = TimestampTZUtil.convertTimestampToZone(
@@ -241,9 +241,9 @@ class AvroSerializer {
         return timestamp.toEpochMicro();
       }
       long millis = defaultProleptic ? timestamp.toEpochMilli() :
-              CalendarUtils.convertTimeToHybrid(timestamp.toEpochMilli());
+          CalendarUtils.convertTimeToHybrid(timestamp.toEpochMilli());
       timestamp = TimestampTZUtil.convertTimestampToZone(
-              Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, legacyConversion);
+          Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, legacyConversion);
       return timestamp.toEpochMilli();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");
