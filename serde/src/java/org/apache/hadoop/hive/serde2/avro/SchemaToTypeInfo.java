@@ -179,9 +179,7 @@ class SchemaToTypeInfo {
       return TypeInfoFactory.dateTypeInfo;
     }
 
-    if (type == LONG &&
-            (AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE)) ||
-                    AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE)))) {
+    if (type == LONG && isTimestampType(schema)) {
       return TypeInfoFactory.timestampTypeInfo;
     }
 
@@ -196,6 +194,25 @@ class SchemaToTypeInfo {
       value = Integer.parseInt((String)obj);
     }
     return value;
+  }
+
+  /**
+   * Checks if the given Avro schema represents a timestamp type
+   * based on its logical type property.
+   */
+  public static boolean isTimestampType(Schema schema) {
+    if (schema == null) {
+      return false;
+    }
+
+    String logicalType = schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE);
+    if (logicalType == null) {
+      return false;
+    }
+
+    // Supported timestamp logical types (extend this set as needed)
+    return logicalType.equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS) ||
+            logicalType.equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS);
   }
 
   private static TypeInfo generateTypeInfoWorker(Schema schema,
