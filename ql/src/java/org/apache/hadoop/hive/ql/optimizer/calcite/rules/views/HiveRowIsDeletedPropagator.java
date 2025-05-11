@@ -30,7 +30,6 @@ import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
@@ -264,9 +263,17 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     projectNames.add(ANY_INSERTED_COLUMN_NAME);
 
     // Create input refs to derived expressions in project
-    RelDataType boolIntType = relBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN);
-    RexNode anyDeleted = rexBuilder.makeInputRef(boolIntType, projects.size() - 2);
-    RexNode anyInserted = rexBuilder.makeInputRef(boolIntType, projects.size() - 1);
+    int anyDeletedIndex = projects.size() - 2;
+    int anyInsertedIndex = projects.size() - 1;
+    // Get types from corresponding projects, otherwise we may see a Type mismatch AssertionError
+    // from Calcite's Litmus. For example,
+    //    type mismatch:
+    //    ref:
+    //    BOOLEAN NOT NULL
+    //    input:
+    //    BOOLEAN
+    RexNode anyDeleted = rexBuilder.makeInputRef(projects.get(anyDeletedIndex).getType(), anyDeletedIndex);
+    RexNode anyInserted = rexBuilder.makeInputRef(projects.get(anyInsertedIndex).getType(), anyInsertedIndex);
 
     // Create filter condition: NOT( (leftDeleted OR rightDeleted) AND (leftInserted OR rightInserted) )
     // We exploit that a row can not be deleted and inserted at the same time.

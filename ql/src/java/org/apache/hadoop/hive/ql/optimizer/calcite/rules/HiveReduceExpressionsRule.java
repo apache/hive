@@ -46,11 +46,10 @@ public final class HiveReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}.
    */
   public static final RelOptRule FILTER_INSTANCE =
-      ReduceExpressionsRule.FilterReduceExpressionsRule.Config.DEFAULT
+      ReduceExpressionsRule.FilterReduceExpressionsRule.FilterReduceExpressionsRuleConfig.DEFAULT
           .withOperandFor(HiveFilter.class)
           .withMatchNullability(false)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.FilterReduceExpressionsRule.Config.class)
           .toRule();
 
   /**
@@ -58,10 +57,9 @@ public final class HiveReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject}.
    */
   public static final RelOptRule PROJECT_INSTANCE =
-      ReduceExpressionsRule.ProjectReduceExpressionsRule.Config.DEFAULT
+      ReduceExpressionsRule.ProjectReduceExpressionsRule.ProjectReduceExpressionsRuleConfig.DEFAULT
           .withOperandFor(HiveProject.class)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.ProjectReduceExpressionsRule.Config.class)
           .toRule();
 
   /**
@@ -69,11 +67,10 @@ public final class HiveReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin}.
    */
   public static final RelOptRule JOIN_INSTANCE =
-      ReduceExpressionsRule.JoinReduceExpressionsRule.Config.DEFAULT
+      ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig.DEFAULT
           .withOperandFor(HiveJoin.class)
           .withMatchNullability(false)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.JoinReduceExpressionsRule.Config.class)
           .toRule();
 
   /**
@@ -81,11 +78,10 @@ public final class HiveReduceExpressionsRule {
    * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin}.
    */
   public static final RelOptRule SEMIJOIN_INSTANCE =
-      ReduceExpressionsRule.JoinReduceExpressionsRule.Config.DEFAULT
+      ReduceExpressionsRule.JoinReduceExpressionsRule.JoinReduceExpressionsRuleConfig.DEFAULT
           .withOperandFor(HiveSemiJoin.class)
           .withMatchNullability(false)
           .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-          .as(ReduceExpressionsRule.JoinReduceExpressionsRule.Config.class)
           .toRule();
 
 }

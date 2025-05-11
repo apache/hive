@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToUnixTimestampSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
@@ -265,7 +266,7 @@ public class HiveFunctionHelper implements FunctionHelper {
       } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a floor <date> operator, we need to rewrite it
         inputs = RexNodeConverter.rewriteFloorDateChildren(calciteOp, inputs, rexBuilder);
-      } else if (calciteOp.getKind() == SqlKind.IN) {
+      } else if (HiveIn.INSTANCE.equals(calciteOp)) {
         // if it is a single item in an IN clause, transform A IN (B) to A = B
         // from IN [A,B] => EQUALS [A,B]
         // if it is more than an single item in an IN clause,

@@ -3179,8 +3179,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      LOG.error("Failed to delete directory: " + path +
-          " " + e.getMessage());
+      LOG.error("Failed to delete directory: {}", path, e);
     }
   }
 
@@ -5134,14 +5133,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new NoSuchObjectException("Partition doesn't exist. " + part_vals);
       }
       isArchived = MetaStoreUtils.isArchived(part);
-      if (tableDataShouldBeDeleted && isArchived) {
-        archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-        verifyIsWritablePath(archiveParentDir);
-      }
-
-      if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
-        partPath = new Path(part.getSd().getLocation());
-        verifyIsWritablePath(partPath);
+      if (tableDataShouldBeDeleted) {
+        if (isArchived) {
+          // Archived partition is only able to delete original location.
+          archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+          verifyIsWritablePath(archiveParentDir);
+        } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+          partPath = new Path(part.getSd().getLocation());
+          verifyIsWritablePath(partPath);
+        }
       }
 
       String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
@@ -5381,15 +5381,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (colNames != null) {
           partNames.add(FileUtils.makePartName(colNames, part.getValues()));
         }
-        if (tableDataShouldBeDeleted && MetaStoreUtils.isArchived(part)) {
-          Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-          verifyIsWritablePath(archiveParentDir);
-          archToDelete.add(archiveParentDir);
-        }
-        if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
-          Path partPath = new Path(part.getSd().getLocation());
-          verifyIsWritablePath(partPath);
-          dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
+        if (tableDataShouldBeDeleted) {
+          if (MetaStoreUtils.isArchived(part)) {
+            // Archived partition is only able to delete original location.
+            Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+            verifyIsWritablePath(archiveParentDir);
+            archToDelete.add(archiveParentDir);
+          } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+            Path partPath = new Path(part.getSd().getLocation());
+            verifyIsWritablePath(partPath);
+            dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
+          }
         }
       }
 

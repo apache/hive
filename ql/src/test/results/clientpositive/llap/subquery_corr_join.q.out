@@ -137,7 +137,7 @@ POSTHOOK: Input: default@alltypestiny
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(id=[$0], int_col=[$1], bool_col=[$2])
-  HiveFilter(condition=[OR(IS NULL($4), =($4, 0), IS NOT TRUE(OR(IS NOT NULL($7), IS NULL($0), <($5, $4))))])
+  HiveFilter(condition=[OR(IS NULL($4), =($4, 0), IS NOT TRUE(OR(IS NULL($0), IS NOT NULL($7), <($5, $4))))])
     HiveJoin(condition=[AND(=($0, $6), =($8, $1))], joinType=[left], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($3, $1)], joinType=[left], algorithm=[none], cost=[not available])
         HiveProject(id=[$0], int_col=[$1], bool_col=[$2])
