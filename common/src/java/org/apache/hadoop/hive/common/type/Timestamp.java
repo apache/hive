@@ -172,6 +172,13 @@ public class Timestamp implements Comparable<Timestamp> {
     return localDateTime.atZone(id).toInstant().toEpochMilli();
   }
 
+  public long toEpochMicro(ZoneId id) {
+    return localDateTime.atZone(id)
+            .toInstant()
+            .getEpochSecond() * 1_000_000L +
+            localDateTime.getNano() / 1000;
+  }
+
   public void setTimeInMillis(long epochMilli) {
     localDateTime = LocalDateTime.ofInstant(
         Instant.ofEpochMilli(epochMilli), ZoneOffset.UTC);
