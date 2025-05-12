@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.ddl;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -30,7 +32,13 @@ import java.util.Map;
 public abstract class DDLDescWithTableProperties implements DDLDesc {
   protected List<String> partColNames;
   protected Map<String, String> tblProps;
+  private List<FieldSchema> partCols;
+  private String inputFormat;
+  private String outputFormat;
   private String location;
+  private String serde;
+  private String storageHandler;
+  private Map<String, String> serdeProps;
   private Long initialWriteId; // Initial write ID for CTAS/CMV and import.
   // The FSOP configuration for the FSOP that is going to write initial data during CTAS/CMV.
   // This is not needed beyond compilation, so it is transient.
@@ -42,18 +50,40 @@ public abstract class DDLDescWithTableProperties implements DDLDesc {
   protected DDLDescWithTableProperties() {
   }
 
-  protected DDLDescWithTableProperties(Map<String, String> tblProps, String location) {
-    this.tblProps = tblProps;
-    this.location = location;
+  protected DDLDescWithTableProperties(List<FieldSchema> partCols, Map<String, String> tblProps,
+      String inputFormat, String outputFormat,
+      String location, String serde, String storageHandler, Map<String, String> serdeProps) {
+    this(tblProps, inputFormat, outputFormat, location, serde, storageHandler, serdeProps);
+    this.partCols = partCols;
   }
 
-  protected DDLDescWithTableProperties(List<String> partColNames, Map<String, String> tblProps, String location) {
-    this(tblProps, location);
-    this.partColNames = partColNames;
+  protected DDLDescWithTableProperties(Map<String, String> tblProps, 
+      String inputFormat, String outputFormat,
+      String location, String serde, String storageHandler, Map<String, String> serdeProps) {
+    this.tblProps = tblProps;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
+    this.location = location;
+    this.serde = serde;
+    this.storageHandler = storageHandler;
+    this.serdeProps = serdeProps;
   }
 
   public abstract TableName getFullTableName();
 
+  @Explain(displayName = "partition columns")
+  public List<String> getPartColsStr() {
+    return Utilities.getFieldSchemaString(partCols);
+  }
+
+  public List<FieldSchema> getPartCols() {
+    return partCols;
+  }
+
+  public void setPartCols(List<FieldSchema> partCols) {
+    this.partCols = partCols;
+  }
+  
   @Explain(displayName = "location")
   public String getLocation() {
     return location;
@@ -61,6 +91,51 @@ public abstract class DDLDescWithTableProperties implements DDLDesc {
 
   public void setLocation(String location) {
     this.location = location;
+  }
+
+  @Explain(displayName = "input format")
+  public String getInputFormat() {
+    return inputFormat;
+  }
+
+  public void setInputFormat(String inputFormat) {
+    this.inputFormat = inputFormat;
+  }
+
+  @Explain(displayName = "output format")
+  public String getOutputFormat() {
+    return outputFormat;
+  }
+
+  public void setOutputFormat(String outputFormat) {
+    this.outputFormat = outputFormat;
+  }
+
+  @Explain(displayName = "storage handler")
+  public String getStorageHandler() {
+    return storageHandler;
+  }
+
+  public void setStorageHandler(String storageHandler) {
+    this.storageHandler = storageHandler;
+  }
+
+  @Explain(displayName = "serde name")
+  public String getSerde() {
+    return serde;
+  }
+
+  public void setSerde(String serde) {
+    this.serde = serde;
+  }
+
+  @Explain(displayName = "serde properties")
+  public Map<String, String> getSerdeProps() {
+    return serdeProps;
+  }
+
+  public void setSerdeProps(Map<String, String> serdeProps) {
+    this.serdeProps = serdeProps;
   }
 
   public void setInitialWriteId(Long writeId) {

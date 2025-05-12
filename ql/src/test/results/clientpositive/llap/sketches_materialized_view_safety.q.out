@@ -148,7 +148,10 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       columns: _c0 string, category char(1), _c2 bigint
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: select 'no-rewrite-may-happen',`sketch_input`.`category`, count(distinct `sketch_input`.`id`) from `default`.`sketch_input` group by `sketch_input`.`category`
       name: default.mv_1
       original text: select 'no-rewrite-may-happen',category, count(distinct id) from sketch_input group by category

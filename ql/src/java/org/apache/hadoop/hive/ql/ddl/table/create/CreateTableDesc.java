@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -83,7 +84,6 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
   TableName tableName;
   boolean isExternal;
   List<FieldSchema> cols;
-  List<FieldSchema> partCols;
   List<String> bucketCols;
   List<Order> sortCols;
   int numBuckets;
@@ -94,11 +94,6 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
   String lineDelim;
   String nullFormat;
   String comment;
-  String inputFormat;
-  String outputFormat;
-  String serName;
-  String storageHandler;
-  Map<String, String> serdeProps;
   boolean ifNotExists;
   List<String> skewedColNames;
   List<List<String>> skewedColValues;
@@ -183,27 +178,21 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
       List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
-    super(tblProps, location);
+    super(partCols, tblProps, inputFormat, outputFormat, location, serName, storageHandler, serdeProps);
     
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.isTemporary = isTemporary;
-    this.bucketCols = new ArrayList<String>(bucketCols);
-    this.sortCols = new ArrayList<Order>(sortCols);
+    this.bucketCols = new ArrayList<>(bucketCols);
+    this.sortCols = new ArrayList<>(sortCols);
     this.collItemDelim = collItemDelim;
-    this.cols = new ArrayList<FieldSchema>(cols);
+    this.cols = new ArrayList<>(cols);
     this.comment = comment;
     this.fieldDelim = fieldDelim;
     this.fieldEscape = fieldEscape;
-    this.inputFormat = inputFormat;
-    this.outputFormat = outputFormat;
     this.lineDelim = lineDelim;
     this.mapKeyDelim = mapKeyDelim;
     this.numBuckets = numBuckets;
-    this.partCols = new ArrayList<FieldSchema>(partCols);
-    this.serName = serName;
-    this.storageHandler = storageHandler;
-    this.serdeProps = serdeProps;
     this.ifNotExists = ifNotExists;
     this.skewedColNames = copyList(skewedColNames);
     this.skewedColValues = copyList(skewedColValues);
@@ -216,7 +205,7 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
   }
 
   private static <T> List<T> copyList(List<T> copy) {
-    return copy == null ? null : new ArrayList<T>(copy);
+    return copy == null ? null : new ArrayList<>(copy);
   }
 
   public void setLikeFile(String likeFile) {
@@ -238,11 +227,6 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
   @Explain(displayName = "columns")
   public List<String> getColsString() {
     return Utilities.getFieldSchemaString(getCols());
-  }
-
-  @Explain(displayName = "partition columns")
-  public List<String> getPartColsString() {
-    return Utilities.getFieldSchemaString(getPartCols());
   }
 
   @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
@@ -277,14 +261,6 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
 
   public void setCols(List<FieldSchema> cols) {
     this.cols = cols;
-  }
-
-  public List<FieldSchema> getPartCols() {
-    return partCols;
-  }
-
-  public void setPartCols(ArrayList<FieldSchema> partCols) {
-    this.partCols = partCols;
   }
 
   public List<SQLPrimaryKey> getPrimaryKeys() {
@@ -399,33 +375,6 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
     this.comment = comment;
   }
 
-  @Explain(displayName = "input format")
-  public String getInputFormat() {
-    return inputFormat;
-  }
-
-  public void setInputFormat(String inputFormat) {
-    this.inputFormat = inputFormat;
-  }
-
-  @Explain(displayName = "output format")
-  public String getOutputFormat() {
-    return outputFormat;
-  }
-
-  public void setOutputFormat(String outputFormat) {
-    this.outputFormat = outputFormat;
-  }
-
-  @Explain(displayName = "storage handler")
-  public String getStorageHandler() {
-    return storageHandler;
-  }
-
-  public void setStorageHandler(String storageHandler) {
-    this.storageHandler = storageHandler;
-  }
-
   @Explain(displayName = "isExternal", displayOnlyOnTrue = true)
   public boolean isExternal() {
     return isExternal;
@@ -449,38 +398,6 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
    */
   public void setSortCols(ArrayList<Order> sortCols) {
     this.sortCols = sortCols;
-  }
-
-  /**
-   * @return the serDeName
-   */
-  @Explain(displayName = "serde name")
-  public String getSerName() {
-    return serName;
-  }
-
-  /**
-   * @param serName
-   *          the serName to set
-   */
-  public void setSerName(String serName) {
-    this.serName = serName;
-  }
-
-  /**
-   * @return the serDe properties
-   */
-  @Explain(displayName = "serde properties")
-  public Map<String, String> getSerdeProps() {
-    return serdeProps;
-  }
-
-  /**
-   * @param serdeProps
-   *          the serde properties to set
-   */
-  public void setSerdeProps(Map<String, String> serdeProps) {
-    this.serdeProps = serdeProps;
   }
 
   /**
@@ -513,10 +430,10 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
 
   public void validate(HiveConf conf) throws SemanticException {
 
-    if ((this.getCols() == null) || (this.getCols().size() == 0)) {
+    if (CollectionUtils.isEmpty(cols)) {
       // if the table has no columns and is a HMS backed SerDe - it should have a storage handler OR
       // is a CREATE TABLE LIKE FILE statement.
-      if (Table.hasMetastoreBasedSchema(conf, serName) && StringUtils.isEmpty(getStorageHandler())
+      if (Table.hasMetastoreBasedSchema(conf, getSerde()) && StringUtils.isEmpty(getStorageHandler())
           && this.getLikeFile() == null) {
         throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
       }
@@ -712,7 +629,7 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
      * If the user didn't specify a SerDe, we use the default.
      */
     String serDeClassName;
-    if (getSerName() == null) {
+    if (getSerde() == null) {
       if (storageHandler == null) {
         serDeClassName = PlanUtils.getDefaultSerDe().getName();
         LOG.info("Default to " + serDeClassName + " for table " + tableName);
@@ -723,7 +640,7 @@ public class CreateTableDesc extends DDLDescWithTableProperties implements Seria
       }
     } else {
       // let's validate that the serde exists
-      serDeClassName = getSerName();
+      serDeClassName = getSerde();
       DDLUtils.validateSerDe(serDeClassName, conf);
     }
     tbl.setSerializationLib(serDeClassName);
