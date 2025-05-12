@@ -63,7 +63,7 @@ public final class StatsUpdater {
                 throw new IllegalArgumentException("Metastore client is missing");
             }
 
-            HiveConf conf = createConfiguration(hiveConf, compactionQueueName, tableProperties, ci.getProperties());
+            HiveConf conf = setUpDriverSession(hiveConf, compactionQueueName, tableProperties, ci.getProperties());
 
             //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
             // compute statistics for columns viewtime
@@ -97,7 +97,7 @@ public final class StatsUpdater {
         }
     }
 
-    HiveConf createConfiguration(
+    HiveConf setUpDriverSession(
             HiveConf sourceConf,
             String compactionQueueName,
             Map<String, String> tableProperties,

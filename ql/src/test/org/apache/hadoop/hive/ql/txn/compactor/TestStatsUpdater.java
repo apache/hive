@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.is;
 
 public class TestStatsUpdater {
   @Test
-  public void testCreateConfigurationAddsCompactorPropertiesFromTableProperties() {
+  public void testSetUpDriverSessionAddsCompactorPropertiesFromTableProperties() {
     StatsUpdater statsUpdater = new StatsUpdater();
 
     HiveConf conf = new HiveConf();
@@ -38,13 +38,13 @@ public class TestStatsUpdater {
     }};
 
     Map<String, String> ciProperties = new HashMap<>();
-    HiveConf statsUpdaterConf = statsUpdater.createConfiguration(conf, "testQueue", tableProperties, ciProperties);
+    HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, ciProperties);
 
     assertThat(statsUpdaterConf.get("test.property"), is("test-value"));
   }
 
   @Test
-  public void testCreateConfigurationAddsCompactorPropertiesFromCompactionInfo() {
+  public void testSetUpDriverSessionAddsCompactorPropertiesFromCompactionInfo() {
     StatsUpdater statsUpdater = new StatsUpdater();
 
     HiveConf conf = new HiveConf();
@@ -53,13 +53,13 @@ public class TestStatsUpdater {
       put(COMPACTOR_PREFIX + "test.property", "test-value");
     }};
 
-    HiveConf statsUpdaterConf = statsUpdater.createConfiguration(conf, "testQueue", tableProperties, ciProperties);
+    HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, ciProperties);
 
     assertThat(statsUpdaterConf.get("test.property"), is("test-value"));
   }
 
   @Test
-  public void testCreateConfigurationOverridesExistingCompactorProperties() {
+  public void testSetUpDriverSessionOverridesExistingCompactorProperties() {
     StatsUpdater statsUpdater = new StatsUpdater();
 
     HiveConf conf = new HiveConf();
@@ -73,7 +73,7 @@ public class TestStatsUpdater {
       put(COMPACTOR_PREFIX + "test.property", "changed-in-compaction-info");
     }};
 
-    HiveConf statsUpdaterConf = statsUpdater.createConfiguration(conf, "testQueue", tableProperties, ciProperties);
+    HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, ciProperties);
 
     assertThat(statsUpdaterConf.get("test.property"), is("changed-in-compaction-info"));
   }
