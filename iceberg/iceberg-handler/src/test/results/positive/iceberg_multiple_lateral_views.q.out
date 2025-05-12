@@ -1,0 +1,40 @@
+PREHOOK: query: create external table test(id int, arr array<string>) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create external table test(id int, arr array<string>) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into test values (1, array("a", "b")), (2, array("c", "d")), (3, array("e", "f"))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test values (1, array("a", "b")), (2, array("c", "d")), (3, array("e", "f"))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+PREHOOK: query: select * from test
+lateral view explode(arr) tbl1 as name
+lateral view explode(arr) tbl2 as name1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test
+lateral view explode(arr) tbl1 as name
+lateral view explode(arr) tbl2 as name1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	["a","b"]	a	a
+1	["a","b"]	a	b
+1	["a","b"]	b	a
+1	["a","b"]	b	b
+2	["c","d"]	c	c
+2	["c","d"]	c	d
+2	["c","d"]	d	c
+2	["c","d"]	d	d
+3	["e","f"]	e	e
+3	["e","f"]	e	f
+3	["e","f"]	f	e
+3	["e","f"]	f	f

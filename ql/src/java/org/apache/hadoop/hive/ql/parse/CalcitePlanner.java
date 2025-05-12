@@ -366,7 +366,6 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
@@ -3094,23 +3093,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final TableType tableType = obtainTableType(tabMetaData);
 
         // 3.3 Add column info corresponding to virtual columns
-        List<VirtualColumn> virtualCols = new ArrayList<>();
-        if (tableType == TableType.NATIVE) {
-          virtualCols = VirtualColumn.getRegistry(conf);
-          if (AcidUtils.isNonNativeAcidTable(tabMetaData)) {
-            virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
-          }
-          if (tabMetaData.isNonNative() && tabMetaData.getStorageHandler().areSnapshotsSupported() &&
-              isBlank(tabMetaData.getMetaTable())) {
-            virtualCols.add(VirtualColumn.SNAPSHOT_ID);
-          }
-          for (VirtualColumn vc : virtualCols) {
-            colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
-                vc.getIsHidden());
-            rr.put(tableAlias, vc.getName().toLowerCase(), colInfo);
-            cInfoLst.add(colInfo);
-          }
-        }
+        List<VirtualColumn> virtualCols = tabMetaData.getVirtualColumns(conf);
+
+        virtualCols
+            .forEach(vc ->
+                rr.put(tableAlias, vc.getName().toLowerCase(),
+                    new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true, vc.getIsHidden())
+                )
+            );
 
         // 4. Build operator
         Map<String, String> tabPropsFromQuery = qb.getTabPropsForAlias(tableAlias);
