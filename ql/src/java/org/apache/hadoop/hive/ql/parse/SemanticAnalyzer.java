@@ -2695,7 +2695,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if (storageFormat.fillStorageFormat(child)) {
               directoryDesc.setInputFormat(storageFormat.getInputFormat());
               directoryDesc.setOutputFormat(storageFormat.getOutputFormat());
-              directoryDesc.setSerName(storageFormat.getSerde());
+              directoryDesc.setSerde(storageFormat.getSerde());
               directoryDescIsSet = true;
               continue;
             }
@@ -2713,7 +2713,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             case HiveParser.TOK_TABLESERIALIZER:
               ASTNode serdeChild = (ASTNode) child.getChild(0);
               storageFormat.setSerde(unescapeSQLString(serdeChild.getChild(0).getText()));
-              directoryDesc.setSerName(storageFormat.getSerde());
+              directoryDesc.setSerde(storageFormat.getSerde());
               if (serdeChild.getChildCount() > 1) {
                 directoryDesc.setSerdeProps(new HashMap<String, String>());
                 readProps((ASTNode) serdeChild.getChild(1).getChild(0), directoryDesc.getSerdeProps());

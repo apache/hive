@@ -127,8 +127,11 @@ STAGE PLANS:
   Stage: Stage-4
     Create Materialized View
       distribute columns: key string
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       partition columns: partkey double
       columns: value string, key string
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       sort columns: key string
       expanded text: SELECT `value`, `key`, `partkey` FROM (SELECT `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key` + 100 as `partkey` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_1`
       name: default.cluster_mv_1
