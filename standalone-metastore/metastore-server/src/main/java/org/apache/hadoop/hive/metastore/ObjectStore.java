@@ -1057,6 +1057,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     List<Database> databases = new ArrayList<>();
     Query query = null;
+    catName = normalizeIdentifier(catName);
     try {
       openTransaction();
       StringBuilder filterBuilder = new StringBuilder();
