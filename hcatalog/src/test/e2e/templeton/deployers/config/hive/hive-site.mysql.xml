@@ -92,12 +92,6 @@
         <value>2</value>
     </property>
     <!--end ACID related properties-->
-<!--
-    <property>
-        <name>hive.exec.rowoffset</name>
-        <value>true</value>
-    </property>
-    -->
     <!--
     can be used by DataNucleus (have not tried)
     javax.jdo.mapping.Catalog={the_catalog_name}
