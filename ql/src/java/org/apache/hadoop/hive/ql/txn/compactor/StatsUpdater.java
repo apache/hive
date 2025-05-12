@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideProps;
+import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideConfProps;
 
 /**
  *  Updates table/partition statistics.
@@ -110,8 +110,7 @@ public final class StatsUpdater {
         //so that Driver doesn't think it's already in a transaction
         conf.unset(ValidTxnList.VALID_TXNS_KEY);
 
-        overrideProps(conf, tableProperties);
-        overrideProps(conf, ciProperties);
+        overrideConfProps(conf, ciProperties, tableProperties);
 
         if (isNotBlank(compactionQueueName)) {
             conf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);

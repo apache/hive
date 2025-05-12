@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.COMPACTOR_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -59,7 +60,23 @@ public class TestStatsUpdater {
   }
 
   @Test
-  public void testSetUpDriverSessionOverridesExistingCompactorProperties() {
+  public void testSetUpDriverSessionOverridesExistingCompactorPropertiesWithTableProperties() {
+    StatsUpdater statsUpdater = new StatsUpdater();
+
+    HiveConf conf = new HiveConf();
+    conf.set(COMPACTOR_PREFIX + "test.property", "test-value");
+
+    Map<String, String> tableProperties = new HashMap<String, String>() {{
+      put(COMPACTOR_PREFIX + "test.property", "changed-in-table-properties");
+    }};
+
+    HiveConf statsUpdaterConf = statsUpdater.setUpDriverSession(conf, "testQueue", tableProperties, emptyMap());
+
+    assertThat(statsUpdaterConf.get("test.property"), is("changed-in-table-properties"));
+  }
+
+  @Test
+  public void testSetUpDriverSessionOverridesExistingCompactorPropertiesWithPropertiesInCompactionInfo() {
     StatsUpdater statsUpdater = new StatsUpdater();
 
     HiveConf conf = new HiveConf();
