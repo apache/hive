@@ -11297,6 +11297,16 @@ public class ObjectStore implements RawStore, Configurable {
         filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
         filterBuilder.append(") ");
       }
+      if (rqst.isSetEventTypeList()) {
+        filterBuilder.append(" && (");
+        for (String eventType : rqst.getEventTypeList()) {
+          parameterVals.add(eventType);
+          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+          filterBuilder.append("eventType == para" + parameterVals.size() + " || ");
+        }
+        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        filterBuilder.append(") ");
+      }
       if (rqst.isSetEventTypeSkipList()) {
         for (String eventType : rqst.getEventTypeSkipList()) {
           parameterVals.add(eventType);
