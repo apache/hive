@@ -322,7 +322,7 @@ class CompactionTxnHandler extends TxnHandler {
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = :highestWriteId, " +
             "\"CQ_RUN_AS\" = :runAs, \"CQ_TXN_ID\" = :txnId, \"CQ_TYPE\" = :type WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
-            .addValue("highestWriteId", ci.highestWriteId == 0 ? null : ci.highestWriteId, Types.BIGINT)
+            .addValue("highestWriteId", runInTxn ? ci.highestWriteId : null, Types.BIGINT)
             .addValue("runAs", ci.runAs)
             .addValue("txnId", runInTxn ? compactionTxnId : null, Types.BIGINT)
             .addValue("type", Character.toString(thriftCompactionType2DbType(ci.type)))
