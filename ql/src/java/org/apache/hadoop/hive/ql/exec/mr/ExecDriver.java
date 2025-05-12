@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.exec.util.JavaVersionUtils;
+import org.apache.hive.common.util.JavaVersionUtils;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
@@ -372,7 +372,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
 
-      setJobOptions(job);
+      addJavaOpts(job);
       jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
@@ -491,7 +491,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return (returnVal);
   }
 
-  private void setJobOptions(JobConf job) {
+  private void addJavaOpts(JobConf job) {
     String commonAddOpens = JavaVersionUtils.getAddOpensFlagsIfNeeded();
     if(!commonAddOpens.isEmpty()){
       job.set("yarn.app.mapreduce.am.command-opts", commonAddOpens);

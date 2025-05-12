@@ -24,6 +24,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hive.common.util.JavaVersionUtils;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 import org.apache.hive.jdbc.HiveConnection;
 import org.slf4j.Logger;
@@ -121,10 +123,9 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     if (amMemoryMB != null && !amMemoryMB.isEmpty()) {
       conf.set(AppConfig.HADOOP_MR_AM_MEMORY_MB, amMemoryMB);
     }
-    String amJavaOpts = appConf.controllerAMChildOpts();
-    if (amJavaOpts != null && !amJavaOpts.isEmpty()) {
-      conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, addJavaOpensPackages(amJavaOpts));
-    }
+    String amJavaOpts = StringUtils.defaultString(appConf.controllerAMChildOpts());
+    amJavaOpts = String.join(" ", amJavaOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded());
+    conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, amJavaOpts);
 
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);
@@ -166,38 +167,6 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
               " user=" + user);
     }
     return 0;
-  }
-  private String addJavaOpensPackages(String amJavaOpts) {
-    final int JAVA_SPEC_VER =
-        Math.max(8, Integer.parseInt(System.getProperty("java.specification.version").split("\\.")[0]));
-    if (JAVA_SPEC_VER >= 9) {
-      return String.join(" ", amJavaOpts, getJavaAddOpenOptions());
-    } else {
-      return amJavaOpts;
-    }
-  }
-  private String getJavaAddOpenOptions() {
-    return String.join(" ",
-        "-XX:+IgnoreUnrecognizedVMOptions",
-        "--add-opens=java.base/java.net=ALL-UNNAMED",
-        "--add-opens=java.base/java.util=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang=ALL-UNNAMED",
-        "--add-opens=java.base/java.io=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
-        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
-        "--add-opens=java.base/java.math=ALL-UNNAMED",
-        "--add-opens=java.base/java.nio=ALL-UNNAMED",
-        "--add-opens=java.base/java.text=ALL-UNNAMED",
-        "--add-opens=java.base/java.time=ALL-UNNAMED",
-        "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
-        "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
-        "--add-opens=java.sql/java.sql=ALL-UNNAMED",
-        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
-        "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
-        "--add-opens=java.base/java.util.regex=ALL-UNNAMED"
-    );
   }
 
   private String addToken(Job job, String user, String type) throws IOException, InterruptedException,

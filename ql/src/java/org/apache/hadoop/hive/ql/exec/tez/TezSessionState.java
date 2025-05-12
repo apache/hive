@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.ql.exec.util.JavaVersionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hive.common.util.JavaVersionUtils;
 import org.apache.hadoop.registry.client.api.RegistryOperations;
 
 import java.io.File;
@@ -549,9 +550,9 @@ public class TezSessionState {
       conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_ENV, env);
     }
 
-    String mrAmJavaOpts = org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf);
-    String combinedOpts = String.join(" ", mrAmJavaOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded());
-    conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, combinedOpts);
+    String mrAmJavaOpts = StringUtils.defaultString(org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
+    mrAmJavaOpts = String.join(" ", mrAmJavaOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded());
+    conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts);
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);
