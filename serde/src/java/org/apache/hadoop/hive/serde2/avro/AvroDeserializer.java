@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 
 import org.apache.avro.LogicalType;
@@ -97,6 +98,7 @@ class AvroDeserializer {
   private Boolean writerZoneConversionLegacy = null;
 
   private Configuration configuration = null;
+  private LogicalType logicalType = null;
 
   AvroDeserializer() {}
 
@@ -221,10 +223,58 @@ class AvroDeserializer {
       Object datum = record.get(columnName);
       Schema datumSchema = record.getSchema().getField(columnName).schema();
       Schema.Field field = AvroSerdeUtils.isNullableType(fileSchema)?AvroSerdeUtils.getOtherTypeFromNullableType(fileSchema).getField(columnName):fileSchema.getField(columnName);
+      if (field != null) {
+        // This single call handles all cases: direct, union, map, and array.
+        logicalType = findNestedLogicalType(field, field.schema());
+      }
       objectRow.add(worker(datum, field == null ? null : field.schema(), datumSchema, columnType));
     }
 
     return objectRow;
+  }
+
+  /**
+   * Recursively traverses a schema to find the first LogicalType.
+   * This handles direct logical types, and logical types nested within
+   * UNIONS, MAPS, or ARRAYS.
+   *
+   * @param field
+   * @param schema The schema to inspect.
+   * @return The found LogicalType, or null if none is found.
+   */
+  private LogicalType findNestedLogicalType(Schema.Field field, Schema schema) {
+    // Base Case 1: The schema is null, so we can't proceed.
+    if (schema == null) {
+      return null;
+    }
+
+    // Base Case 2: The schema itself has the logical type. We found it.
+    if (schema.getLogicalType() != null) {
+      return schema.getLogicalType();
+    }
+
+    // Recursive Step: The logical type is deeper. Check the container type.
+    switch (schema.getType()) {
+      case UNION:
+        // Find the first non-null branch and search within it.
+        return schema.getTypes().stream()
+                .filter(s -> s.getType() != Schema.Type.NULL)
+                .map(s -> findNestedLogicalType(field, s)) // Recurse on the branch
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+      case MAP:
+        // Search within the map's value schema.
+        return findNestedLogicalType(field, schema.getValueType());
+      case ARRAY:
+        // Search within the array's element schema.
+        return findNestedLogicalType(field, schema.getElementType());
+      default:
+        // This type (e.g., STRING, INT) doesn't contain a nested schema.
+        return field.getProp("logicalType") != null
+                  ? new LogicalType(field.getProp("logicalType"))
+                  : null;
+    }
   }
 
   private Object worker(Object datum, Schema fileSchema, Schema recordSchema, TypeInfo columnType)
@@ -389,7 +439,6 @@ class AvroDeserializer {
           skipProlepticConversion = HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.defaultBoolVal;
         }
       }
-      LogicalType logicalType = fileSchema.getLogicalType();
       Timestamp timestamp;
       if (logicalType != null && logicalType.getName().equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
         timestamp = Timestamp.ofEpochMicro((Long) datum);

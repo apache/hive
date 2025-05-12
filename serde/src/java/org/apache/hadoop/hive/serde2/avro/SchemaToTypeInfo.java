@@ -211,8 +211,8 @@ class SchemaToTypeInfo {
     }
 
     // Supported timestamp logical types (extend this set as needed)
-    return logicalType.equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS) ||
-            logicalType.equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS);
+    return AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS.equalsIgnoreCase(logicalType) ||
+            AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS.equalsIgnoreCase(logicalType);
   }
 
   private static TypeInfo generateTypeInfoWorker(Schema schema,

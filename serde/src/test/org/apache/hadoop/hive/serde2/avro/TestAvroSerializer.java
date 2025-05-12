@@ -129,6 +129,13 @@ public class TestAvroSerializer {
   }
 
   @Test
+  public void canSerializeTimestampsMicros() throws SerDeException, IOException {
+    singleFieldTest("timestamp1", Timestamp.valueOf("2011-01-01 00:00:00").toEpochMicro(),
+            "\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\"," +
+                    "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS + "\"");
+  }
+
+  @Test
   public void canSerializeDecimals() throws SerDeException, IOException {
     ByteBuffer bb = ByteBuffer.wrap(HiveDecimal.create("3.1416").bigIntegerBytes());
     singleFieldTest("dec1", bb.rewind(),
