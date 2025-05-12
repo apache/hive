@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -63,7 +64,8 @@ public final class StatsUpdater {
                 throw new IllegalArgumentException("Metastore client is missing");
             }
 
-            HiveConf conf = setUpDriverSession(hiveConf, compactionQueueName, tableProperties, ci.getProperties());
+            HiveConf conf = setUpDriverSession(
+                    hiveConf, compactionQueueName, tableProperties, new StringableMap(ci.properties));
 
             //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
             // compute statistics for columns viewtime
