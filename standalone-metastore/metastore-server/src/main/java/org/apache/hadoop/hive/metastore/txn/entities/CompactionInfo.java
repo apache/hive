@@ -30,9 +30,6 @@ import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 /**

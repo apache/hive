@@ -859,8 +859,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
-            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient, emptyMap());
+    new StatsUpdater().gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
@@ -3166,8 +3166,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", compactionType);
-    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
-            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient, emptyMap());
+    new StatsUpdater().gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
     org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);

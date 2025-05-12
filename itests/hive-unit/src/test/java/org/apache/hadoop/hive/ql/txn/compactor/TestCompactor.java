@@ -380,11 +380,11 @@ public class TestCompactor extends TestCompactorBase {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=0", CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf, System.getProperty("user.name"),
-            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient, emptyMap());
+    statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
     ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf, System.getProperty("user.name"),
-            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient, emptyMap());
+    statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
     org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);
@@ -474,8 +474,8 @@ public class TestCompactor extends TestCompactorBase {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf, System.getProperty("user.name"),
-            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient, emptyMap());
+    statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();

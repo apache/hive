@@ -56,9 +56,9 @@ public final class StatsUpdater {
      * @param userName The user to run the statistic collection with
      * @param compactionQueueName The name of the compaction queue
      */
-    public void gatherStats(CompactionInfo ci, HiveConf hiveConf,
+    public void gatherStats(HiveConf hiveConf, CompactionInfo ci, Map<String, String> tableProperties,
                             String userName, String compactionQueueName,
-                            IMetaStoreClient msc, Map<String, String> tableProperties) {
+                            IMetaStoreClient msc) {
         try {
             if (msc == null) {
                 throw new IllegalArgumentException("Metastore client is missing");
