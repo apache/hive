@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.ql.exec.InputFormatCache;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
@@ -67,6 +66,6 @@ public class HiveSequenceFileInputFormat<K extends LongWritable, V extends Bytes
 
   @Override
   public InputFormat<K, V> newInstance(InputFormat<K, V> cached){
-    return new HiveSequenceFileInputFormat();
+    return new HiveSequenceFileInputFormat<K, V>();
   }
 }

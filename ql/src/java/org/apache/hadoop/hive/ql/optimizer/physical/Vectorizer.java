@@ -1293,7 +1293,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         TableDesc properties) {
 
       try {
-        InputFormat inputFormat = FetchOperator.getInputFormatFromCache(inputFileFormatClass, hiveConf);
+        InputFormat inputFormat = InputFormatCache.getInputFormat(inputFileFormatClass, hiveConf);
         if (inputFormat instanceof VectorizedInputFormatInterface) {
           return ((VectorizedInputFormatInterface) inputFormat).getSupportedFeatures(hiveConf, properties);
         }

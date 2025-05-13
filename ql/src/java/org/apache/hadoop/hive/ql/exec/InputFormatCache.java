@@ -44,9 +44,9 @@ public class InputFormatCache {
   /**
    * A cache of InputFormat instances.
    */
-  private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
+  private static final Map<String, InputFormat<?, ?>> inputFormats = new HashMap<>();
 
-  public static InputFormat getInputFormatFromCache(
+  public static InputFormat getInputFormat(
       Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
         JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
@@ -56,19 +56,27 @@ public class InputFormatCache {
     InputFormat format = inputFormats.get(inputFormatClass.getName());
 
     if (format == null) {
-      try {
-        format = ReflectionUtil.newInstance(inputFormatClass, conf);
-        // HBase input formats are not thread safe today. See HIVE-8808.
-        String inputFormatName = inputFormatClass.getName().toLowerCase();
-        if (!inputFormatName.contains("hbase")) {
-          inputFormats.put(inputFormatClass.getName(), format);
-        }
-      } catch (Exception e) {
-        throw new IOException("Cannot create an instance of InputFormat class: " + inputFormatClass.getName(), e);
-      }
+      format = newInputFormat(inputFormatClass, conf);
     }
     if (CacheableInputFormat.class.isAssignableFrom(inputFormatClass)) {
-      format = ((CacheableInputFormat)format).newInstance(format);
+      format = ((CacheableInputFormat<?, ?>)format).newInstance(format);
+    }
+    return format;
+  }
+
+  private static InputFormat<?, ?> newInputFormat(Class<? extends InputFormat> inputFormatClass,
+      Configuration conf)
+      throws IOException {
+    InputFormat<?, ?> format;
+    try {
+      format = ReflectionUtil.newInstance(inputFormatClass, conf);
+      // HBase input formats are not thread safe today. See HIVE-8808.
+      String inputFormatName = inputFormatClass.getName().toLowerCase();
+      if (!inputFormatName.contains("hbase")) {
+        inputFormats.put(inputFormatClass.getName(), format);
+      }
+    } catch (Exception e) {
+      throw new IOException("Cannot create an instance of InputFormat class: " + inputFormatClass.getName(), e);
     }
     return format;
   }
