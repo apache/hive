@@ -438,6 +438,15 @@ struct Database {
   13: optional string remote_dbname
 }
 
+struct GetDatabaseObjectsRequest {
+  1: optional string catalogName,
+  2: optional string pattern
+}
+
+struct GetDatabaseObjectsResponse {
+  1: required list<Database> databases
+}
+
 // This object holds the information needed by SerDes
 struct SerDeInfo {
   1: string name,                   // name of the serde, table name by default
@@ -2614,6 +2623,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
+  GetDatabaseObjectsResponse get_databases_req (1:GetDatabaseObjectsRequest request) throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
   void alter_database_req(1:AlterDatabaseRequest alterDbReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 

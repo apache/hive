@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // FIELDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1488 = iprot.readListBegin();
-                struct.fields = new java.util.ArrayList<FieldSchema>(_list1488.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem1489;
-                for (int _i1490 = 0; _i1490 < _list1488.size; ++_i1490)
+                org.apache.thrift.protocol.TList _list1496 = iprot.readListBegin();
+                struct.fields = new java.util.ArrayList<FieldSchema>(_list1496.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem1497;
+                for (int _i1498 = 0; _i1498 < _list1496.size; ++_i1498)
                 {
-                  _elem1489 = new FieldSchema();
-                  _elem1489.read(iprot);
-                  struct.fields.add(_elem1489);
+                  _elem1497 = new FieldSchema();
+                  _elem1497.read(iprot);
+                  struct.fields.add(_elem1497);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(FIELDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.fields.size()));
-          for (FieldSchema _iter1491 : struct.fields)
+          for (FieldSchema _iter1499 : struct.fields)
           {
-            _iter1491.write(oprot);
+            _iter1499.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fields.size());
-        for (FieldSchema _iter1492 : struct.fields)
+        for (FieldSchema _iter1500 : struct.fields)
         {
-          _iter1492.write(oprot);
+          _iter1500.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetSchemaResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list1493 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.fields = new java.util.ArrayList<FieldSchema>(_list1493.size);
-        @org.apache.thrift.annotation.Nullable FieldSchema _elem1494;
-        for (int _i1495 = 0; _i1495 < _list1493.size; ++_i1495)
+        org.apache.thrift.protocol.TList _list1501 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.fields = new java.util.ArrayList<FieldSchema>(_list1501.size);
+        @org.apache.thrift.annotation.Nullable FieldSchema _elem1502;
+        for (int _i1503 = 0; _i1503 < _list1501.size; ++_i1503)
         {
-          _elem1494 = new FieldSchema();
-          _elem1494.read(iprot);
-          struct.fields.add(_elem1494);
+          _elem1502 = new FieldSchema();
+          _elem1502.read(iprot);
+          struct.fields.add(_elem1502);
         }
       }
       struct.setFieldsIsSet(true);

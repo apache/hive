@@ -68,13 +68,13 @@ class ThriftHiveMetastore_find_columns_with_stats_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1927 = 0;
-                        $_etype1930 = 0;
-                        $xfer += $input->readListBegin($_etype1930, $_size1927);
-                        for ($_i1931 = 0; $_i1931 < $_size1927; ++$_i1931) {
-                            $elem1932 = null;
-                            $xfer += $input->readString($elem1932);
-                            $this->success []= $elem1932;
+                        $_size1934 = 0;
+                        $_etype1937 = 0;
+                        $xfer += $input->readListBegin($_etype1937, $_size1934);
+                        for ($_i1938 = 0; $_i1938 < $_size1934; ++$_i1938) {
+                            $elem1939 = null;
+                            $xfer += $input->readString($elem1939);
+                            $this->success []= $elem1939;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -101,8 +101,8 @@ class ThriftHiveMetastore_find_columns_with_stats_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRING, count($this->success));
-            foreach ($this->success as $iter1933) {
-                $xfer += $output->writeString($iter1933);
+            foreach ($this->success as $iter1940) {
+                $xfer += $output->writeString($iter1940);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -159,5 +159,16 @@ public interface MetaStoreFilterHook {
    * @return List of filtered Dc names
    */
   List<String> filterDataConnectors(List<String> dcList) throws MetaException;
+
+  /**
+   * Filter given list of database objects
+   *
+   * @param databases List of database objects
+   * @return List of filtered database objects
+   * @throws MetaException
+   */
+  default List<Database> filterDatabaseObjects(List<Database> databases) throws MetaException {
+    return databases;
+  }
 }
 
