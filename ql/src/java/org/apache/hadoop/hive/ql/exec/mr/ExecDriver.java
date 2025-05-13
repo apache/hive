@@ -494,9 +494,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private void addJavaOpts(JobConf job) {
     String commonAddOpens = JavaVersionUtils.getAddOpensFlagsIfNeeded();
     if(!commonAddOpens.isEmpty()){
-      job.set("yarn.app.mapreduce.am.command-opts", commonAddOpens);
-      job.set("mapreduce.map.java.opts", commonAddOpens);
-      job.set("mapreduce.reduce.java.opts", commonAddOpens);
+      String yarnCommandOpts = StringUtils.defaultString(job.get("yarn.app.mapreduce.am.command-opts"));
+      String mrMapJavaOpts = StringUtils.defaultString(job.get("mapreduce.map.java.opts"));
+      String mrReduceJavaOpts = StringUtils.defaultString(job.get("mapreduce.reduce.java.opts"));
+      job.set("yarn.app.mapreduce.am.command-opts", String.join(" ", yarnCommandOpts, commonAddOpens).trim());
+      job.set("mapreduce.map.java.opts", String.join(" ", mrMapJavaOpts, commonAddOpens).trim());
+      job.set("mapreduce.reduce.java.opts", String.join(" ", mrReduceJavaOpts, commonAddOpens).trim());
     }
   }
 

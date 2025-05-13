@@ -709,9 +709,7 @@ public class DagUtils {
    * are set
    */
   private static String getContainerJavaOpts(Configuration conf) {
-    String javaOpts = StringUtils.defaultString(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS));
-    javaOpts = String.join(" ", javaOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded());
-
+    String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS);
     String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_LOG_LEVEL);
     List<String> logProps = Lists.newArrayList();
     TezUtils.addLog4jSystemProperties(logLevel, logProps);
@@ -731,6 +729,7 @@ public class DagUtils {
       }
       finalOpts = logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
     }
+    finalOpts = String.join(" ", finalOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded()).trim();
     LOG.debug("Tez container final opts: {}", finalOpts);
     return finalOpts;
   }

@@ -550,9 +550,12 @@ public class TezSessionState {
       conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_ENV, env);
     }
 
-    String mrAmJavaOpts = StringUtils.defaultString(org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
-    mrAmJavaOpts = String.join(" ", mrAmJavaOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded());
-    conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts);
+    String mrAmJavaOpts = conf.get(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS);
+    if (mrAmJavaOpts == null) {
+      mrAmJavaOpts = StringUtils.defaultString(org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
+    }
+    mrAmJavaOpts = String.join(" ", mrAmJavaOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded()).trim();
+    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts);
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);
