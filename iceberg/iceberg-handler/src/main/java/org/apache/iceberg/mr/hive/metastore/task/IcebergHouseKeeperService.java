@@ -18,6 +18,8 @@
 
 package org.apache.iceberg.mr.hive.metastore.task;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,10 +32,12 @@ import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.mr.hive.HiveIcebergUtil;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.thrift.TException;
@@ -44,6 +48,13 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergHouseKeeperService.class);
 
   private Configuration conf;
+  private TxnStore txnHandler;
+  private boolean shouldUseMutex;
+
+  // table cache to avoid making repeated requests for the same Iceberg tables more than once per day
+  private final Cache<TableName, Table> tableCache = Caffeine.newBuilder()
+      .expireAfterWrite(1, TimeUnit.DAYS)
+      .build();
 
   @Override
   public long runFrequency(TimeUnit unit) {
@@ -58,19 +69,25 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
     String dbPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_TABLE_EXPIRY_DATABASE_PATTERN);
     String tablePattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_TABLE_EXPIRY_TABLE_PATTERN);
 
-    try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
-      // TODO: Future improvement – modify TableFetcher to return HMS Table API objects directly,
-      // avoiding the need for subsequent msc.getTable calls to fetch each matched table individually
-      List<TableName> tables = getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables();
+    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
-      LOG.debug("{} candidate tables found", tables.size());
+    try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.IcebergHouseKeeper.name())) {
+      try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
+        // TODO: HIVE-28952 – modify TableFetcher to return HMS Table API objects directly,
+        // avoiding the need for subsequent msc.getTable calls to fetch each matched table individually
+        List<TableName> tables = getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables();
 
-      for (TableName table : tables) {
-        expireSnapshotsForTable(getIcebergTable(table, msc));
+        LOG.debug("{} candidate tables found", tables.size());
+
+        for (TableName table : tables) {
+          expireSnapshotsForTable(getIcebergTable(table, msc));
+        }
+      } catch (Exception e) {
+        LOG.error("Exception while running iceberg expiry service on catalog/db/table: {}/{}/{}",
+            catalogName, dbPattern, tablePattern, e);
       }
     } catch (Exception e) {
-      LOG.error("Exception while running iceberg expiry service on catalog/db/table: {}/{}/{}", catalogName, dbPattern,
-          tablePattern, e);
+      throw new RuntimeException(e);
     }
   }
 
@@ -83,9 +100,16 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
         .build();
   }
 
-  private Table getIcebergTable(TableName table, IMetaStoreClient msc) throws TException {
-    GetTableRequest request = new GetTableRequest(table.getDb(), table.getTable());
-    return IcebergTableUtil.getTable(conf, msc.getTable(request));
+  private Table getIcebergTable(TableName tableName, IMetaStoreClient msc) {
+    return tableCache.get(tableName, key -> {
+      LOG.debug("Getting iceberg table from metastore as it's not present in table cache: {}", tableName);
+      GetTableRequest request = new GetTableRequest(tableName.getDb(), tableName.getTable());
+      try {
+        return IcebergTableUtil.getTable(conf, msc.getTable(request));
+      } catch (TException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   /**
@@ -96,7 +120,6 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
    * @param icebergTable the iceberg Table reference
    */
   private void expireSnapshotsForTable(Table icebergTable) {
-    LOG.info("Expire snapshots for: {}", icebergTable);
     ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
 
     int numThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
@@ -106,7 +129,7 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
     try {
       if (numThreads > 0) {
         LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = HiveIcebergUtil.getDeleteExecutorService(icebergTable.name(), numThreads);
+        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(), numThreads);
       }
       if (deleteExecutorService != null) {
         expireSnapshots.executeDeleteWith(deleteExecutorService);
@@ -120,6 +143,11 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   }
 
   @Override
+  public void enforceMutex(boolean enableMutex) {
+    this.shouldUseMutex = enableMutex;
+  }
+
+  @Override
   public Configuration getConf() {
     return conf;
   }
@@ -127,5 +155,6 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 }
