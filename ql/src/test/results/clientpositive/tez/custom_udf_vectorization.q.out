@@ -4,7 +4,7 @@ PREHOOK: Output: cdate_sub
 POSTHOOK: query: CREATE TEMPORARY FUNCTION CDATE_SUB AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFCustomDateSub'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: cdate_sub
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION
 SELECT CDATE_SUB('2000-01-01', 1) FROM src
 UNION ALL
 SELECT CDATE_SUB('2000-01-01', CAST(key as int)) FROM src
@@ -19,7 +19,7 @@ SELECT CDATE_SUB('2000-01-01', CAST(key as int)) FROM src WHERE key <> '' AND va
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT CDATE_SUB('2000-01-01', 1) FROM src
 UNION ALL
 SELECT CDATE_SUB('2000-01-01', CAST(key as int)) FROM src
@@ -34,6 +34,10 @@ SELECT CDATE_SUB('2000-01-01', CAST(key as int)) FROM src WHERE key <> '' AND va
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -68,6 +72,15 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -85,6 +98,15 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -106,6 +128,15 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -127,6 +158,15 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -148,6 +188,15 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -169,6 +218,15 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Union 2 
             Vertex: Union 2
 
