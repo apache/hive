@@ -104,7 +104,7 @@ public interface TxnStore extends Configurable {
 
 
   enum MUTEX_KEY {
-    Initiator, Cleaner, HouseKeeper, TxnCleaner,
+    Initiator, Cleaner, HouseKeeper, IcebergHouseKeeper, TxnCleaner,
     CompactionScheduler, MaterializationRebuild
   }
   // Compactor states (Should really be enum)

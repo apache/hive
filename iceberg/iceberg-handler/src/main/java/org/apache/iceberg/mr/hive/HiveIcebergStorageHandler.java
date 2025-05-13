@@ -1140,7 +1140,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       if (numThreads > 0) {
         LOG.info("Executing delete orphan files on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = HiveIcebergUtil.getDeleteExecutorService(icebergTable.name(),
+        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(),
             numThreads);
       }
 
@@ -1164,7 +1164,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       if (numThreads > 0) {
         LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = HiveIcebergUtil.getDeleteExecutorService(icebergTable.name(), numThreads);
+        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(), numThreads);
       }
       if (expireSnapshotsSpec == null) {
         expireSnapshotWithDefaultParams(icebergTable, deleteExecutorService);
