@@ -178,6 +178,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
@@ -550,6 +551,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
+
+    // Add user custom UDFs
+    addCustomUDFs(SessionState.get().getConf());
   }
 
   private class VectorTaskColumnInfo {
@@ -2549,9 +2553,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     isTestVectorizationSuppressExplainExecutionMode =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_VECTORIZATION_SUPPRESS_EXPLAIN_EXECUTION_MODE);
-
-    // Add user custom UDFs
-    addCustomUDFs(hiveConf);
 
     // create dispatcher and graph walker
     SemanticDispatcher disp = new VectorizationDispatcher();
