@@ -729,7 +729,7 @@ public class DagUtils {
       }
       finalOpts = logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
     }
-    finalOpts = String.join(" ", finalOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded()).trim();
+    finalOpts += JavaVersionUtils.getAddOpensFlagsIfNeeded();
     LOG.debug("Tez container final opts: {}", finalOpts);
     return finalOpts;
   }

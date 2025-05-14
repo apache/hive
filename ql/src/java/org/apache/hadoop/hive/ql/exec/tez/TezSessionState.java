@@ -554,7 +554,7 @@ public class TezSessionState {
     if (mrAmJavaOpts == null) {
       mrAmJavaOpts = StringUtils.defaultString(org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
     }
-    mrAmJavaOpts = String.join(" ", mrAmJavaOpts, JavaVersionUtils.getAddOpensFlagsIfNeeded()).trim();
+    mrAmJavaOpts += JavaVersionUtils.getAddOpensFlagsIfNeeded();
     conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts);
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);

@@ -38,30 +38,27 @@ public class JavaVersionUtils {
     //TODO: Please remove this once the codebase has been migrated to JDK 9 or a higher version.
     int javaVersion = getJavaMajorVersion();
     if (javaVersion >= 9) {
-      return String.join(" ",
-          "-XX:IgnoreUnrecognizedVMOptions",
-          "--add-opens=java.base/java.net=ALL-UNNAMED",
-          "--add-opens=java.base/java.util=ALL-UNNAMED",
-          "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
-          "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
-          "--add-opens=java.base/java.lang=ALL-UNNAMED",
-          "--add-opens=java.base/java.io=ALL-UNNAMED",
-          "--add-opens java.base/java.lang=ALL-UNNAMED",
-          "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
-          "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
-          "--add-opens=java.base/java.math=ALL-UNNAMED",
-          "--add-opens=java.base/java.nio=ALL-UNNAMED",
-          "--add-opens=java.base/java.text=ALL-UNNAMED",
-          "--add-opens=java.base/java.time=ALL-UNNAMED",
-          "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
-          "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
-          "--add-opens=java.sql/java.sql=ALL-UNNAMED",
-          "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
-          "--add-opens=java.base/sun.nio.cs=ALL-UNNAMED",
-          "--add-opens=java.base/java.util.regex=ALL-UNNAMED",
-          "--add-opens=java.base/java.security=ALL-UNNAMED",
-          "--add-opens=java.base/sun.security.provider=ALL-UNNAMED"
-      );
+      return " --add-opens=java.base/java.net=ALL-UNNAMED" +
+          " --add-opens=java.base/java.util=ALL-UNNAMED" +
+          " --add-opens=java.base/java.util.concurrent=ALL-UNNAMED" +
+          " --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED" +
+          " --add-opens=java.base/java.lang=ALL-UNNAMED" +
+          " --add-opens=java.base/java.io=ALL-UNNAMED" +
+          " --add-opens java.base/java.lang=ALL-UNNAMED" +
+          " --add-opens=java.base/java.lang.invoke=ALL-UNNAMED" +
+          " --add-opens=java.base/java.lang.reflect=ALL-UNNAMED" +
+          " --add-opens=java.base/java.math=ALL-UNNAMED" +
+          " --add-opens=java.base/java.nio=ALL-UNNAMED" +
+          " --add-opens=java.base/java.text=ALL-UNNAMED" +
+          " --add-opens=java.base/java.time=ALL-UNNAMED" +
+          " --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED" +
+          " --add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED" +
+          " --add-opens=java.sql/java.sql=ALL-UNNAMED" +
+          " --add-opens=java.base/sun.nio.ch=ALL-UNNAMED" +
+          " --add-opens=java.base/sun.nio.cs=ALL-UNNAMED" +
+          " --add-opens=java.base/java.util.regex=ALL-UNNAMED" +
+          " --add-opens=java.base/java.security=ALL-UNNAMED" +
+          " --add-opens=java.base/sun.security.provider=ALL-UNNAMED";
     } else {
       return ""; // Java 8 or lower does not need add-opens
     }
