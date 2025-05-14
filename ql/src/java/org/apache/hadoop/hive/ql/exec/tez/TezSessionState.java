@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hive.common.util.JavaVersionUtils;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.registry.client.api.RegistryOperations;
 
 import java.io.File;

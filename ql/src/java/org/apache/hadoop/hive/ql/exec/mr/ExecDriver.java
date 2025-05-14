@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hive.common.util.JavaVersionUtils;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
