@@ -125,7 +125,9 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     }
     String amJavaOpts = StringUtils.defaultString(appConf.controllerAMChildOpts());
     amJavaOpts += JavaVersionUtils.getAddOpensFlagsIfNeeded();
-    conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, amJavaOpts);
+    if (amJavaOpts != null && !amJavaOpts.isEmpty()) {
+      conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, amJavaOpts);
+    }
 
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);

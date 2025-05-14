@@ -372,7 +372,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
 
-      addJavaOpts(job);
+      addOpensFlagsIfNeeded(job);
       jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
@@ -491,16 +491,17 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return (returnVal);
   }
 
-  private void addJavaOpts(JobConf job) {
-    String commonAddOpens = JavaVersionUtils.getAddOpensFlagsIfNeeded();
-    if(!commonAddOpens.isEmpty()){
-      String yarnCommandOpts = StringUtils.defaultString(job.get("yarn.app.mapreduce.am.command-opts"));
-      String mrMapJavaOpts = StringUtils.defaultString(job.get("mapreduce.map.java.opts"));
-      String mrReduceJavaOpts = StringUtils.defaultString(job.get("mapreduce.reduce.java.opts"));
-      job.set("yarn.app.mapreduce.am.command-opts", yarnCommandOpts + commonAddOpens);
-      job.set("mapreduce.map.java.opts", mrMapJavaOpts + commonAddOpens);
-      job.set("mapreduce.reduce.java.opts", mrReduceJavaOpts + commonAddOpens);
+  private static void addOpensFlagsIfNeeded(JobConf job) {
+    String addOpens = JavaVersionUtils.getAddOpensFlagsIfNeeded();
+    if(!addOpens.isEmpty()) {
+      addJavaOpts(job, "mapreduce.map.java.opts", addOpens);
+      addJavaOpts(job, "mapreduce.reduce.java.opts", addOpens);
+      addJavaOpts(job, "yarn.app.mapreduce.am.command-opts", addOpens);
     }
+  }
+  private static void addJavaOpts(JobConf job, String conf, String extraOpts) {
+    String javaOpts = StringUtils.defaultString(job.get(conf));
+    job.set(conf, javaOpts + extraOpts);
   }
 
   public static void propagateSplitSettings(JobConf job, MapWork work) {
