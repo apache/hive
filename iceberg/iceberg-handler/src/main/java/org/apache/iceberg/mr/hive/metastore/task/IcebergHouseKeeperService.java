@@ -54,7 +54,6 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   // table cache to avoid making repeated requests for the same Iceberg tables more than once per day
   private final Cache<TableName, Table> tableCache = Caffeine.newBuilder()
       .maximumSize(1000)
-      .softValues()
       .expireAfterWrite(1, TimeUnit.DAYS)
       .build();
 
