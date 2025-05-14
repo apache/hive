@@ -412,23 +412,41 @@ public class HiveAlterHandler implements AlterHandler {
 
             if (cascade || retainOnColRemoval) {
               parts = msdb.getPartitions(catName, dbname, name, -1);
-              for (Partition part : parts) {
-                Partition oldPart = new Partition(part);
-                List<FieldSchema> oldCols = part.getSd().getCols();
-                part.getSd().setCols(newt.getSd().getCols());
-                List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
-                    part.getValues(), oldCols, oldt, part, null, null);
-                assert (colStats.isEmpty());
-                Deadline.checkTimeout();
-                if (cascade) {
-                  msdb.alterPartition(
-                    catName, dbname, name, part.getValues(), part, writeIdList);
-                } else {
+              String catalogName = catName;
+              String databaseName = dbname;
+              String tableName = name;
+              Table finalOldt = oldt;
+              int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
+                      MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+              Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
+                @Override
+                public List<Void> run(List<Partition> input) throws Exception {
+                  List<Partition> oldParts = new ArrayList<>(input.size());
+                  List<List<String>> partVals = input.stream().map(Partition::getValues).collect(Collectors.toList());
                   // update changed properties (stats)
-                  oldPart.setParameters(part.getParameters());
-                  msdb.alterPartition(catName, dbname, name, part.getValues(), oldPart, writeIdList);
+                  for (Partition part : input) {
+                    Partition oldPart = new Partition(part);
+                    List<FieldSchema> oldCols = part.getSd().getCols();
+                    part.getSd().setCols(newt.getSd().getCols());
+                    List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catalogName, databaseName,
+                            tableName, part.getValues(), oldCols, finalOldt, part, null, null);
+                    assert (colStats.isEmpty());
+                    if (!cascade) {
+                      oldPart.setParameters(part.getParameters());
+                      oldParts.add(oldPart);
+                    }
+                  }
+                  Deadline.checkTimeout();
+                  if (cascade) {
+                    msdb.alterPartitions(catalogName, databaseName, tableName, partVals, input, newt.getWriteId(),
+                            writeIdList);
+                  } else {
+                    msdb.alterPartitions(catalogName, newDbName, newTblName, partVals, oldParts, newt.getWriteId(),
+                            writeIdList);
+                  }
+                  return Collections.emptyList();
                 }
-              }
+              });
             } else {
               // clear all column stats to prevent incorract behaviour in case same column is reintroduced
               TableName tableName = new TableName(catName, dbname, name);
