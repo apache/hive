@@ -53,6 +53,8 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
 
   // table cache to avoid making repeated requests for the same Iceberg tables more than once per day
   private final Cache<TableName, Table> tableCache = Caffeine.newBuilder()
+      .maximumSize(1000)
+      .softValues()
       .expireAfterWrite(1, TimeUnit.DAYS)
       .build();
 
@@ -72,22 +74,26 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
     TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
     try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.IcebergHouseKeeper.name())) {
-      try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
-        // TODO: HIVE-28952 – modify TableFetcher to return HMS Table API objects directly,
-        // avoiding the need for subsequent msc.getTable calls to fetch each matched table individually
-        List<TableName> tables = getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables();
-
-        LOG.debug("{} candidate tables found", tables.size());
-
-        for (TableName table : tables) {
-          expireSnapshotsForTable(getIcebergTable(table, msc));
-        }
-      } catch (Exception e) {
-        LOG.error("Exception while running iceberg expiry service on catalog/db/table: {}/{}/{}",
-            catalogName, dbPattern, tablePattern, e);
-      }
+      expireTables(catalogName, dbPattern, tablePattern);
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private void expireTables(String catalogName, String dbPattern, String tablePattern) {
+    try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
+      // TODO: HIVE-28952 – modify TableFetcher to return HMS Table API objects directly,
+      // avoiding the need for subsequent msc.getTable calls to fetch each matched table individually
+      List<TableName> tables = getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables();
+
+      LOG.debug("{} candidate tables found", tables.size());
+
+      for (TableName table : tables) {
+        expireSnapshotsForTable(getIcebergTable(table, msc));
+      }
+    } catch (Exception e) {
+      LOG.error("Exception while running iceberg expiry service on catalog/db/table: {}/{}/{}",
+          catalogName, dbPattern, tablePattern, e);
     }
   }
 
