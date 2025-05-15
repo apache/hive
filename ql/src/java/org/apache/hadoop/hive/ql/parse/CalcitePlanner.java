@@ -366,7 +366,6 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
@@ -1795,7 +1794,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // corelated sub query.
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
       final int minNumORClauses = conf.getIntVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
-      final boolean allowDisjunctivePredicates = conf.getBoolVar(ConfVars.HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN);
 
       final HepProgramBuilder program = new HepProgramBuilder();
 
@@ -1899,9 +1897,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
       rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
       rules.add(HiveJoinAddNotNullRule.INSTANCE_ANTIJOIN);
-      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveJoin.class, allowDisjunctivePredicates));
-      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveSemiJoin.class, allowDisjunctivePredicates));
-      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class, allowDisjunctivePredicates));
+      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveJoin.class));
+      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveSemiJoin.class));
+      rules.add(new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class));
       rules.add(HiveSortMergeRule.INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_LIMIT_INSTANCE);
       rules.add(HiveSortPullUpConstantsRule.SORT_EXCHANGE_INSTANCE);
@@ -3095,23 +3093,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final TableType tableType = obtainTableType(tabMetaData);
 
         // 3.3 Add column info corresponding to virtual columns
-        List<VirtualColumn> virtualCols = new ArrayList<>();
-        if (tableType == TableType.NATIVE) {
-          virtualCols = VirtualColumn.getRegistry(conf);
-          if (AcidUtils.isNonNativeAcidTable(tabMetaData)) {
-            virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
-          }
-          if (tabMetaData.isNonNative() && tabMetaData.getStorageHandler().areSnapshotsSupported() &&
-              isBlank(tabMetaData.getMetaTable())) {
-            virtualCols.add(VirtualColumn.SNAPSHOT_ID);
-          }
-          for (VirtualColumn vc : virtualCols) {
-            colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
-                vc.getIsHidden());
-            rr.put(tableAlias, vc.getName().toLowerCase(), colInfo);
-            cInfoLst.add(colInfo);
-          }
-        }
+        List<VirtualColumn> virtualCols = tabMetaData.getVirtualColumns(conf);
+
+        virtualCols
+            .forEach(vc ->
+                rr.put(tableAlias, vc.getName().toLowerCase(),
+                    new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true, vc.getIsHidden())
+                )
+            );
 
         // 4. Build operator
         Map<String, String> tabPropsFromQuery = qb.getTabPropsForAlias(tableAlias);
