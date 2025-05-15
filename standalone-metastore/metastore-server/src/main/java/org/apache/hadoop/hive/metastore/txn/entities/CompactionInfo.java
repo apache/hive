@@ -207,7 +207,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     CompactionInfo info = (CompactionInfo) obj;
     return this.compareTo(info) == 0;
   }
-
   /**
    * loads object from a row in Select * from COMPACTION_QUEUE
    * @param rs ResultSet after call to rs.next()
@@ -242,6 +241,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.orderByClause = rs.getString(25);
     return fullCi;
   }
+
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
     pStmt.setLong(1, ci.id);
     pStmt.setString(2, ci.dbname);
@@ -339,7 +339,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setOrderByClause(ci.orderByClause);
     return cr;
   }
-
   public static OptionalCompactionInfoStruct compactionInfoToOptionalStruct(CompactionInfo ci) {
     CompactionInfoStruct cis = compactionInfoToStruct(ci);
     OptionalCompactionInfoStruct ocis = new OptionalCompactionInfoStruct();
@@ -348,6 +347,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     }
     return ocis;
   }
+
   public static CompactionInfo optionalCompactionInfoStructToInfo(OptionalCompactionInfoStruct ocis) {
     if (ocis.isSetCi()) {
       return compactionStructToInfo(ocis.getCi());
