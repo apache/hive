@@ -553,7 +553,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFIf.class);
 
     // Add user custom UDFs
-    addCustomUDFs(SessionState.get().getConf());
+    addCustomUDFs(SessionState.getSessionConf());
   }
 
   private class VectorTaskColumnInfo {
@@ -2418,14 +2418,16 @@ public class Vectorizer implements PhysicalPlanResolver {
   private void addCustomUDFs(HiveConf hiveConf) {
     String[] udfs =
         HiveConf.getTrimmedStringsVar(hiveConf, HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
-    if (udfs != null) {
-      for (String udf : udfs) {
-        try {
-          supportedGenericUDFs.add(Class.forName(udf));
-          LOG.info("Registered custom UDF: {}", udf);
-        } catch (ClassNotFoundException e) {
-          LOG.warn("Additional UDF not found: {}", udf);
-        }
+    if (udfs == null) {
+      return;
+    }
+
+    for (String udf : udfs) {
+      try {
+        supportedGenericUDFs.add(Class.forName(udf));
+        LOG.info("Registered custom UDF: {}", udf);
+      } catch (ClassNotFoundException e) {
+        LOG.warn("Failed to register custom UDF: {}", udf, e);
       }
     }
   }
