@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hive.common.util.JavaVersionUtils;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 import org.apache.hive.jdbc.HiveConnection;
 import org.slf4j.Logger;
@@ -125,7 +125,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     }
     String amJavaOpts = StringUtils.defaultString(appConf.controllerAMChildOpts());
     amJavaOpts += JavaVersionUtils.getAddOpensFlagsIfNeeded();
-    if (amJavaOpts != null && !amJavaOpts.isEmpty()) {
+    if (!amJavaOpts.isEmpty()) {
       conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, amJavaOpts);
     }
 
