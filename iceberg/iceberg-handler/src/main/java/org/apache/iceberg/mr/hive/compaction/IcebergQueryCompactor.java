@@ -22,6 +22,9 @@ package org.apache.iceberg.mr.hive.compaction;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -35,13 +38,21 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
+import org.apache.iceberg.PartitionField;
+import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.mr.hive.HiveIcebergFilterFactory;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.mr.hive.compaction.evaluator.CompactionEvaluator;
+import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,13 +69,33 @@ public class IcebergQueryCompactor extends QueryCompactor  {
 
     HiveConf conf = new HiveConf(context.getConf());
     CompactionInfo ci = context.getCompactionInfo();
-    String partSpec = ci.partName;
+    String compactionQuery = buildCompactionQuery(context, compactTableName, conf);
+
+    SessionState sessionState = setupQueryCompactionSession(conf, ci, tblProperties);
+    String compactionTarget = "table " + HiveUtils.unparseIdentifier(compactTableName) +
+        (ci.partName != null ? ", partition " + HiveUtils.unparseIdentifier(ci.partName) : "");
+
+    try {
+      DriverUtils.runOnDriver(conf, sessionState, compactionQuery);
+      LOG.info("Completed compaction for {}", compactionTarget);
+      return true;
+    } catch (HiveException e) {
+      LOG.error("Failed compacting {}", compactionTarget, e);
+      throw e;
+    } finally {
+      sessionState.setCompaction(false);
+    }
+  }
+
+  private String buildCompactionQuery(CompactorContext context, String compactTableName, HiveConf conf)
+      throws HiveException {
+    CompactionInfo ci = context.getCompactionInfo();
     org.apache.hadoop.hive.ql.metadata.Table table = Hive.get(conf).getTable(context.getTable().getDbName(),
         context.getTable().getTableName());
     Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
-    String compactionQuery;
     String orderBy = ci.orderByClause == null ? "" : ci.orderByClause;
     String fileSizePredicate = null;
+    String compactionQuery;
 
     if (ci.type == CompactionType.MINOR) {
       long fileSizeInBytesThreshold = CompactionEvaluator.getFragmentSizeBytes(table.getParameters());
@@ -76,7 +107,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     }
 
-    if (partSpec == null) {
+    if (ci.partName == null) {
       if (!icebergTable.spec().isPartitioned()) {
         HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.FULL_TABLE.name());
         compactionQuery = String.format("insert overwrite table %s select * from %<s %2$s %3$s", compactTableName,
@@ -96,31 +127,46 @@ public class IcebergQueryCompactor extends QueryCompactor  {
         throw new HiveException(ErrorMsg.COMPACTION_NO_PARTITION);
       }
     } else {
-      long partitionHash = IcebergTableUtil.getPartitionHash(icebergTable, partSpec);
+      HiveConf.setBoolVar(conf, ConfVars.HIVE_CONVERT_JOIN, false);
+      conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
-      conf.set(IcebergCompactionService.PARTITION_PATH, new Path(partSpec).toString());
+      conf.set(IcebergCompactionService.PARTITION_PATH, new Path(ci.partName).toString());
 
-      Map<String, String> partSpecMap = new LinkedHashMap<>();
-      Warehouse.makeSpecFromName(partSpecMap, new Path(partSpec), null);
+      int specId = IcebergTableUtil.getPartitionSpecId(icebergTable, ci.partName);
+      String partitionPredicate = buildPartitionPredicate(ci, icebergTable);
 
-      compactionQuery = String.format("insert overwrite table %1$s select * from %1$s where %2$s=%3$d " +
-              "and %4$s is not null %5$s %6$s", compactTableName, VirtualColumn.PARTITION_HASH.getName(), partitionHash,
-          VirtualColumn.FILE_PATH.getName(), fileSizePredicate == null ? "" : "and " + fileSizePredicate, orderBy);
+      compactionQuery = String.format("INSERT OVERWRITE TABLE %1$s SELECT * FROM %1$s WHERE %2$s IN " +
+          "(SELECT FILE_PATH FROM %1$s.FILES WHERE %3$s AND SPEC_ID = %7$d) AND %6$s = %7$d %4$s %5$s",
+      compactTableName, VirtualColumn.FILE_PATH.getName(), partitionPredicate,
+      fileSizePredicate == null ? "" : "AND " + fileSizePredicate, orderBy,
+      VirtualColumn.PARTITION_SPEC_ID.getName(), specId);
     }
+    return compactionQuery;
+  }
 
-    SessionState sessionState = setupQueryCompactionSession(conf, ci, tblProperties);
-    String compactionTarget = "table " + HiveUtils.unparseIdentifier(compactTableName) +
-        (partSpec != null ? ", partition " + HiveUtils.unparseIdentifier(partSpec) : "");
+  private String buildPartitionPredicate(CompactionInfo ci, Table icebergTable) {
+    Map<String, String> partSpecMap = new LinkedHashMap<>();
+    Warehouse.makeSpecFromName(partSpecMap, new Path(ci.partName), null);
 
-    try {
-      DriverUtils.runOnDriver(conf, sessionState, compactionQuery);
-      LOG.info("Completed compaction for {}", compactionTarget);
-      return true;
-    } catch (HiveException e) {
-      LOG.error("Failed compacting {}", compactionTarget, e);
-      throw e;
-    } finally {
-      sessionState.setCompaction(false);
-    }
+    Map<String, PartitionField> partitionFieldMap = IcebergTableUtil.getPartitionFields(icebergTable, false)
+        .stream().collect(Collectors.toMap(PartitionField::name, Function.identity()));
+
+    Types.StructType partitionType = Partitioning.partitionType(icebergTable);
+    return  partitionType.fields().stream().map(field -> {
+      String value = partSpecMap.get(field.name());
+      String literal = "NULL";
+
+      if (value != null && !value.equals("null")) {
+        String type = HiveSchemaUtil.convertToTypeString(field.type());
+        PartitionField partitionField = partitionFieldMap.get(field.name());
+        TransformSpec transformSpec = TransformSpec.fromString(partitionField.transform().toString(), field.name());
+        literal = TypeInfoUtils.convertStringToLiteralForSQL(
+            HiveIcebergFilterFactory.convertPartitionLiteral(value, transformSpec).toString(),
+            ((PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(type)).getPrimitiveCategory());
+      }
+
+      return String.format("`partition`.%s %s %s", HiveUtils.unparseIdentifier(field.name()),
+          Objects.equals(literal, "NULL") ? "IS" : "=", literal);
+    }).collect(Collectors.joining(" AND "));
   }
 }

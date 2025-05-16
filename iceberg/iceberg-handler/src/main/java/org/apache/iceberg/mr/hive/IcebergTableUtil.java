@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -520,25 +521,27 @@ public class IcebergTableUtil {
     }
   }
 
-  public static long getPartitionHash(Table icebergTable, String partitionPath) throws IOException {
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
 
-    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
-      return FluentIterable.from(fileScanTasks)
-          .transformAndConcat(task -> task.asDataTask().rows())
-          .transform(row -> {
-            StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-            PartitionSpec spec = icebergTable.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
-            PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
-                Partitioning.partitionType(icebergTable), spec.partitionType());
-            String path = spec.partitionToPath(partitionData);
-            return Maps.immutableEntry(path, data);
-          })
-          .filter(e -> e.getKey().equals(partitionPath))
-          .transform(e -> IcebergAcidUtil.computeHash(e.getValue()))
-          .get(0);
+  public static Integer getPartitionSpecId(Table icebergTable, String partitionPath) {
+    if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
+      throw new IllegalArgumentException("Table and partitionPath must not be null or empty.");
     }
+
+    // Extract field names from the path: "field1=val1/field2=val2" → [field1, field2]
+    List<String> fieldNames = Arrays.stream(partitionPath.split("/"))
+        .map(s -> s.split("=")[0])
+        .collect(Collectors.toList());
+
+    return icebergTable.specs().values().stream()
+        .filter(spec -> {
+          List<String> specFieldNames = spec.fields().stream()
+              .map(PartitionField::name)
+              .collect(Collectors.toList());
+          return specFieldNames.equals(fieldNames);
+        })
+        .map(PartitionSpec::specId)
+        .findFirst() // Supposed to be only one matching spec
+        .orElse(null);
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {

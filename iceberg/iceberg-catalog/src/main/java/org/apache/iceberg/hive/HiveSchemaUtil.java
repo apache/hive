@@ -281,7 +281,7 @@ public final class HiveSchemaUtil {
   }
 
 
-  private static String convertToTypeString(Type type) {
+  public static String convertToTypeString(Type type) {
     switch (type.typeId()) {
       case BOOLEAN:
         return "boolean";
