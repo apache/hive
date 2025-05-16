@@ -214,7 +214,10 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       columns: a int, c decimal(10,2)
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: SELECT `cmv_basetable`.`a`, `cmv_basetable_2`.`c`
   FROM `default`.`cmv_basetable` JOIN `default`.`cmv_basetable_2` ON (`cmv_basetable`.`a` = `cmv_basetable_2`.`a`)
   WHERE `cmv_basetable_2`.`c` > 10.0

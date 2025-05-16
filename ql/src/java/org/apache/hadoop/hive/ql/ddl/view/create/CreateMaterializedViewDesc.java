@@ -61,12 +61,6 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
   private String originalText;
   private String expandedText;
   private boolean rewriteEnabled;
-  private List<FieldSchema> partCols;
-  private String inputFormat;
-  private String outputFormat;
-  private String serde;
-  private String storageHandler;
-  private Map<String, String> serdeProps;
   private Set<TableName> tablesUsed;
   private List<String> sortColNames;
   private List<FieldSchema> sortCols;
@@ -81,21 +75,17 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
       List<String> distributeColNames, boolean ifNotExists, boolean rewriteEnabled,
       String inputFormat, String outputFormat, String location,
       String serde, String storageHandler, Map<String, String> serdeProps) {
-    super(partColNames, tblProps, location);
+    super(tblProps, inputFormat, outputFormat, location, serde, storageHandler, serdeProps);
     
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
+    this.partColNames = partColNames;
     this.sortColNames = sortColNames;
     this.distributeColNames = distributeColNames;
     this.ifNotExists = ifNotExists;
 
     this.rewriteEnabled = rewriteEnabled;
-    this.inputFormat = inputFormat;
-    this.outputFormat = outputFormat;
-    this.serde = serde;
-    this.storageHandler = storageHandler;
-    this.serdeProps = serdeProps;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -149,19 +139,6 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
 
   public void setSchema(List<FieldSchema> schema) {
     this.schema = schema;
-  }
-
-  @Explain(displayName = "partition columns")
-  public List<String> getPartColsString() {
-    return Utilities.getFieldSchemaString(partCols);
-  }
-
-  public List<FieldSchema> getPartCols() {
-    return partCols;
-  }
-
-  public void setPartCols(List<FieldSchema> partCols) {
-    this.partCols = partCols;
   }
 
   public boolean isOrganized() {
@@ -235,34 +212,6 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
 
   public void setTablesUsed(Set<TableName> tablesUsed) {
     this.tablesUsed = tablesUsed;
-  }
-
-  public String getInputFormat() {
-    return inputFormat;
-  }
-
-  public void setInputFormat(String inputFormat) {
-    this.inputFormat = inputFormat;
-  }
-
-  public String getOutputFormat() {
-    return outputFormat;
-  }
-
-  public void setOutputFormat(String outputFormat) {
-    this.outputFormat = outputFormat;
-  }
-
-  public String getSerde() {
-    return serde;
-  }
-
-  public String getStorageHandler() {
-    return storageHandler;
-  }
-
-  public Map<String, String> getSerdeProps() {
-    return serdeProps;
   }
 
   public Table toTable(HiveConf conf) throws HiveException {

@@ -126,8 +126,11 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       partition columns: key string
       columns: value string
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_sdp`
       name: default.partition_mv_sdp
       original text: SELECT value, key FROM src_txn where key > 200 and key < 250
