@@ -53,6 +53,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.tez.dag.api.OutputCommitterDescriptor;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
@@ -709,7 +710,6 @@ public class DagUtils {
    */
   private static String getContainerJavaOpts(Configuration conf) {
     String javaOpts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_JAVA_OPTS);
-
     String logLevel = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TEZ_LOG_LEVEL);
     List<String> logProps = Lists.newArrayList();
     TezUtils.addLog4jSystemProperties(logLevel, logProps);
@@ -729,6 +729,7 @@ public class DagUtils {
       }
       finalOpts = logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
     }
+    finalOpts += JavaVersionUtils.getAddOpensFlagsIfNeeded();
     LOG.debug("Tez container final opts: {}", finalOpts);
     return finalOpts;
   }
