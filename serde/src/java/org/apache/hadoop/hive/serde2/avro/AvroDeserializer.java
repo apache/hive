@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
 import org.apache.avro.generic.GenericData;
@@ -388,11 +389,23 @@ class AvroDeserializer {
           skipProlepticConversion = HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT.defaultBoolVal;
         }
       }
-      Timestamp timestamp = TimestampTZUtil.convertTimestampToZone(
-          Timestamp.ofEpochMilli((Long) datum), ZoneOffset.UTC, convertToTimeZone, legacyConversion);
+      LogicalType logicalType = fileSchema.getLogicalType();
+      Timestamp timestamp;
+      if (logicalType != null && logicalType.getName().equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
+        timestamp = Timestamp.ofEpochMicro((Long) datum);
+      } else {
+        timestamp = Timestamp.ofEpochMilli((Long) datum);
+      }
+      timestamp = TimestampTZUtil.convertTimestampToZone(
+              timestamp, ZoneOffset.UTC, convertToTimeZone, legacyConversion);
       if (!skipProlepticConversion) {
-        timestamp = Timestamp.ofEpochMilli(
-            CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));
+        if (logicalType != null && logicalType.getName().equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
+          timestamp = Timestamp.ofEpochMicro(
+                  CalendarUtils.convertTimeToProlepticMicros(timestamp.toEpochMicro()));
+        } else {
+          timestamp = Timestamp.ofEpochMilli(
+                  CalendarUtils.convertTimeToProleptic(timestamp.toEpochMilli()));
+        }
       }
       return timestamp;
     }
