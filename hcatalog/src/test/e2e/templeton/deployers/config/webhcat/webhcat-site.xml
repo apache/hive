@@ -95,7 +95,7 @@
 
     <property>
         <name>templeton.controller.mr.child.opts</name>
-        <value> -Xmx64m -Djava.net.preferIPv4Stack=true</value>
+        <value> -Xmx64m</value>
     </property>
 
     <property>
