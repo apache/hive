@@ -19,20 +19,27 @@
 
 package org.apache.iceberg.hive;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
@@ -42,6 +49,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.JsonUtil;
+import org.apache.parquet.Strings;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +139,57 @@ public class HMSTablePropertyHelper {
     tbl.setParameters(parameters);
   }
 
+  /**
+   * Create {@link PartitionSpec} based on the partition information stored in
+   * {@link TransformSpec}.
+   * @param configuration a Hadoop configuration
+   * @param schema iceberg table schema
+   * @return iceberg partition spec, always non-null
+   */
+  public static PartitionSpec createPartitionSpec(Configuration configuration, Schema schema) {
+    List<TransformSpec> partitionTransformSpecList = SessionStateUtil
+        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+        .map(o -> (List<TransformSpec>) o)
+        .orElse(null);
+
+    if (partitionTransformSpecList == null) {
+      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
+      return null;
+    }
+    PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
+    partitionTransformSpecList.forEach(spec -> {
+      switch (spec.getTransformType()) {
+        case IDENTITY:
+          builder.identity(spec.getColumnName().toLowerCase());
+          break;
+        case YEAR:
+          builder.year(spec.getColumnName());
+          break;
+        case MONTH:
+          builder.month(spec.getColumnName());
+          break;
+        case DAY:
+          builder.day(spec.getColumnName());
+          break;
+        case HOUR:
+          builder.hour(spec.getColumnName());
+          break;
+        case TRUNCATE:
+          builder.truncate(spec.getColumnName(), spec.getTransformParam().get());
+          break;
+        case BUCKET:
+          builder.bucket(spec.getColumnName(), spec.getTransformParam().get());
+          break;
+      }
+    });
+    return builder.build();
+  }
+
+  public static SortOrder getSortOrder(Properties props, Schema schema) {
+    String sortOrderJsonString = props.getProperty(TableProperties.DEFAULT_SORT_ORDER);
+    return Strings.isNullOrEmpty(sortOrderJsonString) ? SortOrder.unsorted() : SortOrderParser.fromJson(schema,
+        sortOrderJsonString);
+  }
   private static void setCommonParameters(
       String newMetadataLocation,
       String uuid,
@@ -143,8 +202,9 @@ public class HMSTablePropertyHelper {
     if (uuid != null) {
       parameters.put(TableProperties.UUID, uuid);
     }
-
-    obsoleteProps.forEach(parameters::remove);
+    if (obsoleteProps != null) {
+      obsoleteProps.forEach(parameters::remove);
+    }
 
     parameters.put(BaseMetastoreTableOperations.TABLE_TYPE_PROP, tableType);
     parameters.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, newMetadataLocation);

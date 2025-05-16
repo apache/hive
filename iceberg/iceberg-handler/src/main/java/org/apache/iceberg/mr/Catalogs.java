@@ -37,6 +37,7 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -144,7 +145,7 @@ public final class Catalogs {
     Map<String, String> map = filterIcebergTableProperties(props);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
-    SortOrder sortOrder = getSortOrder(props, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.(props, schema);
     if (catalog.isPresent()) {
       String name = props.getProperty(NAME);
       Preconditions.checkNotNull(name, "Table identifier not set");
@@ -155,13 +156,7 @@ public final class Catalogs {
     Preconditions.checkNotNull(location, "Table location not set");
     return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
   }
-
-  private static SortOrder getSortOrder(Properties props, Schema schema) {
-    String sortOrderJsonString = props.getProperty(TableProperties.DEFAULT_SORT_ORDER);
-    return Strings.isNullOrEmpty(sortOrderJsonString) ?
-        SortOrder.unsorted() : SortOrderParser.fromJson(schema, sortOrderJsonString);
-  }
-
+  
   /**
    * Drops an Iceberg table using the catalog specified by the configuration.
    * <p>
@@ -227,7 +222,7 @@ public final class Catalogs {
       return catalog.get().registerTable(TableIdentifier.parse(name), metadataLocation);
     }
     Preconditions.checkNotNull(location, "Table location not set");
-    SortOrder sortOrder = getSortOrder(props, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.(props, schema);
     return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
   }
 
