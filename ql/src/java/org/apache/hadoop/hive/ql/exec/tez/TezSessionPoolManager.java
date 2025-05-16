@@ -89,6 +89,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   private TriggerValidatorRunnable triggerValidatorRunnable;
   private YarnQueueHelper yarnQueueChecker;
 
+  private TezSessionPoolManagerMetrics metrics = null;
+
   /** Note: this is not thread-safe. */
   public static TezSessionPoolManager getInstance() {
     TezSessionPoolManager local = instance;
@@ -100,6 +102,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   }
 
   protected TezSessionPoolManager() {
+    metrics = new TezSessionPoolManagerMetrics(this);
   }
 
   public void startPool(HiveConf conf, final WMFullResourcePlan resourcePlan) throws Exception {
@@ -118,6 +121,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       LOG.info("Updated tez session pool manager with triggers {} from active resource plan: {}",
           appliedTriggers, resourcePlan.getPlan().getName());
     }
+    metrics.start(conf);
   }
 
   public void setupPool(HiveConf conf) throws Exception {
@@ -382,6 +386,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       stopTriggerValidator();
     }
 
+    metrics.stop();
     instance = null;
   }
 
@@ -536,7 +541,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   private void updateSessions() {
     if (sessionTriggerProvider != null) {
-      sessionTriggerProvider.setSessions(new LinkedList<>(openSessions));
+      sessionTriggerProvider.setSessions(getSessions());
     }
   }
 
@@ -587,5 +592,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       }
     }
     return counterNames;
+  }
+
+  public List<TezSessionState> getSessions() {
+    return new LinkedList<>(openSessions);
   }
 }
