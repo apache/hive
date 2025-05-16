@@ -21,6 +21,8 @@
  */
 package org.apache.hadoop.hive.metastore.model;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import java.util.List;
 
 /**
@@ -29,23 +31,32 @@ import java.util.List;
  * A wrapper around a list of columns.
  */
 public class MColumnDescriptor {
-  private List<MFieldSchema> cols;
+  private List<MColumn> columns;
+  private long id;
 
   public MColumnDescriptor() {}
 
-  /**
-   *
-   * @param cols
-   */
   public MColumnDescriptor(List<MFieldSchema> cols) {
-    this.cols = cols;
+    columns = cols.stream().map(schema ->
+        new MColumn(schema.getName(), schema.getType(), schema.getComment()))
+            .collect(Collectors.toList());
+  }
+
+  public List<MColumn> getFields() {
+    return columns;
   }
 
   public List<MFieldSchema> getCols() {
-    return cols;
+    List<MFieldSchema> schemas = new ArrayList<>();
+    if (getFields() != null) {
+      schemas = getFields().stream().map(column ->
+          new MFieldSchema(column.getName(), column.getType(), column.getComment()))
+              .collect(Collectors.toList());
+    }
+    return schemas;
   }
 
-  public void setCols(List<MFieldSchema> cols) {
-    this.cols = cols;
+  public long getId() {
+    return id;
   }
 }
