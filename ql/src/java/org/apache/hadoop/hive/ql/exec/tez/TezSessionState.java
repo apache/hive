@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.DAGStatusObserver;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -105,7 +104,7 @@ import com.google.common.cache.CacheBuilder;
  * Holds session state related to Tez
  */
 @JsonSerialize
-public class TezSessionState implements DAGStatusObserver {
+public class TezSessionState {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
@@ -1042,8 +1041,11 @@ public class TezSessionState implements DAGStatusObserver {
     return metrics;
   }
 
-  @Override
-  public void update(DAGStatus dagStatus) {
+  /**
+   * TezSessionState receives periodic updates from the current DAG's status.
+   * @param dagStatus status of the current DAG
+   */
+  public void updateDagStatus(DAGStatus dagStatus) {
     this.dagStatus = dagStatus;
   }
 }

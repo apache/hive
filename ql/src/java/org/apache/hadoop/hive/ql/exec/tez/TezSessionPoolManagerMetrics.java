@@ -106,9 +106,9 @@ public class TezSessionPoolManagerMetrics {
       return this;
     }
     this.mainExecutor = Executors.newSingleThreadScheduledExecutor(
-        new ThreadFactoryBuilder().setNameFormat("TezSessionPoolManagerMetrics worker thread").build());
-    int collectIntervalSeconds = HiveConf.getIntVar(conf,
-        HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_METRICS_COLLECTION_INTERVAL_SECONDS);
+        new ThreadFactoryBuilder().setNameFormat("TezSessionPoolManagerMetrics worker thread").setDaemon(true).build());
+    long collectIntervalSeconds = HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_METRICS_COLLECTION_INTERVAL, TimeUnit.SECONDS);
     mainExecutor.scheduleAtFixedRate(this::collectMetrics, 0, collectIntervalSeconds, TimeUnit.SECONDS);
     LOG.info("Starting TezSessionPoolManagerMetrics, collection interval: {}s", collectIntervalSeconds);
 
@@ -123,8 +123,9 @@ public class TezSessionPoolManagerMetrics {
   }
 
   public void stop() {
-    if (this.mainExecutor != null) {
-      mainExecutor.shutdownNow();
+    if (mainExecutor != null) {
+      mainExecutor.shutdown();
+      mainExecutor = null;
     }
   }
 
@@ -144,7 +145,7 @@ public class TezSessionPoolManagerMetrics {
 
     // run on maximum 10 threads
     ExecutorService collectorExecutor = Executors.newFixedThreadPool(Math.min(sessions.size(), 10),
-        new ThreadFactoryBuilder().setNameFormat("TezSessionPoolManagerMetrics collector thread - " + "#%d").build());
+        new ThreadFactoryBuilder().setNameFormat("TezSessionPoolManagerMetrics collector thread - #%d").build());
     long start = Time.monotonicNow();
 
     for (TezSessionState session : sessions) {

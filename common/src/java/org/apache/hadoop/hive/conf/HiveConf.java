@@ -4093,8 +4093,9 @@ public class HiveConf extends Configuration {
         "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
         "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
         "over Tez without the pool of sessions."),
-    HIVE_SERVER2_TEZ_SESSIONS_METRICS_COLLECTION_INTERVAL_SECONDS(
-        "hive.server2.tez.sessions.metrics.collection.interval.seconds", 10,
+    HIVE_SERVER2_TEZ_SESSIONS_METRICS_COLLECTION_INTERVAL(
+        "hive.server2.tez.sessions.metrics.collection.interval", "10s",
+        new TimeValidator(TimeUnit.SECONDS),
         "Interval for collecting metrics from Tez sessions."),
     HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK("hive.server2.tez.queue.access.check", false,
         "Whether to check user access to explicitly specified YARN queues. " +

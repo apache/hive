@@ -277,9 +277,8 @@ public class TezTask extends Task<TezWork> {
         runtimeContext.setApplicationId(appId);
 
         // finally monitor will print progress until the job is done
-        monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
+        monitor = new TezJobMonitor(session, work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
             perfLogger);
-        monitor.addObserver(session);
         runtimeContext.setMonitor(monitor);
         rc = monitor.monitorExecution();
 
