@@ -7462,6 +7462,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!isPartitioned || req.isTableLevel()) {
         ret = rawStore.deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colNames, engine);
         if (ret) {
+          Map<String, String> parameters = table.getParameters();
+          if (parameters == null) {
+            parameters = new HashMap<>();
+          }
+          parameters.put("COLUMN_STATS_ACCURATE", "false");
+          table.setParameters(parameters);
+          rawStore.alterTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, table, null);
           eventType = EventType.DELETE_TABLE_COLUMN_STAT;
           for (String colName :
               colNames == null ? table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList()) : colNames) {
@@ -7491,6 +7498,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               .collect(Collectors.toList()) : colNames) {
             for (String partName : partNames) {
               List<String> partVals = getPartValsFromName(table, partName);
+              Partition partition = rawStore.getPartition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, partVals);
+              Map<String, String> partParams = partition.getParameters();
               if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
                 MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
                     new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
