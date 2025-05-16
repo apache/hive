@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.iceberg.DataFile;
@@ -89,8 +90,24 @@ public class CompactionEvaluator extends CommonPartitionEvaluator {
         return isMinorNecessary();
       case MAJOR:
         return isMajorNecessary();
+      case SMART_OPTIMIZE:
+        return isMinorNecessary() || isMajorNecessary();
       default:
         return false;
+    }
+  }
+
+  public CompactionType determineCompactionType() {
+    if (ci.type == CompactionType.SMART_OPTIMIZE) {
+      if (isMajorNecessary()) {
+        return CompactionType.MAJOR;
+      } else if (isMinorNecessary()) {
+        return CompactionType.MINOR;
+      } else {
+        return null;
+      }
+    } else {
+      return ci.type;
     }
   }
 

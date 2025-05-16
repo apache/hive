@@ -149,6 +149,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return CompactionType.MINOR == type;
   }
 
+  public boolean isSmartOptimize() {
+    return CompactionType.SMART_OPTIMIZE == type;
+  }
+  
   public boolean isRebalanceCompaction() {
     return CompactionType.REBALANCE == type;
   }
@@ -329,6 +333,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setHasoldabort(ci.hasOldAbort);
     cr.setStart(ci.start);
     cr.setState(Character.toString(ci.state));
+    cr.setType(ci.type);
     cr.setWorkerId(ci.workerId);
     cr.setHighestWriteId(ci.highestWriteId);
     cr.setErrorMessage(ci.errorMessage);

@@ -117,7 +117,7 @@ optimizeTblRewriteDataSuffix
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
     : KW_REWRITE KW_DATA compactPool? whereClause? orderByClause?
-    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING compactPool? whereClause? orderByClause?)
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'SMART_OPTIMIZE'"] compactPool? whereClause? orderByClause?)
     ;
 
 alterStatementPartitionKeyType
