@@ -502,8 +502,8 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`$f0`, `t11`.`$f1`, `t11`.`$f2`, `t4`.`$f0` AS `$f00`, `t4`.`$f1` AS `$f10`, `t4`.`$f2` AS `$f20`, `t17`.`$f0` AS `$f01`, `t17`.`$f1` AS `$f11`, `t17`.`$f2` AS `$f21`, `t23`.`$f0` AS `$f02`, `t23`.`$f1` AS `$f12`, `t23`.`$f2` AS `$f22`
-FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`"*"`) / COUNT(`t0`.`"*"`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
-FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `*`
+FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`b`) / COUNT(`t0`.`b`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
+FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
 WHERE `value` > 1000001 AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
@@ -518,16 +518,16 @@ INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
 GROUP BY `t6`.`key`) AS `t11` ON `t4`.`$f0` = `t11`.`$f0`
-INNER JOIN (SELECT `t13`.`key` AS `$f0`, SUM(`t13`.`"*"`) / COUNT(`t13`.`"*"`) AS `$f1`, SUM(`t15`.`value`) AS `$f2`
-FROM (SELECT `key`, 3 * CAST(`value` AS DOUBLE) AS `*`
+INNER JOIN (SELECT `t13`.`key` AS `$f0`, SUM(`t13`.`b`) / COUNT(`t13`.`b`) AS `$f1`, SUM(`t15`.`value`) AS `$f2`
+FROM (SELECT `key`, 3 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
 WHERE `value` > 1000002 AND `key` IS NOT NULL) AS `t13`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `value` > 1000002 AND `key` IS NOT NULL) AS `t15` ON `t13`.`key` = `t15`.`key`
 GROUP BY `t13`.`key`) AS `t17` ON `t4`.`$f0` = `t17`.`$f0`
-INNER JOIN (SELECT `t19`.`key` AS `$f0`, SUM(`t19`.`"*"`) / COUNT(`t19`.`"*"`) AS `$f1`, SUM(`t21`.`value`) AS `$f2`
-FROM (SELECT `key`, 4 * CAST(`value` AS DOUBLE) AS `*`
+INNER JOIN (SELECT `t19`.`key` AS `$f0`, SUM(`t19`.`b`) / COUNT(`t19`.`b`) AS `$f1`, SUM(`t21`.`value`) AS `$f2`
+FROM (SELECT `key`, 4 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
 WHERE `value` > 1000003 AND `key` IS NOT NULL) AS `t19`
 INNER JOIN (SELECT `key`, `value`
@@ -1198,8 +1198,8 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t4`.`$f0`, `t11`.`$f1`, `t11`.`$f2`, `t4`.`$f0` AS `$f00`, `t4`.`$f1` AS `$f10`, `t4`.`$f2` AS `$f20`, `t17`.`$f0` AS `$f01`, `t17`.`$f1` AS `$f11`, `t17`.`$f2` AS `$f21`, `t23`.`$f0` AS `$f02`, `t23`.`$f1` AS `$f12`, `t23`.`$f2` AS `$f22`
-FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`"*"`) / COUNT(`t0`.`"*"`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
-FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `*`
+FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`b`) / COUNT(`t0`.`b`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
+FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
 WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
@@ -1214,16 +1214,16 @@ INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t8` ON `t6`.`key` = `t8`.`key`
 GROUP BY `t6`.`key`) AS `t11` ON `t4`.`$f0` = `t11`.`$f0`
-INNER JOIN (SELECT `t13`.`key` AS `$f0`, SUM(`t13`.`"*"`) / COUNT(`t13`.`"*"`) AS `$f1`, SUM(`t15`.`value`) AS `$f2`
-FROM (SELECT `key`, 3 * CAST(`value` AS DOUBLE) AS `*`
+INNER JOIN (SELECT `t13`.`key` AS `$f0`, SUM(`t13`.`b`) / COUNT(`t13`.`b`) AS `$f1`, SUM(`t15`.`value`) AS `$f2`
+FROM (SELECT `key`, 3 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
 WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t13`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `value` > 1000002 AND `key` IS NOT NULL) AS `t15` ON `t13`.`key` = `t15`.`key`
 GROUP BY `t13`.`key`) AS `t17` ON `t4`.`$f0` = `t17`.`$f0`
-INNER JOIN (SELECT `t19`.`key` AS `$f0`, SUM(`t19`.`"*"`) / COUNT(`t19`.`"*"`) AS `$f1`, SUM(`t21`.`value`) AS `$f2`
-FROM (SELECT `key`, 4 * CAST(`value` AS DOUBLE) AS `*`
+INNER JOIN (SELECT `t19`.`key` AS `$f0`, SUM(`t19`.`b`) / COUNT(`t19`.`b`) AS `$f1`, SUM(`t21`.`value`) AS `$f2`
+FROM (SELECT `key`, 4 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
 WHERE `value` > 1000000 AND `key` IS NOT NULL) AS `t19`
 INNER JOIN (SELECT `key`, `value`
