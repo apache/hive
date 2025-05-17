@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
@@ -75,6 +77,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
@@ -542,9 +545,17 @@ public class IcebergTableUtil {
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
-    TransformSpec spec = TransformSpec.fromString(transformName.toUpperCase(),
-        table.schema().findColumnName(sourceId));
-    return spec;
+    return TransformSpec.fromString(transformName.toUpperCase(), table.schema().findColumnName(sourceId));
   }
 
+  public static List<TransformSpec> getTransformSpecs(Table table, int partitionSpecId) {
+    final PartitionSpec icebergSpec = table.specs().get(partitionSpecId);
+    return icebergSpec.fields().stream()
+        .map(f -> getTransformSpec(table, f.transform().toString(), f.sourceId()))
+        .collect(Collectors.toList());
+  }
+
+  public static Set<Integer> getPartitionSpecIds(Snapshot snapshot, FileIO io) {
+    return snapshot.allManifests(io).parallelStream().map(ManifestFile::partitionSpecId).collect(Collectors.toSet());
+  }
 }
