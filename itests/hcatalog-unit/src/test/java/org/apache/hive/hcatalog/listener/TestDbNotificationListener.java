@@ -344,7 +344,6 @@ public class TestDbNotificationListener
     String dbDescription = "no description";
     Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
     db.setOwnerName("test_user");
-    db.setCreateTime(startTime);
     msClient.createDatabase(db);
 
     // Read notification from metastore
@@ -362,7 +361,7 @@ public class TestDbNotificationListener
     // Parse the message field
     CreateDatabaseMessage createDbMsg = md.getCreateDatabaseMessage(event.getMessage());
     assertEquals(dbName, createDbMsg.getDB());
-    assertEquals(db, createDbMsg.getDatabaseObject());
+    assertEqualsSansTime(db, createDbMsg.getDatabaseObject());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_DATABASE, firstEventId + 1);
@@ -1678,6 +1677,16 @@ public class TestDbNotificationListener
     testEventCounts(defaultDbName, firstEventId, firstEventId + 100, 10, 10);
     // Test toEventId greater than current eventId with some limit beyond available events
     testEventCounts(defaultDbName, firstEventId, firstEventId + 100, 50, 31);
+  }
+
+  /**
+   * Asserts that two database objects are equals ignoring the creation time. If not an {@link AssertionError} is thrown.
+   * The creation time of the database is overridden internally by the HMS server thus not predictable.
+   */
+  private static void assertEqualsSansTime(Database expected, Database actual) {
+    Database copy = expected.deepCopy();
+    copy.setCreateTime(actual.getCreateTime());
+    assertEquals(copy, actual);
   }
 
   private void verifyInsert(NotificationEvent event, String dbName, String tblName) throws Exception {
