@@ -177,7 +177,8 @@ public class HiveConnection implements java.sql.Connection {
   private SQLWarning warningChain = null;
   private TSessionHandle sessHandle = null;
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
-  private int loginTimeout = 0;
+  private int connectTimeout = 0;
+  private int socketTimeout = 0;
   private TProtocolVersion protocol;
   int fetchSize;
   int fetchThreads;
@@ -332,7 +333,7 @@ public class HiveConnection implements java.sql.Connection {
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
     sessConfMap = connParams.getSessionVars();
-    setupLoginTimeout();
+    setupTimeouts();
     if (isKerberosAuthMode()) {
       // Ensure UserGroupInformation includes any authorized Kerberos principals.
       LOG.debug("Configuring Kerberos mode");
@@ -807,9 +808,9 @@ public class HiveConnection implements java.sql.Connection {
 
     // set the specified timeout (socketTimeout jdbc param) for http connection as well
     RequestConfig config = RequestConfig.custom()
-            .setConnectTimeout(loginTimeout * 1000)
-            .setConnectionRequestTimeout(loginTimeout * 1000)
-            .setSocketTimeout(loginTimeout * 1000).build();
+            .setConnectTimeout(connectTimeout)
+            .setConnectionRequestTimeout(connectTimeout)
+            .setSocketTimeout(socketTimeout).build();
     httpClientBuilder.setDefaultRequestConfig(config);
 
     // Configure http client for SSL
@@ -933,7 +934,7 @@ public class HiveConnection implements java.sql.Connection {
       String sslTrustStorePassword = Utils.getPassword(sessConfMap, JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
 
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout, maxMessageSize);
+        transport = HiveAuthUtils.getSSLSocket(host, port, socketTimeout, connectTimeout, maxMessageSize);
       } else {
         String trustStoreType =
                 sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
@@ -945,12 +946,12 @@ public class HiveConnection implements java.sql.Connection {
         if (trustStoreAlgorithm == null) {
           trustStoreAlgorithm = "";
         }
-        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout, sslTrustStore, sslTrustStorePassword,
+        transport = HiveAuthUtils.getSSLSocket(host, port, socketTimeout, connectTimeout, sslTrustStore, sslTrustStorePassword,
             trustStoreType, trustStoreAlgorithm, maxMessageSize);
       }
     } else {
       // get non-SSL socket transport
-      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout, maxMessageSize);
+      transport = HiveAuthUtils.getSocketTransport(host, port, socketTimeout, connectTimeout, maxMessageSize);
     }
     return transport;
   }
@@ -1434,20 +1435,28 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   // use socketTimeout from jdbc connection url. Thrift timeout needs to be in millis
-  private void setupLoginTimeout() {
-    String socketTimeoutStr = sessConfMap.getOrDefault(JdbcConnectionParams.SOCKET_TIMEOUT, "0");
-    long timeOut = 0;
+  private void setupTimeouts() {
+    connectTimeout = getTimeoutVar(sessConfMap, JdbcConnectionParams.CONNECT_TIMEOUT);
+    socketTimeout = getTimeoutVar(sessConfMap, JdbcConnectionParams.SOCKET_TIMEOUT);
+  }
+
+  /**
+   * Returns the timeout value in sessConfMap.
+   *
+   * @param sessConfMap
+   * @param timeoutVar
+   * @return The integer value of timeout in milliseconds, between 0 and Integer.MAX_VALUE.
+   *         Returns 0 if parsing fails or the value is invalid.
+   */
+  private int getTimeoutVar(Map<String, String> sessConfMap, String timeoutVar) {
+    String timeoutStr = sessConfMap.getOrDefault(timeoutVar, "0");
     try {
-      timeOut = Long.parseLong(socketTimeoutStr);
+      long timeoutMs = Long.parseLong(timeoutStr) * 1000;
+      return (int) Math.max(0, Math.min(timeoutMs, Integer.MAX_VALUE));
     } catch (NumberFormatException e) {
-      LOG.info("Failed to parse socketTimeout of value " + socketTimeoutStr);
-    }
-    if (timeOut > Integer.MAX_VALUE) {
-      loginTimeout = Integer.MAX_VALUE;
-    } else if (timeOut < 0) {
-      loginTimeout = 0;
-    } else {
-      loginTimeout = (int) timeOut;
+      LOG.warn("Failed to parse {} of value '{}'. Using default timeout 0ms",
+              timeoutVar, timeoutStr, e);
+      return 0;
     }
   }
 
