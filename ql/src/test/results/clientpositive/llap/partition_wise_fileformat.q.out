@@ -28,9 +28,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:216
-maxFileSize:216
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
@@ -45,9 +45,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:216
-maxFileSize:216
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned_n1 where dt=100
@@ -150,9 +150,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:2
-totalFileSize:491
-maxFileSize:275
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
@@ -167,9 +167,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:216
-maxFileSize:216
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=101)
@@ -184,9 +184,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:275
-maxFileSize:275
-minFileSize:275
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned_n1 where dt=100
@@ -351,9 +351,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:3
-totalFileSize:1094
-maxFileSize:603
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=100)
@@ -368,9 +368,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:216
-maxFileSize:216
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=101)
@@ -385,9 +385,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:275
-maxFileSize:275
-minFileSize:275
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned_n1 partition(dt=102)
@@ -402,9 +402,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:603
-maxFileSize:603
-minFileSize:603
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned_n1 where dt=100

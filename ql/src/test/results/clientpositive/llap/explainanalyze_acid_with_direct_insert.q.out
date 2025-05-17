@@ -130,11 +130,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: insert into analyze_acid_table values (1),(2),(3),(4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -147,11 +147,11 @@ POSTHOOK: Lineage: analyze_acid_table.id SCRIPT []
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 2
 3
@@ -279,11 +279,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 2
 3
@@ -302,11 +302,11 @@ POSTHOOK: Lineage: analyze_acid_table.id SIMPLE []
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 22
 3
@@ -400,11 +400,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 22
 3
@@ -420,11 +420,11 @@ POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 22
 3
 4
@@ -586,11 +586,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_part_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_part_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: show partitions analyze_part_table
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@analyze_part_table
@@ -617,14 +617,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 3	2
@@ -772,14 +772,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 3	2
@@ -882,14 +882,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 3	2
@@ -925,14 +925,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 22	3
@@ -955,14 +955,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 22	3
 22	3
 22	3
@@ -1118,11 +1118,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: insert into analyze_acid_table values (1),(2),(3),(4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -1135,11 +1135,11 @@ POSTHOOK: Lineage: analyze_acid_table.id SCRIPT []
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 2
 3
@@ -1267,11 +1267,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 2
 3
@@ -1290,11 +1290,11 @@ POSTHOOK: Lineage: analyze_acid_table.id SIMPLE []
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 22
 3
@@ -1388,11 +1388,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1
 22
 3
@@ -1408,11 +1408,11 @@ POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: select * from analyze_acid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_acid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 22
 3
 4
@@ -1556,11 +1556,11 @@ STAGE PLANS:
 PREHOOK: query: select * from analyze_part_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_part_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: show partitions analyze_part_table
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@analyze_part_table
@@ -1587,14 +1587,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 3	2
@@ -1742,14 +1742,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 3	2
@@ -1852,14 +1852,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 3	2
@@ -1895,14 +1895,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	1
 22	3
@@ -1925,14 +1925,14 @@ PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Input: default@analyze_part_table@b=2
 PREHOOK: Input: default@analyze_part_table@b=3
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from analyze_part_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
 POSTHOOK: Input: default@analyze_part_table@b=2
 POSTHOOK: Input: default@analyze_part_table@b=3
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 22	3
 22	3
 22	3

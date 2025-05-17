@@ -54,9 +54,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:11819
-maxFileSize:5812
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended load_overwrite
@@ -98,9 +98,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:11819
-maxFileSize:5812
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended load_overwrite2
@@ -142,9 +142,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:11819
-maxFileSize:5812
-minFileSize:216
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: select count(*) from load_overwrite
