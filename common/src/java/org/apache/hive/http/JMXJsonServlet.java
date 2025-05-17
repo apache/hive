@@ -383,14 +383,11 @@ public class JMXJsonServlet extends HttpServlet {
           writeObject(jg, item);
         }
         jg.writeEndArray();
-      } else if(value instanceof Number) {
-        Number n = (Number)value;
+      } else if (value instanceof Number n) {
         jg.writeNumber(n.toString());
-      } else if(value instanceof Boolean) {
-        Boolean b = (Boolean)value;
+      } else if (value instanceof Boolean b) {
         jg.writeBoolean(b);
-      } else if(value instanceof CompositeData) {
-        CompositeData cds = (CompositeData)value;
+      } else if (value instanceof CompositeData cds) {
         CompositeType comp = cds.getCompositeType();
         Set<String> keys = comp.keySet();
         jg.writeStartObject();
@@ -398,8 +395,7 @@ public class JMXJsonServlet extends HttpServlet {
           writeAttribute(jg, key, cds.get(key));
         }
         jg.writeEndObject();
-      } else if(value instanceof TabularData) {
-        TabularData tds = (TabularData)value;
+      } else if (value instanceof TabularData tds) {
         jg.writeStartArray();
         for(Object entry : tds.values()) {
           writeObject(jg, entry);

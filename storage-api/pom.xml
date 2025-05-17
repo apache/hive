@@ -26,8 +26,8 @@
   <name>Hive Storage API</name>
   <inceptionYear>2008</inceptionYear>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <commons-logging.version>1.1.3</commons-logging.version>
     <guava.version>22.0</guava.version>
     <hadoop.version>3.4.1</hadoop.version>
@@ -200,6 +200,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven.surefire.plugin.version}</version>
         <configuration>
+          <argLine>${maven.test.jvm.args}</argLine>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx3g</argLine>
           <enableOutErrElements>false</enableOutErrElements>
