@@ -53,6 +53,8 @@ public interface AlterHandler extends Configurable {
    *          <i>newTable.tableName</i> if alter op is not a rename.
    * @param newTable
    *          new table object
+   * @param envContext
+   *          environment context variable
    * @throws InvalidOperationException
    *           thrown if the newTable object is invalid
    * @throws MetaException
@@ -82,6 +84,8 @@ public interface AlterHandler extends Configurable {
    *          new table object
    * @param handler
    *          HMSHandle object (required to log event notification)
+   * @param writeIdList write id list for the table
+   * @param envContext environment context variable
    * @throws InvalidOperationException
    *           thrown if the newTable object is invalid
    * @throws MetaException
@@ -101,6 +105,7 @@ public interface AlterHandler extends Configurable {
    * @param msdb
    *          object to get metadata
    * @param wh
+   *          physical warehouse class
    * @param dbname
    *          database of the partition being altered
    * @param name
@@ -110,10 +115,11 @@ public interface AlterHandler extends Configurable {
    * @param new_part
    *          new partition object
    * @return the altered partition
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_part object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
+   * @throws NoSuchObjectException thrown if there is no such object
    */
   @Deprecated
   Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
@@ -136,13 +142,16 @@ public interface AlterHandler extends Configurable {
    *          original values of the partition being altered
    * @param new_part
    *          new partition object
+   * @param environmentContext environment context variable
    * @param handler
    *          HMSHandle object (required to log event notification)
+   * @param validWriteIds valid write id list for the table
    * @return the altered partition
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_part object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
+   * @throws NoSuchObjectException thrown if there is no such object
    */
   Partition alterPartition(final RawStore msdb, Warehouse wh, final String catName,
                            final String dbname, final String name, final List<String> part_vals,
@@ -158,18 +167,19 @@ public interface AlterHandler extends Configurable {
    *
    * @param msdb
    *          object to get metadata
-   * @param wh
+   * @param wh physical warehouse class
    * @param dbname
    *          database of the partition being altered
    * @param name
    *          table of the partition being altered
    * @param new_parts
    *          new partition list
+   * @param environmentContext environment context variable
    * @return the altered partition list
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_parts object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
    */
   @Deprecated
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh,
@@ -179,23 +189,21 @@ public interface AlterHandler extends Configurable {
 
   /**
    * handles alter partitions
-   *
-   * @param msdb
-   *          object to get metadata
-   * @param wh
-   * @param dbname
-   *          database of the partition being altered
-   * @param name
-   *          table of the partition being altered
-   * @param new_parts
-   *          new partition list
-   * @param handler
-   *          HMSHandle object (required to log event notification)
+   * @param msdb object to get metadata
+   * @param wh physical warehouse class
+   * @param catName catalog name of the partition being altered
+   * @param dbname database of the partition being altered
+   * @param name table of the partition being altered
+   * @param new_parts new partition list
+   * @param environmentContext environment context variable
+   * @param writeIdList write id list for the table
+   * @param writeId writeId for the table
+   * @param handler HMSHandle object (required to log event notification)
    * @return the altered partition list
-   * @throws InvalidOperationException
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
+   * @throws InvalidOperationException thrown if the operation is invalid
+   * @throws InvalidObjectException thrown if the new_parts object is invalid
+   * @throws AlreadyExistsException thrown if the new_part object already exists
+   * @throws MetaException thrown if there is any other error
    */
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
     final String dbname, final String name, final List<Partition> new_parts,

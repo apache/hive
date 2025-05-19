@@ -1088,14 +1088,16 @@ public class Stmt {
       // Print the results
       else {
         int cols = query.columnCount();
-        while(query.next()) {
-          for(int i = 0; i < cols; i++) {
-            if(i > 1) {
-              console.print("\t");
+        if (cols > 0) {
+          while (query.next()) {
+            for (int i = 0; i < cols; i++) {
+              if (i > 1) {
+                console.print("\t");
+              }
+              console.print(query.column(i, String.class));
             }
-            console.print(query.column(i, String.class));
+            console.printLine("");
           }
-          console.printLine("");
         }
       }
     } catch(QueryException e) {

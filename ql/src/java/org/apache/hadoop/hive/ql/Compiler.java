@@ -223,7 +223,7 @@ public class Compiler {
       sem.startAnalysis();
       sem.analyze(tree, context);
     } finally {
-      sem.endAnalysis();
+      sem.endAnalysis(tree);
     }
 
     if (executeHooks) {
@@ -449,21 +449,30 @@ public class Compiler {
   }
 
   private void explainOutput(BaseSemanticAnalyzer sem, QueryPlan plan) throws IOException {
-    if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
-        driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+    HiveConf conf = driverContext.getConf();
+
+    boolean queryHistoryExplainPlanEnabled = conf.getBoolVar(
+        HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED) && conf.getBoolVar(
+        HiveConf.ConfVars.HIVE_QUERY_HISTORY_EXPLAIN_PLAN_ENABLED);
+
+    if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) ||
+        conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT) || queryHistoryExplainPlanEnabled) {
       String explainOutput = ExplainTask.getExplainOutput(sem, plan, tree, queryState,
-          context, driverContext.getConf());
+          context, conf);
       if (explainOutput != null) {
-        if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
-          if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_TO_CONSOLE)) {
+        if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+          if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_TO_CONSOLE)) {
             CONSOLE.printInfo("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
           } else {
             LOG.info("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
           }
         }
-        if (driverContext.getConf().isWebUiQueryInfoCacheEnabled() &&
-            driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
+        if (conf.isWebUiQueryInfoCacheEnabled() &&
+            conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
           driverContext.getQueryDisplay().setExplainPlan(explainOutput);
+        }
+        if (queryHistoryExplainPlanEnabled){
+          driverContext.setExplainPlan(explainOutput);
         }
       }
     }

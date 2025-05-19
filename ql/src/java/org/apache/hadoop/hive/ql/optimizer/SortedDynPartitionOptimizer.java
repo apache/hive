@@ -31,6 +31,8 @@ import java.util.Stack;
 
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -78,6 +80,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -283,9 +286,9 @@ public class SortedDynPartitionOptimizer extends Transform {
         List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
         bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
       }
-      List<Integer> sortNullOrder = new ArrayList<Integer>();
+      List<Integer> sortNullOrder = new ArrayList<>();
       for (int order : sortOrder) {
-        sortNullOrder.add(order == 1 ? 0 : 1); // for asc, nulls first; for desc, nulls last
+        sortNullOrder.add(NullOrdering.defaultNullOrder(order, parseCtx.getConf()).getCode());
       }
       LOG.debug("Got sort order");
       for (int i : sortPositions) {
@@ -635,34 +638,18 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
 
-      // if partition and bucket columns are sorted in ascending order, by default
-      // nulls come first; otherwise nulls come last
-      Integer nullOrder = order == 1 ? 0 : 1;
+      char nullOrder = NullOrdering.defaultNullOrder(order, parseCtx.getConf()).getSign();
       if (sortNullOrder != null && !sortNullOrder.isEmpty()) {
-        if (sortNullOrder.get(0) == 0) {
-          nullOrder = 0;
-        } else {
-          nullOrder = 1;
-        }
+        nullOrder = NullOrdering.fromCode(sortNullOrder.get(0)).getSign();
       }
 
-      for (Integer ignored : keyColsPosInVal) {
-        newSortNullOrder.add(nullOrder);
-      }
-
+      StringBuilder nullOrderStr = new StringBuilder(StringUtils.repeat(nullOrder, keyColsPosInVal.size()));
       if (customSortExprPresent) {
         for (int i = 0; i < customSortExprs.size() - customSortNullOrder.size(); i++) {
-          newSortNullOrder.add(nullOrder);
+          nullOrderStr.append(nullOrder);
         }
-        newSortNullOrder.addAll(customSortNullOrder);
-      }
-
-      String nullOrderStr = "";
-      for (Integer i : newSortNullOrder) {
-        if (i == 0) {
-          nullOrderStr += "a";
-        } else {
-          nullOrderStr += "z";
+        for (int i = 0; i < customSortNullOrder.size(); ++i) {
+          nullOrderStr.append(NullOrdering.fromCode(customSortNullOrder.get(i)).getSign());
         }
       }
 
@@ -709,7 +696,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         if (parentRSOpOrder != null && !parentRSOpOrder.isEmpty() && sortPositions.isEmpty()) {
           keyCols.addAll(parentRSOp.getConf().getKeyCols());
           orderStr += parentRSOpOrder;
-          nullOrderStr += parentRSOpNullOrder;
+          nullOrderStr.append(parentRSOpNullOrder);
         }
       }
 
@@ -739,7 +726,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // from Key and Value TableDesc
       List<FieldSchema> fields = PlanUtils.getFieldSchemasFromColumnList(keyCols,
           keyColNames, 0, "");
-      TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, orderStr, nullOrderStr);
+      TableDesc keyTable = PlanUtils.getReduceKeyTableDesc(fields, orderStr, nullOrderStr.toString());
       List<FieldSchema> valFields = PlanUtils.getFieldSchemasFromColumnList(valCols,
           valColNames, 0, "");
       TableDesc valueTable = PlanUtils.getReduceValueTableDesc(valFields);

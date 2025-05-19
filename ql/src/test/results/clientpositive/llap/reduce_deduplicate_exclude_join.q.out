@@ -39,13 +39,13 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: value (type: string)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -60,7 +60,7 @@ STAGE PLANS:
                        Inner Join 0 to 1
                   keys:
                     0 _col0 (type: string)
-                    1 key (type: string)
+                    1 _col0 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   input vertices:
                     1 Reducer 3
@@ -80,14 +80,14 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
-                outputColumnNames: key, value
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
-                  key expressions: key (type: string)
+                  key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: key (type: string)
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: value (type: string)
+                  value expressions: _col1 (type: string)
 
   Stage: Stage-0
     Fetch Operator

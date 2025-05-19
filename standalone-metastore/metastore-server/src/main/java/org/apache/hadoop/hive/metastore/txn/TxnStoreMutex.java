@@ -142,6 +142,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
     private final Semaphore derbySemaphore;
     private final String key;
     private final Long lastUpdateTime;
+    private boolean released = false;
   
     public LockHandleImpl(MultiDataSourceJdbcResource jdbcResource, TransactionContext context,  String key, 
                           Long lastUpdateTime, Semaphore derbySemaphore) {
@@ -166,6 +167,7 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
           LOG.debug("{} unlocked by {}", key, HOSTNAME);
         }
       } finally {
+        released = true;
         jdbcResource.unbindDataSource();
       }
     }
@@ -196,13 +198,16 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
           LOG.debug("{} unlocked by {}", key, HOSTNAME);
         }
       } finally {
+        released = true;
         jdbcResource.unbindDataSource();
       }
     }
   
     @Override
     public void close() {
-      releaseLocks();
+      if (!released) {
+        releaseLocks();
+      }
     }
   
   }

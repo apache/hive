@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.thrift.TException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -99,12 +103,16 @@ public class PartitionIterable implements Iterable<Partition> {
           batchCounter++;
         }
         try {
-          if (isAuthRequired) {
-            batchIter = db.getPartitionsAuthByNames(table, nameBatch, userName, groupNames).iterator();
+          if (getPartitionsRequest == null) {
+            if (isAuthRequired) {
+              batchIter = db.getPartitionsAuthByNames(table, nameBatch, userName, groupNames).iterator();
+            } else {
+              batchIter = db.getPartitionsByNames(table, nameBatch, getColStats).iterator();
+            }
           } else {
-            batchIter = db.getPartitionsByNames(table, nameBatch, getColStats).iterator();
+            batchIter = db.getPartitionsWithSpecsByNames(table, nameBatch, getPartitionsRequest).iterator();
           }
-        } catch (HiveException e) {
+        } catch (HiveException | TException e) {
           throw new RuntimeException(e);
         }
       }
@@ -137,6 +145,7 @@ public class PartitionIterable implements Iterable<Partition> {
   private boolean isAuthRequired = false;
   private String userName;
   private List<String> groupNames;
+  private GetPartitionsRequest getPartitionsRequest;
 
   /**
    * Dummy constructor, which simply acts as an iterator on an already-present
@@ -173,6 +182,40 @@ public class PartitionIterable implements Iterable<Partition> {
     this(db, table, partialPartitionSpec, batchSize, getColStats, false, null, null);
   }
 
+  public PartitionIterable(Hive db, GetPartitionsRequest getPartitionsRequest, int batchSize)
+      throws HiveException {
+    if (batchSize < 1) {
+      throw new HiveException("Invalid batch size for partition iterable. Please use a batch size greater than 0");
+    }
+    this.currType = Type.LAZY_FETCH_PARTITIONS;
+    this.db = db;
+    this.table = db.getTable(getPartitionsRequest.getDbName(), getPartitionsRequest.getTblName());
+    this.batchSize = batchSize;
+    this.getPartitionsRequest = getPartitionsRequest;
+    List<String> pVals = null;
+    if (getPartitionsRequest.isSetFilterSpec()) {
+      pVals = this.getPartitionsRequest.getFilterSpec().getFilters();
+    }
+    if (pVals == null) {
+      partitionNames = db.getPartitionNames(table, (short) -1);
+    } else {
+      PartitionFilterMode filterMode = getPartitionsRequest.getFilterSpec().getFilterMode();
+      switch (filterMode) {
+        case BY_NAMES:
+          partitionNames = pVals;
+          break;
+        case BY_VALUES:
+          partitionNames = db.getPartitionNamesByPartitionVals(table, pVals, (short) -1);
+          break;
+        case BY_EXPR:
+          // TO-DO: this can be dealt with in a seperate PR. The current changes does not have a particular use case for this.
+          throw new HiveException("getpartitionsbyexpr is currently unsupported for the getpartitionswithspecs API");
+        default:
+          throw new HiveException("No such partition filter mode: " + filterMode);
+      }
+    }
+  }
+
   private PartitionIterable(Hive db, Table table, Map<String, String> partialPartitionSpec,
        int batchSize, boolean getColStats, boolean isAuthRequired, String userName,
        List<String> groupNames) throws HiveException {
@@ -190,11 +233,9 @@ public class PartitionIterable implements Iterable<Partition> {
     this.groupNames = groupNames;
 
     if (this.partialPartitionSpec == null){
-      partitionNames = db.getPartitionNames(
-          table.getDbName(),table.getTableName(), (short) -1);
+      partitionNames = db.getPartitionNames(table, (short) -1);
     } else {
-      partitionNames = db.getPartitionNames(
-          table.getDbName(),table.getTableName(),partialPartitionSpec,(short)-1);
+      partitionNames = db.getPartitionNames(table, partialPartitionSpec, (short) -1);
     }
   }
 

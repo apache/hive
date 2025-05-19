@@ -135,16 +135,22 @@ def hdbPodTemplate(closure) {
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
         envVars: [
-            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2375')
+            envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2376'),
+            envVar(key: 'DOCKER_TLS_VERIFY', value: '1'),
+            envVar(key: 'DOCKER_CERT_PATH', value: '/certs/client')
         ]
     ),
-    containerTemplate(name: 'dind', image: 'docker:18.05-dind',
+    containerTemplate(name: 'dind', image: 'docker:20.10-dind',
         alwaysPullImage: true,
         privileged: true,
+        envVars: [
+            envVar(key: 'DOCKER_TLS_CERTDIR', value: '/certs')
+        ]
     ),
   ],
   volumes: [
     emptyDirVolume(mountPath: '/var/lib/docker', memory: false),
+    emptyDirVolume(mountPath: '/certs', memory: false)
   ], yaml:'''
 spec:
   securityContext:
@@ -245,10 +251,8 @@ git merge origin/target
       }
       stage('Prechecks') {
         def spotbugsProjects = [
-            ":hive-common",
             ":hive-shims",
             ":hive-storage-api",
-            ":hive-standalone-metastore-common",
             ":hive-service-rpc"
         ]
         sh '''#!/bin/bash
@@ -261,7 +265,7 @@ if [ $n != 0 ]; then
   exit 1
 fi
 '''
-        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
+        buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:check")
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")

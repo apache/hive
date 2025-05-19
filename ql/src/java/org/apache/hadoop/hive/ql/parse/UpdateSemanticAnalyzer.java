@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 import org.apache.hadoop.hive.ql.parse.rewrite.UpdateStatement;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +36,7 @@ public class UpdateSemanticAnalyzer extends RewriteSemanticAnalyzer<UpdateStatem
   public UpdateSemanticAnalyzer(QueryState queryState, RewriterFactory<UpdateStatement> rewriterFactory)
       throws SemanticException {
     super(queryState, rewriterFactory);
+    queryState.setSqlKind(SqlKind.UPDATE);
   }
 
   @Override

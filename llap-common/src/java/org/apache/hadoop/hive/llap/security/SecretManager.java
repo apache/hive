@@ -24,11 +24,9 @@ import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.curator.ensemble.fixed.FixedEnsembleProvider;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.RetryOneTime;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
@@ -201,6 +199,19 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_CONNECTION_STRING,
         HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING));
 
+    if (HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED)) {
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_ENABLED,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_KEYSTORE_LOCATION,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_KEYSTORE_PASSWORD,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_TRUSTSTORE_LOCATION,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION));
+      setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_SSL_TRUSTSTORE_PASSWORD,
+              HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD));
+    }
+    
     UserGroupInformation zkUgi = null;
     try {
       zkUgi = LlapUtil.loginWithKerberos(llapPrincipal, llapKeytab);
@@ -267,10 +278,23 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   private static void checkRootAcls(Configuration conf, String path, String user) {
     int stime = conf.getInt(ZK_DTSM_ZK_SESSION_TIMEOUT, ZK_DTSM_ZK_SESSION_TIMEOUT_DEFAULT),
         ctime = conf.getInt(ZK_DTSM_ZK_CONNECTION_TIMEOUT, ZK_DTSM_ZK_CONNECTION_TIMEOUT_DEFAULT);
-    CuratorFramework zkClient = CuratorFrameworkFactory.builder().namespace(null)
-        .retryPolicy(new RetryOneTime(10)).sessionTimeoutMs(stime).connectionTimeoutMs(ctime)
-        .ensembleProvider(new FixedEnsembleProvider(conf.get(ZK_DTSM_ZK_CONNECTION_STRING)))
-        .build();
+
+    CuratorFramework zkClient = null;
+    if (HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED)) {
+      zkClient = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
+              .maxRetries(1).baseSleepTime(10).sessionTimeout(stime).connectionTimeout(ctime)
+              .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_ENABLED))
+              .keyStoreLocation(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_LOCATION))
+              .keyStorePassword(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_KEYSTORE_PASSWORD))
+              .trustStoreLocation(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_LOCATION))
+              .trustStorePassword(HiveConf.getVar(conf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_SSL_TRUSTSTORE_PASSWORD))
+              .build().getNewZookeeperClient();
+    } else {
+      zkClient = ZooKeeperHiveHelper.builder().quorum(conf.get(ZK_DTSM_ZK_CONNECTION_STRING))
+              .maxRetries(1).baseSleepTime(10).sessionTimeout(stime).connectionTimeout(ctime)
+              .build().getNewZookeeperClient();
+    }
+
     // Hardcoded from a private field in ZKDelegationTokenSecretManager.
     // We need to check the path under what it sets for namespace, since the namespace is
     // created with world ACLs.

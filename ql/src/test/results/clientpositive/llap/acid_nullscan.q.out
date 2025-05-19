@@ -40,7 +40,7 @@ POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT SUM(`$f0`) AS `$f0`
 FROM (SELECT *
-FROM (VALUES  (NULL)) AS `t` (`$f0`)
+FROM (SELECT NULL AS `$f0`) AS `t`
 WHERE 1 = 0) AS `t`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -81,7 +81,7 @@ STAGE PLANS:
                           tag: -1
                           value expressions: _col0 (type: bigint)
                           auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               nullscan://null/_dummy_database._dummy_table/part_ [_dummy_table]

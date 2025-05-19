@@ -11,6 +11,8 @@
 -- Mask current-snapshot-timestamp-ms
 --! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
+--! qt:replace:/(MAJOR\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
+--! qt:replace:/(SMART_OPTIMIZE\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
 -- Mask removed file size
@@ -30,7 +32,7 @@ create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
 insert into ice_orc VALUES 
 ('fn1','ln1', 1, 10, 100),
@@ -42,7 +44,9 @@ alter table ice_orc set partition spec(dept_id);
 
 insert into ice_orc VALUES 
 ('fn5','ln5', 2, 20, 101),
-('fn6','ln6', 2, 20, 101),
+('fn6','ln6', 2, 20, 101);
+
+insert into ice_orc VALUES 
 ('fn7','ln7', 2, 20, 101),
 ('fn8','ln8', 2, 20, 101);
 
@@ -53,14 +57,14 @@ insert into ice_orc VALUES
 ('fn12','ln12', 3, 20, 101);
 
 select * from ice_orc where company_id = 100;
-select * from ice_orc where dept_id = 2;
-select * from ice_orc where dept_id = 3;
+select * from ice_orc where dept_id = 2 order by first_name;
+select * from ice_orc where dept_id = 3 order by first_name;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait order by first_name desc;
+explain alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc;
 explain optimize table ice_orc rewrite data order by first_name desc;
 
-alter table ice_orc COMPACT 'major' and wait order by first_name desc;
+alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc;
 
 select * from ice_orc where company_id = 100;
 select * from ice_orc where dept_id = 2;

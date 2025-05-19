@@ -37,6 +37,7 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSessionHook;
 import org.apache.hive.service.cli.session.HiveSessionHookContext;
 import org.apache.hive.service.cli.session.SessionUtils;
+import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -69,7 +70,9 @@ public class TestJdbcWithMiniKdc {
     confOverlay.put(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         SessionHookTest.class.getName());
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
-
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    confOverlay.put(ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
     miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
@@ -259,6 +262,28 @@ public class TestJdbcWithMiniKdc {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
     hs2Conn = DriverManager
         .getConnection(miniHS2.getJdbcURL("default", ";hive.server2.proxy.user=" + MiniHiveKdc.HIVE_TEST_USER_2));
+  }
+
+  @Test
+  public void testHs2ThriftMaxMessageSize() throws Exception {
+    HiveConf.setVar(miniHS2.getHiveConf(), HiveConf.ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE, "512");
+    assertEquals(512L,
+        HiveConf.getSizeVar(miniHS2.getHiveConf(), HiveConf.ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE));
+    Connection conn = DriverManager.getConnection(miniHS2.getJdbcURL());
+    Statement stmt = conn.createStatement();
+    try {
+      StringBuilder createTable = new StringBuilder("create external table tesths2thriftmaxmessagesize(");
+      for (int i = 0; i < 100; i++) {
+        createTable.append("abcdefghijklmnopqrstuvwxyz").append(i).append(" string, ");
+      }
+      createTable.append(" a int)");
+      Throwable t = assertThrows(SQLException.class, () -> stmt.execute(createTable.toString())).getCause();
+      assertTrue(t instanceof TTransportException);
+      assertEquals(TTransportException.END_OF_FILE, ((TTransportException)t).getType());
+      assertTrue(t.getMessage().contains("Socket is closed by peer"));
+    } finally {
+      miniHS2.getHiveConf().unset(ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE.varname);
+    }
   }
 
   /**

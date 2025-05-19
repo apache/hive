@@ -27,6 +27,7 @@ import org.apache.commons.collections4.IterableUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.functional.RemoteIterators;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -144,6 +145,48 @@ public class TestHiveIcebergExpireSnapshots extends HiveIcebergStorageHandlerWit
     table.refresh();
     Assert.assertEquals(2, IterableUtils.size(table.snapshots()));
 
+  }
+
+  @Test
+  public void testExpireSnapshotsWithFunction() throws IOException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "source");
+    Table table =
+        testTables.createTableWithVersions(shell, identifier.name(),
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 5);
+    Assert.assertEquals(5, table.history().size());
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS(DATE('1985-10-10'))");
+    table.refresh();
+    Assert.assertEquals(5, table.history().size());
+    shell.executeStatement(
+        "ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS(TIMESTAMP('1987-10-10 10:15:23.386'))");
+    table.refresh();
+    Assert.assertEquals(5, table.history().size());
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS(CURRENT_DATE + 5)");
+    table.refresh();
+    Assert.assertEquals(1, table.history().size());
+    testTables.appendIcebergTable(shell.getHiveConf(), table, fileFormat, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    table.refresh();
+    Assert.assertEquals(2, table.history().size());
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS(CURRENT_TIMESTAMP)");
+    table.refresh();
+    Assert.assertEquals(1, table.history().size());
+
+    // Test with between keyword
+    testTables.appendIcebergTable(shell.getHiveConf(), table, fileFormat, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    table.refresh();
+    Assert.assertEquals(2, table.history().size());
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS000000");
+    String toTime = simpleDateFormat.format(new Date(table.history().get(0).timestampMillis()));
+    shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS BETWEEN " +
+        "(CURRENT_DATE - 1) AND '" + toTime + "'");
+    table.refresh();
+    Assert.assertEquals(1, IterableUtils.size(table.snapshots()));
+    AssertHelpers.assertThrows("Invalid timestamp expression", IllegalArgumentException.class, () ->
+        shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE EXPIRE_SNAPSHOTS BETWEEN " +
+        "(RAND()) AND '" + toTime + "'"));
   }
 
   @Test

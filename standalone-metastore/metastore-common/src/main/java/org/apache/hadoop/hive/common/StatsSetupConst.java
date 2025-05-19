@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -116,11 +118,6 @@ public class StatsSetupConst {
    */
   public static final String NUM_ERASURE_CODED_FILES = "numFilesErasureCoded";
 
-  /**
-   * Temp dir for writing stats from tasks.
-   */
-  public static final String STATS_TMP_LOC = "hive.stats.tmp.loc";
-
   public static final String STATS_FILE_PREFIX = "tmpstats-";
   /**
    * List of all supported statistics
@@ -133,6 +130,11 @@ public class StatsSetupConst {
    * statistics that inherently require a scan of the data.
    */
   public static final List<String> STATS_REQUIRE_COMPUTE = ImmutableList.of(ROW_COUNT, RAW_DATA_SIZE);
+
+  /**
+   * Set of table properties which should have numeric values
+   */
+  public static final Set<String> STATS_NUMERIC = ImmutableSet.copyOf(SUPPORTED_STATS);
 
   /**
    * List of statistics that can be collected quickly without requiring a scan of the data.
@@ -291,7 +293,7 @@ public class StatsSetupConst {
   // note that set basic stats false will wipe out column stats too.
   public static void setBasicStatsState(Map<String, String> params, String setting) {
     if (setting.equals(FALSE)) {
-      if (params!=null && params.containsKey(COLUMN_STATS_ACCURATE)) {
+      if (params != null) {
         params.remove(COLUMN_STATS_ACCURATE);
       }
       return;
@@ -316,12 +318,8 @@ public class StatsSetupConst {
       return;
     }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-
-    for (String colName : colNames) {
-      if (!stats.columnStats.containsKey(colName)) {
-        stats.columnStats.put(colName, true);
-      }
-    }
+    colNames.forEach(colName -> 
+        stats.columnStats.putIfAbsent(colName.toLowerCase(), true));
 
     try {
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
@@ -339,22 +337,13 @@ public class StatsSetupConst {
       // No table/partition params, no statistics available
       return null;
     }
-
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
 
     // No stats available.
     if (stats == null) {
       return null;
     }
-
-    List<String> colNames = new ArrayList<String>();
-    for (Map.Entry<String, Boolean> entry : stats.columnStats.entrySet()) {
-      if (entry.getValue()) {
-        colNames.add(entry.getKey());
-      }
-    }
-
-    return colNames;
+    return ImmutableList.copyOf(stats.columnStats.keySet());
   }
 
   public static boolean canColumnStatsMerge(Map<String, String> params, String colName) {
@@ -370,7 +359,6 @@ public class StatsSetupConst {
     if (params == null || params.get(COLUMN_STATS_ACCURATE) == null) {
       return;
     }
-
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     stats.columnStats.clear();
 
@@ -385,11 +373,11 @@ public class StatsSetupConst {
     if (params == null) {
       return;
     }
-    try {
-      ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-      for (String string : colNames) {
-        stats.columnStats.remove(string);
-      }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    colNames.forEach(colName ->
+        stats.columnStats.remove(colName.toLowerCase()));
+
+    try {      
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
     } catch (JsonProcessingException e) {
       LOG.trace(e.getMessage());

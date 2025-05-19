@@ -146,6 +146,12 @@
 </property>
 
 <property>
+  <name>hive.lineage.statement.filter</name>
+  <value>ALL</value>
+  <description>Specify the types of statements for which column lineage information is generated</description>
+</property>
+
+<property>
   <name>hive.exec.pre.hooks</name>
   <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables</value>
   <description>Pre Execute Hook for Tests</description>
@@ -296,11 +302,6 @@
 <property>
   <name>hive.query.reexecution.stats.persist.scope</name>
   <value>query</value>
-</property>
-
-<property>
-  <name>hive.cbo.fallback.strategy</name>
-  <value>TEST</value>
 </property>
 
 <property>

@@ -21,6 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -42,20 +43,13 @@ import java.io.File;
  */
 public abstract class DbTxnManagerEndToEndTestBase {
 
-  private static final String TEST_DATA_DIR = new File(
-    System.getProperty("java.io.tmpdir") + File.separator +
-      DbTxnManagerEndToEndTestBase.class.getCanonicalName() + "-" + System.currentTimeMillis())
-    .getPath().replaceAll("\\\\", "/");
-
-  protected static HiveConf conf = new HiveConf(Driver.class);
+  protected static HiveConfForTest conf = new HiveConfForTest(DbTxnManagerEndToEndTestBase.class);
   protected HiveTxnManager txnMgr;
   protected Context ctx;
   protected Driver driver, driver2;
   protected TxnStore txnHandler;
 
   public DbTxnManagerEndToEndTestBase() {
-    //TODO: HIVE-28029: Make unit tests based on DbTxnManagerEndToEndTestBase run on Tez
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
@@ -104,7 +98,7 @@ public abstract class DbTxnManagerEndToEndTestBase {
       throw new RuntimeException("Could not create " + getWarehouseDir());
     }
   }
-  
+
   @After
   public void tearDown() throws Exception {
     driver.close();
@@ -114,10 +108,10 @@ public abstract class DbTxnManagerEndToEndTestBase {
     if (txnMgr != null) {
       txnMgr.closeTxnManager();
     }
-    FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
+    FileUtils.deleteDirectory(new File(conf.getTestDataDir()));
   }
 
   protected String getWarehouseDir() {
-    return TEST_DATA_DIR + "/warehouse";
+    return conf.getTestDataDir() + "/warehouse";
   }
 }

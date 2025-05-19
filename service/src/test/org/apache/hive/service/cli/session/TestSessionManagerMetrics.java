@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -207,13 +208,13 @@ public class TestSessionManagerMetrics {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.HS2_OPEN_SESSIONS, 0);
 
     SessionHandle handle =
-        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
             new HashMap<String, String>());
 
     json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.HS2_OPEN_SESSIONS, 1);
 
-    sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+    sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
         new HashMap<String, String>());
 
     json = metrics.dumpJson();
@@ -234,7 +235,7 @@ public class TestSessionManagerMetrics {
 
     long firstSessionOpen = System.currentTimeMillis();
     SessionHandle handle =
-        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
             new HashMap<String, String>());
 
     json = metrics.dumpJson();
@@ -242,7 +243,7 @@ public class TestSessionManagerMetrics {
         (double)(System.currentTimeMillis() - firstSessionOpen), 100d);
 
     long secondSessionOpen = System.currentTimeMillis();
-    sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+    sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
         new HashMap<String, String>());
 
     json = metrics.dumpJson();
@@ -268,7 +269,7 @@ public class TestSessionManagerMetrics {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, MetricsConstant.HS2_ACTIVE_SESSIONS, 0);
 
     SessionHandle handle =
-        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
             new HashMap<String, String>());
 
     final HiveSession session = sm.getSession(handle);
@@ -322,7 +323,7 @@ public class TestSessionManagerMetrics {
         MetricsConstant.HS2_AVG_ACTIVE_SESSION_TIME, "NaN");
 
     SessionHandle handle =
-        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
             new HashMap<String, String>());
 
     final HiveSession session = sm.getSession(handle);
@@ -376,7 +377,7 @@ public class TestSessionManagerMetrics {
     String json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.HS2_ABANDONED_SESSIONS, "");
 
-    sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+    sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
                     new HashMap<String, String>());
 
     // We're going to wait for the session to be abandoned.

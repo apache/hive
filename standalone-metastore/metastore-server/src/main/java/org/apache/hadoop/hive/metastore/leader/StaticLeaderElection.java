@@ -39,13 +39,14 @@ public class StaticLeaderElection implements LeaderElection<String> {
   private volatile boolean isLeader;
   private String name;
   private List<LeadershipStateListener> listeners = new ArrayList<>();
+  private boolean enforceMutex;
 
   @Override
   public void tryBeLeader(Configuration conf, String hostName)
       throws LeaderException {
     String leaderHost = MetastoreConf.getVar(conf,
         MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME);
-
+    this.enforceMutex = conf.getBoolean(HIVE_TXN_ENFORCE_AUX_MUTEX, true);
     // For the sake of backward compatibility, when the current HMS becomes the leader when no
     // leader is specified.
     if (leaderHost == null || leaderHost.isEmpty()) {
@@ -103,4 +104,8 @@ public class StaticLeaderElection implements LeaderElection<String> {
     }
   }
 
+  @Override
+  public boolean enforceMutex() {
+    return this.enforceMutex;
+  }
 }

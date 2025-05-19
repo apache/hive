@@ -1,7 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.cbo.fallback.strategy=NEVER;
 -- SORT_QUERY_RESULTS
 EXPLAIN SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3;
 SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3;

@@ -153,7 +153,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2605 Data size: 268315 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col3 (type: string), _bucket_number (type: string), _col2 (type: int)
-                      null sort order: aaa
+                      null sort order: zzz
                       sort order: +++
                       Map-reduce partition columns: _col3 (type: string)
                       Statistics: Num rows: 2605 Data size: 268315 Basic stats: COMPLETE Column stats: COMPLETE

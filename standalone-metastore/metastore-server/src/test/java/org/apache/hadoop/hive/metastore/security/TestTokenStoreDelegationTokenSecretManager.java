@@ -92,6 +92,52 @@ import java.util.concurrent.TimeUnit;
     }
   }
 
+  @Test public void testTokenRenewalWithDifferentUsers() throws IOException, InterruptedException {
+    DelegationTokenStore tokenStore = new MemoryTokenStore();
+    // Have a long renewal to ensure that Thread.sleep does not overshoot the initial validity
+    TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 1, MetastoreConf.getTimeVar(
+            conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_GC_INTERVAL, TimeUnit.SECONDS), MetastoreConf.getTimeVar(conf,
+            MetastoreConf.ConfVars.DELEGATION_TOKEN_MAX_LIFETIME, TimeUnit.SECONDS));
+    try {
+      mgr.startThreads();
+      String tokenStr1 =
+              mgr.getDelegationToken(UserGroupInformation.getCurrentUser().getShortUserName(),
+                      UserGroupInformation.getCurrentUser().getShortUserName());
+      String tokenStr2 =
+              mgr.getDelegationToken("user1", "user1");
+
+      Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr1));
+      Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr2));
+
+      DelegationTokenIdentifier id1 = getID(tokenStr1);
+      DelegationTokenIdentifier id2 = getID(tokenStr2);
+
+      long initialExpiry1 = tokenStore.getToken(id1).getRenewDate();
+      long initialExpiry2 = tokenStore.getToken(id2).getRenewDate();
+
+      Thread.sleep(3000);
+      Assert.assertTrue(System.currentTimeMillis() > id1.getIssueDate());
+      Assert.assertTrue(System.currentTimeMillis() > id2.getIssueDate());
+      // No change in renewal date without renewal
+      Assert.assertEquals(tokenStore.getToken(id1).getRenewDate(), initialExpiry1);
+      Assert.assertEquals(tokenStore.getToken(id2).getRenewDate(), initialExpiry2);
+
+      // Renewal Call
+      mgr.renewIfRequired(id1 ,tokenStore.getToken(id1));
+      mgr.renewIfRequired(id2 ,tokenStore.getToken(id2));
+
+      // Verify the token is valid
+      Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr1));
+      Assert.assertNotNull(mgr.verifyDelegationToken(tokenStr2));
+
+      // Renewal date has increased after renewal
+      Assert.assertTrue(tokenStore.getToken(id1).getRenewDate() > initialExpiry1);
+      Assert.assertTrue(tokenStore.getToken(id2).getRenewDate() > initialExpiry2);
+    } finally {
+      mgr.stopThreads();
+    }
+  }
+
   @Test public void testTokenRenewalAndRemoval() throws IOException, InterruptedException {
     DelegationTokenStore tokenStore = new MemoryTokenStore();
     TokenStoreDelegationTokenSecretManager mgr = createTokenMgr(tokenStore, 2, 1, 8);

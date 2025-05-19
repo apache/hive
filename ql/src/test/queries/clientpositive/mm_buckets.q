@@ -8,7 +8,6 @@ set tez.grouping.min-size=1;
 set tez.grouping.max-size=2;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.cbo.fallback.strategy=NEVER;
 
 
 -- Bucketing tests are slow and some tablesample ones don't work w/o MM

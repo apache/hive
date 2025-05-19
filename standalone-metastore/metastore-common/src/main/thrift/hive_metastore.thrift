@@ -219,6 +219,7 @@ enum CompactionType {
     MAJOR = 2,
     REBALANCE = 3,
     ABORT_TXN_CLEANUP = 4,
+    SMART_OPTIMIZE = 5,
 }
 
 enum GrantRevokeType {
@@ -418,7 +419,7 @@ struct GetCatalogsResponse {
 
 struct DropCatalogRequest {
   1: string name,
-  2: optional bool ifExists
+  2: optional bool ifExists = true
 }
 
 // namespace for tables
@@ -436,6 +437,15 @@ struct Database {
   11: optional DatabaseType type,
   12: optional string connector_name,
   13: optional string remote_dbname
+}
+
+struct GetDatabaseObjectsRequest {
+  1: optional string catalogName,
+  2: optional string pattern
+}
+
+struct GetDatabaseObjectsResponse {
+  1: required list<Database> databases
 }
 
 // This object holds the information needed by SerDes
@@ -1501,7 +1511,8 @@ struct NotificationEventRequest {
     3: optional list<string> eventTypeSkipList,
     4: optional string catName,
     5: optional string dbName,
-    6: optional list<string> tableNames
+    6: optional list<string> tableNames,
+    7: optional list<string> eventTypeList
 }
 
 struct NotificationEvent {
@@ -2510,6 +2521,16 @@ struct GetAllWriteEventInfoRequest {
   3: optional string tableName
 }
 
+struct DeleteColumnStatisticsRequest {
+  1: optional string cat_name,
+  2: required string db_name,
+  3: required string tbl_name,
+  4: optional list<string> part_names,
+  5: optional list<string> col_names,
+  6: optional string engine = "hive",
+  7: optional bool tableLevel = false
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2603,6 +2624,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
+  GetDatabaseObjectsResponse get_databases_req (1:GetDatabaseObjectsRequest request) throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
   void alter_database_req(1:AlterDatabaseRequest alterDbReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
@@ -3022,6 +3044,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   bool delete_table_column_statistics(1:string db_name, 2:string tbl_name, 3:string col_name, 4:string engine) throws
               (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
                4:InvalidInputException o4)
+  bool delete_column_statistics_req(1: DeleteColumnStatisticsRequest req) throws
+              (1:NoSuchObjectException o1, 2:MetaException o2, 3:InvalidObjectException o3,
+              4:InvalidInputException o4)
 
   //
   // user-defined functions

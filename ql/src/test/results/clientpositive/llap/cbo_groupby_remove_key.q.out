@@ -1,0 +1,112 @@
+PREHOOK: query: CREATE TABLE passenger
+(
+    id       INT    NOT NULL,
+    fname    STRING NOT NULL,
+    lname    STRING NOT NULL,
+    passport STRING NOT NULL,
+    UNIQUE (id) DISABLE RELY,
+    UNIQUE (passport) DISABLE RELY,
+    UNIQUE (fname, lname) DISABLE RELY
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@passenger
+POSTHOOK: query: CREATE TABLE passenger
+(
+    id       INT    NOT NULL,
+    fname    STRING NOT NULL,
+    lname    STRING NOT NULL,
+    passport STRING NOT NULL,
+    UNIQUE (id) DISABLE RELY,
+    UNIQUE (passport) DISABLE RELY,
+    UNIQUE (fname, lname) DISABLE RELY
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@passenger
+PREHOOK: query: EXPLAIN CBO SELECT id, COUNT(1) FROM passenger GROUP BY id, passport
+PREHOOK: type: QUERY
+PREHOOK: Input: default@passenger
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT id, COUNT(1) FROM passenger GROUP BY id, passport
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@passenger
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}], agg#0=[count()])
+  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+
+PREHOOK: query: EXPLAIN CBO SELECT passport, COUNT(1) FROM passenger GROUP BY id, passport
+PREHOOK: type: QUERY
+PREHOOK: Input: default@passenger
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT passport, COUNT(1) FROM passenger GROUP BY id, passport
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@passenger
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{3}], agg#0=[count()])
+  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+
+PREHOOK: query: EXPLAIN CBO SELECT id, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+PREHOOK: type: QUERY
+PREHOOK: Input: default@passenger
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT id, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@passenger
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}], agg#0=[count()])
+  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+
+PREHOOK: query: EXPLAIN CBO SELECT passport, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+PREHOOK: type: QUERY
+PREHOOK: Input: default@passenger
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT passport, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@passenger
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{3}], agg#0=[count()])
+  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+
+PREHOOK: query: EXPLAIN CBO SELECT fname, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+PREHOOK: type: QUERY
+PREHOOK: Input: default@passenger
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT fname, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@passenger
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(fname=[$1], _o__c1=[$2])
+  HiveAggregate(group=[{0, 1}], agg#0=[count()])
+    HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+
+PREHOOK: query: EXPLAIN CBO SELECT lname, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+PREHOOK: type: QUERY
+PREHOOK: Input: default@passenger
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT lname, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@passenger
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(lname=[$1], _o__c1=[$2])
+  HiveAggregate(group=[{0, 2}], agg#0=[count()])
+    HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+
+PREHOOK: query: EXPLAIN CBO SELECT fname, lname, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+PREHOOK: type: QUERY
+PREHOOK: Input: default@passenger
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT fname, lname, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@passenger
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{1, 2}], agg#0=[count()])
+  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+

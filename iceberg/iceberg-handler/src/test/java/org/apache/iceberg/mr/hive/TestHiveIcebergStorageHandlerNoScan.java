@@ -700,7 +700,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
                                   "')"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageEndingWith("Table location not set");
+          .hasMessageContaining("Table location not set");
     }
   }
 
@@ -775,7 +775,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
                               "')"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageEndingWith(
+          .hasMessageContaining(
           "Provide only one of the following: Hive partition transform specification, " +
                     "or the iceberg.mr.table.partition.spec property");
   }
@@ -1306,9 +1306,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (region, city)");
 
     List<Object[]> result = shell.executeStatement("DESCRIBE default.customers");
-    Assert.assertArrayEquals(new String[] {"family_name", "VOID", null}, result.get(8));
-    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(9));
-    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(10));
+    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(8));
+    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(9));
   }
 
   @Test

@@ -92,14 +92,14 @@
     <test.excludes.additional/>
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4 -Duser.country=US</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
-    <maven.shade.plugin.version>3.5.0</maven.shade.plugin.version>
-    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
+    <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
     <!-- Library Dependency Versions -->
@@ -108,13 +108,11 @@
     <antlr.version>3.5.2</antlr.version>
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
     <antlr4.version>4.9.3</antlr4.version>
-    <apache-directory-server.version>1.5.7</apache-directory-server.version>
-    <!-- Include arrow for LlapOutputFormatService -->
-    <arrow.version>12.0.0</arrow.version>
-    <avatica.version>1.12.0</avatica.version>
+    <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
+    <avatica.version>1.23.0</avatica.version>
     <avro.version>1.11.4</avro.version>
     <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
-    <calcite.version>1.25.0</calcite.version>
+    <calcite.version>1.33.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
@@ -126,7 +124,7 @@
     <commons-compress.version>1.26.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.12.0</commons-io.version>
+    <commons-io.version>2.16.1</commons-io.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
@@ -140,7 +138,7 @@
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
-    <hadoop.version>3.3.6</hadoop.version>
+    <hadoop.version>3.4.1</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
@@ -151,6 +149,7 @@
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
+    <immutables.version>2.9.2</immutables.version>
     <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.16.1</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
@@ -158,27 +157,28 @@
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
-    <jetty.version>9.4.45.v20220203</jetty.version>
+    <jetty.version>9.4.57.v20241219</jetty.version>
     <jersey.version>1.19.4</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
-    <joda.version>2.9.9</joda.version>
+    <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
+    <jts.version>1.19.0</jts.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.10.0</junit.jupiter.version>
-    <junit.vintage.version>5.6.3</junit.vintage.version>
+    <junit.jupiter.version>5.11.2</junit.jupiter.version>
+    <junit.vintage.version>5.11.2</junit.vintage.version>
     <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
-    <kudu.version>1.12.0</kudu.version>
+    <kudu.version>1.17.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
-    <log4j2.version>2.18.0</log4j2.version>
+    <log4j2.version>2.24.3</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
-    <mysql.version>8.0.31</mysql.version>
+    <mysql.version>8.2.0</mysql.version>
     <postgres.version>42.7.3</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
@@ -187,15 +187,15 @@
     <mockito-core.version>3.4.4</mockito-core.version>
     <mockito-inline.version>4.11.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.77.Final</netty.version>
+    <netty.version>4.1.116.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
-    <pac4j-saml.version>4.5.5</pac4j-saml.version>
+    <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.13.1</parquet.version>
+    <parquet.version>1.15.1</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
-    <protobuf.version>3.24.4</protobuf.version>
+    <protobuf.version>3.25.5</protobuf.version>
     <rat.version>0.16.1</rat.version>
     <roaringbit.version>1.2.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
@@ -213,7 +213,7 @@
     <zookeeper.version>3.8.4</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
-    <curator.version>5.2.0</curator.version>
+    <curator.version>5.7.1</curator.version>
     <jsr305.version>3.0.0</jsr305.version>
     <gson.version>2.9.0</gson.version>
     <jjwt.version>0.10.5</jjwt.version>
@@ -222,14 +222,14 @@
     <json-path.version>2.9.0</json-path.version>
     <janino.version>3.1.12</janino.version>
     <datasketches.version>2.0.0</datasketches.version>
-    <spotbugs.version>4.0.3</spotbugs.version>
+    <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
-    <aws-java-sdk.version>1.12.499</aws-java-sdk.version>
+    <aws-java-sdk.version>1.12.720</aws-java-sdk.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
-    <spring.ldap.version>2.4.1</spring.ldap.version>
+    <spring.ldap.version>2.4.4</spring.ldap.version>
     <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <repositories>
@@ -294,14 +294,9 @@
         </exclusions>
       </dependency>
       <dependency>
-        <groupId>com.esotericsoftware</groupId>
-        <artifactId>kryo</artifactId>
+        <groupId>com.esotericsoftware.kryo</groupId>
+        <artifactId>kryo5</artifactId>
         <version>${kryo.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.esotericsoftware</groupId>
-        <artifactId>reflectasm</artifactId>
-        <version>${reflectasm.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -349,6 +344,18 @@
         <groupId>org.apache.parquet</groupId>
         <artifactId>parquet-hadoop-bundle</artifactId>
         <version>${parquet.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.immutables</groupId>
+        <artifactId>value-annotations</artifactId>
+        <version>${immutables.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.locationtech.jts</groupId>
+        <artifactId>jts-core</artifactId>
+        <version>${jts.version}</version>
+        <scope>runtime</scope>
       </dependency>
       <dependency>
         <groupId>com.sun.jersey</groupId>
@@ -784,7 +791,7 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-runner</artifactId>
+        <artifactId>apache-jsp</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>
@@ -879,6 +886,10 @@
           <exclusion>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
           </exclusion>
           <exclusion>
             <!-- The dependency included in pac4j is old and has known CVEs.
@@ -1015,7 +1026,7 @@
         <exclusions>
           <exclusion>
             <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>netty-all</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -1753,6 +1764,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <enableOutErrElements>false</enableOutErrElements>
           <excludes>
             <exclude>**/TestSerDe.java</exclude>
             <exclude>**/TestHiveMetaStore.java</exclude>
@@ -1764,8 +1776,8 @@
           </excludes>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
-          <failIfNoTests>false</failIfNoTests>
-          <argLine>${maven.test.jvm.args}</argLine>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+          <argLine>${maven.test.jvm.args} -Xshare:off</argLine>
           <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
@@ -1797,7 +1809,6 @@
             <log4j.configurationFile>${test.log4j.scheme}${test.conf.dir}/hive-log4j2.properties</log4j.configurationFile>
             <hive.test.console.log.level>${test.console.log.level}</hive.test.console.log.level>
             <hive.cluster.id>hive-test-cluster-id-cli</hive.cluster.id>
-            <log4j.debug>true</log4j.debug>
             <!-- don't dirty up /tmp -->
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
             <!-- Hadoop's minidfs class uses this -->
@@ -2030,11 +2041,11 @@
       <id>spotbugs</id>
       <build>
         <plugins>
-          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.0.0:spotbugs -->
+          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.8.6.6:spotbugs -->
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -2057,7 +2068,7 @@
           <plugin>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.0.0</version>
+            <version>4.8.6.6</version>
             <configuration>
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
@@ -2118,14 +2129,6 @@
       <modules>
         <module>itests</module>
       </modules>
-    </profile>
-    <profile>
-      <id>customhbase</id>
-      <activation>
-        <property>
-          <name>hbase.version</name>
-        </property>
-      </activation>
     </profile>
     <profile>
       <id>dist</id>

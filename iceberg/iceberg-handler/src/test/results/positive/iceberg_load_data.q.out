@@ -24,7 +24,7 @@ POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -40,7 +40,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","_col2","_col2"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2
                     Select Operator [SEL_12] (rows=77 width=187)
                       Output:["_col0","_col1","_col2"]
@@ -48,14 +48,15 @@ Stage-3
                         default@ice_parquet__temp_table_for_load_data__,ice_parquet__temp_table_for_load_data__,Tbl:COMPLETE,Col:NONE,Output:["strcol","intcol","pcol"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1 width=752)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_19] (rows=1 width=752)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1 width=752)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(strcol))","avg(COALESCE(length(strcol),0))","count(1)","count(strcol)","compute_bit_vector_hll(strcol)","min(intcol)","max(intcol)","count(intcol)","compute_bit_vector_hll(intcol)","min(pcol)","max(pcol)","count(pcol)","compute_bit_vector_hll(pcol)"]
+                Select Operator [SEL_20] (rows=38 width=187)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_19] (rows=38 width=187)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=77 width=187)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(length(strcol))","avg(COALESCE(length(strcol),0))","count(1)","count(strcol)","compute_bit_vector_hll(strcol)","min(intcol)","max(intcol)","count(intcol)","compute_bit_vector_hll(intcol)","min(pcol)","max(pcol)","count(pcol)","compute_bit_vector_hll(pcol)"],keys:pcol
                         Select Operator [SEL_14] (rows=77 width=187)
                           Output:["strcol","intcol","pcol"]
                            Please refer to the previous Select Operator [SEL_12]
@@ -78,7 +79,7 @@ POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -94,7 +95,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","_col2","_col2"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2
                     Select Operator [SEL_12] (rows=77/6 width=187)
                       Output:["_col0","_col1","_col2"]
@@ -102,14 +103,15 @@ Stage-3
                         default@ice_parquet__temp_table_for_load_data__,ice_parquet__temp_table_for_load_data__,Tbl:COMPLETE,Col:NONE,Output:["strcol","intcol","pcol"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1/1 width=752)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_19] (rows=1/1 width=752)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1/1 width=752)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(strcol))","avg(COALESCE(length(strcol),0))","count(1)","count(strcol)","compute_bit_vector_hll(strcol)","min(intcol)","max(intcol)","count(intcol)","compute_bit_vector_hll(intcol)","min(pcol)","max(pcol)","count(pcol)","compute_bit_vector_hll(pcol)"]
+                Select Operator [SEL_20] (rows=38/3 width=187)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_19] (rows=38/3 width=187)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=77/3 width=187)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(length(strcol))","avg(COALESCE(length(strcol),0))","count(1)","count(strcol)","compute_bit_vector_hll(strcol)","min(intcol)","max(intcol)","count(intcol)","compute_bit_vector_hll(intcol)","min(pcol)","max(pcol)","count(pcol)","compute_bit_vector_hll(pcol)"],keys:pcol
                         Select Operator [SEL_14] (rows=77/6 width=187)
                           Output:["strcol","intcol","pcol"]
                            Please refer to the previous Select Operator [SEL_12]

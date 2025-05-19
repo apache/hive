@@ -29,7 +29,7 @@ create table ice_orc (
     last_name string
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
 insert into ice_orc VALUES ('fn1','ln1');
 insert into ice_orc VALUES ('fn2','ln2');

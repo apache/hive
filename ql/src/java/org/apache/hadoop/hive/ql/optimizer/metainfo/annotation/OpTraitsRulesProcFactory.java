@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.ql.optimizer.metainfo.annotation;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.*;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map.Entry;
 
+import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -94,12 +98,9 @@ public class OpTraitsRulesProcFactory {
 
       ReduceSinkOperator rs = (ReduceSinkOperator)nd;
 
-      List<List<String>> listBucketCols = new ArrayList<List<String>>();
-      int numBuckets = -1;
       int numReduceSinks = 1;
       OpTraits parentOpTraits = rs.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
-        numBuckets = parentOpTraits.getNumBuckets();
         numReduceSinks += parentOpTraits.getNumReduceSinks();
       }
 
@@ -158,8 +159,53 @@ public class OpTraitsRulesProcFactory {
         }
       }
 
-      listBucketCols.add(bucketCols);
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets,
+      final List<List<String>> listBucketCols = new ArrayList<>();
+      final List<CustomBucketFunction> bucketFunctions = new ArrayList<>();
+      int numBuckets = -1;
+      if (parentOpTraits == null || !parentOpTraits.hasCustomBucketFunction()) {
+        // No CustomBucketFunctions
+        listBucketCols.add(bucketCols);
+        bucketFunctions.add(null);
+        if (parentOpTraits != null) {
+          numBuckets = parentOpTraits.getNumBuckets();
+        }
+      } else if (parentOpTraits.getCustomBucketFunctions().size() > 1) {
+        // We don't know how to merge multiple custom bucket functions. Reset bucket attributes
+        Preconditions.checkState(parentOpTraits.getBucketColNames().size() > 1);
+        listBucketCols.add(Collections.emptyList());
+        bucketFunctions.add(null);
+      } else {
+        Preconditions.checkState(parentOpTraits.getBucketColNames().size() == 1);
+        final Map<String, String> inputToOutput = rs.getColumnExprMap().entrySet().stream()
+            .filter(entry -> entry.getValue() instanceof ExprNodeColumnDesc)
+            .filter(entry -> rs.getConf().getKeyCols().stream().anyMatch(keyDesc -> keyDesc.isSame(entry.getValue())))
+            .collect(Collectors.toMap(
+                entry -> ((ExprNodeColumnDesc) entry.getValue()).getColumn(),
+                Entry::getKey,
+                (a, b) -> a)
+            );
+        final List<String> parentBucketColNames = parentOpTraits.getBucketColNames().get(0);
+        final boolean[] retainedColumns = new boolean[parentBucketColNames.size()];
+        final List<String> rsBucketColNames = new ArrayList<>();
+        for (int i = 0; i < parentBucketColNames.size(); i++) {
+          final String rsColumnName = inputToOutput.get(parentBucketColNames.get(i));
+          if (rsColumnName != null) {
+            retainedColumns[i] = true;
+            rsBucketColNames.add(rsColumnName);
+          }
+        }
+        final Optional<CustomBucketFunction> rsBucketFunction =
+            parentOpTraits.getCustomBucketFunctions().get(0).select(retainedColumns);
+        if (rsBucketFunction.isPresent()) {
+          listBucketCols.add(rsBucketColNames);
+          bucketFunctions.add(rsBucketFunction.get());
+        } else {
+          listBucketCols.add(Collections.emptyList());
+          bucketFunctions.add(null);
+        }
+      }
+
+      OpTraits opTraits = new OpTraits(listBucketCols, bucketFunctions, numBuckets,
           listBucketCols, numReduceSinks);
       rs.setOpTraits(opTraits);
       return null;
@@ -224,22 +270,31 @@ public class OpTraitsRulesProcFactory {
       } catch (HiveException e) {
         prunedPartList = null;
       }
-      boolean isBucketed = checkBucketedTable(table,
-          opTraitsCtx.getParseContext(), prunedPartList);
-      List<List<String>> bucketColsList = new ArrayList<List<String>>();
-      List<List<String>> sortedColsList = new ArrayList<List<String>>();
+
+      final List<List<String>> bucketColsList = new ArrayList<>();
+      final List<List<String>> sortedColsList = new ArrayList<>();
+      final List<CustomBucketFunction> bucketFunctions = new ArrayList<>();
       int numBuckets = -1;
-      if (isBucketed) {
+      if (table.getStorageHandler() != null
+          && table.getStorageHandler().supportsPartitionAwareOptimization(table)
+          && HiveConf.getVar(opTraitsCtx.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        final PartitionAwareOptimizationCtx ctx =
+            table.getStorageHandler().createPartitionAwareOptimizationContext(table);
+        bucketColsList.add(ctx.getBucketFunction().getSourceColumnNames());
+        bucketFunctions.add(ctx.getBucketFunction());
+      } else if (checkBucketedTable(table, opTraitsCtx.getParseContext(), prunedPartList)) {
         bucketColsList.add(table.getBucketCols());
         numBuckets = table.getNumBuckets();
-        List<String> sortCols = new ArrayList<String>();
+        List<String> sortCols = new ArrayList<>();
         for (Order colSortOrder : table.getSortCols()) {
           sortCols.add(colSortOrder.getCol());
         }
         sortedColsList.add(sortCols);
+        bucketFunctions.add(null);
       }
+
       // num reduce sinks hardcoded to 0 because TS has no parents
-      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets,
+      OpTraits opTraits = new OpTraits(bucketColsList, bucketFunctions, numBuckets,
           sortedColsList, 0);
       ts.setOpTraits(opTraits);
       return null;
@@ -271,7 +326,8 @@ public class OpTraitsRulesProcFactory {
         numReduceSinks = parentOpTraits.getNumReduceSinks();
       }
       listBucketCols.add(gbyKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols,
+      List<CustomBucketFunction> bucketFunctions = Collections.singletonList(null);
+      OpTraits opTraits = new OpTraits(listBucketCols, bucketFunctions, -1, listBucketCols,
           numReduceSinks);
       gbyOp.setOpTraits(opTraits);
       return null;
@@ -314,7 +370,8 @@ public class OpTraitsRulesProcFactory {
       }
 
       listBucketCols.add(partitionKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols,
+      final List<CustomBucketFunction> bucketFunctions = Collections.singletonList(null);
+      OpTraits opTraits = new OpTraits(listBucketCols, bucketFunctions, -1, listBucketCols,
           numReduceSinks);
       ptfOp.setOpTraits(opTraits);
       return null;
@@ -367,8 +424,8 @@ public class OpTraitsRulesProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       SelectOperator selOp = (SelectOperator) nd;
-      List<List<String>> parentBucketColNames =
-          selOp.getParentOperators().get(0).getOpTraits().getBucketColNames();
+      OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
+      List<List<String>> parentBucketColNames = parentOpTraits.getBucketColNames();
 
       List<List<String>> listBucketCols = null;
       List<List<String>> listSortCols = null;
@@ -376,25 +433,36 @@ public class OpTraitsRulesProcFactory {
         if (parentBucketColNames != null) {
           listBucketCols = getConvertedColNames(parentBucketColNames, selOp, false);
         }
-        List<List<String>> parentSortColNames =
-            selOp.getParentOperators().get(0).getOpTraits().getSortCols();
+        List<List<String>> parentSortColNames = parentOpTraits.getSortCols();
         if (parentSortColNames != null) {
           listSortCols = getConvertedColNames(parentSortColNames, selOp, true);
         }
       }
 
-      int numBuckets = -1;
-      int numReduceSinks = 0;
-      OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
-      if (parentOpTraits != null) {
-        // if bucket columns are empty, then numbuckets must be set to -1.
-        if (listBucketCols != null &&
-            !(listBucketCols.isEmpty() || listBucketCols.get(0).isEmpty())) {
-          numBuckets = parentOpTraits.getNumBuckets();
+      List<CustomBucketFunction> bucketFunctions = null;
+      if (listBucketCols != null) {
+        Preconditions.checkState(parentBucketColNames.size() == listBucketCols.size());
+        bucketFunctions = new ArrayList<>();
+        for (int i = 0; i < listBucketCols.size(); i++) {
+          if (listBucketCols.get(i).isEmpty()) {
+            bucketFunctions.add(null);
+          } else {
+            Preconditions.checkState(listBucketCols.get(i).size() == parentBucketColNames.get(i).size());
+            bucketFunctions.add(parentOpTraits.getCustomBucketFunctions().get(i));
+          }
         }
-        numReduceSinks = parentOpTraits.getNumReduceSinks();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols,
+
+      int numBuckets = -1;
+      if (CollectionUtils.isNotEmpty(listBucketCols)
+          && CollectionUtils.isNotEmpty(listBucketCols.get(0))
+          && bucketFunctions.get(0) == null) {
+        // if bucket columns are empty, then num buckets must be set to -1.
+        // if a custom bucket function is available, the num buckets must be set to -1.
+        numBuckets = parentOpTraits.getNumBuckets();
+      }
+      final int numReduceSinks = parentOpTraits.getNumReduceSinks();
+      OpTraits opTraits = new OpTraits(listBucketCols, bucketFunctions, numBuckets, listSortCols,
           numReduceSinks);
       selOp.setOpTraits(opTraits);
       return null;
@@ -408,6 +476,7 @@ public class OpTraitsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       JoinOperator joinOp = (JoinOperator) nd;
       List<List<String>> bucketColsList = new ArrayList<List<String>>();
+      List<CustomBucketFunction> bucketFunctions = new ArrayList<>();
       List<List<String>> sortColsList = new ArrayList<List<String>>();
       byte pos = 0;
       int numReduceSinks = 0; // will be set to the larger of the parents
@@ -422,8 +491,27 @@ public class OpTraitsRulesProcFactory {
           rsRule.process(rsOp, stack, procCtx, nodeOutputs);
         }
         OpTraits parentOpTraits = rsOp.getOpTraits();
-        bucketColsList.add(getOutputColNames(joinOp, parentOpTraits.getBucketColNames(), pos));
-        sortColsList.add(getOutputColNames(joinOp, parentOpTraits.getSortCols(), pos));
+        final Entry<List<String>, boolean[]> outputColNames =
+            getOutputColNames(joinOp, parentOpTraits.getBucketColNames(), pos);
+        if (outputColNames == null || outputColNames.getKey().isEmpty() || !parentOpTraits.hasCustomBucketFunction()) {
+          bucketColsList.add(outputColNames == null ? null : outputColNames.getKey());
+          bucketFunctions.add(null);
+        } else {
+          Preconditions.checkState(parentOpTraits.getBucketColNames().size() == 1);
+          final Optional<CustomBucketFunction> joinBucketFunction =
+              parentOpTraits.getCustomBucketFunctions().get(0).select(outputColNames.getValue());
+          if (joinBucketFunction.isPresent()) {
+            bucketColsList.add(outputColNames.getKey());
+            bucketFunctions.add(joinBucketFunction.get());
+          } else {
+            bucketColsList.add(Collections.emptyList());
+            bucketFunctions.add(null);
+          }
+        }
+
+        final Entry<List<String>, boolean[]> outputSortColNames =
+            getOutputColNames(joinOp, parentOpTraits.getSortCols(), pos);
+        sortColsList.add(outputSortColNames == null ? null : outputSortColNames.getKey());
         if (parentOpTraits.getNumReduceSinks() > numReduceSinks) {
           numReduceSinks = parentOpTraits.getNumReduceSinks();
         }
@@ -433,11 +521,11 @@ public class OpTraitsRulesProcFactory {
       // The bucketingVersion is not relevant here as it is never used.
       // For SMB, we look at the parent tables' bucketing versions and for
       // bucket map join the big table's bucketing version is considered.
-      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, numReduceSinks));
+      joinOp.setOpTraits(new OpTraits(bucketColsList, bucketFunctions, -1, bucketColsList, numReduceSinks));
       return null;
     }
 
-    private List<String> getOutputColNames(JoinOperator joinOp, List<List<String>> parentColNames,
+    private Entry<List<String>, boolean[]> getOutputColNames(JoinOperator joinOp, List<List<String>> parentColNames,
         byte pos) {
       if (parentColNames == null) {
         // no col names in parent
@@ -449,13 +537,16 @@ public class OpTraitsRulesProcFactory {
       // a reduce sink always brings down the bucketing cols to a single list.
       // may not be true with correlation operators (mux-demux)
       List<String> colNames = parentColNames.size() > 0 ? parentColNames.get(0) : new ArrayList<>();
-      for (String colName : colNames) {
+      final boolean[] retainedColumns = new boolean[colNames.size()];
+      for (int i = 0; i < colNames.size(); i++) {
+        final String colName = colNames.get(i);
         for (ExprNodeDesc exprNode : joinOp.getConf().getExprs().get(pos)) {
           if (exprNode instanceof ExprNodeColumnDesc) {
             if (((ExprNodeColumnDesc) (exprNode)).getColumn().equals(colName)) {
               for (Entry<String, ExprNodeDesc> entry : joinOp.getColumnExprMap().entrySet()) {
                 if (entry.getValue().isSame(exprNode)) {
                   bucketColNames.add(entry.getKey());
+                  retainedColumns[i] = true;
                   // we have found the colName
                   break;
                 }
@@ -470,7 +561,7 @@ public class OpTraitsRulesProcFactory {
         }
       }
 
-      return bucketColNames;
+      return new SimpleImmutableEntry<>(bucketColNames, retainedColumns);
     }
   }
 
@@ -495,7 +586,7 @@ public class OpTraitsRulesProcFactory {
           numReduceSinks = parentOp.getOpTraits().getNumReduceSinks();
         }
       }
-      OpTraits opTraits = new OpTraits(null, -1,
+      OpTraits opTraits = new OpTraits(null, null, -1,
           null, numReduceSinks);
       operator.setOpTraits(opTraits);
       return null;

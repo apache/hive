@@ -243,41 +243,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throw new MetaException("MetaStoreURIs not found in conf file");
     }
 
-    //If HADOOP_PROXY_USER is set in env or property,
-    //then need to create metastore client that proxies as that user.
-    String HADOOP_PROXY_USER = "HADOOP_PROXY_USER";
-    String proxyUser = System.getenv(HADOOP_PROXY_USER);
-    if (proxyUser == null) {
-      proxyUser = System.getProperty(HADOOP_PROXY_USER);
-    }
-    //if HADOOP_PROXY_USER is set, create DelegationToken using real user
-    if (proxyUser != null) {
-      LOG.info(HADOOP_PROXY_USER + " is set. Using delegation "
-          + "token for HiveMetaStore connection.");
-      try {
-        UserGroupInformation.getRealUserOrSelf(UserGroupInformation.getLoginUser()).doAs(
-            new PrivilegedExceptionAction<Void>() {
-              @Override
-              public Void run() throws Exception {
-                open();
-                return null;
-              }
-            });
-        String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
-        String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
-        SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
-            delegationTokenPropString);
-        MetastoreConf.setVar(this.conf, ConfVars.TOKEN_SIGNATURE, delegationTokenPropString);
-        close();
-      } catch (Exception e) {
-        LOG.error("Error while setting delegation token for " + proxyUser, e);
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else {
-          throw new MetaException(e.getMessage());
-        }
-      }
-    }
+    generateProxyUserDelegationToken();
+
     // finally open the store
     open();
   }
@@ -304,8 +271,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       Class<?> clazz = Class.forName(HIVE_METASTORE_CLASS);
       //noinspection JavaReflectionMemberAccess
-      Method method = clazz.getDeclaredMethod(HIVE_METASTORE_CREATE_HANDLER_METHOD,
-          Configuration.class);
+      Method method = clazz.getDeclaredMethod(HIVE_METASTORE_CREATE_HANDLER_METHOD, Configuration.class);
       method.setAccessible(true);
       return (ThriftHiveMetastore.Iface) method.invoke(null, conf);
     } catch (InvocationTargetException e) {
@@ -390,6 +356,44 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
   }
 
+  private void generateProxyUserDelegationToken() throws MetaException {
+    //If HADOOP_PROXY_USER is set in env or property,
+    //then need to create metastore client that proxies as that user.
+    String HADOOP_PROXY_USER = "HADOOP_PROXY_USER";
+    String proxyUser = System.getenv(HADOOP_PROXY_USER);
+    if (proxyUser == null) {
+      proxyUser = System.getProperty(HADOOP_PROXY_USER);
+    }
+    //if HADOOP_PROXY_USER is set, create DelegationToken using real user
+    if (proxyUser != null) {
+      LOG.info(HADOOP_PROXY_USER + " is set. Using delegation "
+          + "token for HiveMetaStore connection.");
+      try {
+        UserGroupInformation.getRealUserOrSelf(UserGroupInformation.getLoginUser()).doAs(
+            new PrivilegedExceptionAction<Void>() {
+              @Override
+              public Void run() throws Exception {
+                open();
+                return null;
+              }
+            });
+        String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
+        String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
+        SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
+            delegationTokenPropString);
+        MetastoreConf.setVar(this.conf, ConfVars.TOKEN_SIGNATURE, delegationTokenPropString);
+      } catch (Exception e) {
+        LOG.error("Error while setting delegation token for " + proxyUser, e);
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw new MetaException(e.getMessage());
+        }
+      } finally {
+        close();
+      }
+    }
+  }
 
   private MetaStoreFilterHook loadFilterHooks() throws IllegalStateException {
     Class<? extends MetaStoreFilterHook> authProviderClass = MetastoreConf.
@@ -503,6 +507,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         // connection has died and the default connection is likely to be the first array element.
         promoteRandomMetaStoreURI();
       }
+
+      generateProxyUserDelegationToken();
+
       open();
     }
   }
@@ -2294,6 +2301,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException {
+    if (!request.isSetCatalogName()) {
+      request.setCatalogName(getDefaultCatalog(conf));
+    }
+
+    GetDatabaseObjectsResponse response = client.get_databases_req(request);
+
+    response.setDatabases(FilterUtils.filterDatabaseObjectsIfEnabled(
+        isClientFilterEnabled, filterHook, response.getDatabases()));
+    return response;
+  }
+
+  @Override
   public List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
       throws TException {
     // TODO should we add capabilities here as well as it returns Partition objects
@@ -3645,30 +3665,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean deletePartitionColumnStatistics(String dbName, String tableName, String partName,
-      String colName, String engine) throws TException {
-    return deletePartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partName,
-        colName, engine);
-  }
-
-  @Override
-  public boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-      String partName, String colName, String engine) throws TException {
-    return client.delete_partition_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, partName, colName, engine);
-  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
-      throws TException {
-    return deleteTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colName, engine);
-  }
-
-  @Override
-  public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-      String colName, String engine) throws TException {
-    return client.delete_table_column_statistics(prependCatalogToDbName(catName, dbName, conf),
-        tableName, colName, engine);
+  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
+    if (!req.isSetCat_name()) {
+      req.setCat_name(getDefaultCatalog(conf));
+    }
+    // check any null value in the list
+    if (req.isSetCol_names() && req.getCol_names().stream().anyMatch(Objects::isNull)) {
+      throw new IllegalArgumentException("Null column is found in DeleteColumnStatisticsRequest");
+    }
+    if (req.isSetPart_names() && req.getPart_names().stream().anyMatch(Objects::isNull)) {
+      throw new IllegalArgumentException("Null partName is found in DeleteColumnStatisticsRequest");
+    }
+    return client.delete_column_statistics_req(req);
   }
 
   @Override
@@ -5199,7 +5207,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return null;
     }
 
-    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(
+    ValidTxnWriteIdList validTxnWriteIdList = ValidTxnWriteIdList.fromValue(
         conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(
         TableName.getDbTable(dbName, tblName));

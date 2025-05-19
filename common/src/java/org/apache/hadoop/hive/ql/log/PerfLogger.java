@@ -95,13 +95,17 @@ public class PerfLogger {
   public static final String LOAD_HASHTABLE = "LoadHashtable";
   public static final String TEZ_GET_SESSION = "TezGetSession";
   public static final String SAVE_TO_RESULTS_CACHE = "saveToResultsCache";
+  public static final String SEARCH_TRANSFORMER = "transformSearch";
 
   public static final String FILE_MOVES = "FileMoves";
   public static final String LOAD_TABLE = "LoadTable";
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
+  public static final String STATS_TASK = "StatsTask";
+
   public static final String HIVE_GET_TABLE = "getTablesByType";
+  public static final String HIVE_GET_CATALOG = "getCatalog";
   public static final String HIVE_GET_DATABASE = "getDatabase";
   public static final String HIVE_GET_DATABASE_2 = "getDatabase2";
   public static final String HIVE_GET_PARTITIONS = "getPartitions";
@@ -227,6 +231,33 @@ public class PerfLogger {
 
   public Map<String, Long> getEndTimes() {
     return ImmutableMap.copyOf(endTimes);
+  }
+
+  /**
+   * Helper method for getting the time spent with total DAG preparation.
+   */
+  public long getPreparePlanDuration() {
+    long dagSubmitStartTime = getStartTime(PerfLogger.TEZ_SUBMIT_DAG);
+    long compileEndTime = getEndTime(PerfLogger.COMPILE);
+    long getSessionDuration = getDuration(PerfLogger.TEZ_GET_SESSION);
+
+    // no DAG was running with this query
+    if (dagSubmitStartTime == 0){
+      // so no plan preparation happened
+      return 0;
+    }
+
+    return dagSubmitStartTime - compileEndTime - getSessionDuration;
+  }
+
+  /**
+   * Helper method for getting the time spent to actually run the DAG.
+   */
+  public long getRunDagDuration() {
+    long submitToRunningDuration = getDuration(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+
+    return submitToRunningDuration == 0 ? getDuration(PerfLogger.TEZ_RUN_DAG) : getEndTime(PerfLogger.TEZ_RUN_DAG) -
+        getEndTime(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
   }
 
   //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.

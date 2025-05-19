@@ -40,6 +40,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -66,6 +67,9 @@ public class TestSSLWithMiniKdc {
 
     Map<String, String> confOverlay = new HashMap<>();
     confOverlay.put(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED.varname, "false");
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    confOverlay.put(ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
     SSLTestUtils.setHttpConfOverlay(confOverlay);
     SSLTestUtils.setSslConfOverlay(confOverlay);
 
@@ -114,6 +118,17 @@ public class TestSSLWithMiniKdc {
     // Verify the Thrift library is enforcing the limit
     assertTrue(exceptionMessage.contains("MaxMessageSize reached"));
     limitedClient.close();
+
+    MetastoreConf.setVar(clientConf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1048576000");
+    MetastoreConf.setVar(miniHS2.getHiveConf(), MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "512");
+    tblBuilder.setTableName("testThriftMaxMessageSize1");
+    try (HiveMetaStoreClient client = new HiveMetaStoreClient(clientConf)) {
+      TTransportException te = assertThrows(TTransportException.class, () -> tblBuilder.create(client, clientConf));
+      assertEquals(TTransportException.END_OF_FILE, te.getType());
+      assertTrue(te.getMessage().contains("Socket is closed by peer"));
+    } finally {
+      miniHS2.getHiveConf().unset(MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE.getVarname());
+    }
   }
 
   private Connection getConnection(String userName) throws Exception {

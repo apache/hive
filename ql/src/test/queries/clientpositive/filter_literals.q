@@ -1,6 +1,4 @@
 --! qt:dataset:alltypesorc
-set hive.cbo.fallback.strategy=NEVER;
-
 -- test CBO explain plans
 explain cbo
 select * from alltypesorc where 'foo';

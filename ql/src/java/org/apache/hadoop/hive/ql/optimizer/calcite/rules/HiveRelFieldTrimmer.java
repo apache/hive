@@ -502,28 +502,16 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       return generateGroupSetIfCardinalitySame(aggregate, originalGroupSet, fieldsUsed);
     }
 
-    // we have set of unique key, get to the key which is same as group by key
-    ImmutableBitSet groupByUniqueKey = null;
-
+    // Find the maximum number of columns that can be removed by retaining a certain unique key
+    ImmutableBitSet columnsToRemove = ImmutableBitSet.of();
+    final ImmutableBitSet unusedGroupingColumns = aggregate.getGroupSet().except(fieldsUsed);
     for (ImmutableBitSet key : uniqueKeys) {
-      if (aggregate.getGroupSet().contains(key)) {
-        groupByUniqueKey = key;
-        break;
+      ImmutableBitSet removeCandidate = unusedGroupingColumns.except(key);
+      if (aggregate.getGroupSet().contains(key) && removeCandidate.cardinality() > columnsToRemove.cardinality()) {
+        columnsToRemove = removeCandidate;
       }
     }
-
-    if (groupByUniqueKey == null) {
-      // group by keys do not represent unique keys
-      return originalGroupSet;
-    }
-
-    // we know group by key contains primary key and there is at least one column in group by which is not being used
-    // if that column is not part of key it should be removed
-    ImmutableBitSet nonKeyColumns = aggregate.getGroupSet().except(groupByUniqueKey);
-    ImmutableBitSet columnsToRemove = nonKeyColumns.except(fieldsUsed);
-    ImmutableBitSet newGroupSet = aggregate.getGroupSet().except(columnsToRemove);
-
-    return  newGroupSet;
+    return aggregate.getGroupSet().except(columnsToRemove);
   }
 
   /**

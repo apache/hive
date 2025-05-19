@@ -8,10 +8,9 @@
 --! qt:replace:/("iceberg-version":")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))/$1#Masked#/
 
 -- create an unpartitioned table with skip delete data set to false
-set hive.cbo.fallback.strategy=NEVER;
 
- create table ice01 (id int, name string) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2');
+create table ice01 (id int, name string) Stored by Iceberg stored as ORC
+TBLPROPERTIES('format-version'='2');
 
 -- insert some values
 insert into ice01 values (1, 'ABC'),(2, 'CBS'),(3, null),(4, 'POPI'),(5, 'AQWR'),(6, 'POIU'),(9, null),(8,

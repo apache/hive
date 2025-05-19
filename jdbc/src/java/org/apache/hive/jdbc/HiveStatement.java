@@ -76,6 +76,7 @@ public class HiveStatement implements java.sql.Statement {
   private final TSessionHandle sessHandle;
   Map<String, String> sessConf = new HashMap<>();
   private int fetchSize;
+  private int fetchThreads;
   private final boolean isScrollableResultset;
   private boolean isOperationComplete = false;
   private boolean closeOnResultSetCompletion = false;
@@ -126,11 +127,21 @@ public class HiveStatement implements java.sql.Statement {
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
-    this(connection, client, sessHandle, false, connection.fetchSize);
+    this(connection, client, sessHandle, false, connection.fetchSize, connection.fetchThreads);
+  }
+
+  public HiveStatement(HiveConnection connection, TCLIService.Iface client,
+      TSessionHandle sessHandle, boolean isScrollableResultset) {
+    this(connection, client, sessHandle, isScrollableResultset, connection.fetchSize, connection.fetchThreads);
   }
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client, TSessionHandle sessHandle,
       boolean isScrollableResultset, int fetchSize) {
+    this(connection, client, sessHandle, isScrollableResultset, fetchSize, connection.fetchThreads);
+  }
+
+  public HiveStatement(HiveConnection connection, TCLIService.Iface client, TSessionHandle sessHandle,
+      boolean isScrollableResultset, int fetchSize, int fetchThreads) {
     this.connection = Objects.requireNonNull(connection);
     this.client = Objects.requireNonNull(client);
     this.sessHandle = Objects.requireNonNull(sessHandle);
@@ -142,6 +153,7 @@ public class HiveStatement implements java.sql.Statement {
     this.isScrollableResultset = isScrollableResultset;
     this.inPlaceUpdateStream = Optional.empty();
     this.stmtHandle = Optional.empty();
+    this.fetchThreads = fetchThreads;
   }
 
   @Override
@@ -293,6 +305,7 @@ public class HiveStatement implements java.sql.Statement {
     }
     resultSet = new HiveQueryResultSet.Builder(this).setClient(client)
         .setStmtHandle(stmtHandle.get()).setMaxRows(maxRows).setFetchSize(fetchSize)
+        .setConnection(connection).setFetchThreads(fetchThreads)
         .setScrollable(isScrollableResultset)
         .build();
     return true;
@@ -321,6 +334,7 @@ public class HiveStatement implements java.sql.Statement {
     }
     resultSet =
         new HiveQueryResultSet.Builder(this).setClient(client)
+            .setConnection(connection).setFetchThreads(fetchThreads)
             .setStmtHandle(stmtHandle.get()).setMaxRows(maxRows)
             .setFetchSize(fetchSize).setScrollable(isScrollableResultset)
             .build();

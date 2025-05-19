@@ -62,7 +62,7 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
             "acidtbl/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t8\t8",
             "acidtbl/delta_0000003_0000003_0000/bucket_00001_0"}};
-    checkResult(expected, testQuery, false, "check data", LOG);
+    checkResultAndVectorization(expected, testQuery, "check data", LOG);
 
     /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
      but in normal usage 'concatenate' is blocking, */
@@ -86,7 +86,7 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
             "acidtbl/base_0000003_v0000011/bucket_00001"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":1}\t8\t8",
             "acidtbl/base_0000003_v0000011/bucket_00001"}};
-    checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
+    checkResultAndVectorization(expected2, testQuery, "check data after concatenate", LOG);
   }
   @Test
   public void testConcatenatePart() throws Exception {
@@ -103,7 +103,7 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
             "acidtblpart/p=p1/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
             "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001_0"}};
-    checkResult(expected, testQuery, false, "check data", LOG);
+    checkResultAndVectorization(expected, testQuery, "check data", LOG);
 
     /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
      but in normal usage 'concatenate' is blocking, */
@@ -128,11 +128,15 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t8\t8",
             "acidtblpart/p=p2/delta_0000003_0000003_0000/bucket_00001_0"}};
 
-    checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
+    checkResultAndVectorization(expected2, testQuery, "check data after concatenate", LOG);
   }
 
   @Test
   public void testConcatenateMM() throws Exception {
+    // Only one bucket is expected in this test
+    hiveConf.set("tez.grouping.max-size", "1024");
+    hiveConf.set("tez.grouping.min-size", "1");
+
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
     dropTables("T");
     runStatementOnDriver("create table T(a int, b int)");
@@ -144,7 +148,7 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         {"4\t5", "t/delta_0000001_0000001_0000/000000_0"},
         {"5\t6", "t/delta_0000002_0000002_0000/000000_0"},
         {"8\t8", "t/delta_0000002_0000002_0000/000000_0"}};
-    checkResult(expected, testQuery, false, "check data", LOG);
+    checkResultAndVectorization(expected, testQuery, "check data", LOG);
 
     /*in UTs, there is no standalone HMS running to kick off compaction so it's done via runWorker()
       but in normal usage 'concatenate' is blocking, */
@@ -164,6 +168,6 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
         {"4\t5", "t/base_0000003_v0000011/000000_0"},
         {"5\t6", "t/base_0000003_v0000011/000000_0"},
         {"8\t8", "t/base_0000003_v0000011/000000_0"}};
-    checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
+    checkResultAndVectorization(expected2, testQuery, "check data after concatenate", LOG);
   }
 }

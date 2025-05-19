@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -56,6 +57,7 @@ public class Initiator extends MetaStoreCompactorThread {
   private ExecutorService compactionExecutor;
 
   private boolean metricsEnabled;
+  private boolean shouldUseMutex = true;
 
   @Override
   public void run() {
@@ -70,6 +72,7 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
+      TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
@@ -78,13 +81,10 @@ public class Initiator extends MetaStoreCompactorThread {
         PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
         long startedAt = -1;
         long prevStart;
-        TxnStore.MutexAPI.LockHandle handle = null;
-        boolean exceptionally = false;
 
         // Wrap the inner parts of the loop in a catch throwable so that any errors in the loop
         // don't doom the entire thread.
-        try {
-          handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
+        try (TxnStore.MutexAPI.LockHandle handle = mutex.acquireLock(TxnStore.MUTEX_KEY.Initiator.name())) {
           startedAt = System.currentTimeMillis();
           prevStart = handle.getLastUpdateTime();
 
@@ -174,16 +174,13 @@ public class Initiator extends MetaStoreCompactorThread {
 
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
+          handle.releaseLocks(startedAt);
         } catch (InterruptedException e) {
           // do not ignore interruption requests
           return;
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop", t);
-          exceptionally = true;
         } finally {
-          if (handle != null) {
-            if (!exceptionally) handle.releaseLocks(startedAt); else handle.releaseLocks();
-          }
           if (metricsEnabled) {
             perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
             updateCycleDurationMetric(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION, startedAt);
@@ -214,8 +211,6 @@ public class Initiator extends MetaStoreCompactorThread {
   private Database resolveDatabase(CompactionInfo ci) throws MetaException, NoSuchObjectException {
     return CompactorUtil.resolveDatabase(conf, ci.dbname);
   }
-
-
 
   @VisibleForTesting
   protected String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
@@ -427,5 +422,10 @@ public class Initiator extends MetaStoreCompactorThread {
         }
       }
     }
+  }
+
+  @Override
+  public void enforceMutex(boolean enableMutex) {
+    this.shouldUseMutex = enableMutex;
   }
 }

@@ -171,10 +171,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_demographics
-                  filterExpr: ((cd_marital_status) IN ('M', 'W') and (cd_education_status) IN ('Unknown             ', 'Advanced Degree     ') and (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     '))) (type: boolean)
+                  filterExpr: ((cd_marital_status) IN ('M', 'W') and (cd_education_status) IN ('Advanced Degree     ', 'Unknown             ') and (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     '))) (type: boolean)
                   Statistics: Num rows: 1920800 Data size: 359189600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cd_marital_status) IN ('M', 'W') and (cd_education_status) IN ('Unknown             ', 'Advanced Degree     ') and (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     '))) (type: boolean)
+                    predicate: ((cd_marital_status) IN ('M', 'W') and (cd_education_status) IN ('Advanced Degree     ', 'Unknown             ') and (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     '))) (type: boolean)
                     Statistics: Num rows: 109760 Data size: 20525120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cd_demo_sk (type: bigint), cd_marital_status (type: char(1)), cd_education_status (type: char(20))

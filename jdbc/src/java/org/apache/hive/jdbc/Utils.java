@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
@@ -166,6 +167,7 @@ public class Utils {
     // Set the fetchSize
     static final String FETCH_SIZE = "fetchSize";
     static final String INIT_FILE = "initFile";
+    static final String FETCH_THREADS = "fetchThreads";
     static final String WM_POOL = "wmPool";
     // Cookie prefix
     static final String HTTP_COOKIE_PREFIX = "http.cookie.";
@@ -217,8 +219,25 @@ public class Utils {
     private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
 
     // HiveConf parameters
+    private static String getNullsLastVarname() {
+      try {
+        return HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
+      } catch(java.lang.NoSuchFieldError e) {
+        return "hive.default.nulls.last";
+      }
+    }
     public static final String HIVE_DEFAULT_NULLS_LAST_KEY =
-        HIVE_CONF_PREFIX + HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
+        HIVE_CONF_PREFIX + getNullsLastVarname();
+
+    private static String getFetchThreadsVarname() {
+      try {
+        return HiveConf.ConfVars.HIVE_JDBC_FETCH_THREADS.varname;
+      } catch(java.lang.NoSuchFieldError e) {
+        return "hive.jdbc.fetch.threads";
+      }
+    }
+    public static final String HIVE_HIVE_JDBC_FETCH_THREADS_KEY =
+        HIVE_CONF_PREFIX + getFetchThreadsVarname();
 
     public JdbcConnectionParams() {
     }
@@ -522,6 +541,13 @@ public class Utils {
       }
     }
 
+    Pattern fullPasswordPattern = Pattern.compile("(?i)(?<=;|^)password=([^;]+)");
+    Matcher fullPwdMatcher = fullPasswordPattern.matcher(uri);
+    if (fullPwdMatcher.find()) {
+        String fullPassword = fullPwdMatcher.group(1);
+        connParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD, fullPassword);
+    }
+
     // parse hive conf settings
     String confStr = jdbcURI.getQuery();
     if (confStr != null) {
@@ -621,7 +647,7 @@ public class Utils {
           connParams.setPort(port);
         }
         // We check for invalid host, port while configuring connParams with configureConnParams()
-        authorityStr = connParams.getHost() + ":" + connParams.getPort();
+        authorityStr = IPStackUtils.concatHostPort(connParams.getHost(), connParams.getPort());
         LOG.debug("Resolved authority: " + authorityStr);
         uri = uri.replace(dummyAuthorityString, authorityStr);
       }
@@ -634,7 +660,7 @@ public class Utils {
   static void configureConnParamsFromZooKeeper(JdbcConnectionParams connParams)
       throws ZooKeeperHiveClientException, JdbcUriParseException {
     ZooKeeperHiveClientHelper.configureConnParams(connParams);
-    String authorityStr = connParams.getHost() + ":" + connParams.getPort();
+    String authorityStr = IPStackUtils.concatHostPort(connParams.getHost(), connParams.getPort());
     LOG.debug("Resolved authority: " + authorityStr);
     String jdbcUriString = connParams.getJdbcUriString();
     // Replace ZooKeeper ensemble from the authority component of the JDBC Uri provided by the

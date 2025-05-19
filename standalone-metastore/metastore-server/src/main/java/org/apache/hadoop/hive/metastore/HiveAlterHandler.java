@@ -826,11 +826,9 @@ public class HiveAlterHandler implements AlterHandler {
 
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
-                                         final String dbname, final String name,
-                                         final List<Partition> new_parts,
-                                         EnvironmentContext environmentContext,
-                                         String writeIdList, long writeId,
-                                         IHMSHandler handler)
+      final String dbname, final String name, final List<Partition> new_parts,
+      EnvironmentContext environmentContext, String writeIdList, long writeId,
+      IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<>();
     List<List<String>> partValsList = new ArrayList<>();

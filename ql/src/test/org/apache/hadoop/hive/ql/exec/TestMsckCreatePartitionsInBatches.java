@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.CheckResult.PartitionResult;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -62,7 +63,7 @@ public class TestMsckCreatePartitionsInBatches {
 
   @BeforeClass
   public static void setupClass() throws HiveException, MetaException {
-    hiveConf = new HiveConf(TestMsckCreatePartitionsInBatches.class);
+    hiveConf = new HiveConfForTest(TestMsckCreatePartitionsInBatches.class);
     hiveConf.setIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE, 5);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

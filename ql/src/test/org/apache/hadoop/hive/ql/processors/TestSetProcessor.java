@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
@@ -49,7 +50,7 @@ public class TestSetProcessor {
     env.put(TEST_ENV_VAR_PASSWORD, TEST_ENV_VAR_PASSWORD_VALUE);
     setEnv(env);
     System.setProperty(TEST_SYSTEM_PROPERTY, TEST_SYSTEM_PROPERTY_VALUE);
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(TestSetProcessor.class);
     SessionState.start(conf);
     state = SessionState.get();
   }

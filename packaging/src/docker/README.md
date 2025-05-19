@@ -210,3 +210,101 @@ docker compose down
     select count(distinct a) from hive_example;
     select sum(b) from hive_example;
   ```
+
+#### `sys` Schema and `information_schema` Schema
+
+`Hive Schema Tool` is located in the Docker Image at `/opt/hive/bin/schematool`.
+
+By default, system schemas such as `information_schema` for HiveServer2 are not created.
+To create system schemas for a HiveServer2 instance,
+users need to configure the Hive Metastore Server used by HiveServer2 to use a database other than the embedded Derby.
+The following text discusses how to configure HiveServer2 when the Hive Metastore Server is in different locations.
+
+##### HiveServer2 with embedded Hive Metastore Server
+
+Assuming `Maven` and `Docker CE` are installed, a possible use case is as follows.
+Create a `compose.yaml` file in the current directory,
+
+```yaml
+services:
+  some-postgres:
+    image: postgres:17.2-bookworm
+    environment:
+      POSTGRES_PASSWORD: "example"
+  hiveserver2-standalone:
+    image: apache/hive:4.0.1
+    depends_on:
+      - some-postgres
+    environment:
+      SERVICE_NAME: hiveserver2
+      DB_DRIVER: postgres
+      SERVICE_OPTS: >-
+        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://some-postgres:5432/postgres
+        -Djavax.jdo.option.ConnectionUserName=postgres
+        -Djavax.jdo.option.ConnectionPassword=example
+    volumes:
+      - ~/.m2/repository/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar:/opt/hive/lib/postgres.jar
+```
+
+Then execute the shell command as follows to initialize the system schemas in HiveServer2.
+
+```shell
+mvn dependency:get -Dartifact=org.postgresql:postgresql:42.7.5
+docker compose up -d
+docker compose exec hiveserver2-standalone /bin/bash
+/opt/hive/bin/schematool -initSchema -dbType hive -metaDbType postgres -url jdbc:hive2://localhost:10000/default
+exit
+```
+
+##### HiveServer2 using a remote Hive Metastore Server
+
+Assuming `Maven` and `Docker CE` are installed, a possible use case is as follows.
+Create a `compose.yaml` file in the current directory,
+
+```yaml
+services:
+  some-postgres:
+    image: postgres:17.2-bookworm
+    environment:
+      POSTGRES_PASSWORD: "example"
+  metastore-standalone:
+    image: apache/hive:4.0.1
+    depends_on:
+      - some-postgres
+    environment:
+      SERVICE_NAME: metastore
+      DB_DRIVER: postgres
+      SERVICE_OPTS: >-
+        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://some-postgres:5432/postgres
+        -Djavax.jdo.option.ConnectionUserName=postgres
+        -Djavax.jdo.option.ConnectionPassword=example
+    volumes:
+      - ~/.m2/repository/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar:/opt/hive/lib/postgres.jar
+  hiveserver2-standalone:
+    image: apache/hive:4.0.1
+    depends_on:
+      - metastore-standalone
+    environment:
+      SERVICE_NAME: hiveserver2
+      IS_RESUME: true
+      SERVICE_OPTS: >-
+        -Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver
+        -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://some-postgres:5432/postgres
+        -Djavax.jdo.option.ConnectionUserName=postgres
+        -Djavax.jdo.option.ConnectionPassword=example
+        -Dhive.metastore.uris=thrift://metastore-standalone:9083
+    volumes:
+      - ~/.m2/repository/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar:/opt/hive/lib/postgres.jar
+```
+
+Then execute the shell command as follows to initialize the system schemas in HiveServer2.
+
+```shell
+mvn dependency:get -Dartifact=org.postgresql:postgresql:42.7.5
+docker compose up -d
+docker compose exec hiveserver2-standalone /bin/bash
+/opt/hive/bin/schematool -initSchema -dbType hive -metaDbType postgres -url jdbc:hive2://localhost:10000/default
+exit
+```

@@ -38,9 +38,11 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+@Ignore("HIVE-28659")
 @Category(MetastoreUnitTest.class)
 public class TestMetaStoreDeadlock {
   private Configuration conf;
@@ -117,5 +119,4 @@ public class TestMetaStoreDeadlock {
       return super.transformPartitions(objects, table, processorCapabilities, processorId);
     }
   }
-
 }

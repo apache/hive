@@ -63,6 +63,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -1635,6 +1636,10 @@ public class MetaStoreServerUtils {
   }
 
   public static String getNormalisedPartitionValue(String partitionValue, String type) {
+
+    if (!NumberUtils.isParsable(partitionValue)) {
+      return partitionValue;
+    }
 
     LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
 

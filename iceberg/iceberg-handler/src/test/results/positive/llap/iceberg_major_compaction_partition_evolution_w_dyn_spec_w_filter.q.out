@@ -5,6 +5,7 @@ PREHOOK: query: create table ice_orc (
 )
 partitioned by spec(truncate(3, event_src))
 stored by iceberg stored as orc
+tblproperties ('compactor.threshold.target.size'='1500')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_orc
@@ -15,6 +16,7 @@ POSTHOOK: query: create table ice_orc (
 )
 partitioned by spec(truncate(3, event_src))
 stored by iceberg stored as orc
+tblproperties ('compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
@@ -241,6 +243,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"event_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"event_time\",\"required\":false,\"type\":\"timestamptz\"},{\"id\":3,\"name\":\"event_src\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"13\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
@@ -250,6 +253,7 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	13                  
+	numPartitions       	8                   
 	numRows             	26                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
@@ -344,6 +348,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"event_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"event_time\",\"required\":false,\"type\":\"timestamptz\"},{\"id\":3,\"name\":\"event_src\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"2\",\"deleted-data-files\":\"4\",\"added-records\":\"8\",\"deleted-records\":\"8\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
@@ -353,12 +358,13 @@ Table Parameters:
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	8                   
+	numPartitions       	8                   
 	numRows             	26                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	18                  
+	snapshot-count      	17                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -381,7 +387,7 @@ POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 #Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-08	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-09	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-09	MAJOR	refused	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-07	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-08	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
 #Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 

@@ -26,7 +26,6 @@ import java.sql.Statement;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.server.HiveServer2;
 import org.junit.After;
@@ -35,24 +34,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestThriftCliServiceMessageSize {
-  protected static int port;
-  protected static String host = "localhost";
-  protected static HiveServer2 hiveServer2;
-  protected static ThriftCLIServiceClient client;
-  protected static HiveConf hiveConf;
-  protected static String USERNAME = "anonymous";
-  protected static String PASSWORD = "anonymous";
+public class TestThriftCliServiceMessageSize extends AbstractThriftCLITest {
 
   /**
    * @throws java.lang.Exception
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    // Find a free port
-    port = MetaStoreTestUtils.findFreePort();
-    hiveServer2 = new HiveServer2();
-    hiveConf = new HiveConf();
+    initConf(TestThriftCliServiceMessageSize.class);
   }
 
   /**
@@ -62,33 +51,14 @@ public class TestThriftCliServiceMessageSize {
   public static void tearDownAfterClass() throws Exception {
   }
 
-  protected static void startHiveServer2WithConf(HiveServer2 hiveServer2, HiveConf hiveConf)
-      throws Exception {
-    hiveServer2.init(hiveConf);
-    // Start HiveServer2 with given config
-    // Fail if server doesn't start
-    try {
-      hiveServer2.start();
-    } catch (Throwable t) {
-      t.printStackTrace();
-      fail();
-    }
-    // Wait for startup to complete
-    Thread.sleep(2000);
-    System.out.println("HiveServer2 started on port " + port);
-  }
-
-  protected static void stopHiveServer2(HiveServer2 hiveServer2) throws Exception {
-    if (hiveServer2 != null) {
-      hiveServer2.stop();
-    }
-  }
-
   /**
    * @throws java.lang.Exception
    */
   @Before
   public void setUp() throws Exception {
+    // query history adds no value to this test
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
   }
 
   /**
@@ -109,14 +79,14 @@ public class TestThriftCliServiceMessageSize {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.NONE.toString());
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
 
-    HiveServer2 hiveServer2 = new HiveServer2();
+    hiveServer2 = new HiveServer2();
     String url = "jdbc:hive2://localhost:" + port + "/default";
     Class.forName("org.apache.hive.jdbc.HiveDriver");
 
     try {
       // First start HS2 with high message size limit. This should allow connections
       hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE, 100*1024*1024);
-      startHiveServer2WithConf(hiveServer2, hiveConf);
+      startHiveServer2WithConf(hiveConf);
 
       System.out.println("Started Thrift CLI service with message size limit "
           + hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE));
@@ -127,12 +97,12 @@ public class TestThriftCliServiceMessageSize {
       assertNotNull("Statement is null", stmt);
       stmt.execute("set hive.support.concurrency = false");
       connection.close();
-      stopHiveServer2(hiveServer2);
+      stopHiveServer2();
 
       // Now start HS2 with low message size limit. This should prevent any connections
       hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE, 1);
       hiveServer2 = new HiveServer2();
-      startHiveServer2WithConf(hiveServer2, hiveConf);
+      startHiveServer2WithConf(hiveConf);
       System.out.println("Started Thrift CLI service with message size limit "
           + hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE));
 
@@ -146,7 +116,7 @@ public class TestThriftCliServiceMessageSize {
       // Verify we hit an error while connecting
       assertNotNull(caughtException);
     } finally {
-      stopHiveServer2(hiveServer2);
+      stopHiveServer2();
       hiveServer2 = null;
     }
   }

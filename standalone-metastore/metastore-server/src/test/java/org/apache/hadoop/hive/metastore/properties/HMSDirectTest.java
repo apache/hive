@@ -17,32 +17,33 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HMSHandler;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
-
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.HMSHandler;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DATETIME;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.DOUBLE;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.INTEGER;
 import static org.apache.hadoop.hive.metastore.properties.PropertyType.STRING;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * In-process property manager test.
  */
+@Category(MetastoreUnitTest.class)
 public class HMSDirectTest extends HMSTestBase {
   protected ObjectStore objectStore = null;
   static Random RND = new Random(20230424);

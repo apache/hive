@@ -191,13 +191,13 @@ STAGE PLANS:
                           1 Map 2
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
-                          expressions: if((_col1) IN ('TermDeposit', 'RecurringDeposit', 'CertificateOfDeposit'), COALESCE(from_unixtime(to_unix_timestamp(CAST( _col2 AS DATE)), 'MM-dd-yyyy'),' '), '') (type: string)
+                          expressions: if((_col1) IN ('CertificateOfDeposit', 'RecurringDeposit', 'TermDeposit'), COALESCE(from_unixtime(to_unix_timestamp(CAST( _col2 AS DATE)), 'MM-dd-yyyy'),' '), '') (type: string)
                           outputColumnNames: _col0
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
                               projectedOutputColumnNums: [14]
-                              selectExpressions: IfExprCondExprColumn(col 9:boolean, col 13:string, col 5:string)(children: StringColumnInList(col 1, values TermDeposit, RecurringDeposit, CertificateOfDeposit) -> 9:boolean, VectorCoalesce(columns [5, 12])(children: VectorUDFAdaptor(from_unixtime(to_unix_timestamp(CAST( _col2 AS DATE)), 'MM-dd-yyyy'))(children: VectorUDFUnixTimeStampDate(col 10)(children: CastStringToDate(col 2:string) -> 10:date) -> 11:bigint) -> 5:string, ConstantVectorExpression(val  ) -> 12:string) -> 13:string, ConstantVectorExpression(val ) -> 5:string) -> 14:string
+                              selectExpressions: IfExprCondExprColumn(col 9:boolean, col 13:string, col 5:string)(children: StringColumnInList(col 1, values CertificateOfDeposit, RecurringDeposit, TermDeposit) -> 9:boolean, VectorCoalesce(columns [5, 12])(children: VectorUDFAdaptor(from_unixtime(to_unix_timestamp(CAST( _col2 AS DATE)), 'MM-dd-yyyy'))(children: VectorUDFUnixTimeStampDate(col 10)(children: CastStringToDate(col 2:string) -> 10:date) -> 11:bigint) -> 5:string, ConstantVectorExpression(val  ) -> 12:string) -> 13:string, ConstantVectorExpression(val ) -> 5:string) -> 14:string
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
@@ -261,10 +261,11 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
+                enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+                notVectorizedReason: UDTF Operator (UDTF) not supported
+                vectorized: false
 
   Stage: Stage-0
     Fetch Operator

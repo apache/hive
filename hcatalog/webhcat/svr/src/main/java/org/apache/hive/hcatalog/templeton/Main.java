@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -71,7 +72,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -85,7 +85,7 @@ public class Main {
   private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
   public static final int DEFAULT_PORT = 8080;
-  public static final String DEFAULT_HOST = "0.0.0.0";
+  public static final String DEFAULT_HOST = IPStackUtils.resolveWildcardAddress();
   public static final String DEFAULT_KEY_STORE_PATH = "";
   public static final String DEFAULT_KEY_STORE_PASSWORD = "";
   public static final String DEFAULT_SSL_PROTOCOL_BLACKLIST = "SSLv2,SSLv3";
@@ -282,6 +282,8 @@ public class Main {
     ServerConnector connector;
     final HttpConfiguration httpConf = new HttpConfiguration();
     httpConf.setRequestHeaderSize(1024 * 64);
+    httpConf.setSendServerVersion(false);
+    httpConf.setSendXPoweredBy(false);
     final HttpConnectionFactory http = new HttpConnectionFactory(httpConf);
 
     if (conf.getBoolean(AppConfig.USE_SSL, false)) {

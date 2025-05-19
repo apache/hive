@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
@@ -57,7 +58,6 @@ import org.apache.hadoop.hive.ql.io.HiveSequenceFileInputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -932,11 +932,9 @@ public final class PlanUtils {
     }
 
     try {
-      HiveStorageHandler storageHandler =
-        HiveUtils.getStorageHandler(
-          Hive.get().getConf(),
-          tableDesc.getProperties().getProperty(
-            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
+      HiveConf hiveConf = SessionState.getSessionConf();
+      String className = tableDesc.getProperties().getProperty(META_TABLE_STORAGE);
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(hiveConf, className);
       if (storageHandler != null) {
         Map<String, String> jobProperties = new LinkedHashMap<String, String>();
         Map<String, String> jobSecrets = new LinkedHashMap<String, String>();
@@ -1156,7 +1154,7 @@ public final class PlanUtils {
       }
 
       ReadEntity newInput = null;
-      if (part.getTable().isPartitioned()) {
+      if (part.getTable().isPartitioned() && !part.getTable().hasNonNativePartitionSupport()) {
         newInput = new ReadEntity(part, parentViewInfo, isDirectRead);
       } else {
         newInput = new ReadEntity(part.getTable(), parentViewInfo, isDirectRead);

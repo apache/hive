@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.testutils.MiniZooKeeperCluster;
 
 import java.io.File;
@@ -261,7 +262,7 @@ public class ManyMiniCluster {
       hbaseConf.set("hbase.rootdir", hbaseRoot);
       hbaseConf.set("hbase.master", "local");
       hbaseConf.setInt(HConstants.ZOOKEEPER_CLIENT_PORT, zookeeperPort);
-      hbaseConf.set(HConstants.ZOOKEEPER_QUORUM, "127.0.0.1");
+      hbaseConf.set(HConstants.ZOOKEEPER_QUORUM, IPStackUtils.resolveLoopbackAddress());
       hbaseConf.setInt("hbase.master.port", findFreePort());
       hbaseConf.setInt("hbase.master.info.port", -1);
       hbaseConf.setInt("hbase.regionserver.port", findFreePort());

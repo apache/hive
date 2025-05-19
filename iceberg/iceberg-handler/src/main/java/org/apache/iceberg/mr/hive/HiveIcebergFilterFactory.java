@@ -22,16 +22,29 @@ package org.apache.iceberg.mr.hive;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.iceberg.common.DynFields;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.Literal;
+import org.apache.iceberg.expressions.UnboundTerm;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.transforms.Transforms;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.DateTimeUtil;
 import org.apache.iceberg.util.NaNUtil;
 
@@ -97,15 +110,19 @@ public class HiveIcebergFilterFactory {
    * @return Expression fully translated from Hive PredicateLeaf
    */
   private static Expression translateLeaf(PredicateLeaf leaf) {
-    String column = leaf.getColumnName();
+    TransformSpec transformSpec = TransformSpec.fromStringWithColumnName(leaf.getColumnName());
+    String columnName = transformSpec.getColumnName();
+    UnboundTerm<Object> column =
+        ObjectUtils.defaultIfNull(toTerm(columnName, transformSpec), Expressions.ref(columnName));
+
     switch (leaf.getOperator()) {
       case EQUALS:
-        Object literal = leafToLiteral(leaf);
+        Object literal = leafToLiteral(leaf, transformSpec);
         return NaNUtil.isNaN(literal) ? isNaN(column) : equal(column, literal);
       case LESS_THAN:
-        return lessThan(column, leafToLiteral(leaf));
+        return lessThan(column, leafToLiteral(leaf, transformSpec));
       case LESS_THAN_EQUALS:
-        return lessThanOrEqual(column, leafToLiteral(leaf));
+        return lessThanOrEqual(column, leafToLiteral(leaf, transformSpec));
       case IN:
         return in(column, leafToLiteralList(leaf));
       case BETWEEN:
@@ -127,19 +144,44 @@ public class HiveIcebergFilterFactory {
     }
   }
 
+  public static UnboundTerm<Object> toTerm(String columnName, TransformSpec transformSpec) {
+    if (transformSpec == null) {
+      return null;
+    }
+    switch (transformSpec.getTransformType()) {
+      case YEAR:
+        return Expressions.year(columnName);
+      case MONTH:
+        return Expressions.month(columnName);
+      case DAY:
+        return Expressions.day(columnName);
+      case HOUR:
+        return Expressions.hour(columnName);
+      case TRUNCATE:
+        return Expressions.truncate(columnName, transformSpec.getTransformParam().get());
+      case BUCKET:
+        return Expressions.bucket(columnName, transformSpec.getTransformParam().get());
+      case IDENTITY:
+        return null;
+      default:
+        throw new UnsupportedOperationException("Unknown transformSpec: " + transformSpec);
+    }
+  }
+
   // PredicateLeafImpl has a work-around for Kryo serialization with java.util.Date objects where it converts values to
   // Timestamp using Date#getTime. This conversion discards microseconds, so this is a necessary to avoid it.
   private static final DynFields.UnboundField<?> LITERAL_FIELD = DynFields.builder()
       .hiddenImpl(SearchArgumentImpl.PredicateLeafImpl.class, "literal")
       .build();
 
-  private static Object leafToLiteral(PredicateLeaf leaf) {
+  private static Object leafToLiteral(PredicateLeaf leaf, TransformSpec transform) {
     switch (leaf.getType()) {
       case LONG:
       case BOOLEAN:
-      case STRING:
       case FLOAT:
         return leaf.getLiteral();
+      case STRING:
+        return convertLiteral(leaf.getLiteral(), transform);
       case DATE:
         if (leaf.getLiteral() instanceof Date) {
           return daysFromDate((Date) leaf.getLiteral());
@@ -153,6 +195,92 @@ public class HiveIcebergFilterFactory {
       default:
         throw new UnsupportedOperationException("Unknown type: " + leaf.getType());
     }
+  }
+
+  private static Object convertLiteral(Object literal, TransformSpec transform) {
+    if (transform == null) {
+      return literal;
+    }
+    try {
+      switch (transform.getTransformType()) {
+        case YEAR:
+          return parseYearToTransformYear(literal.toString());
+        case MONTH:
+          return parseMonthToTransformMonth(literal.toString());
+        case DAY:
+          return parseDayToTransformMonth(literal.toString());
+        case HOUR:
+          return parseHourToTransformHour(literal.toString());
+        case TRUNCATE:
+          return Transforms.truncate(transform.getTransformParam().get()).bind(Types.StringType.get())
+              .apply(literal.toString());
+        case BUCKET:
+          return Transforms.bucket(transform.getTransformParam().get()).bind(Types.StringType.get())
+              .apply(literal.toString());
+        case IDENTITY:
+          return literal;
+        default:
+          throw new UnsupportedOperationException("Unknown transform: " + transform.getTransformType());
+      }
+    } catch (NumberFormatException | DateTimeException | IllegalStateException e) {
+      throw new RuntimeException(
+          String.format("Unable to parse value '%s' as '%s' transform value", literal.toString(), transform));
+    }
+  }
+
+  private static final int ICEBERG_EPOCH_YEAR = 1970;
+  private static final int ICEBERG_EPOCH_MONTH = 1;
+
+  /**
+   * In the partition path years are represented naturally, e.g. 1984. However, we need
+   * to convert it to an integer which represents the years from 1970. So, for 1984 the
+   * return value should be 14.
+   */
+  private static Integer parseYearToTransformYear(String yearStr) {
+    int year = Integer.parseInt(yearStr);
+    return year - ICEBERG_EPOCH_YEAR;
+  }
+
+  /**
+   * In the partition path months are represented as year-month, e.g. 2021-01. We
+   * need to convert it to a single integer which represents the months from '1970-01'.
+   */
+  private static Integer parseMonthToTransformMonth(String monthStr) {
+    String[] parts = monthStr.split("-", -1);
+    Preconditions.checkState(parts.length == 2);
+    int year = Integer.parseInt(parts[0]);
+    int month = Integer.parseInt(parts[1]);
+    int years = year - ICEBERG_EPOCH_YEAR;
+    int months = month - ICEBERG_EPOCH_MONTH;
+    return years * 12 + months;
+  }
+
+  /**
+   * In the partition path days are represented as year-month-day, e.g. 2023-12-12.
+   * This functions converts this string to an integer which represents the days from
+   * '1970-01-01' with the help of Iceberg's type converter.
+   */
+  private static Integer parseDayToTransformMonth(String monthStr) {
+    Literal<Integer> days = Literal.of(monthStr).to(Types.DateType.get());
+    return days.value();
+  }
+
+  /**
+   * In the partition path hours are represented as year-month-day-hour, e.g.
+   * 1970-01-01-01. We need to convert it to a single integer which represents the hours
+   * from '1970-01-01 00:00:00'.
+   */
+  private static Integer parseHourToTransformHour(String hourStr) {
+    final OffsetDateTime epoch = Instant.ofEpochSecond(0).atOffset(ZoneOffset.UTC);
+    String[] parts = hourStr.split("-", -1);
+    Preconditions.checkState(parts.length == 4);
+    int year = Integer.parseInt(parts[0]);
+    int month = Integer.parseInt(parts[1]);
+    int day = Integer.parseInt(parts[2]);
+    int hour = Integer.parseInt(parts[3]);
+    OffsetDateTime datetime = OffsetDateTime.of(LocalDateTime.of(year, month, day, hour, /* minute=*/0),
+        ZoneOffset.UTC);
+    return (int) ChronoUnit.HOURS.between(epoch, datetime);
   }
 
   private static List<Object> leafToLiteralList(PredicateLeaf leaf) {

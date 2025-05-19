@@ -83,6 +83,7 @@ import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPA
 public class PersistenceManagerProvider {
   private static PersistenceManagerFactory pmf;
   private static PersistenceManagerFactory compactorPmf;
+  private static DatabaseProduct databaseProduct;
   private static Properties prop;
   private static final ReentrantReadWriteLock pmfLock = new ReentrantReadWriteLock();
   private static final Lock pmfReadLock = pmfLock.readLock();
@@ -271,6 +272,10 @@ public class PersistenceManagerProvider {
             if (compactorPmf == null && useCompactorPool) {
               compactorPmf = retry(() -> initPMF(conf, true));
             }
+            if (databaseProduct == null) {
+              String url = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+              databaseProduct = DatabaseProduct.determineDatabaseProduct(url, conf);
+            }
           }
           // downgrade by acquiring read lock before releasing write lock
           pmfReadLock.lock();
@@ -288,7 +293,7 @@ public class PersistenceManagerProvider {
 
   private static PersistenceManagerFactory initPMF(Configuration conf, boolean forCompactor) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
-    PersistenceManagerFactory pmf;
+    PersistenceManagerFactory pmf = null;
 
     // Any preexisting datanucleus property should be passed along
     Map<Object, Object> dsProp = new HashMap<>(prop);
@@ -301,15 +306,20 @@ public class PersistenceManagerProvider {
     if (dsp == null) {
       pmf = JDOHelper.getPersistenceManagerFactory(dsProp);
     } else {
+      DataSource ds = null;
+      DataSource ds2 = null;
       String sourceName = forCompactor ? "objectstore-compactor" : "objectstore";
       try (DataSourceProvider.DataSourceNameConfigurator configurator =
                new DataSourceProvider.DataSourceNameConfigurator(conf, sourceName)) {
-        DataSource ds = (maxPoolSize > 0) ? dsp.create(conf, maxPoolSize) : dsp.create(conf);
+        ds = (maxPoolSize > 0) ? dsp.create(conf, maxPoolSize) : dsp.create(conf);
+        databaseProduct = DatabaseProduct.determineDatabaseProduct(ds, conf);
         // The secondary connection factory is used for schema generation, and for value generation operations.
-        // We should use a different pool for the secondary connection factory to avoid resource starvation.
-        // Since DataNucleus uses locks for schema generation and value generation, 2 connections should be sufficient.
+        // We use a different pool for the secondary connection factory to avoid resource starvation.
+        // DataNucleus uses locks for schema generation and value generation, under normal circumstances 2 connections
+        // should be sufficient.
         configurator.resetName(sourceName + "-secondary");
-        DataSource ds2 = dsp.create(conf, /* maxPoolSize */ 2);
+        int maxSecondaryPoolSize = Math.max(2, MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_SECONDARY_CONNECTIONS));
+        ds2 = dsp.create(conf, maxSecondaryPoolSize);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY, ds);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds2);
         dsProp.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),
@@ -319,8 +329,18 @@ public class PersistenceManagerProvider {
         LOG.warn("Could not create PersistenceManagerFactory using "
             + "connection pool properties, will fall back", e);
         pmf = JDOHelper.getPersistenceManagerFactory(prop);
+      } finally {
+        if (pmf == null && ds instanceof AutoCloseable) {
+          try (AutoCloseable close1 = (AutoCloseable) ds;
+               AutoCloseable close2 = (AutoCloseable) ds2 ) {
+            LOG.debug("Trying to close the dangling datasource as the pmf is null");
+          } catch (Exception e) {
+            LOG.warn("Failed to close the DataSource", e);
+          }
+        }
       }
     }
+    assert pmf != null;
     DataStoreCache dsc = pmf.getDataStoreCache();
     if (dsc != null) {
       String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
@@ -499,6 +519,14 @@ public class PersistenceManagerProvider {
     }
   }
 
+  public static DatabaseProduct getDatabaseProduct() {
+    if (databaseProduct == null) {
+      throw new IllegalStateException(
+          "Cannot determine the database product. PersistenceManagerFactory has not been initialized yet");
+    }
+    return databaseProduct;
+  }
+
   /**
    * Properties specified in hive-default.xml override the properties specified
    * in jpox.properties.
@@ -625,6 +653,7 @@ public class PersistenceManagerProvider {
             LOG.warn("Exception retry limit reached, not retrying any longer.", e);
           } else {
             LOG.debug("Non-retriable exception.", e);
+            break;
           }
           ex = e;
         }

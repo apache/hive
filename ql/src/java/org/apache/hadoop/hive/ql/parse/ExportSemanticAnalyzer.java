@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -131,5 +132,9 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public boolean hasTransactionalInQuery() {
     return isMmExport; // Full ACID export goes through UpdateDelete analyzer.
+  }
+
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.DDL);
   }
 }

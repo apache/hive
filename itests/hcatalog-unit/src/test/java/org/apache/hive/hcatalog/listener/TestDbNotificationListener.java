@@ -344,7 +344,6 @@ public class TestDbNotificationListener
     String dbDescription = "no description";
     Database db = new Database(dbName, dbDescription, dbLocationUri, emptyParameters);
     db.setOwnerName("test_user");
-    db.setCreateTime(startTime);
     msClient.createDatabase(db);
 
     // Read notification from metastore
@@ -362,7 +361,7 @@ public class TestDbNotificationListener
     // Parse the message field
     CreateDatabaseMessage createDbMsg = md.getCreateDatabaseMessage(event.getMessage());
     assertEquals(dbName, createDbMsg.getDB());
-    assertEquals(db, createDbMsg.getDatabaseObject());
+    assertEqualsSansTime(db, createDbMsg.getDatabaseObject());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_DATABASE, firstEventId + 1);
@@ -855,6 +854,49 @@ public class TestDbNotificationListener
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
     testEventCounts(defaultDbName, firstEventId, null, null, 3);
+  }
+
+  @Test
+  public void testTruncatePartitionedTable() throws Exception {
+    String defaultDbName = "default";
+    String unPartitionedTblName = "unPartitionedTable";
+    new TableBuilder()
+        .setDbName(defaultDbName)
+        .setTableName(unPartitionedTblName)
+        .addCol("col1", "int")
+        .setLocation(testTempDir)
+        .create(msClient, new HiveConf());
+
+    Table table = msClient.getTable(new GetTableRequest(defaultDbName,
+        unPartitionedTblName));
+    msClient.truncateTable(defaultDbName, unPartitionedTblName, null);
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize()); // create unpartitioned table + alter table events
+
+    String partitionedTblName = "partitionedTbl";
+    new TableBuilder()
+        .setDbName(defaultDbName)
+        .setTableName(partitionedTblName)
+        .addCol("col1", "int")
+        .addPartCol("col2", "int")
+        .addPartCol("col3", "string")
+        .setLocation(testTempDir)
+        .create(msClient, new HiveConf());
+    table = msClient.getTable(new GetTableRequest(defaultDbName,
+        partitionedTblName));
+    List<Partition> partitions = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      List<String> values = Arrays.asList(i + "", "part" + i);
+      Partition part = new Partition(values, defaultDbName, partitionedTblName,
+          0,  0, table.getSd(), emptyParameters);
+      partitions.add(part);
+    }
+    msClient.add_partitions(partitions);
+    msClient.truncateTable(defaultDbName, partitionedTblName, null);
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    // 5 events - create unpartitioned table, alter table events
+    // create partitioned table, add partition, alter table events.
+    assertEquals(5, rsp.getEventsSize());
   }
 
   @Test
@@ -1637,6 +1679,16 @@ public class TestDbNotificationListener
     testEventCounts(defaultDbName, firstEventId, firstEventId + 100, 50, 31);
   }
 
+  /**
+   * Asserts that two database objects are equals ignoring the creation time. If not an {@link AssertionError} is thrown.
+   * The creation time of the database is overridden internally by the HMS server thus not predictable.
+   */
+  private static void assertEqualsSansTime(Database expected, Database actual) {
+    Database copy = expected.deepCopy();
+    copy.setCreateTime(actual.getCreateTime());
+    assertEquals(copy, actual);
+  }
+
   private void verifyInsert(NotificationEvent event, String dbName, String tblName) throws Exception {
     // Parse the message field
     InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
@@ -1697,6 +1749,32 @@ public class TestDbNotificationListener
     assertEquals(24, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
     eventsReq.unsetTableNames();
     assertEquals(36, msClient.getNotificationEventsCount(eventsReq).getEventsCount());
+  }
+
+  @Test
+  public void fetchNotificationEventBasedOnEventTypes() throws Exception {
+    String dbName = "default";
+    String table1 = "test_event_based_tbl1";
+    String table2 = "test_event_based_tbl2";
+    String table3 = "test_event_based_tbl3";
+    // Generate some table events
+    generateSometableEvents(dbName, table1);
+    generateSometableEvents(dbName, table2);
+    generateSometableEvents(dbName, table3);
+
+    // Verify events by table names
+    NotificationEventRequest request = new NotificationEventRequest();
+    request.setLastEvent(firstEventId);
+    request.setMaxEvents(-1);
+    request.setDbName(dbName);
+    request.setTableNames(Arrays.asList(table1, table2));
+    request.setEventTypeList(Arrays.asList("CREATE_TABLE"));
+    NotificationEventResponse rsp1 = msClient.getNextNotification(request, true, null);
+    assertEquals(2, rsp1.getEventsSize());
+    request.setTableNames(Arrays.asList(table1, table2, table3));
+    request.setEventTypeList(Arrays.asList("CREATE_TABLE", "ADD_PARTITION"));
+    NotificationEventResponse rsp2 = msClient.getNextNotification(request, true, null);
+    assertEquals(9, rsp2.getEventsSize());
   }
 
   private void generateSometableEvents(String dbName, String tableName) throws Exception {

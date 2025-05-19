@@ -155,6 +155,12 @@
     </property>
 
     <property>
+      <name>hive.lineage.statement.filter</name>
+      <value>ALL</value>
+      <description>Specify the types of statements for which column lineage information is generated</description>
+    </property>
+
+    <property>
         <name>hive.exec.post.hooks</name>
         <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value>
         <description>Post Execute Hook for Tests</description>
@@ -372,11 +378,6 @@
     <property>
         <name>hive.query.reexecution.stats.persist.scope</name>
         <value>query</value>
-    </property>
-
-    <property>
-        <name>hive.cbo.fallback.strategy</name>
-        <value>TEST</value>
     </property>
 
     <property>

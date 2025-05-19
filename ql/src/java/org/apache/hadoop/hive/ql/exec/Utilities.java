@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -208,7 +209,7 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.kryo5.Kryo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -2820,6 +2821,10 @@ public final class Utilities {
 
   public static List<TezTask> getTezTasks(List<Task<?>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
+  }
+
+  public static Optional<TezTask> getFirstTezTask(List<Task<? extends Serializable>> tasks) {
+    return getTezTasks(tasks).stream().findFirst();
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<?>> tasks) {

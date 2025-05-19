@@ -9,7 +9,6 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 
 
 set hive.auto.convert.sortmerge.join.to.mapjoin=true;
-set hive.cbo.fallback.strategy=NEVER;
 
 -- Create two bucketed and sorted tables
 CREATE TABLE test_table1_n19 (key INT, value STRING) PARTITIONED BY (ds STRING)

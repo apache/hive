@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -122,7 +123,7 @@ public class TestHiveShell {
     Preconditions.checkState(started, "You have to start TestHiveShell first, before opening a session.");
     try {
       SessionHandle sessionHandle = client.getSessionManager().openSession(
-          CLIService.SERVER_VERSION, "", "", "127.0.0.1", Collections.emptyMap());
+          CLIService.SERVER_VERSION, "", "", IPStackUtils.resolveLoopbackAddress(), Collections.emptyMap());
       return client.getSessionManager().getSession(sessionHandle);
     } catch (Exception e) {
       throw new RuntimeException("Unable to open new Hive session: ", e);
@@ -229,6 +230,8 @@ public class TestHiveShell {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, HiveIcebergQueryLifeTimeHook.class.getName());
 
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.TRY_DIRECT_SQL, true);
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     return hiveConf;
   }
 }

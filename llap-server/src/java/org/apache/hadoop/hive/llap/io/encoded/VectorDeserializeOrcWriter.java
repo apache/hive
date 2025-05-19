@@ -107,7 +107,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
         || !(sourceIf instanceof TextInputFormat) || !(serDe instanceof LazySimpleSerDe)) {
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
     }
-    Path path = splitPath.getFileSystem(daemonConf).makeQualified(splitPath);
+    Path path = splitPath.getFileSystem(jobConf).makeQualified(splitPath);
     PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     if (partDesc == null) {
       LlapIoImpl.LOG.info("Not using VertorDeserializeOrcWriter: no partition desc for " + path);

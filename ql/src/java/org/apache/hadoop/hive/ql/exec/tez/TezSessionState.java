@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.registry.client.api.RegistryOperations;
 
 import java.io.File;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -80,6 +82,8 @@ import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
+import org.apache.tez.dag.api.client.DAGStatus;
+import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.mapreduce.hadoop.DeprecatedKeys;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -154,6 +158,9 @@ public class TezSessionState {
   private KillQuery killQuery;
 
   private static final Cache<String, String> shaCache = CacheBuilder.newBuilder().maximumSize(100).build();
+
+  private DAGStatus dagStatus;
+
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -547,8 +554,8 @@ public class TezSessionState {
       conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_ENV, env);
     }
 
-    conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS,
-        org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
+    String mrAmJavaOpts = conf.get(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, MRHelpers.getJavaOptsForMRAM(conf));
+    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts + JavaVersionUtils.getAddOpensFlagsIfNeeded());
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);
@@ -598,7 +605,6 @@ public class TezSessionState {
       }
     }
   }
-
   private void setupSessionAcls(Configuration tezConf, HiveConf hiveConf) throws
       IOException {
 
@@ -1006,5 +1012,40 @@ public class TezSessionState {
     }
     this.resources = resources;
     return dir;
+  }
+
+  public String getAppMasterUri() {
+    return Optional.of(getSession()).map(
+            tezClient -> tezClient.getAmHost() + ":" + tezClient.getAmPort())
+        .get();
+  }
+
+  /**
+   * This method makes a best-effort attempt to retrieve data from the most recent dagStatus.
+   * An alternative approach would be for Tez to expose a dedicated metrics endpoint for this purpose.
+   * However, as long as TezJobMonitor continues polling the DAG states from the Tez AM, this method
+   * will remain a reliable solution.
+   *
+   * @return A map containing metrics for TezSessionPoolManagerMetrics.
+   */
+  public Map<String, Double> getMetrics() {
+    Map<String, Double> metrics = new HashMap<>();
+    if (dagStatus == null) {
+      return metrics;
+    }
+    Progress progress = dagStatus.getDAGProgress();
+    metrics.put(TezSessionPoolManagerMetrics.TEZ_SESSION_METRIC_RUNNING_TASKS, (double) progress.getRunningTaskCount());
+    // this logic for calculating pending tasks is inline with the one in TezProgressMonitor
+    int pendingTasks = progress.getTotalTaskCount() - progress.getSucceededTaskCount() - progress.getRunningTaskCount();
+    metrics.put(TezSessionPoolManagerMetrics.TEZ_SESSION_METRIC_PENDING_TASKS, (double) pendingTasks);
+    return metrics;
+  }
+
+  /**
+   * TezSessionState receives periodic updates from the current DAG's status.
+   * @param dagStatus status of the current DAG
+   */
+  public void updateDagStatus(DAGStatus dagStatus) {
+    this.dagStatus = dagStatus;
   }
 }

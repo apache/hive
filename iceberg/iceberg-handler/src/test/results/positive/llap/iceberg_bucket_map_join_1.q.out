@@ -1,0 +1,622 @@
+PREHOOK: query: create table target_table(date_col date, string_col string, decimal_col decimal(38,0)) partitioned by spec (bucket(7, decimal_col)) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target_table
+POSTHOOK: query: create table target_table(date_col date, string_col string, decimal_col decimal(38,0)) partitioned by spec (bucket(7, decimal_col)) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target_table
+PREHOOK: query: insert into table target_table values
+('2017-05-17', 'pipeline', '50000000000000000000441610525'),
+('2018-12-20', 'pipeline', '50000000000000000001048981030'),
+('2020-06-30', 'pipeline', '50000000000000000002332575516'),
+('2021-08-16', 'pipeline', '50000000000000000003897973989'),
+('2017-06-06', 'pipeline', '50000000000000000000449148729'),
+('2017-09-08', 'pipeline', '50000000000000000000525378314'),
+('2022-08-30', 'pipeline', '50000000000000000005905545593'),
+('2022-08-16', 'pipeline', '50000000000000000005905545593'),
+('2018-05-03', 'pipeline', '50000000000000000000750826355'),
+('2020-01-10', 'pipeline', '50000000000000000001816579677'),
+('2021-11-01', 'pipeline', '50000000000000000004269423714'),
+('2017-11-07', 'pipeline', '50000000000000000000585901787'),
+('2019-10-15', 'pipeline', '50000000000000000001598843430'),
+('2020-04-01', 'pipeline', '50000000000000000002035795461'),
+('2020-02-24', 'pipeline', '50000000000000000001932600185'),
+('2020-04-27', 'pipeline', '50000000000000000002108160849'),
+('2016-07-05', 'pipeline', '50000000000000000000054405114'),
+('2020-06-02', 'pipeline', '50000000000000000002234387967'),
+('2020-08-21', 'pipeline', '50000000000000000002529168758'),
+('2021-02-17', 'pipeline', '50000000000000000003158511687')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@target_table
+POSTHOOK: query: insert into table target_table values
+('2017-05-17', 'pipeline', '50000000000000000000441610525'),
+('2018-12-20', 'pipeline', '50000000000000000001048981030'),
+('2020-06-30', 'pipeline', '50000000000000000002332575516'),
+('2021-08-16', 'pipeline', '50000000000000000003897973989'),
+('2017-06-06', 'pipeline', '50000000000000000000449148729'),
+('2017-09-08', 'pipeline', '50000000000000000000525378314'),
+('2022-08-30', 'pipeline', '50000000000000000005905545593'),
+('2022-08-16', 'pipeline', '50000000000000000005905545593'),
+('2018-05-03', 'pipeline', '50000000000000000000750826355'),
+('2020-01-10', 'pipeline', '50000000000000000001816579677'),
+('2021-11-01', 'pipeline', '50000000000000000004269423714'),
+('2017-11-07', 'pipeline', '50000000000000000000585901787'),
+('2019-10-15', 'pipeline', '50000000000000000001598843430'),
+('2020-04-01', 'pipeline', '50000000000000000002035795461'),
+('2020-02-24', 'pipeline', '50000000000000000001932600185'),
+('2020-04-27', 'pipeline', '50000000000000000002108160849'),
+('2016-07-05', 'pipeline', '50000000000000000000054405114'),
+('2020-06-02', 'pipeline', '50000000000000000002234387967'),
+('2020-08-21', 'pipeline', '50000000000000000002529168758'),
+('2021-02-17', 'pipeline', '50000000000000000003158511687')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target_table
+PREHOOK: query: create table source_table(date_col date, string_col string, decimal_col decimal(38,0)) partitioned by spec (bucket(7, decimal_col)) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source_table
+POSTHOOK: query: create table source_table(date_col date, string_col string, decimal_col decimal(38,0)) partitioned by spec (bucket(7, decimal_col)) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source_table
+PREHOOK: query: insert into table source_table values
+('2022-08-30', 'pipeline', '50000000000000000005905545593'),
+('2022-08-16', 'pipeline', '50000000000000000005905545593'),
+('2022-09-01', 'pipeline', '50000000000000000006008686831'),
+('2022-08-30', 'pipeline', '50000000000000000005992620837'),
+('2022-09-01', 'pipeline', '50000000000000000005992620837'),
+('2022-09-01', 'pipeline', '50000000000000000005992621067'),
+('2022-08-30', 'pipeline', '50000000000000000005992621067')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source_table
+POSTHOOK: query: insert into table source_table values
+('2022-08-30', 'pipeline', '50000000000000000005905545593'),
+('2022-08-16', 'pipeline', '50000000000000000005905545593'),
+('2022-09-01', 'pipeline', '50000000000000000006008686831'),
+('2022-08-30', 'pipeline', '50000000000000000005992620837'),
+('2022-09-01', 'pipeline', '50000000000000000005992620837'),
+('2022-09-01', 'pipeline', '50000000000000000005992621067'),
+('2022-08-30', 'pipeline', '50000000000000000005992621067')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source_table
+PREHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 2 (CUSTOM_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 llap
+      File Output Operator [FS_10]
+        Select Operator [SEL_9] (rows=30 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_45] (rows=30 width=336)
+            BucketMapJoin:true,Conds:SEL_2._col0, _col1=RS_7._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Map 2 [CUSTOM_EDGE] llap
+            MULTICAST [RS_7]
+              PartitionCols:_col1
+              Select Operator [SEL_5] (rows=3 width=168)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_14] (rows=3 width=168)
+                  predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                  TableScan [TS_3] (rows=7 width=168)
+                    default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_2] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_13] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:7,Grouping Partition Columns:["decimal_col"],Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+PREHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Reducer 3 (CUSTOM_EDGE)
+Reducer 3 <- Map 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 llap
+      File Output Operator [FS_14]
+        Select Operator [SEL_13] (rows=10 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_49] (rows=10 width=336)
+            BucketMapJoin:true,Conds:SEL_2._col0, _col1=RS_11._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Reducer 3 [CUSTOM_EDGE] llap
+            MULTICAST [RS_11]
+              PartitionCols:_col1
+              Group By Operator [GBY_8] (rows=1 width=168)
+                Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+              <-Map 2 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_7]
+                  PartitionCols:_col0, _col1
+                  Group By Operator [GBY_6] (rows=1 width=168)
+                    Output:["_col0","_col1"],keys:date_col, decimal_col
+                    Select Operator [SEL_5] (rows=3 width=168)
+                      Output:["date_col","decimal_col"]
+                      Filter Operator [FIL_18] (rows=3 width=168)
+                        predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                        TableScan [TS_3] (rows=7 width=168)
+                          default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_2] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_17] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:7,Grouping Partition Columns:["decimal_col"],Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+PREHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 2 (BROADCAST_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 llap
+      File Output Operator [FS_10]
+        Select Operator [SEL_9] (rows=30 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_45] (rows=30 width=336)
+            Conds:SEL_2._col0, _col1=RS_7._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Map 2 [BROADCAST_EDGE] llap
+            BROADCAST [RS_7]
+              PartitionCols:_col0, _col1
+              Select Operator [SEL_5] (rows=3 width=168)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_14] (rows=3 width=168)
+                  predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                  TableScan [TS_3] (rows=7 width=168)
+                    default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_2] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_13] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+PREHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Reducer 3 (BROADCAST_EDGE)
+Reducer 3 <- Map 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 llap
+      File Output Operator [FS_14]
+        Select Operator [SEL_13] (rows=10 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_49] (rows=10 width=336)
+            Conds:SEL_2._col0, _col1=RS_11._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Reducer 3 [BROADCAST_EDGE] llap
+            BROADCAST [RS_11]
+              PartitionCols:_col0, _col1
+              Group By Operator [GBY_8] (rows=1 width=168)
+                Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+              <-Map 2 [SIMPLE_EDGE] llap
+                SHUFFLE [RS_7]
+                  PartitionCols:_col0, _col1
+                  Group By Operator [GBY_6] (rows=1 width=168)
+                    Output:["_col0","_col1"],keys:date_col, decimal_col
+                    Select Operator [SEL_5] (rows=3 width=168)
+                      Output:["date_col","decimal_col"]
+                      Filter Operator [FIL_18] (rows=3 width=168)
+                        predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                        TableScan [TS_3] (rows=7 width=168)
+                          default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_2] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_17] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+PREHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 2 (CUSTOM_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 vectorized, llap
+      File Output Operator [FS_54]
+        Select Operator [SEL_53] (rows=30 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_52] (rows=30 width=336)
+            BucketMapJoin:true,Conds:SEL_51._col0, _col1=RS_49._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Map 2 [CUSTOM_EDGE] vectorized, llap
+            MULTICAST [RS_49]
+              PartitionCols:_col1
+              Select Operator [SEL_48] (rows=3 width=168)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_47] (rows=3 width=168)
+                  predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                  TableScan [TS_3] (rows=7 width=168)
+                    default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_51] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_50] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:7,Grouping Partition Columns:["decimal_col"],Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+PREHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Reducer 3 (CUSTOM_EDGE)
+Reducer 3 <- Map 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 vectorized, llap
+      File Output Operator [FS_61]
+        Select Operator [SEL_60] (rows=10 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_59] (rows=10 width=336)
+            BucketMapJoin:true,Conds:SEL_58._col0, _col1=RS_56._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Reducer 3 [CUSTOM_EDGE] vectorized, llap
+            MULTICAST [RS_56]
+              PartitionCols:_col1
+              Group By Operator [GBY_55] (rows=1 width=168)
+                Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+              <-Map 2 [SIMPLE_EDGE] vectorized, llap
+                SHUFFLE [RS_54]
+                  PartitionCols:_col0, _col1
+                  Group By Operator [GBY_53] (rows=1 width=168)
+                    Output:["_col0","_col1"],keys:date_col, decimal_col
+                    Select Operator [SEL_52] (rows=3 width=168)
+                      Output:["date_col","decimal_col"]
+                      Filter Operator [FIL_51] (rows=3 width=168)
+                        predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                        TableScan [TS_3] (rows=7 width=168)
+                          default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_58] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_57] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:7,Grouping Partition Columns:["decimal_col"],Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+PREHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 2 (BROADCAST_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 vectorized, llap
+      File Output Operator [FS_54]
+        Select Operator [SEL_53] (rows=30 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_52] (rows=30 width=336)
+            Conds:SEL_51._col0, _col1=RS_49._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Map 2 [BROADCAST_EDGE] vectorized, llap
+            BROADCAST [RS_49]
+              PartitionCols:_col0, _col1
+              Select Operator [SEL_48] (rows=3 width=168)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_47] (rows=3 width=168)
+                  predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                  TableScan [TS_3] (rows=7 width=168)
+                    default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_51] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_50] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593
+PREHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Reducer 3 (BROADCAST_EDGE)
+Reducer 3 <- Map 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 vectorized, llap
+      File Output Operator [FS_61]
+        Select Operator [SEL_60] (rows=10 width=520)
+          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          Map Join Operator [MAPJOIN_59] (rows=10 width=336)
+            Conds:SEL_58._col0, _col1=RS_56._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          <-Reducer 3 [BROADCAST_EDGE] vectorized, llap
+            BROADCAST [RS_56]
+              PartitionCols:_col0, _col1
+              Group By Operator [GBY_55] (rows=1 width=168)
+                Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+              <-Map 2 [SIMPLE_EDGE] vectorized, llap
+                SHUFFLE [RS_54]
+                  PartitionCols:_col0, _col1
+                  Group By Operator [GBY_53] (rows=1 width=168)
+                    Output:["_col0","_col1"],keys:date_col, decimal_col
+                    Select Operator [SEL_52] (rows=3 width=168)
+                      Output:["date_col","decimal_col"]
+                      Filter Operator [FIL_51] (rows=3 width=168)
+                        predicate:(if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                        TableScan [TS_3] (rows=7 width=168)
+                          default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+          <-Select Operator [SEL_58] (rows=10 width=168)
+              Output:["_col0","_col1"]
+              Filter Operator [FIL_57] (rows=10 width=260)
+                predicate:((string_col = 'pipeline') and if(decimal_col is not null, (CAST( decimal_col AS STRING) = '50000000000000000005905545593'), false) and date_col is not null and decimal_col is not null)
+                TableScan [TS_0] (rows=20 width=260)
+                  default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","string_col","decimal_col"]
+
+PREHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table
+PREHOOK: Input: default@target_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target_table inner join
+(select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
+on s.date_col = target_table.date_col AND s.string_col = target_table.string_col AND s.decimal_col = target_table.decimal_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table
+POSTHOOK: Input: default@target_table
+#### A masked pattern was here ####
+2022-08-30	pipeline	50000000000000000005905545593	2022-08-30	pipeline	50000000000000000005905545593
+2022-08-16	pipeline	50000000000000000005905545593	2022-08-16	pipeline	50000000000000000005905545593

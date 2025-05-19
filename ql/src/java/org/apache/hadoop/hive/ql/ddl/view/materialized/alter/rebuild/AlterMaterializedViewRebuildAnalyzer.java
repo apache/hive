@@ -29,12 +29,14 @@ import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexExecutor;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -50,6 +52,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInBetweenExpandRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSearchRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregatePartitionIncrementalRewritingRule;
@@ -203,7 +206,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
       this.ctx.addSubContext(ctx);
 
-      if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(table)) {
+      if (!this.ctx.isExplainPlan() && (AcidUtils.isTransactionalTable(table) ||
+              table.isNonNative() && table.getStorageHandler().areSnapshotsSupported())) {
         // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a
         // given time, as otherwise we might produce incorrect results if incremental maintenance is triggered.
         HiveTxnManager txnManager = getTxnMgr();
@@ -289,7 +293,11 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider, singletonList(materialization));
 
       program = new HepProgramBuilder();
-      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST, HivePushdownSnapshotFilterRule.INSTANCE);
+      generatePartialProgram(program,
+          false,
+          HepMatchOrder.DEPTH_FIRST,
+          HiveSearchRules.FILTER_SEARCH_EXPAND,
+          HivePushdownSnapshotFilterRule.INSTANCE);
       basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
 
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
@@ -781,5 +789,16 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
   @Override
   protected boolean allowOutputMultipleTimes() {
     return true;
+  }
+
+  @Override
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.DDL);
+  }
+
+  @Override
+  protected void setSqlKind(SqlKind sqlKind) {
+    // NO-OP: prevent Semantic Analyzer to classify this query as a simple SqlKind=INSERT
+    // we classify MV REBUILD as HiveOperation.ALTER_MATERIALIZED_VIEW_REBUILD
   }
 }

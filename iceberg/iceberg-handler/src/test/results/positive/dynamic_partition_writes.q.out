@@ -132,7 +132,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -148,7 +148,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","_col1"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col1
                     Select Operator [SEL_12] (rows=22 width=87)
                       Output:["_col0","_col1"]
@@ -156,14 +156,15 @@ Stage-3
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1 width=530)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-                  Group By Operator [GBY_19] (rows=1 width=332)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1 width=400)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
+                Select Operator [SEL_20] (rows=6 width=754)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
+                  Group By Operator [GBY_19] (rows=6 width=419)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=6 width=487)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"],keys:ccy
                         Select Operator [SEL_14] (rows=22 width=87)
                           Output:["a","ccy"]
                            Please refer to the previous Select Operator [SEL_12]
@@ -226,7 +227,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -242,7 +243,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","iceberg_bucket(_col1, 2)"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:iceberg_bucket(_col1, 2)
                     Select Operator [SEL_12] (rows=22 width=87)
                       Output:["_col0","_col1"]
@@ -250,14 +251,15 @@ Stage-3
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1 width=530)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-                  Group By Operator [GBY_19] (rows=1 width=332)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1 width=400)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
+                Select Operator [SEL_20] (rows=5 width=574)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
+                  Group By Operator [GBY_19] (rows=5 width=336)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=5 width=404)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"],keys:iceberg_bucket(ccy, 2)
                         Select Operator [SEL_14] (rows=22 width=87)
                           Output:["a","ccy"]
                            Please refer to the previous Select Operator [SEL_12]
@@ -320,7 +322,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -336,7 +338,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","_col2","_col1","iceberg_bucket(_col2, 3)"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col1, iceberg_bucket(_col2, 3)
                     Select Operator [SEL_12] (rows=22 width=94)
                       Output:["_col0","_col1","_col2"]
@@ -344,14 +346,15 @@ Stage-3
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1 width=794)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_19] (rows=1 width=500)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1 width=568)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"]
+                Select Operator [SEL_20] (rows=11 width=1030)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_19] (rows=11 width=591)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_15] (rows=11 width=659)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"],keys:ccy, iceberg_bucket(c, 3)
                         Select Operator [SEL_14] (rows=22 width=94)
                           Output:["a","ccy","c"]
                            Please refer to the previous Select Operator [SEL_12]
@@ -423,7 +426,6 @@ POSTHOOK: query: select * from default.tbl_target_mixed.files
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":null,"c_bucket":null}	2	417	{1:7,2:5,3:5}	{1:2,2:2,3:2}	{1:0,2:2,3:2}	{}	{1:   }	{1:n   }	NULL	[3]	NULL	0	{"a":{"column_size":7,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":12,"upper_bound":110},"c":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ccy":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":1}	1	449	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:d   ,2:CZK,3:       }	{1:d   ,2:CZK,3:       }	NULL	[3]	NULL	0	{"a":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":100,"upper_bound":100},"c":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":12,"upper_bound":12},"ccy":{"column_size":12,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":"CZK","upper_bound":"CZK"}}
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:
    ,2:CZK,3:       }	{1:
@@ -443,6 +445,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:
        }	{1:   ,2:USD,3:
        }	NULL	[3]	NULL	0	{"a":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":6,"upper_bound":6},"c":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":10,"upper_bound":10},"ccy":{"column_size":12,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":"USD","upper_bound":"USD"}}
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":null,"c_bucket":null}	2	417	{1:7,2:5,3:5}	{1:2,2:2,3:2}	{1:0,2:2,3:2}	{}	{1:   }	{1:n   }	NULL	[3]	NULL	0	{"a":{"column_size":7,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":12,"upper_bound":110},"c":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ccy":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
 PREHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'EUR'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_src
@@ -455,7 +458,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -471,7 +474,7 @@ Stage-3
                 Select Operator [SEL_20]
                   Output:["_col0","_col1","_col2","_col1","iceberg_bucket(_col2, 3)"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_16]
+                  SHUFFLE [RS_16]
                     PartitionCols:_col1, iceberg_bucket(_col2, 3)
                     Select Operator [SEL_15] (rows=4 width=99)
                       Output:["_col0","_col1","_col2"]
@@ -481,14 +484,15 @@ Stage-3
                           default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
               Reducer 3 vectorized
               File Output Operator [FS_24]
-                Select Operator [SEL_23] (rows=1 width=794)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_22] (rows=1 width=500)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_19]
-                      Group By Operator [GBY_18] (rows=1 width=568)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"]
+                Select Operator [SEL_23] (rows=4 width=1030)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_22] (rows=4 width=591)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_19]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_18] (rows=4 width=659)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"],keys:ccy, iceberg_bucket(c, 3)
                         Select Operator [SEL_17] (rows=4 width=99)
                           Output:["a","ccy","c"]
                            Please refer to the previous Select Operator [SEL_15]
@@ -512,7 +516,7 @@ POSTHOOK: Output: default@tbl_target_mixed
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -524,11 +528,11 @@ Stage-3
             Stage-1
               Reducer 2 vectorized
               File Output Operator [FS_20]
-                Select Operator [SEL_19] (rows=1 width=794)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_18] (rows=1 width=500)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                Select Operator [SEL_19] (rows=1 width=1030)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=591)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE] vectorized
                     File Output Operator [FS_14]
                       table:{"name:":"default.tbl_target_mixed"}
                       Select Operator [SEL_13] (rows=1 width=99)
@@ -537,9 +541,10 @@ Stage-3
                           predicate:((c = 100L) and (b = 'USD'))
                           TableScan [TS_0] (rows=22 width=94)
                             default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
-                    PARTITION_ONLY_SHUFFLE [RS_17]
-                      Group By Operator [GBY_16] (rows=1 width=568)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"]
+                    SHUFFLE [RS_17]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_16] (rows=1 width=659)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"],keys:ccy, iceberg_bucket(c, 3)
                         Select Operator [SEL_15] (rows=1 width=99)
                           Output:["a","ccy","c"]
                            Please refer to the previous Select Operator [SEL_13]
@@ -605,7 +610,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":2}	3	448	{1:8,2:17,3:5}	{1:3,2:3,3:3}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:
        }	{1:(   ,2:EUR,3:
        }	NULL	[3]	NULL	0	{"a":{"column_size":8,"value_count":3,"null_value_count":0,"nan_value_count":null,"lower_bound":1,"upper_bound":40},"c":{"column_size":5,"value_count":3,"null_value_count":0,"nan_value_count":null,"lower_bound":10,"upper_bound":10},"ccy":{"column_size":17,"value_count":3,"null_value_count":0,"nan_value_count":null,"lower_bound":"EUR","upper_bound":"EUR"}}
-0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":null,"c_bucket":null}	2	417	{1:7,2:5,3:5}	{1:2,2:2,3:2}	{1:0,2:2,3:2}	{}	{1:   }	{1:n   }	NULL	[3]	NULL	0	{"a":{"column_size":7,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":12,"upper_bound":110},"c":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ccy":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":1}	1	449	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:d   ,2:CZK,3:       }	{1:d   ,2:CZK,3:       }	NULL	[3]	NULL	0	{"a":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":100,"upper_bound":100},"c":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":12,"upper_bound":12},"ccy":{"column_size":12,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":"CZK","upper_bound":"CZK"}}
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:
    ,2:CZK,3:       }	{1:
@@ -625,6 +629,7 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:
        }	{1:   ,2:USD,3:
        }	NULL	[3]	NULL	0	{"a":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":6,"upper_bound":6},"c":{"column_size":6,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":10,"upper_bound":10},"ccy":{"column_size":12,"value_count":1,"null_value_count":0,"nan_value_count":null,"lower_bound":"USD","upper_bound":"USD"}}
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":null,"c_bucket":null}	2	417	{1:7,2:5,3:5}	{1:2,2:2,3:2}	{1:0,2:2,3:2}	{}	{1:   }	{1:n   }	NULL	[3]	NULL	0	{"a":{"column_size":7,"value_count":2,"null_value_count":0,"nan_value_count":null,"lower_bound":12,"upper_bound":110},"c":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null},"ccy":{"column_size":5,"value_count":2,"null_value_count":2,"nan_value_count":null,"lower_bound":null,"upper_bound":null}}
 PREHOOK: query: create external table tbl_bucket_date (id string, date_time_date date, year_partition int) 
     partitioned by spec (year_partition, bucket(1, date_time_date))
 stored by iceberg stored as parquet 
@@ -686,7 +691,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -702,7 +707,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","iceberg_truncate(_col1, 2)"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:iceberg_truncate(_col1, 2)
                     Select Operator [SEL_12] (rows=22 width=87)
                       Output:["_col0","_col1"]
@@ -710,14 +715,15 @@ Stage-3
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1 width=530)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-                  Group By Operator [GBY_19] (rows=1 width=332)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1 width=400)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
+                Select Operator [SEL_20] (rows=5 width=754)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
+                  Group By Operator [GBY_19] (rows=5 width=516)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=5 width=584)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"],keys:iceberg_truncate(ccy, 2)
                         Select Operator [SEL_14] (rows=22 width=87)
                           Output:["a","ccy"]
                            Please refer to the previous Select Operator [SEL_12]
@@ -780,7 +786,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -796,7 +802,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","iceberg_truncate(_col0, 2)"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:iceberg_truncate(_col0, 2)
                     Select Operator [SEL_12] (rows=22 width=87)
                       Output:["_col0","_col1"]
@@ -804,14 +810,15 @@ Stage-3
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1 width=530)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-                  Group By Operator [GBY_19] (rows=1 width=332)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1 width=400)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(id)","max(id)","count(1)","count(id)","compute_bit_vector_hll(id)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
+                Select Operator [SEL_20] (rows=21 width=754)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
+                  Group By Operator [GBY_19] (rows=21 width=516)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=21 width=584)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(id)","max(id)","count(1)","count(id)","compute_bit_vector_hll(id)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"],keys:iceberg_truncate(id, 2)
                         Select Operator [SEL_14] (rows=22 width=87)
                           Output:["id","ccy"]
                            Please refer to the previous Select Operator [SEL_12]
@@ -874,7 +881,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -890,7 +897,7 @@ Stage-3
                 Select Operator [SEL_17]
                   Output:["_col0","_col1","iceberg_truncate(_col1, 2)"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:iceberg_truncate(_col1, 2)
                     Select Operator [SEL_12] (rows=22 width=11)
                       Output:["_col0","_col1"]
@@ -898,14 +905,15 @@ Stage-3
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","c"]
               Reducer 3 vectorized
               File Output Operator [FS_21]
-                Select Operator [SEL_20] (rows=1 width=528)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
-                  Group By Operator [GBY_19] (rows=1 width=336)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_16]
-                      Group By Operator [GBY_15] (rows=1 width=336)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","min(ccy)","max(ccy)","count(ccy)","compute_bit_vector_hll(ccy)"]
+                Select Operator [SEL_20] (rows=8 width=752)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
+                  Group By Operator [GBY_19] (rows=8 width=520)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=8 width=520)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","min(ccy)","max(ccy)","count(ccy)","compute_bit_vector_hll(ccy)"],keys:iceberg_truncate(ccy, 2)
                         Select Operator [SEL_14] (rows=22 width=11)
                           Output:["a","ccy"]
                            Please refer to the previous Select Operator [SEL_12]
@@ -968,7 +976,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -984,7 +992,7 @@ Stage-3
                 Select Operator [SEL_18]
                   Output:["_col0","_col1","_col2","iceberg_truncate(_col1, 2)","iceberg_truncate(_col2, 3)"]
                 <-Map 1 [SIMPLE_EDGE] vectorized
-                  PARTITION_ONLY_SHUFFLE [RS_14]
+                  SHUFFLE [RS_14]
                     PartitionCols:iceberg_truncate(_col1, 2), iceberg_truncate(_col2, 3)
                     Select Operator [SEL_13] (rows=22 width=199)
                       Output:["_col0","_col1","_col2"]
@@ -992,14 +1000,15 @@ Stage-3
                         default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
               Reducer 3 vectorized
               File Output Operator [FS_22]
-                Select Operator [SEL_21] (rows=1 width=1005)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_20] (rows=1 width=708)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                    PARTITION_ONLY_SHUFFLE [RS_17]
-                      Group By Operator [GBY_16] (rows=1 width=776)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(b))","avg(COALESCE(length(b),0))","count(b)","compute_bit_vector_hll(b)","min(ccy)","max(ccy)","count(ccy)","compute_bit_vector_hll(ccy)"]
+                Select Operator [SEL_21] (rows=5 width=1421)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_20] (rows=5 width=1076)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_17]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_16] (rows=5 width=1144)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(b))","avg(COALESCE(length(b),0))","count(b)","compute_bit_vector_hll(b)","min(ccy)","max(ccy)","count(ccy)","compute_bit_vector_hll(ccy)"],keys:iceberg_truncate(b, 2), iceberg_truncate(ccy, 3)
                         Select Operator [SEL_15] (rows=22 width=199)
                           Output:["a","b","ccy"]
                            Please refer to the previous Select Operator [SEL_13]
@@ -1068,7 +1077,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -1079,12 +1088,12 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Reducer 2 vectorized
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.tbl_year_date"}
-                Select Operator [SEL_15]
+                Select Operator [SEL_16]
                   Output:["_col0","_col1","_col2","_col2","iceberg_year(_col1)"]
                 <-Map 1 [SIMPLE_EDGE]
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2, iceberg_year(_col1)
                     Select Operator [SEL_3] (rows=1 width=240)
                       Output:["_col0","_col1","_col2"]
@@ -1095,15 +1104,16 @@ Stage-3
                           TableScan [TS_0] (rows=1 width=10)
                             _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
               Reducer 3 vectorized
-              File Output Operator [FS_19]
-                Select Operator [SEL_18] (rows=1 width=890)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_17] (rows=1 width=596)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
-                    PARTITION_ONLY_SHUFFLE [RS_9]
-                      Group By Operator [GBY_8] (rows=1 width=664)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_date)","max(date_time_date)","count(date_time_date)","compute_bit_vector_hll(date_time_date)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"]
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=946)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=604)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE]
+                    SHUFFLE [RS_9]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_8] (rows=1 width=672)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_date)","max(date_time_date)","count(date_time_date)","compute_bit_vector_hll(date_time_date)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"],keys:year_partition, iceberg_year(date_time_date)
                         Select Operator [SEL_7] (rows=1 width=240)
                           Output:["id","date_time_date","year_partition"]
                            Please refer to the previous Select Operator [SEL_3]
@@ -1153,7 +1163,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -1164,12 +1174,12 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Reducer 2 vectorized
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.tbl_year_timestamp"}
-                Select Operator [SEL_15]
+                Select Operator [SEL_16]
                   Output:["_col0","_col1","_col2","_col2","iceberg_year(_col1)"]
                 <-Map 1 [SIMPLE_EDGE]
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2, iceberg_year(_col1)
                     Select Operator [SEL_3] (rows=1 width=224)
                       Output:["_col0","_col1","_col2"]
@@ -1180,15 +1190,16 @@ Stage-3
                           TableScan [TS_0] (rows=1 width=10)
                             _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
               Reducer 3 vectorized
-              File Output Operator [FS_19]
-                Select Operator [SEL_18] (rows=1 width=863)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_17] (rows=1 width=564)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
-                    PARTITION_ONLY_SHUFFLE [RS_9]
-                      Group By Operator [GBY_8] (rows=1 width=632)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"]
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=919)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=572)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE]
+                    SHUFFLE [RS_9]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_8] (rows=1 width=640)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"],keys:year_partition, iceberg_year(date_time_timestamp)
                         Select Operator [SEL_7] (rows=1 width=224)
                           Output:["id","date_time_timestamp","year_partition"]
                            Please refer to the previous Select Operator [SEL_3]
@@ -1238,7 +1249,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -1249,12 +1260,12 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Reducer 2 vectorized
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.tbl_month_date"}
-                Select Operator [SEL_15]
+                Select Operator [SEL_16]
                   Output:["_col0","_col1","_col2","_col2","iceberg_month(_col1)"]
                 <-Map 1 [SIMPLE_EDGE]
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2, iceberg_month(_col1)
                     Select Operator [SEL_3] (rows=1 width=240)
                       Output:["_col0","_col1","_col2"]
@@ -1265,15 +1276,16 @@ Stage-3
                           TableScan [TS_0] (rows=1 width=10)
                             _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
               Reducer 3 vectorized
-              File Output Operator [FS_19]
-                Select Operator [SEL_18] (rows=1 width=890)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_17] (rows=1 width=596)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
-                    PARTITION_ONLY_SHUFFLE [RS_9]
-                      Group By Operator [GBY_8] (rows=1 width=664)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_date)","max(date_time_date)","count(date_time_date)","compute_bit_vector_hll(date_time_date)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"]
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=946)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=604)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE]
+                    SHUFFLE [RS_9]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_8] (rows=1 width=672)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_date)","max(date_time_date)","count(date_time_date)","compute_bit_vector_hll(date_time_date)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"],keys:year_partition, iceberg_month(date_time_date)
                         Select Operator [SEL_7] (rows=1 width=240)
                           Output:["id","date_time_date","year_partition"]
                            Please refer to the previous Select Operator [SEL_3]
@@ -1323,7 +1335,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -1334,12 +1346,12 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Reducer 2 vectorized
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.tbl_month_timestamp"}
-                Select Operator [SEL_15]
+                Select Operator [SEL_16]
                   Output:["_col0","_col1","_col2","_col2","iceberg_month(_col1)"]
                 <-Map 1 [SIMPLE_EDGE]
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2, iceberg_month(_col1)
                     Select Operator [SEL_3] (rows=1 width=224)
                       Output:["_col0","_col1","_col2"]
@@ -1350,15 +1362,16 @@ Stage-3
                           TableScan [TS_0] (rows=1 width=10)
                             _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
               Reducer 3 vectorized
-              File Output Operator [FS_19]
-                Select Operator [SEL_18] (rows=1 width=863)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_17] (rows=1 width=564)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
-                    PARTITION_ONLY_SHUFFLE [RS_9]
-                      Group By Operator [GBY_8] (rows=1 width=632)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"]
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=919)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=572)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE]
+                    SHUFFLE [RS_9]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_8] (rows=1 width=640)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"],keys:year_partition, iceberg_month(date_time_timestamp)
                         Select Operator [SEL_7] (rows=1 width=224)
                           Output:["id","date_time_timestamp","year_partition"]
                            Please refer to the previous Select Operator [SEL_3]
@@ -1408,7 +1421,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -1419,12 +1432,12 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Reducer 2 vectorized
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.tbl_day_date"}
-                Select Operator [SEL_15]
+                Select Operator [SEL_16]
                   Output:["_col0","_col1","_col2","_col2","iceberg_day(_col1)"]
                 <-Map 1 [SIMPLE_EDGE]
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2, iceberg_day(_col1)
                     Select Operator [SEL_3] (rows=1 width=240)
                       Output:["_col0","_col1","_col2"]
@@ -1435,15 +1448,16 @@ Stage-3
                           TableScan [TS_0] (rows=1 width=10)
                             _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
               Reducer 3 vectorized
-              File Output Operator [FS_19]
-                Select Operator [SEL_18] (rows=1 width=890)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_17] (rows=1 width=596)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
-                    PARTITION_ONLY_SHUFFLE [RS_9]
-                      Group By Operator [GBY_8] (rows=1 width=664)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_date)","max(date_time_date)","count(date_time_date)","compute_bit_vector_hll(date_time_date)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"]
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=946)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=604)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE]
+                    SHUFFLE [RS_9]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_8] (rows=1 width=672)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_date)","max(date_time_date)","count(date_time_date)","compute_bit_vector_hll(date_time_date)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"],keys:year_partition, iceberg_day(date_time_date)
                         Select Operator [SEL_7] (rows=1 width=240)
                           Output:["id","date_time_date","year_partition"]
                            Please refer to the previous Select Operator [SEL_3]
@@ -1493,7 +1507,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -1504,12 +1518,12 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Reducer 2 vectorized
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.tbl_day_timestamp"}
-                Select Operator [SEL_15]
+                Select Operator [SEL_16]
                   Output:["_col0","_col1","_col2","_col2","iceberg_day(_col1)"]
                 <-Map 1 [SIMPLE_EDGE]
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2, iceberg_day(_col1)
                     Select Operator [SEL_3] (rows=1 width=224)
                       Output:["_col0","_col1","_col2"]
@@ -1520,15 +1534,16 @@ Stage-3
                           TableScan [TS_0] (rows=1 width=10)
                             _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
               Reducer 3 vectorized
-              File Output Operator [FS_19]
-                Select Operator [SEL_18] (rows=1 width=863)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_17] (rows=1 width=564)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
-                    PARTITION_ONLY_SHUFFLE [RS_9]
-                      Group By Operator [GBY_8] (rows=1 width=632)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"]
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=919)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=572)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE]
+                    SHUFFLE [RS_9]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_8] (rows=1 width=640)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"],keys:year_partition, iceberg_day(date_time_timestamp)
                         Select Operator [SEL_7] (rows=1 width=224)
                           Output:["id","date_time_timestamp","year_partition"]
                            Please refer to the previous Select Operator [SEL_3]
@@ -1578,7 +1593,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
 Stage-3
   Stats Work{}
@@ -1589,12 +1604,12 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Reducer 2 vectorized
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.tbl_hour_timestamp"}
-                Select Operator [SEL_15]
+                Select Operator [SEL_16]
                   Output:["_col0","_col1","_col2","_col2","iceberg_hour(_col1)"]
                 <-Map 1 [SIMPLE_EDGE]
-                  PARTITION_ONLY_SHUFFLE [RS_13]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col2, iceberg_hour(_col1)
                     Select Operator [SEL_3] (rows=1 width=224)
                       Output:["_col0","_col1","_col2"]
@@ -1605,15 +1620,16 @@ Stage-3
                           TableScan [TS_0] (rows=1 width=10)
                             _dummy_database@_dummy_table,_dummy_table,Tbl:COMPLETE,Col:COMPLETE
               Reducer 3 vectorized
-              File Output Operator [FS_19]
-                Select Operator [SEL_18] (rows=1 width=863)
-                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-                  Group By Operator [GBY_17] (rows=1 width=564)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
-                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
-                    PARTITION_ONLY_SHUFFLE [RS_9]
-                      Group By Operator [GBY_8] (rows=1 width=632)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"]
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=919)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_18] (rows=1 width=572)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0, KEY._col1
+                  <-Map 1 [SIMPLE_EDGE]
+                    SHUFFLE [RS_9]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_8] (rows=1 width=640)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14"],aggregations:["max(length(id))","avg(COALESCE(length(id),0))","count(1)","count(id)","compute_bit_vector_hll(id)","min(date_time_timestamp)","max(date_time_timestamp)","count(date_time_timestamp)","compute_bit_vector_hll(date_time_timestamp)","min(year_partition)","max(year_partition)","count(year_partition)","compute_bit_vector_hll(year_partition)"],keys:year_partition, iceberg_hour(date_time_timestamp)
                         Select Operator [SEL_7] (rows=1 width=224)
                           Output:["id","date_time_timestamp","year_partition"]
                            Please refer to the previous Select Operator [SEL_3]

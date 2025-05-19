@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.service.server.HiveServer2;
 import org.junit.AfterClass;
@@ -206,14 +207,14 @@ public class TestHs2Hooks {
     Assert.assertNotNull(PostExecHook.ipAddress, "ipaddress is null");
     Assert.assertNotNull(PostExecHook.userName, "userName is null");
     Assert.assertNotNull(PostExecHook.operation , "operation is null");
-    Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(IPStackUtils.isActiveStackLoopbackIP(PostExecHook.ipAddress));
     Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
     Assert.assertEquals(System.getProperty("user.name"), PreExecHook.userName);
     Assert.assertNotNull("ipaddress is null", PreExecHook.ipAddress);
     Assert.assertNotNull("userName is null", PreExecHook.userName);
     Assert.assertNotNull("operation is null", PreExecHook.operation);
-    Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(IPStackUtils.isActiveStackLoopbackIP(PreExecHook.ipAddress));
     Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
 
     error = SemanticAnalysisHook.preAnalyzeError;
@@ -233,8 +234,7 @@ public class TestHs2Hooks {
         SemanticAnalysisHook.command);
     Assert.assertNotNull("semantic hook context commandType is null",
         SemanticAnalysisHook.commandType);
-    Assert.assertTrue(SemanticAnalysisHook.ipAddress,
-        SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(IPStackUtils.isActiveStackLoopbackIP(SemanticAnalysisHook.ipAddress));
     Assert.assertEquals("show tables", SemanticAnalysisHook.command);
 
     stmt.close();

@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -304,6 +305,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       this.cdlIn = cdlIn;
       this.cdlOut = cdlOut;
       this.hiveConf = new HiveConf(hiveConf);
+      this.hiveConf.unset(HiveConf.ConfVars.HIVE_SESSION_ID.varname);
     }
 
     @Override
@@ -402,6 +404,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       throws Exception, MetaException, TException, NoSuchObjectException {
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    hiveConf.setBoolean("hive.txn.xlock.write", true);
     // Need to close the thread local Hive object so that configuration change is reflected to HMS.
     Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
@@ -601,8 +604,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:8:9223372036854775807::", validWriteIds);
 
-    runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://127.0.0.1:8020/abcd/1')",
-      tableName));
+    runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://%s/abcd/1')",
+        tableName, IPStackUtils.concatLoopbackAddressPort(8020)));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:9:9223372036854775807::", validWriteIds);
 
@@ -1424,15 +1427,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //create a delta directory
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,17)");
 
-    boolean isVectorized = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-    String query = "select ROW__ID, a, b" + (isVectorized ? " from  " : ", INPUT__FILE__NAME from ") +  Table.NONACIDORCTBL + " order by ROW__ID";
+    String query = "select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected = new String[][] {
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/000001_0"},
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/000001_0_copy_1"},
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/000001_0_copy_1"},
       {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/delta_10000001_10000001_0000/bucket_00001_0"}
     };
-    checkResult(expected, query, isVectorized, "before compact", LOG);
+    checkResultAndVectorization(expected, query, "before compact", LOG);
 
     Assert.assertEquals(536870912,
         BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
@@ -1443,15 +1445,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " compact 'major'");
     runWorker(hiveConf);
 
-    query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
-        + Table.NONACIDORCTBL + " order by ROW__ID";
+    query = "select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000009/bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000009/bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000009/bucket_00001"},
         {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000009/bucket_00001"}
     };
-    checkResult(expected2, query, isVectorized, "after major compact", LOG);
+    checkResultAndVectorization(expected2, query, "after major compact", LOG);
     //make sure they are the same before and after compaction
   }
   //@Ignore("see bucket_num_reducers_acid.q")

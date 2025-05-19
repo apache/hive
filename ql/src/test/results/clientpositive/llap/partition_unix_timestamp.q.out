@@ -1,0 +1,29 @@
+PREHOOK: query: create table t1 (a int) partitioned by (p_year string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int) partitioned by (p_year string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+PREHOOK: query: explain cbo
+select * from t1 where p_year IN (
+            year(from_unixtime( unix_timestamp() ))
+          )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from t1 where p_year IN (
+            year(from_unixtime( unix_timestamp() ))
+          )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], p_year=[$1])
+  HiveFilter(condition=[=(CAST($1):DOUBLE, 2.0250E3)])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
+

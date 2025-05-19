@@ -29,6 +29,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlBinaryOperator;
@@ -57,8 +58,10 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
@@ -73,7 +76,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToArray;
@@ -103,6 +105,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -118,9 +121,9 @@ public class RexNodeConverter {
   /**
    * Constructor used by HiveRexExecutorImpl.
    */
-  public RexNodeConverter(RexBuilder rexBuilder, RelDataTypeFactory typeFactory) {
+  public RexNodeConverter(RexBuilder rexBuilder) {
     this.rexBuilder = rexBuilder;
-    this.typeFactory = typeFactory;
+    this.typeFactory = rexBuilder.getTypeFactory();
   }
 
   public RexNode convert(ExprNodeDesc expr) throws SemanticException {
@@ -141,11 +144,11 @@ public class RexNodeConverter {
     if (rexNode.getType().isStruct()) {
       // regular case of accessing nested field in a column
       return rexBuilder.makeFieldAccess(rexNode, fieldDesc.getFieldName(), true);
+    } else if (rexNode.getType().getComponentType() != null) {
+      return rexBuilder.makeCall(rexNode.getType().getComponentType(), HiveComponentAccess.COMPONENT_ACCESS,
+              Collections.singletonList(rexNode));
     } else {
-      // This may happen for schema-less tables, where columns are dynamically
-      // supplied by serdes.
-      throw new CalciteSemanticException("Unexpected rexnode : "
-          + rexNode.getClass().getCanonicalName(), UnsupportedFeature.Schema_less_table);
+      throw new CalciteSemanticException("Unexpected rexnode : " + rexNode.getClass().getCanonicalName());
     }
   }
 
@@ -165,7 +168,7 @@ public class RexNodeConverter {
         && (PrimitiveGrouping.NUMERIC_GROUP == PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
         ((PrimitiveTypeInfo) func.getTypeInfo()).getPrimitiveCategory())));
     boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;
-    boolean isWhenCase = tgtUdf instanceof GenericUDFWhen || tgtUdf instanceof GenericUDFCase;
+    boolean isWhenCase = tgtUdf instanceof GenericUDFWhen;
     boolean isTransformableTimeStamp = func.getGenericUDF() instanceof GenericUDFUnixTimeStamp &&
         !func.getChildren().isEmpty();
     boolean isBetween = !isNumeric && tgtUdf instanceof GenericUDFBetween;
@@ -246,7 +249,7 @@ public class RexNodeConverter {
           func.getGenericUDF(), argTypeBldr.build(), retType);
       if (calciteOp.getKind() == SqlKind.CASE) {
         // If it is a case operator, we need to rewrite it
-        childRexNodeLst = rewriteCaseChildren(func.getFuncText(), childRexNodeLst, rexBuilder);
+        childRexNodeLst = rewriteCaseChildren(childRexNodeLst, rexBuilder);
         // Adjust branch types by inserting explicit casts if the actual is ambiguous
         childRexNodeLst = adjustCaseBranchTypes(childRexNodeLst, retType, rexBuilder);
       } else if (HiveExtractDate.ALL_FUNCTIONS.contains(calciteOp)) {
@@ -255,7 +258,7 @@ public class RexNodeConverter {
       } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst, rexBuilder);
-      } else if (calciteOp.getKind() == SqlKind.IN && isAllPrimitive) {
+      } else if (HiveIn.INSTANCE.equals(calciteOp) && isAllPrimitive) {
         if (childRexNodeLst.size() == 2) {
           // if it is a single item in an IN clause, transform A IN (B) to A = B
           // from IN [A,B] => EQUALS [A,B]
@@ -354,60 +357,30 @@ public class RexNodeConverter {
    *   "case" function, ELSE clause is optional)
    * - CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END (translated into the
    *   "when" function, ELSE clause is optional)
-   * However, Calcite only has the equivalent to the "when" Hive function. Thus,
-   * we need to transform the "case" function into "when". Further, ELSE clause is
-   * not optional in Calcite.
+   * The first type is transformed to the second one at parsing time.
+   * Calcite only has the equivalent to the "when" Hive function and ELSE clause is
+   * not optional.
    *
-   * Example. Consider the following statement:
-   * CASE x + y WHEN 1 THEN 'fee' WHEN 2 THEN 'fie' END
-   * It will be transformed into:
-   * CASE WHEN =(x + y, 1) THEN 'fee' WHEN =(x + y, 2) THEN 'fie' ELSE null END
+   * See parser rule caseExpression in IdentifiersParser.g
    */
-  public static List<RexNode> rewriteCaseChildren(String funcText, List<RexNode> childRexNodeLst,
-      RexBuilder rexBuilder) throws SemanticException {
+  public static List<RexNode> rewriteCaseChildren(List<RexNode> childRexNodeLst, RexBuilder rexBuilder) {
     List<RexNode> newChildRexNodeLst = new ArrayList<>();
-    if (FunctionRegistry.getNormalizedFunctionName(funcText).equals("case")) {
-      RexNode firstPred = childRexNodeLst.get(0);
-      int length = childRexNodeLst.size() % 2 == 1 ?
-          childRexNodeLst.size() : childRexNodeLst.size() - 1;
-      for (int i = 1; i < length; i++) {
-        if (i % 2 == 1) {
-          // We rewrite it
-          RexNode node = childRexNodeLst.get(i);
-          if (node.isA(SqlKind.LITERAL) && !node.getType().equals(firstPred.getType())) {
-            // this effectively changes the type of the literal to that of the predicate
-            // to which it is anyway going to be compared with
-            // ex: CASE WHEN =($0:SMALLINT, 1:INTEGER) ... => CASE WHEN =($0:SMALLINT, 1:SMALLINT)
-            node = rexBuilder.makeCast(firstPred.getType(), node);
+    for (int i = 0; i < childRexNodeLst.size(); i++) {
+      RexNode child = childRexNodeLst.get(i);
+      if (RexUtil.isNull(child)) {
+        if (i % 2 == 0 && i != childRexNodeLst.size() - 1) {
+          if (SqlTypeName.NULL.equals(child.getType().getSqlTypeName())) {
+            child = rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN));
           }
-          newChildRexNodeLst.add(
-              rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, firstPred, node));
         } else {
-          newChildRexNodeLst.add(childRexNodeLst.get(i));
-        }
-      }
-      // The else clause
-      if (length != childRexNodeLst.size()) {
-        newChildRexNodeLst.add(childRexNodeLst.get(childRexNodeLst.size()-1));
-      }
-    } else {
-      for (int i = 0; i < childRexNodeLst.size(); i++) {
-        RexNode child = childRexNodeLst.get(i);
-        if (RexUtil.isNull(child)) {
-          if (i % 2 == 0 && i != childRexNodeLst.size() - 1) {
-            if (SqlTypeName.NULL.equals(child.getType().getSqlTypeName())) {
-              child = rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN));
-            }
-          } else {
-            // this is needed to provide typed NULLs which were working before
-            // example: IF(false, array(1,2,3), NULL)
-            if (!RexUtil.isNull(childRexNodeLst.get(1))) {
-              child = rexBuilder.makeCast(childRexNodeLst.get(1).getType(), child);
-            }
+          // this is needed to provide typed NULLs which were working before
+          // example: IF(false, array(1,2,3), NULL)
+          if (!RexUtil.isNull(childRexNodeLst.get(1))) {
+            child = rexBuilder.makeCast(childRexNodeLst.get(1).getType(), child);
           }
         }
-        newChildRexNodeLst.add(child);
       }
+      newChildRexNodeLst.add(child);
     }
     // Calcite always needs the else clause to be defined explicitly
     if (newChildRexNodeLst.size() % 2 == 0) {
@@ -573,16 +546,24 @@ public class RexNodeConverter {
       }
       for (int i = 1; i < operands.size(); i++) {
         List<RexNode> conjuncts = new ArrayList<>(columnExpressions.getOperands().size() - 1);
-        RexCall valueExpressions = (RexCall) operands.get(i);
-        if (!HiveCalciteUtil.isDeterministic(valueExpressions)) {
-          // Bail out
+        List<?> valueExpressions = null;
+        if (operands.get(i) instanceof RexLiteral) {
+          RexLiteral literal = (RexLiteral) operands.get(i);
+          valueExpressions = literal.getValueAs(List.class);
+        } else if (operands.get(i) instanceof RexCall) {
+          RexCall call = (RexCall) operands.get(i);
+          if (HiveCalciteUtil.isDeterministic(call)) {
+            valueExpressions = call.getOperands();
+          }
+        }
+        if (valueExpressions == null) {
           return null;
         }
         for (int j = 0; j < columnExpressions.getOperands().size(); j++) {
           conjuncts.add(rexBuilder.makeCall(
               SqlStdOperatorTable.EQUALS,
               columnExpressions.getOperands().get(j),
-              valueExpressions.getOperands().get(j)));
+              (RexNode) valueExpressions.get(j)));
         }
         if (conjuncts.size() > 1) {
           disjuncts.add(rexBuilder.makeCall(
@@ -598,7 +579,7 @@ public class RexNodeConverter {
 
   public static List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst,
       RexBuilder rexBuilder) throws SemanticException {
-    assert op.getKind() == SqlKind.IN;
+    assert op == HiveIn.INSTANCE;
     RexNode firstPred = childRexNodeLst.get(0);
     List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
     for (int i = 1; i < childRexNodeLst.size(); i++) {

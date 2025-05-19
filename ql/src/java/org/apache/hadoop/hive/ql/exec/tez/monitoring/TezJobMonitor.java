@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.exec.tez.Utils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -77,11 +78,14 @@ public class TezJobMonitor {
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
 
+  private final TezSessionState session;
   private final PerfLogger perfLogger;
   private static final List<DAGClient> shutdownList;
   private final List<BaseWork> topSortedWorks;
 
   transient LogHelper console;
+  // Collecting execution summary might be a bit expensive, only do it if needed for query history.
+  private final boolean shouldCollectSummaryString;
 
   private StringWriter diagnostics = new StringWriter();
 
@@ -116,8 +120,9 @@ public class TezJobMonitor {
   // compile time tez counters
   private final TezCounters counters;
 
-  public TezJobMonitor(List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf, DAG dag,
-    Context ctx, final TezCounters counters, PerfLogger perfLogger) {
+  public TezJobMonitor(TezSessionState session, List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf,
+      DAG dag, Context ctx, final TezCounters counters, PerfLogger perfLogger) {
+    this.session = session;
     this.topSortedWorks = topSortedWorks;
     this.dagClient = dagClient;
     this.hiveConf = conf;
@@ -127,6 +132,8 @@ public class TezJobMonitor {
     this.perfLogger = perfLogger;
     updateFunction = updateFunction();
     this.counters = counters;
+    this.shouldCollectSummaryString = conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED) &&
+        conf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_EXEC_SUMMARY_ENABLED);
   }
 
   private RenderStrategy.UpdateFunction updateFunction() {
@@ -181,6 +188,7 @@ public class TezJobMonitor {
         }
 
         status = dagClient.getDAGStatus(opts, checkInterval);
+        session.updateDagStatus(status);
 
         vertexProgressMap = status.getVertexProgress();
         List<String> vertexNames = vertexProgressMap.keySet()
@@ -279,7 +287,9 @@ public class TezJobMonitor {
           } catch (IOException | TezException tezException) {
             // best effort
           }
-          console.printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
+          String reportedException = "Execution has failed, stack trace: " + ExceptionUtils.getStackTrace(e);
+          console.printError(reportedException);
+          diagnostics.append(reportedException);
           rc = 1;
           done = true;
         } else {
@@ -433,7 +443,9 @@ public class TezJobMonitor {
 
   private void printSummary(boolean success, Map<String, Progress> progressMap) {
     if (isProfilingEnabled() && success && progressMap != null) {
-
+      if (shouldCollectSummaryString){
+        console.startSummary();
+      }
       double duration = (System.currentTimeMillis() - this.executionStartTime) / 1000.0;
       console.printInfo("Status: DAG finished successfully in " + String.format("%.2f seconds", duration));
       console.printInfo("DAG ID: " + this.dagClient.getDagIdentifierString());
@@ -510,5 +522,9 @@ public class TezJobMonitor {
           ExceptionUtils.getStackTrace(e));
     }
     return TezProgressMonitor.NULL;
+  }
+
+  public LogHelper logger(){
+    return console;
   }
 }

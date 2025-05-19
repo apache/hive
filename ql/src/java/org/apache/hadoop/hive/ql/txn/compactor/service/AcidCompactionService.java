@@ -18,12 +18,12 @@
 package org.apache.hadoop.hive.ql.txn.compactor.service;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactionHeartbeatService;
@@ -178,7 +177,7 @@ public class AcidCompactionService extends CompactionService {
 
       CompactorUtil.checkInterrupt(CLASS_NAME);
 
-      /**
+      /*
        * we cannot have Worker use HiveTxnManager (which is on ThreadLocal) since
        * then the Driver would already have the an open txn but then this txn would have
        * multiple statements in it (for query based compactor) which is not supported (and since
@@ -348,25 +347,31 @@ public class AcidCompactionService extends CompactionService {
 
     /**
      * Try to open a new txn.
-     * @throws TException
      */
     void open(CompactionInfo ci) throws TException {
-      this.txnId = msc.openTxn(ci.runAs, ci.type == CompactionType.REBALANCE ? TxnType.REBALANCE_COMPACTION : TxnType.COMPACTION);
+      this.txnId = msc.openTxn(ci.runAs, 
+          (CompactionType.REBALANCE == ci.type) ? TxnType.REBALANCE_COMPACTION : TxnType.COMPACTION);
       status = TxnStatus.OPEN;
 
-      LockRequest lockRequest;
-      if (CompactionType.REBALANCE.equals(ci.type)) {
-        lockRequest = CompactorUtil.createLockRequest(conf, ci, txnId, LockType.EXCL_WRITE, DataOperationType.UPDATE);
-      } else {
-        lockRequest = CompactorUtil.createLockRequest(conf, ci, txnId, LockType.SHARED_READ, DataOperationType.SELECT);
-      }
+      LockRequest lockRequest = createLockRequest(ci);
+      
       LockResponse res = msc.lock(lockRequest);
       if (res.getState() != LockState.ACQUIRED) {
         throw new TException("Unable to acquire lock(s) on {" + ci.getFullPartitionName()
             + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
       }
       lockId = res.getLockid();
-      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, TxnUtils.getFullTableName(ci.dbname, ci.tableName));
+
+      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, 
+          TxnUtils.getFullTableName(ci.dbname, ci.tableName));
+    }
+
+    private LockRequest createLockRequest(CompactionInfo ci) {
+      Pair<LockType, DataOperationType> lockAndOpType = Pair.of(LockType.SHARED_READ, DataOperationType.SELECT);
+      if (CompactionType.REBALANCE == ci.type) {
+        lockAndOpType = Pair.of(LockType.EXCL_WRITE, DataOperationType.UPDATE);
+      }
+      return CompactorUtil.createLockRequest(conf, ci, txnId, lockAndOpType.getKey(), lockAndOpType.getValue());
     }
 
     /**
@@ -378,9 +383,9 @@ public class AcidCompactionService extends CompactionService {
 
     /**
      * Commit or abort txn.
-     * @throws Exception
      */
-    @Override public void close() throws Exception {
+    @Override 
+    public void close() throws Exception {
       if (status == TxnStatus.UNKNOWN) {
         return;
       }

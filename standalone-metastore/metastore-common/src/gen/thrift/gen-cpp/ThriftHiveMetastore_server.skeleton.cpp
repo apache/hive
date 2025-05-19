@@ -100,6 +100,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_all_databases\n");
   }
 
+  void get_databases_req(GetDatabaseObjectsResponse& _return, const GetDatabaseObjectsRequest& request) {
+    // Your implementation goes here
+    printf("get_databases_req\n");
+  }
+
   void alter_database(const std::string& dbname, const Database& db) {
     // Your implementation goes here
     printf("alter_database\n");
@@ -738,6 +743,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool delete_table_column_statistics(const std::string& db_name, const std::string& tbl_name, const std::string& col_name, const std::string& engine) {
     // Your implementation goes here
     printf("delete_table_column_statistics\n");
+  }
+
+  bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& req) {
+    // Your implementation goes here
+    printf("delete_column_statistics_req\n");
   }
 
   void create_function(const Function& func) {

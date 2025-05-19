@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
@@ -55,7 +56,16 @@ public class IcebergTimestampObjectInspectorHive3 extends AbstractPrimitiveJavaO
     if (o == null) {
       return null;
     }
-    LocalDateTime time = (LocalDateTime) o;
+    LocalDateTime time;
+    if (o instanceof LocalDateTime) {
+      time = (LocalDateTime) o;
+    } else if (o instanceof OffsetDateTime) {
+      OffsetDateTime odt = (OffsetDateTime) o;
+      time = odt.atZoneSameInstant(TypeInfoFactory.timestampLocalTZTypeInfo.getTimeZone()).toLocalDateTime();
+    } else {
+      throw new ClassCastException(String.format("An unexpected type %s was passed as timestamp. " +
+              "Expected LocalDateTime/OffsetDateTime", o.getClass().getName()));
+    }
     return Timestamp.ofEpochMilli(time.toInstant(ZoneOffset.UTC).toEpochMilli(), time.getNano());
   }
 

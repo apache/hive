@@ -12,6 +12,7 @@
 -- Mask current-snapshot-timestamp-ms
 --! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
+--! qt:replace:/(MAJOR\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
 -- Mask removed file size
@@ -29,7 +30,8 @@ create table ice_orc (
     event_src string    
 )
 partitioned by spec(truncate(3, event_src))
-stored by iceberg stored as orc;
+stored by iceberg stored as orc
+tblproperties ('compactor.threshold.target.size'='1500');
 
 insert into ice_orc values 
     (1, cast('2023-07-20 00:00:00' as timestamp with local time zone), 'AAA_1'),

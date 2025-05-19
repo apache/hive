@@ -39,6 +39,9 @@ conditionExpression
     | key=identifier NOT? BETWEEN lower=constant AND upper=constant         #betweenCondition
     | LPAREN key=identifier RPAREN NOT? IN LPAREN values=constantSeq RPAREN #inCondition
     | LPAREN STRUCT identifierList RPAREN NOT? IN constStructList           #multiColInExpression
+    | LPAREN expression RPAREN IS NOT? booleanLiteral                       #booleanCondition
+    | LPAREN orExpression RPAREN IS NOT? booleanLiteral                     #booleanWrappedExpression
+    | LPAREN key=identifier RPAREN NOT? IN LPAREN values=constantSeq RPAREN IS NOT? booleanLiteral  # inConditionWithBoolean
     ;
 
 comparisonOperator
@@ -87,6 +90,11 @@ timestamp
     | value=TIMESTAMP_VALUE
     ;
 
+booleanLiteral
+    : TRUE
+    | FALSE
+    ;
+
 // Keywords
 LPAREN : '(' ;
 RPAREN : ')' ;
@@ -101,6 +109,9 @@ CONST : 'CONST';
 MINUS : '-';
 DATE : 'DATE';
 TIMESTAMP : 'TIMESTAMP';
+IS : 'IS';
+TRUE : 'TRUE';
+FALSE : 'FALSE';
 
 EQ : '=' | '==';
 NSEQ : '<=>';

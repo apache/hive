@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLTransactionRollbackException;
@@ -43,6 +44,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
+import javax.sql.DataSource;
 
 /** Database product inferred via JDBC. Encapsulates all SQL logic associated with
  * the database product.
@@ -70,6 +73,8 @@ public class DatabaseProduct implements Configurable {
   private static DatabaseProduct theDatabaseProduct;
 
   Configuration myConf;
+
+  private String productName;
   /**
    * Protected constructor for singleton class
    */
@@ -82,6 +87,16 @@ public class DatabaseProduct implements Configurable {
   public static final String POSTGRESQL_NAME = "postgresql";
   public static final String ORACLE_NAME = "oracle";
   public static final String UNDEFINED_NAME = "other";
+
+  public static DatabaseProduct determineDatabaseProduct(DataSource connPool,
+      Configuration conf) {
+    try (Connection conn = connPool.getConnection()) {
+      String s = conn.getMetaData().getDatabaseProductName();
+      return determineDatabaseProduct(s, conf);
+    } catch (SQLException e) {
+      throw new IllegalStateException("Unable to get database product name", e);
+    }
+  }
 
   /**
    * Determine the database product type
@@ -144,6 +159,7 @@ public class DatabaseProduct implements Configurable {
         }
 
         theDatabaseProduct.dbType = dbt;
+        theDatabaseProduct.productName = productName;
       }
     }
     return theDatabaseProduct;
@@ -817,4 +833,7 @@ public class DatabaseProduct implements Configurable {
     return dbType == DbType.DERBY || dbType == DbType.ORACLE;
   }
 
+  public String getProductName() {
+    return productName;
+  }
 }

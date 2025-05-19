@@ -72,8 +72,9 @@ module CompactionType
   MAJOR = 2
   REBALANCE = 3
   ABORT_TXN_CLEANUP = 4
-  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE", 4 => "ABORT_TXN_CLEANUP"}
-  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE, ABORT_TXN_CLEANUP]).freeze
+  SMART_OPTIMIZE = 5
+  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE", 4 => "ABORT_TXN_CLEANUP", 5 => "SMART_OPTIMIZE"}
+  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE, ABORT_TXN_CLEANUP, SMART_OPTIMIZE]).freeze
 end
 
 module GrantRevokeType
@@ -326,6 +327,10 @@ class GetCatalogsResponse; end
 class DropCatalogRequest; end
 
 class Database; end
+
+class GetDatabaseObjectsRequest; end
+
+class GetDatabaseObjectsResponse; end
 
 class SerDeInfo; end
 
@@ -874,6 +879,8 @@ class ListPackageRequest; end
 class Package; end
 
 class GetAllWriteEventInfoRequest; end
+
+class DeleteColumnStatisticsRequest; end
 
 class MetaException < ::Thrift::Exception; end
 
@@ -1764,7 +1771,7 @@ class DropCatalogRequest
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
-    IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :optional => true}
+    IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :default => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1816,6 +1823,41 @@ class Database
     unless @type.nil? || ::DatabaseType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetDatabaseObjectsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATALOGNAME = 1
+  PATTERN = 2
+
+  FIELDS = {
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
+    PATTERN => {:type => ::Thrift::Types::STRING, :name => 'pattern', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetDatabaseObjectsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DATABASES = 1
+
+  FIELDS = {
+    DATABASES => {:type => ::Thrift::Types::LIST, :name => 'databases', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Database}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field databases is unset!') unless @databases
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -5137,6 +5179,7 @@ class NotificationEventRequest
   CATNAME = 4
   DBNAME = 5
   TABLENAMES = 6
+  EVENTTYPELIST = 7
 
   FIELDS = {
     LASTEVENT => {:type => ::Thrift::Types::I64, :name => 'lastEvent'},
@@ -5144,7 +5187,8 @@ class NotificationEventRequest
     EVENTTYPESKIPLIST => {:type => ::Thrift::Types::LIST, :name => 'eventTypeSkipList', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    EVENTTYPELIST => {:type => ::Thrift::Types::LIST, :name => 'eventTypeList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -8338,6 +8382,36 @@ class GetAllWriteEventInfoRequest
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DeleteColumnStatisticsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CAT_NAME = 1
+  DB_NAME = 2
+  TBL_NAME = 3
+  PART_NAMES = 4
+  COL_NAMES = 5
+  ENGINE = 6
+  TABLELEVEL = 7
+
+  FIELDS = {
+    CAT_NAME => {:type => ::Thrift::Types::STRING, :name => 'cat_name', :optional => true},
+    DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+    PART_NAMES => {:type => ::Thrift::Types::LIST, :name => 'part_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    COL_NAMES => {:type => ::Thrift::Types::LIST, :name => 'col_names', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    ENGINE => {:type => ::Thrift::Types::STRING, :name => 'engine', :default => %q"hive", :optional => true},
+    TABLELEVEL => {:type => ::Thrift::Types::BOOL, :name => 'tableLevel', :default => false, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tbl_name is unset!') unless @tbl_name
   end
 
   ::Thrift::Struct.generate_accessors self

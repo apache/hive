@@ -20,17 +20,13 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.Validator.RangeValidator;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.ipc.Server;
@@ -39,9 +35,9 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.authorize.PolicyProvider;
 import org.apache.hadoop.security.authorize.Service;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.JobTokenSecretManager;
-import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +126,7 @@ public class LlapTaskUmbilicalServer {
       LlapTaskUmbilicalProtocol umbilical, int numHandlers, int port,
       boolean isHadoopSecurityAuthorizationEnabled) throws IOException {
     server = new RPC.Builder(conf).setProtocol(LlapTaskUmbilicalProtocol.class)
-        .setBindAddress("0.0.0.0").setPort(port).setInstance(umbilical)
+        .setBindAddress(IPStackUtils.resolveWildcardAddress()).setPort(port).setInstance(umbilical)
         .setNumHandlers(numHandlers).setSecretManager(jobTokenSecretManager)
         .build();
     if (isHadoopSecurityAuthorizationEnabled) {

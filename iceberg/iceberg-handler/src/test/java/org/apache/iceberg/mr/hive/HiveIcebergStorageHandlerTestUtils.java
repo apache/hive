@@ -51,6 +51,12 @@ public class HiveIcebergStorageHandlerTestUtils {
           optional(3, "Last_name", Types.StringType.get())
   );
 
+  static final Schema USER_CLICKS_SCHEMA = new Schema(
+          optional(1, "name", Types.StringType.get()),
+          optional(2, "age", Types.IntegerType.get()),
+          optional(3, "num_clicks", Types.IntegerType.get())
+  );
+
   static final List<Record> CUSTOMER_RECORDS = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
           .add(0L, "Alice", "Brown")
           .add(1L, "Bob", "Green")
@@ -74,6 +80,20 @@ public class HiveIcebergStorageHandlerTestUtils {
       .add(3L, "Trudy", "Johnson")
       .add(3L, "Trudy", "Henderson")
       .build();
+
+  static final List<Record> USER_CLICKS_RECORDS_1 = TestHelper.RecordsBuilder
+          .newInstance(USER_CLICKS_SCHEMA)
+          .add("amy", 35, 12341234)
+          .add("bob", 66, 123471)
+          .add("cal", 21, 431)
+          .build();
+
+  static final List<Record> USER_CLICKS_RECORDS_2 = TestHelper.RecordsBuilder
+          .newInstance(USER_CLICKS_SCHEMA)
+          .add("amy", 52, 22323)
+          .add("drake", 44, 34222)
+          .add("earl", 21, 12347)
+          .build();
 
   private HiveIcebergStorageHandlerTestUtils() {
     // Empty constructor for the utility class
@@ -104,6 +124,10 @@ public class HiveIcebergStorageHandlerTestUtils {
   static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp,
                                String catalogName) throws IOException {
     return testTableType.instance(shell.metastore().hiveConf(), temp, catalogName);
+  }
+
+  static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp) {
+    init(shell, testTables, temp, "tez");
   }
 
   static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp, String engine) {

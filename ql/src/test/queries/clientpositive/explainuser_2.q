@@ -5,7 +5,7 @@ set hive.strict.checks.bucketing=false;
 
 set hive.explain.user=true;
 set hive.metastore.aggregate.stats.cache.enabled=false;
-set hive.cbo.fallback.strategy=NEVER;
+set hive.optimize.merge.adjacent.union.distinct=false;
 
 -- SORT_QUERY_RESULTS
 

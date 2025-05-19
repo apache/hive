@@ -155,6 +155,9 @@ public class ReplicationMigrationTool implements Tool {
 
       System.out.println("Completed verification. Source & Target are " + (failed == 0 ? "in Sync." : "not in Sync."));
       System.out.println("Time Taken: " + (System.currentTimeMillis() - startTime) + " ms");
+      if (failed != 0) {
+        return -1;
+      }
     } catch (UnsupportedOperationException e) {
       System.err.println(e.getMessage());
       System.err.println(help);
@@ -256,7 +259,7 @@ public class ReplicationMigrationTool implements Tool {
       // If there is even single open file we can abort.
       if (srcDFS.listOpenFiles(EnumSet.of(ALL_OPEN_FILES), Path.getPathWithoutSchemeAndAuthority(srcPath).toString())
           .hasNext()) {
-        System.out.println("There are open files in " + srcPath);
+        System.err.println("There are open files in " + srcPath);
         return false;
       } else {
         LOG.error("Open file check is ignored since the source filesystem is not of type of "
@@ -359,7 +362,6 @@ public class ReplicationMigrationTool implements Tool {
       LocatedFileStatus sourceFile = srcListing.next();
       if (filtersPattern != null && !isCopied(sourceFile.getPath(), filtersPattern)) {
         LOG.info("Entry: {} is filtered.", sourceFile.getPath());
-        continue;
       } else {
         System.err.println("Extra entry at source: " + sourceFile.getPath());
         return false;

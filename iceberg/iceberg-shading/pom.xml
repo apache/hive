@@ -108,9 +108,11 @@
                       <include>com.google*:*</include>
                       <include>com.fasterxml*:*</include>
                       <include>com.github.ben-manes*:*</include>
+                      <include>org.apache.hive:patched-iceberg-api</include>
                       <include>org.apache.hive:patched-iceberg-core</include>
                     </includes>
                     <excludes>
+                      <exclude>org.apache.iceberg:iceberg-api</exclude>
                       <exclude>org.apache.iceberg:iceberg-core</exclude>
                     </excludes>
                   </artifactSet>

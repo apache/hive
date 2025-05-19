@@ -7,7 +7,6 @@ set hive.merge.mapfiles = true;
 set hive.merge.mapredfiles = true;
 set hive.merge.tezfiles = true;
 set mapred.reduce.tasks = 2;
-set hive.cbo.fallback.strategy=NEVER;
 
 -- Tests that when a multi insert inserts into a bucketed table and a table which is not bucketed
 -- the bucketed table is not merged and the table which is not bucketed is

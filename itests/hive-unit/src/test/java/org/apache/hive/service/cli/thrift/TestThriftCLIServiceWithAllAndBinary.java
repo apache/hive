@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import static org.junit.Assert.assertNotNull;
@@ -41,9 +40,7 @@ public class TestThriftCLIServiceWithAllAndBinary extends ThriftCLIServiceTest {
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    // Set up the base class
-    ThriftCLIServiceTest.setUpBeforeClass();
-
+    initConf(TestThriftCLIServiceWithAllAndBinary.class);
     assertNotNull(port);
     assertNotNull(hiveServer2);
     assertNotNull(hiveConf);
@@ -53,19 +50,15 @@ public class TestThriftCLIServiceWithAllAndBinary extends ThriftCLIServiceTest {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, port);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.NONE.toString());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
+    // query history adds no value to this test
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     startHiveServer2WithConf(hiveConf);
 
     client = getHttpServiceClientInternal();
   }
 
-  /**
-   * @throws Exception
-   */
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
-    ThriftCLIServiceTest.tearDownAfterClass();
-  }
   static ThriftCLIServiceClient getHttpServiceClientInternal() {
     for (Service service : hiveServer2.getServices()) {
       if (service instanceof ThriftBinaryCLIService) {

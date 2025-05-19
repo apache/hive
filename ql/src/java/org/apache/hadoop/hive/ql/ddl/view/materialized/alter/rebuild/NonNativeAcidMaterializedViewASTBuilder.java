@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 
 import java.util.HashSet;
@@ -50,12 +49,7 @@ public class NonNativeAcidMaterializedViewASTBuilder extends MaterializedViewAST
 
     for (int i = 0; i < selectNode.getChildCount(); ++i) {
       ASTNode selectExpr = (ASTNode) selectNode.getChild(i);
-      ASTNode expression = (ASTNode) selectExpr.getChild(0);
-      if (expression.getType() == HiveParser.DOT &&
-          expression.getChildCount() == 2 &&
-          expression.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL) {
-        selectedColumns.add(expression.getChild(1).getText());
-      }
+      selectedColumns.add(selectExpr.getChild(selectExpr.getChildCount() - 1).getText());
     }
 
     for (FieldSchema fieldSchema : mvTable.getStorageHandler().acidSelectColumns(mvTable, Context.Operation.DELETE)) {

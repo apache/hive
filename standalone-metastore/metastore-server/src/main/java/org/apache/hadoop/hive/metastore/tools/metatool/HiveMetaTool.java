@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.tools.metatool;
 
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +40,7 @@ public final class HiveMetaTool {
   public static void execute(String[] args) throws Exception {
     HiveMetaToolCommandLine cl = HiveMetaToolCommandLine.parseArguments(args);
 
-    ObjectStore objectStore = new ObjectStore();
+    MetaToolObjectStore objectStore = new MetaToolObjectStore();
     objectStore.setConf(MetastoreConf.newMetastoreConf());
 
     MetaToolTask task = null;

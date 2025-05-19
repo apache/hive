@@ -1,9 +1,0 @@
-PREHOOK: query: create table t1 (a int, b string, c int)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (a int, b string, c int)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-FAILED: SemanticException [Error 10433]: The following functionality requires CBO (hive.cbo.enable): Qualify clause

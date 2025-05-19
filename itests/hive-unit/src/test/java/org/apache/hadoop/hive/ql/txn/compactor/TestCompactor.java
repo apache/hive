@@ -66,6 +66,7 @@ import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +75,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
@@ -378,10 +380,10 @@ public class TestCompactor extends TestCompactorBase {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=0", CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf, System.getProperty("user.name"),
+    statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
     ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf, System.getProperty("user.name"),
+    statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
@@ -472,7 +474,7 @@ public class TestCompactor extends TestCompactorBase {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf, System.getProperty("user.name"),
+    statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
@@ -2572,6 +2574,34 @@ public class TestCompactor extends TestCompactorBase {
     Assert.assertEquals(2, rs.size());
     Assert.assertEquals("c", rs.get(0));
     Assert.assertEquals("d", rs.get(1));
+  }
+
+  @Test
+  public void testMajorCompactionOnBaseMissingBucket() throws Exception {
+    dropTables("full_acid", "ext");
+    HiveConf hiveConf = driver.getConf();
+    String reducers = hiveConf.get("mapreduce.job.reduces");
+    hiveConf.set("mapreduce.job.reduces", "7");
+    executeStatementOnDriver("create table ext (a int)", driver);
+    executeStatementOnDriver("insert into table ext values(1),(2),(3),(3),(3),(3),(4),(5),(6),(7)", driver);
+    executeStatementOnDriver("create table full_acid(a int) stored as orc tblproperties('transactional'='true')", driver);
+    executeStatementOnDriver("insert overwrite table full_acid select * from ext where a  = 3", driver);
+    executeStatementOnDriver("insert into table full_acid select * from ext where a != 3 group by a", driver);
+
+    List<Integer> values1 = new ArrayList<>();
+    List<Integer> values2 = new ArrayList<>();
+    executeStatementOnDriver("select * from full_acid order by a", driver);
+    driver.getResults(values1);
+    executeStatementOnDriver("alter table full_acid compact 'major'", driver);
+    Assert.assertEquals(10, values1.size());
+
+    runWorker(conf);
+    executeStatementOnDriver("select * from full_acid order by a", driver);
+    driver.getResults(values2);
+    Assert.assertEquals(values1, values2);
+
+    hiveConf.set("mapreduce.job.reduces", reducers);
+    dropTables("full_acid", "ext");
   }
 
   @Test

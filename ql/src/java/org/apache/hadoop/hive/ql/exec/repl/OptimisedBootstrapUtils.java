@@ -27,7 +27,10 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
@@ -397,7 +400,17 @@ public class OptimisedBootstrapUtils {
     // Check if the table is partitioned, in case the table is partitioned we need to check for the partitions
     // listing as well.
     if (table.isPartitioned()) {
-      List<Partition> partitions = hiveDb.getPartitions(table);
+      GetProjectionsSpec getProjectionsSpec = new GetPartitionProjectionsSpecBuilder()
+          .addProjectFieldList(Arrays.asList("sd.location")).build();
+      GetPartitionsRequest request = new GetPartitionsRequest(table.getDbName(), table.getTableName(),
+          getProjectionsSpec, null);
+      request.setCatName(table.getCatName());
+      List<Partition> partitions;
+      try {
+        partitions = hiveDb.getPartitionsWithSpecs(table, request);
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
       for (Partition part : partitions) {
         Path partPath = part.getDataLocation();
         // Build listing for the partition only if it doesn't lies within the table location, else it would have been

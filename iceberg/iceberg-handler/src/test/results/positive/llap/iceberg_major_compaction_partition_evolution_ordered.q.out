@@ -6,7 +6,7 @@ PREHOOK: query: create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_orc
@@ -18,7 +18,7 @@ POSTHOOK: query: create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2')
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
@@ -47,15 +47,23 @@ POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 PREHOOK: query: insert into ice_orc VALUES 
 ('fn5','ln5', 2, 20, 101),
-('fn6','ln6', 2, 20, 101),
+('fn6','ln6', 2, 20, 101)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES 
+('fn5','ln5', 2, 20, 101),
+('fn6','ln6', 2, 20, 101)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES 
 ('fn7','ln7', 2, 20, 101),
 ('fn8','ln8', 2, 20, 101)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: insert into ice_orc VALUES 
-('fn5','ln5', 2, 20, 101),
-('fn6','ln6', 2, 20, 101),
 ('fn7','ln7', 2, 20, 101),
 ('fn8','ln8', 2, 20, 101)
 POSTHOOK: type: QUERY
@@ -89,11 +97,11 @@ fn1	ln1	1	10	100
 fn2	ln2	1	10	100
 fn3	ln3	1	11	100
 fn4	ln4	1	11	100
-PREHOOK: query: select * from ice_orc where dept_id = 2
+PREHOOK: query: select * from ice_orc where dept_id = 2 order by first_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from ice_orc where dept_id = 2
+POSTHOOK: query: select * from ice_orc where dept_id = 2 order by first_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
@@ -101,18 +109,18 @@ fn5	ln5	2	20	101
 fn6	ln6	2	20	101
 fn7	ln7	2	20	101
 fn8	ln8	2	20	101
-PREHOOK: query: select * from ice_orc where dept_id = 3
+PREHOOK: query: select * from ice_orc where dept_id = 3 order by first_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select * from ice_orc where dept_id = 3
+POSTHOOK: query: select * from ice_orc where dept_id = 3 order by first_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
-fn9	ln9	3	20	101
 fn10	ln10	3	20	101
 fn11	ln11	3	20	101
 fn12	ln12	3	20	101
+fn9	ln9	3	20	101
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_orc
@@ -140,21 +148,23 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"company_id\":\"true\",\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\",\"team_id\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"4\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"3\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"4\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
-	numFiles            	3                   
+	numFiles            	4                   
+	numPartitions       	3                   
 	numRows             	12                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	3                   
+	snapshot-count      	4                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -171,11 +181,11 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
-PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait order by first_name desc
+PREHOOK: query: explain alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: explain alter table ice_orc COMPACT 'major' and wait order by first_name desc
+POSTHOOK: query: explain alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -185,7 +195,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Compact
-      compaction type: major
+      compaction type: smart_optimize
       table name: default.ice_orc
       numberOfBuckets: 0
       order by: order by first_name desc
@@ -206,18 +216,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Compact
-      compaction type: major
+      compaction type: smart_optimize
       table name: default.ice_orc
       numberOfBuckets: 0
       order by: order by first_name desc
       table name: default.ice_orc
-      blocking: true
 
-PREHOOK: query: alter table ice_orc COMPACT 'major' and wait order by first_name desc
+PREHOOK: query: alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait order by first_name desc
+POSTHOOK: query: alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -229,10 +238,10 @@ POSTHOOK: query: select * from ice_orc where company_id = 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
-fn4	ln4	1	11	100
-fn3	ln3	1	11	100
-fn2	ln2	1	10	100
 fn1	ln1	1	10	100
+fn2	ln2	1	10	100
+fn3	ln3	1	11	100
+fn4	ln4	1	11	100
 PREHOOK: query: select * from ice_orc where dept_id = 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
@@ -254,9 +263,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
 fn9	ln9	3	20	101
-fn12	ln12	3	20	101
-fn11	ln11	3	20	101
 fn10	ln10	3	20	101
+fn11	ln11	3	20	101
+fn12	ln12	3	20	101
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_orc
@@ -284,21 +293,23 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"company_id\":\"true\",\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\",\"team_id\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"4\",\"deleted-records\":\"4\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"3\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"4\",\"deleted-records\":\"4\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"3\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	3                   
+	numPartitions       	3                   
 	numRows             	12                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	6                   
+	snapshot-count      	5                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -321,5 +332,5 @@ POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 #Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	dept_id=3	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=3	SMART_OPTIMIZE	refused	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	 --- 	SMART_OPTIMIZE	refused	#Masked#	manual	default	0	0	0	 --- 

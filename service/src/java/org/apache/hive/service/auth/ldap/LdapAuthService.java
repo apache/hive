@@ -38,22 +38,6 @@ public class LdapAuthService extends HttpAuthService {
   private static final Logger LOG = LoggerFactory.getLogger(LdapAuthService.class);
   private final PasswdAuthenticationProvider authProvider;
   
-  public LdapAuthService(HiveConf hiveConf) {
-    super(
-        hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_HTTP_COOKIE_DOMAIN),
-        hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_HTTP_COOKIE_PATH), 
-        (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_HTTP_COOKIE_MAX_AGE, TimeUnit.SECONDS),
-        hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_USE_SSL),
-        HIVE_SERVER2_WEBUI_AUTH_COOKIE_NAME);
-    try {
-      this.authProvider = AuthenticationProviderFactory
-          .getAuthenticationProvider(AuthenticationProviderFactory.AuthMethods.LDAP, hiveConf);
-      // always send secure cookies for SSL mode
-    } catch (AuthenticationException e) {
-      throw new ServiceException(e);
-    }
-  }
-
   public LdapAuthService(HiveConf hiveConf, PasswdAuthenticationProvider provider) {
     super(
         hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_HTTP_COOKIE_DOMAIN),
@@ -61,7 +45,17 @@ public class LdapAuthService extends HttpAuthService {
         (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_HTTP_COOKIE_MAX_AGE, TimeUnit.SECONDS),
         hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_USE_SSL),
         HIVE_SERVER2_WEBUI_AUTH_COOKIE_NAME);
-    this.authProvider = provider;
+    if (provider != null) {
+      this.authProvider = provider;
+    } else {
+      try {
+        this.authProvider = AuthenticationProviderFactory
+            .getAuthenticationProvider(AuthenticationProviderFactory.AuthMethods.LDAP, hiveConf);
+        // always send secure cookies for SSL mode
+      } catch (AuthenticationException e) {
+        throw new ServiceException(e);
+      }
+    }
   }
   
   public boolean authenticate(HttpServletRequest request, HttpServletResponse response) {
@@ -77,7 +71,7 @@ public class LdapAuthService extends HttpAuthService {
         response.addCookie(hs2Cookie);
       }
     } catch (HttpAuthenticationException | AuthenticationException | UnsupportedEncodingException e) {
-      LOG.error("Error in authenticating HTTP request", e);
+      LOG.debug("Error in authenticating HTTP request", e);
       return false;
     }
     return true;

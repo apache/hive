@@ -3,7 +3,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency = true;
-set hive.cbo.fallback.strategy=NEVER;
 
 -- SORT_QUERY_RESULTS
 

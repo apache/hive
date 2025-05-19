@@ -127,6 +127,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_all_databases();
     /**
+     * @param \metastore\GetDatabaseObjectsRequest $request
+     * @return \metastore\GetDatabaseObjectsResponse
+     * @throws \metastore\MetaException
+     */
+    public function get_databases_req(\metastore\GetDatabaseObjectsRequest $request);
+    /**
      * @param string $dbname
      * @param \metastore\Database $db
      * @throws \metastore\MetaException
@@ -1183,6 +1189,15 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\InvalidInputException
      */
     public function delete_table_column_statistics($db_name, $tbl_name, $col_name, $engine);
+    /**
+     * @param \metastore\DeleteColumnStatisticsRequest $req
+     * @return bool
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\InvalidInputException
+     */
+    public function delete_column_statistics_req(\metastore\DeleteColumnStatisticsRequest $req);
     /**
      * @param \metastore\Function $func
      * @throws \metastore\AlreadyExistsException

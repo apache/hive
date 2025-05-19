@@ -3,7 +3,7 @@ PREHOOK: query: create table ice_orc (
     last_name string
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg')
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg', 'compactor.threshold.target.size'='1500')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_orc
@@ -12,7 +12,7 @@ POSTHOOK: query: create table ice_orc (
     last_name string
  )
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg')
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg', 'compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
@@ -78,6 +78,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-position-delete-files\":\"1\",\"added-delete-files\":\"1\",\"added-files-size\":\"#Masked#\",\"added-position-deletes\":\"3\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"1\",\"total-position-deletes\":\"3\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
@@ -144,12 +145,11 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Compact
-      compaction type: major
+      compaction type: smart_optimize
       table name: default.ice_orc
       numberOfBuckets: 0
       order by: order by last_name desc
       table name: default.ice_orc
-      blocking: true
 
 PREHOOK: query: alter table ice_orc COMPACT 'major' and wait order by last_name desc
 PREHOOK: type: ALTERTABLE_COMPACT
@@ -191,6 +191,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"first_name\":\"true\",\"last_name\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"removed-position-delete-files\":\"1\",\"removed-delete-files\":\"1\",\"added-records\":\"4\",\"deleted-records\":\"7\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"removed-position-deletes\":\"3\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn.service;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ public class AcidTxnCleanerService implements MetastoreTaskThread {
 
   private Configuration conf;
   private TxnStore txnHandler;
+  private boolean shouldUseMutex = true;
 
   @Override
   public void setConf(Configuration configuration) {
@@ -56,22 +58,22 @@ public class AcidTxnCleanerService implements MetastoreTaskThread {
 
   @Override
   public void run() {
-    TxnStore.MutexAPI.LockHandle handle = null;
-    try {
-      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.TxnCleaner.name());
+    TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
+    try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.TxnCleaner.name())) {
       long start = System.currentTimeMillis();
       txnHandler.cleanEmptyAbortedAndCommittedTxns();
       LOG.debug("Txn cleaner service took: {} seconds.", elapsedSince(start));
     } catch (Exception e) {
       LOG.error("Unexpected exception in thread: {}, message: {}", Thread.currentThread().getName(), e.getMessage(), e);
-    } finally {
-      if (handle != null) {
-        handle.releaseLocks();
-      }
     }
   }
 
   private long elapsedSince(long start) {
     return (System.currentTimeMillis() - start) / 1000;
+  }
+
+  @Override
+  public void enforceMutex(boolean enableMutex) {
+    this.shouldUseMutex = enableMutex;
   }
 }

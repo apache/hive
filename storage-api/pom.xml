@@ -30,16 +30,17 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <commons-logging.version>1.1.3</commons-logging.version>
     <guava.version>22.0</guava.version>
-    <hadoop.version>3.3.6</hadoop.version>
+    <hadoop.version>3.4.1</hadoop.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.6.3</junit.jupiter.version>
-    <junit.vintage.version>5.6.3</junit.vintage.version>
+    <junit.jupiter.version>5.11.2</junit.jupiter.version>
+    <junit.vintage.version>5.11.2</junit.vintage.version>
     <slf4j.version>1.7.30</slf4j.version>
+    <spotbugs.version>4.8.6</spotbugs.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
-    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
     <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <dependencies>
@@ -201,7 +202,8 @@
         <configuration>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx3g</argLine>
-          <failIfNoTests>false</failIfNoTests>
+          <enableOutErrElements>false</enableOutErrElements>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
           <systemPropertyVariables>
             <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
           </systemPropertyVariables>
@@ -241,6 +243,47 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>spotbugs</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.8.6.6</version>
+            <dependencies>
+              <!-- Specify the version of spotbugs -->
+              <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs</artifactId>
+                <version>${spotbugs.version}</version>
+              </dependency>
+            </dependencies>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.8.6.6</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
     </profile>
   </profiles>
 </project>

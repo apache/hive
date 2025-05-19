@@ -27,12 +27,14 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.SharedWorkOptimizerCache;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer.TSComparator;
+import org.apache.hadoop.hive.ql.parse.JoinType;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -304,11 +306,31 @@ public class TestSharedWorkOptimizer {
   }
 
   @Test
-  public void testMapJoinCacheReuse() {
+  public void testMapJoinCacheReuseSameSources() {
     // Big tables
     TableScanOperator ts1 = getTsOp();
     TableScanOperator ts2 = getTsOp();
 
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 1. MapJoin1: (big, A, B), MapJoin2: (big, A, B)
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.INNER.ordinal(), JoinType.INNER.ordinal(), true);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseDifferentSources() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
     // Small tables
     Operator<?> smallTableA = getFilterOp(0);
     Operator<?> smallTableB = getFilterOp(0);
@@ -318,44 +340,201 @@ public class TestSharedWorkOptimizer {
     Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
 
     Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
-    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
 
     Operator<?> rsC2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableC);
 
-    // case 1. MapJoin1: (big, A, B), MapJoin2: (big, A, B)
-    List<Operator<?>> joinSource1 = Arrays.asList(ts1, rsA1, rsB1);
-    List<Operator<?>> joinSource2 = Arrays.asList(ts2, rsA2, rsB2);
+    // case 2. MapJoin1: (big, A, B), MapJoin2: (big, A, C)
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsC2, 0, 0,
+            JoinType.INNER.ordinal(), JoinType.INNER.ordinal(), false);
+  }
 
-    MapJoinOperator mapJoin1 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource1);
-    MapJoinOperator mapJoin2 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource2);
+  @Test
+  public void testMapJoinCacheReuseDifferentOrdering() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 3. MapJoin1: (big, A, B), MapJoin2: (A, big, B)
+    setupJoinOperatorsAndTest(ts1, rsA2, rsA1, ts2, rsB1, rsB2, 0, 1,
+            JoinType.INNER.ordinal(), JoinType.INNER.ordinal(), false);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseInnerLeftOuter() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 4. MapJoin1: (big, A, B), MapJoin2: (big, A, B) with inner join and left outer join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.INNER.ordinal(), JoinType.LEFTOUTER.ordinal(), false);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseInnerRightOuter() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+
+    // case 5. same as case4 with inner join and right outer join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.INNER.ordinal(), JoinType.RIGHTOUTER.ordinal(), false);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseInnerLeftSemi() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 6. same as case4 with inner join and left semi join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.INNER.ordinal(), JoinType.LEFTSEMI.ordinal(), false);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseInnerAnti() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 7. same as case4 with inner join and anti join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.INNER.ordinal(), JoinType.ANTI.ordinal(), false);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseRightOuterLeftSemi() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 8. same as case4 with right outer join and left semi join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.RIGHTOUTER.ordinal(), JoinType.LEFTSEMI.ordinal(), false);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseRightOuterLeftOuter() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 9. same as case4 with right outer join and left outer join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.RIGHTOUTER.ordinal(), JoinType.LEFTOUTER.ordinal(), true);
+  }
+
+  @Test
+  public void testMapJoinCacheReuseFullOuterInner() {
+    // Big tables
+    TableScanOperator ts1 = getTsOp();
+    TableScanOperator ts2 = getTsOp();
+    // Small tables
+    Operator<?> smallTableA = getFilterOp(0);
+    Operator<?> smallTableB = getFilterOp(0);
+
+    Operator<?> rsA1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+    Operator<?> rsA2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableA);
+
+    Operator<?> rsB1 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+    Operator<?> rsB2 = OperatorFactory.getAndMakeChild(getReduceSinkDesc(), smallTableB);
+
+    // case 10. same as case4 with full outer join and inner join
+    setupJoinOperatorsAndTest(ts1, ts2, rsA1, rsA2, rsB1, rsB2, 0, 0,
+            JoinType.FULLOUTER.ordinal(), JoinType.INNER.ordinal(), false);
+  }
+
+  private void setupJoinOperatorsAndTest(Operator<?> join1Source1, Operator<?> join2Source1, Operator<?> join1Source2,
+                                         Operator<?> join2Source2, Operator<?> join1Source3, Operator<?> join2Source3,
+                                         int join1PosBigTable, int join2PosBigTable, int join1Type, int join2Type,
+                                         boolean positive) {
+    List<Operator<?>> join1Source = Arrays.asList(join1Source1, join1Source2, join1Source3);
+    List<Operator<?>> join2Source = Arrays.asList(join2Source1, join2Source2, join2Source3);
+
+    MapJoinOperator mapJoin1 = setupMapJoin(join1Source, join1Type, join1PosBigTable);
+    MapJoinOperator mapJoin2 = setupMapJoin(join2Source, join2Type, join2PosBigTable);
 
     runMapJoinCacheReuseOptimization(mapJoin1, mapJoin2);
-    assertEquals(mapJoin1.getConf().getCacheKey(), mapJoin2.getConf().getCacheKey());
+    if (positive) {
+      assertEquals(mapJoin1.getConf().getCacheKey(), mapJoin2.getConf().getCacheKey());
+      return;
+    }
+    assertNotEquals(mapJoin1.getConf().getCacheKey(), mapJoin2.getConf().getCacheKey());
+  }
 
-    // case 2. MapJoin3: (big, A, B), MapJoin4: (big, A, C)
-    List<Operator<?>> joinSource3 = Arrays.asList(ts1, rsA1, rsB1);
-    List<Operator<?>> joinSource4 = Arrays.asList(ts2, rsA2, rsC2);
-
-    MapJoinOperator mapJoin3 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource3);
-    MapJoinOperator mapJoin4 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource4);
-
-    runMapJoinCacheReuseOptimization(mapJoin3, mapJoin4);
-    assertNotEquals(mapJoin3.getConf().getCacheKey(), mapJoin4.getConf().getCacheKey());
-
-    // case 3. MapJoin5: (big, A, B), MapJoin6: (A, big, B)
-    List<Operator<?>> joinSource5 = Arrays.asList(ts1, rsA1, rsB1);
-    List<Operator<?>> joinSource6 = Arrays.asList(rsA2, ts2, rsB2);
-
-    MapJoinOperator mapJoin5 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(0), joinSource5);
-    MapJoinOperator mapJoin6 = (MapJoinOperator) OperatorFactory.getAndMakeChild(
-        cCtx, getMapJoinDesc(1), joinSource6);
-
-    runMapJoinCacheReuseOptimization(mapJoin5, mapJoin6);
-    assertNotEquals(mapJoin5.getConf().getCacheKey(), mapJoin6.getConf().getCacheKey());
+  MapJoinOperator setupMapJoin(List<Operator<?>> joinSource, int joinType, int joinPosBigTable) {
+    MapJoinOperator mapJoin = (MapJoinOperator) OperatorFactory.getAndMakeChild(
+            cCtx, getMapJoinDesc(joinPosBigTable), joinSource);
+    JoinCondDesc cond = new JoinCondDesc(0,0, joinType);
+    mapJoin.getConf().setConds(new JoinCondDesc[]{cond});
+    boolean isNoOuterJoin = !(joinType == JoinType.RIGHTOUTER.ordinal() || joinType == JoinType.LEFTOUTER.ordinal()
+            || joinType == JoinType.FULLOUTER.ordinal());
+    mapJoin.getConf().setNoOuterJoin(isNoOuterJoin);
+    return mapJoin;
   }
 }

@@ -91,7 +91,7 @@ public class TestStatsUpdaterThread {
     if (!(new File(getTestDataDir()).mkdirs())) {
       throw new RuntimeException("Could not create " + getTestDataDir());
     }
-    this.ss = DriverUtils.setUpSessionState(hiveConf, "hive", true);
+    this.ss = DriverUtils.setUpAndStartSessionState(hiveConf, "hive");
     cleanUp();
   }
 

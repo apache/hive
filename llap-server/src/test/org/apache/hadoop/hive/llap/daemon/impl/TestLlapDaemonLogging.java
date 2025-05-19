@@ -25,7 +25,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hive.testutils.junit.extensions.DoNothingTCPServer;
 import org.apache.hive.testutils.junit.extensions.DoNothingTCPServerExtension;
-import org.apache.logging.log4j.junit.LoggerContextSource;
+import org.apache.logging.log4j.core.test.junit.LoggerContextSource;
 import org.apache.tez.common.security.TokenCache;
 
 import org.junit.jupiter.api.Test;

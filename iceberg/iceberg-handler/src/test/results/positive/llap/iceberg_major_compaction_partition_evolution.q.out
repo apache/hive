@@ -6,7 +6,7 @@ PREHOOK: query: create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg')
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg','compactor.threshold.target.size'='1500')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_orc
@@ -18,7 +18,7 @@ POSTHOOK: query: create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg')
+tblproperties ('format-version'='2', 'hive.compactor.worker.pool'='iceberg','compactor.threshold.target.size'='1500')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_orc
@@ -46,6 +46,20 @@ POSTHOOK: query: insert into ice_orc VALUES ('fn3','ln3', 1, 11, 100)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES (null,null, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES (null,null, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: alter table ice_orc create tag v1
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: alter table ice_orc create tag v1
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@ice_orc
 PREHOOK: query: alter table ice_orc set partition spec(company_id, dept_id)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: default@ice_orc
@@ -77,6 +91,20 @@ POSTHOOK: query: insert into ice_orc VALUES ('fn6','ln6', 2, 20, 100)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES (null,null, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES (null,null, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: alter table ice_orc create tag v2
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: alter table ice_orc create tag v2
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@ice_orc
 PREHOOK: query: alter table ice_orc set partition spec(company_id, dept_id, team_id)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: default@ice_orc
@@ -97,6 +125,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_orc
 POSTHOOK: query: insert into ice_orc VALUES ('fn8','ln8', 2, 21, 100)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc VALUES (null,null, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES (null,null, null, null, null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_orc
@@ -140,6 +176,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
 POSTHOOK: Output: default@ice_orc
+PREHOOK: query: alter table ice_orc create tag v3
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: alter table ice_orc create tag v3
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@ice_orc
 PREHOOK: query: alter table ice_orc set partition spec(company_id, dept_id)
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: default@ice_orc
@@ -195,6 +237,12 @@ POSTHOOK: query: delete from ice_orc where last_name in ('ln1a', 'ln8a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
+PREHOOK: query: alter table ice_orc create tag v4
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: alter table ice_orc create tag v4
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@ice_orc
 PREHOOK: query: select * from ice_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
@@ -203,6 +251,9 @@ POSTHOOK: query: select * from ice_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
 fn2	ln2a	1	10	100
 fn3	ln3a	1	11	100
 fn4	ln4a	1	11	100
@@ -237,22 +288,23 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"deleted-data-files\":\"2\",\"deleted-records\":\"2\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"14\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"14\",\"total-delete-files\":\"8\",\"total-position-deletes\":\"8\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"deleted-data-files\":\"2\",\"deleted-records\":\"2\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"17\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"17\",\"total-delete-files\":\"8\",\"total-position-deletes\":\"8\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 	hive.compactor.worker.pool	iceberg             
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
-	numFiles            	14                  
-	numRows             	14                  
+	numFiles            	17                  
+	numRows             	17                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	17                  
+	snapshot-count      	20                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -269,6 +321,491 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
+PREHOOK: query: select `partition`, spec_id, content, record_count
+from default.ice_orc.files
+order by `partition`, spec_id, content, record_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select `partition`, spec_id, content, record_count
+from default.ice_orc.files
+order by `partition`, spec_id, content, record_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+{"company_id":100,"dept_id":1,"team_id":10}	2	0	1
+{"company_id":100,"dept_id":1,"team_id":11}	2	0	1
+{"company_id":100,"dept_id":1,"team_id":11}	2	0	1
+{"company_id":100,"dept_id":1,"team_id":null}	1	0	1
+{"company_id":100,"dept_id":1,"team_id":null}	1	1	1
+{"company_id":100,"dept_id":2,"team_id":21}	2	0	1
+{"company_id":100,"dept_id":2,"team_id":21}	2	0	1
+{"company_id":100,"dept_id":2,"team_id":21}	2	1	1
+{"company_id":100,"dept_id":2,"team_id":21}	2	1	1
+{"company_id":100,"dept_id":2,"team_id":null}	1	0	1
+{"company_id":100,"dept_id":2,"team_id":null}	1	0	1
+{"company_id":100,"dept_id":2,"team_id":null}	1	0	1
+{"company_id":100,"dept_id":2,"team_id":null}	1	0	1
+{"company_id":100,"dept_id":2,"team_id":null}	1	0	1
+{"company_id":100,"dept_id":2,"team_id":null}	1	1	1
+{"company_id":100,"dept_id":2,"team_id":null}	1	1	1
+{"company_id":100,"dept_id":null,"team_id":null}	0	0	1
+{"company_id":100,"dept_id":null,"team_id":null}	0	0	1
+{"company_id":100,"dept_id":null,"team_id":null}	0	0	1
+{"company_id":100,"dept_id":null,"team_id":null}	0	1	1
+{"company_id":100,"dept_id":null,"team_id":null}	0	1	1
+{"company_id":100,"dept_id":null,"team_id":null}	0	1	1
+{"company_id":null,"dept_id":null,"team_id":null}	0	0	1
+{"company_id":null,"dept_id":null,"team_id":null}	1	0	1
+{"company_id":null,"dept_id":null,"team_id":null}	2	0	1
+PREHOOK: query: explain select * from default.ice_orc.tag_v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  Snapshot ref: tag_v1
+                  Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.ice_orc.tag_v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  Snapshot ref: tag_v2
+                  Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.ice_orc.tag_v3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  Snapshot ref: tag_v3
+                  Statistics: Num rows: 11 Data size: 4312 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 11 Data size: 4312 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 11 Data size: 4312 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.ice_orc.tag_v4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  Snapshot ref: tag_v4
+                  Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.ice_orc.tag_v1 where company_id is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v1 where company_id is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  filterExpr: company_id is not null (type: boolean)
+                  Snapshot ref: tag_v1
+                  Statistics: Num rows: 4 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: company_id is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 3 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.ice_orc.tag_v2 where company_id is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v2 where company_id is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  filterExpr: company_id is not null (type: boolean)
+                  Snapshot ref: tag_v2
+                  Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: company_id is not null (type: boolean)
+                    Statistics: Num rows: 7 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 7 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 7 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.ice_orc.tag_v3 where company_id is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v3 where company_id is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  filterExpr: company_id is not null (type: boolean)
+                  Snapshot ref: tag_v3
+                  Statistics: Num rows: 11 Data size: 4312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: company_id is not null (type: boolean)
+                    Statistics: Num rows: 11 Data size: 4312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 11 Data size: 4312 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 11 Data size: 4312 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.ice_orc.tag_v4 where company_id is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.ice_orc.tag_v4 where company_id is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  filterExpr: company_id is not null (type: boolean)
+                  Snapshot ref: tag_v4
+                  Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: company_id is not null (type: boolean)
+                    Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from ice_orc where company_id is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from ice_orc where company_id is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  filterExpr: company_id is not null (type: boolean)
+                  Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: company_id is not null (type: boolean)
+                    Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 9 Data size: 3528 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
@@ -305,6 +842,9 @@ POSTHOOK: query: select * from ice_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
 fn2	ln2a	1	10	100
 fn3	ln3a	1	11	100
 fn4	ln4a	1	11	100
@@ -336,25 +876,27 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"company_id\":\"true\",\"dept_id\":\"true\",\"first_name\":\"true\",\"last_name\":\"true\",\"team_id\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"8\",\"removed-position-delete-files\":\"5\",\"removed-delete-files\":\"5\",\"added-records\":\"3\",\"deleted-records\":\"8\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"removed-position-deletes\":\"5\",\"changed-partition-count\":\"5\",\"total-records\":\"6\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"deleted-data-files\":\"10\",\"removed-position-delete-files\":\"5\",\"removed-delete-files\":\"5\",\"added-records\":\"5\",\"deleted-records\":\"10\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"removed-position-deletes\":\"5\",\"changed-partition-count\":\"8\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 	hive.compactor.worker.pool	iceberg             
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
-	numFiles            	2                   
-	numRows             	6                   
+	numFiles            	4                   
+	numPartitions       	3                   
+	numRows             	9                   
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	20                  
+	snapshot-count      	23                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -378,4 +920,106 @@ POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 #Masked#	default	ice_orc	company_id=100/dept_id=1	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
 #Masked#	default	ice_orc	company_id=100/dept_id=2	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+#Masked#	default	ice_orc	company_id=null/dept_id=null	MAJOR	refused	#Masked#	manual	iceberg	0	0	0	 --- 
 #Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	iceberg	0	0	0	 --- 
+PREHOOK: query: select `partition`, spec_id, content, record_count
+from default.ice_orc.files
+order by `partition`, spec_id, content, record_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select `partition`, spec_id, content, record_count
+from default.ice_orc.files
+order by `partition`, spec_id, content, record_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+{"company_id":100,"dept_id":1,"team_id":null}	1	0	3
+{"company_id":100,"dept_id":2,"team_id":null}	1	0	3
+{"company_id":null,"dept_id":null,"team_id":null}	1	0	1
+{"company_id":null,"dept_id":null,"team_id":null}	1	0	2
+PREHOOK: query: explain select * from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  Statistics: Num rows: 9 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 9 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 9 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from ice_orc where company_id is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from ice_orc where company_id is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_orc
+                  filterExpr: company_id is not null (type: boolean)
+                  Statistics: Num rows: 6 Data size: 1194 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: first_name (type: string), last_name (type: string), dept_id (type: bigint), team_id (type: bigint), company_id (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 6 Data size: 1194 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 1194 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

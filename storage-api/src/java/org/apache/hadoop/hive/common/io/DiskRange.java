@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.common.io;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -28,6 +30,7 @@ public class DiskRange {
   /** The address afterwards. */
   protected long end;
 
+  @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Intended")
   public DiskRange(long offset, long end) {
     this.offset = offset;
     this.end = end;

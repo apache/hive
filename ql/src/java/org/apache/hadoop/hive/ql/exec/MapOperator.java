@@ -298,7 +298,7 @@ public class MapOperator extends AbstractMapOperator {
       for (Path onefile : conf.getPathToAliases().keySet()) {
         PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
-        Configuration hconf = tableToConf.get(tableDesc.getFullTableName());
+        Configuration hconf = tableToConf.get(tableDesc.getTableName());
         Deserializer partDeserializer = pd.getDeserializer(hconf);
         StructObjectInspector partRawRowObjectInspector;
         boolean isAcid = AcidUtils.isTablePropertyTransactional(tableDesc.getProperties());
@@ -439,7 +439,7 @@ public class MapOperator extends AbstractMapOperator {
       List<String> aliases = entry.getValue();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(onefile);
       TableDesc tableDesc = partDesc.getTableDesc();
-      Configuration newConf = tableNameToConf.get(tableDesc.getFullTableName());
+      Configuration newConf = tableNameToConf.get(tableDesc.getTableName());
 
       for (String alias : aliases) {
         Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(alias);

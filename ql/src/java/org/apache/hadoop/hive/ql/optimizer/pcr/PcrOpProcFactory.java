@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.optimizer.pcr;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -101,8 +104,7 @@ public final class PcrOpProcFactory {
         // have found a wrong filter operator. We skip the optimization then.
         return null;
       }
-
-
+      
       ParseContext pctx = owc.getParseContext();
       PrunedPartitionList prunedPartList;
       try {
@@ -124,12 +126,16 @@ public final class PcrOpProcFactory {
       }
 
       for (Partition p : prunedPartList.getPartitions()) {
-        if (!p.getTable().isPartitioned()) {
+        if (!p.getTable().isPartitioned() || p.getSpec().isEmpty()) {
           return null;
         }
       }
-
       partitions.addAll(prunedPartList.getPartitions());
+      
+      // skip the optimization for tables with non-identity partition transforms
+      if (DDLUtils.hasTransformsInPartitionSpec(top.getConf().getTableMetadata())) {
+        return null;
+      }
 
       PcrExprProcFactory.NodeInfoWrapper wrapper = PcrExprProcFactory.walkExprTree(
           alias, partitions, top.getConf().getVirtualCols(), predicate);
@@ -138,7 +144,7 @@ public final class PcrOpProcFactory {
         owc.getOpToRemove().add(new PcrOpWalkerCtx.OpToDeleteInfo(pop, fop));
       } else if (wrapper.state == PcrExprProcFactory.WalkState.CONSTANT && wrapper.outExpr instanceof ExprNodeGenericFuncDesc) {
         ExprNodeDesc desc = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)wrapper.outExpr);
-        if (desc != null && desc instanceof ExprNodeConstantDesc && Boolean.TRUE.equals(((ExprNodeConstantDesc)desc).getValue())) {
+        if (desc instanceof ExprNodeConstantDesc && Boolean.TRUE.equals(((ExprNodeConstantDesc) desc).getValue())) {
           owc.getOpToRemove().add(new PcrOpWalkerCtx.OpToDeleteInfo(pop, fop));
         } else {
           fop.getConf().setPredicate(wrapper.outExpr);

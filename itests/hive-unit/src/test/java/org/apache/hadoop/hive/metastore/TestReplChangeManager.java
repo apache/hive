@@ -53,6 +53,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -575,7 +576,8 @@ public class TestReplChangeManager {
       builder.append(ip);
       builder.append(',');
     }
-    builder.append("127.0.1.1,");
+    builder.append(IPStackUtils.resolveLoopbackAddress());
+    builder.append(",");
     builder.append(InetAddress.getLocalHost().getCanonicalHostName());
     conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
       builder.toString());

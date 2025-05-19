@@ -32,14 +32,14 @@ public class TestHiveMetastoreCli {
   @Test
   public void testDefaultCliPortValue() {
     Configuration configuration = MetastoreConf.newMetastoreConf();
-    HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
+    HiveMetastoreCli cli = new HiveMetastoreCli(configuration);
     assert (cli.getPort() == MetastoreConf.getIntVar(configuration, ConfVars.SERVER_PORT));
   }
 
   @Test
   public void testOverriddenCliPortValue() {
     Configuration configuration = MetastoreConf.newMetastoreConf();
-    HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
+    HiveMetastoreCli cli = new HiveMetastoreCli(configuration);
     cli.parse(TestHiveMetastoreCli.CLI_ARGUMENTS);
 
     assert (cli.getPort() == 9999);
@@ -50,7 +50,7 @@ public class TestHiveMetastoreCli {
     Configuration configuration = MetastoreConf.newMetastoreConf();
     MetastoreConf.setLongVar(configuration, ConfVars.SERVER_PORT, 12345);
 
-    HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
+    HiveMetastoreCli cli = new HiveMetastoreCli(configuration);
 
     assert (cli.getPort() == 12345);
   }
@@ -60,7 +60,7 @@ public class TestHiveMetastoreCli {
     Configuration configuration = MetastoreConf.newMetastoreConf();
     MetastoreConf.setLongVar(configuration, ConfVars.SERVER_PORT, 12345);
 
-    HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
+    HiveMetastoreCli cli = new HiveMetastoreCli(configuration);
     cli.parse(CLI_ARGUMENTS);
 
     assert (cli.getPort() == 9999);

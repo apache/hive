@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ class MetaToolTaskUpdateLocation extends MetaToolTask {
 
   private void updateMDatabaseURI(URI oldURI, URI newURI, boolean isDryRun) {
     System.out.println("Looking for LOCATION_URI field in DBS table to update..");
-    ObjectStore.UpdateMDatabaseURIRetVal retVal = getObjectStore().updateMDatabaseURI(oldURI, newURI, isDryRun);
+    MetaToolObjectStore.UpdateMDatabaseURIRetVal retVal = getObjectStore().updateMDatabaseURI(oldURI, newURI, isDryRun);
     if (retVal == null) {
       System.err.println("Encountered error while executing updateMDatabaseURI - commit of JDO transaction failed. " +
           "Failed to update FSRoot locations in LOCATION_URI field in DBS table.");
@@ -75,7 +75,7 @@ class MetaToolTaskUpdateLocation extends MetaToolTask {
 
   private void updateMStorageDescriptorTblURI(URI oldURI, URI newURI, boolean isDryRun) {
     System.out.println("Looking for LOCATION field in SDS table to update..");
-    ObjectStore.UpdateMStorageDescriptorTblURIRetVal retVal =
+    MetaToolObjectStore.UpdateMStorageDescriptorTblURIRetVal retVal =
         getObjectStore().updateMStorageDescriptorTblURI(oldURI, newURI, isDryRun);
     if (retVal == null) {
       System.err.println("Encountered error while executing updateMStorageDescriptorTblURI - commit of JDO " +
@@ -94,19 +94,19 @@ class MetaToolTaskUpdateLocation extends MetaToolTask {
   private void updateTablePropURI(URI oldURI, URI newURI, String tablePropKey, boolean isDryRun) {
     if (tablePropKey != null) {
       System.out.println("Looking for value of " + tablePropKey + " key in TABLE_PARAMS table to update..");
-      ObjectStore.UpdatePropURIRetVal updateTblPropURIRetVal =
+      MetaToolObjectStore.UpdatePropURIRetVal updateTblPropURIRetVal =
           getObjectStore().updateTblPropURI(oldURI, newURI, tablePropKey, isDryRun);
       printPropURIUpdateSummary(updateTblPropURIRetVal, tablePropKey, isDryRun, "TABLE_PARAMS", "updateTblPropURI");
 
       System.out.println("Looking for value of " + tablePropKey + " key in SD_PARAMS table to update..");
-      ObjectStore.UpdatePropURIRetVal updatePropURIRetVal =
+      MetaToolObjectStore.UpdatePropURIRetVal updatePropURIRetVal =
           getObjectStore().updateMStorageDescriptorTblPropURI(oldURI, newURI, tablePropKey, isDryRun);
       printPropURIUpdateSummary(updatePropURIRetVal, tablePropKey, isDryRun, "SD_PARAMS",
           "updateMStorageDescriptorTblPropURI");
     }
   }
 
-  private void printPropURIUpdateSummary(ObjectStore.UpdatePropURIRetVal retVal, String tablePropKey, boolean isDryRun,
+  private void printPropURIUpdateSummary(MetaToolObjectStore.UpdatePropURIRetVal retVal, String tablePropKey, boolean isDryRun,
       String tblName, String methodName) {
     if (retVal == null) {
       System.err.println("Encountered error while executing " + methodName + " - commit of JDO transaction failed. " +
@@ -121,7 +121,7 @@ class MetaToolTaskUpdateLocation extends MetaToolTask {
   private void upateSerdeURI(URI oldURI, URI newURI, String serdePropKey, boolean isDryRun) {
     if (serdePropKey != null) {
       System.out.println("Looking for value of " + serdePropKey + " key in SERDE_PARAMS table to update..");
-      ObjectStore.UpdateSerdeURIRetVal retVal =
+      MetaToolObjectStore.UpdateSerdeURIRetVal retVal =
           getObjectStore().updateSerdeURI(oldURI, newURI, serdePropKey, isDryRun);
       if (retVal == null) {
         System.err.println("Encountered error while executing updateSerdeURI - commit of JDO transaction failed. " +

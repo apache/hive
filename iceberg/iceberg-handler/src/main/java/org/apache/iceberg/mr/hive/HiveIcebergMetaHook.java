@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -35,6 +36,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -53,10 +55,14 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -65,8 +71,10 @@ import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -82,6 +90,7 @@ import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
@@ -89,6 +98,9 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SortDirection;
+import org.apache.iceberg.SortOrder;
+import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
@@ -103,10 +115,15 @@ import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.expressions.UnboundPredicate;
+import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.hive.CachedClientPool;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreLock;
+import org.apache.iceberg.hive.NoLock;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mapping.MappingUtil;
@@ -116,6 +133,7 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.base.Strings;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -137,6 +155,7 @@ import static org.apache.iceberg.TableProperties.UPDATE_MODE;
 
 public class HiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
+  private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
   public static final Map<String, String> COMMON_HMS_PROPERTIES = ImmutableMap.of(
       BaseMetastoreTableOperations.TABLE_TYPE_PROP, BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase()
   );
@@ -148,7 +167,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       .of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
       BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
   static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
-      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
+      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN, AlterTableType.DROP_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS, AlterTableType.RENAME, AlterTableType.EXECUTE, AlterTableType.CREATE_BRANCH,
       AlterTableType.CREATE_TAG, AlterTableType.DROP_BRANCH, AlterTableType.RENAME_BRANCH, AlterTableType.DROPPARTITION,
@@ -179,7 +198,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private Transaction transaction;
   private AlterTableType currentAlterTableOp;
   private boolean createHMSTableInHook = false;
-  private MetastoreLock commitLock;
+  private HiveLock commitLock;
 
   private enum FileFormat {
     ORC("orc"), PARQUET("parquet"), AVRO("avro");
@@ -271,6 +290,32 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     setOrcOnlyFilesParam(hmsTable);
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
+    setSortOrder(hmsTable, schema, catalogProperties);
+  }
+
+  private void setSortOrder(org.apache.hadoop.hive.metastore.api.Table hmsTable, Schema schema,
+      Properties properties) {
+    String sortOderJSONString = hmsTable.getParameters().get(TableProperties.DEFAULT_SORT_ORDER);
+    SortFields sortFields = null;
+    if (!Strings.isNullOrEmpty(sortOderJSONString)) {
+      try {
+        sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOderJSONString, SortFields.class);
+      } catch (Exception e) {
+        LOG.warn("Can not read write order json: {}", sortOderJSONString, e);
+        return;
+      }
+      if (sortFields != null && !sortFields.getSortFields().isEmpty()) {
+        SortOrder.Builder sortOderBuilder = SortOrder.builderFor(schema);
+        sortFields.getSortFields().forEach(fieldDesc -> {
+          NullOrder nullOrder = fieldDesc.getNullOrdering() == NullOrdering.NULLS_FIRST ?
+              NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
+          SortDirection sortDirection = fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
+              SortDirection.ASC : SortDirection.DESC;
+          sortOderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
+        });
+        properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOderBuilder.build()));
+      }
+    }
   }
 
   @Override
@@ -369,8 +414,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           context.getProperties().get(OLD_TABLE_NAME)).toString());
     }
     if (commitLock == null) {
-      commitLock = new MetastoreLock(conf, new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
-          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(), hmsTable.getTableName());
+      commitLock = lockObject(hmsTable);
     }
 
     try {
@@ -379,6 +423,22 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     } catch (Exception e) {
       commitLock.unlock();
       throw new MetaException(StringUtils.stringifyException(e));
+    }
+  }
+
+  private HiveLock lockObject(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (!HiveTableOperations.hiveLockEnabled(hmsTable.getParameters(), conf) ||
+        SessionStateUtil.getQueryState(conf)
+            .map(QueryState::getHiveOperation)
+            .filter(opType -> HiveOperation.QUERY == opType)
+            .isPresent()) {
+      return new NoLock();
+    } else {
+      return new MetastoreLock(
+          conf,
+          new CachedClientPool(conf, Maps.fromProperties(catalogProperties)),
+          catalogProperties.getProperty(Catalogs.NAME), hmsTable.getDbName(),
+          hmsTable.getTableName());
     }
   }
 
@@ -443,6 +503,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
       assertNotMigratedTable(hmsTable.getParameters(), currentAlterTableOp.getName().toUpperCase());
       handleReplaceColumns(hmsTable);
+    } else if (AlterTableType.DROP_COLUMN.equals(currentAlterTableOp)) {
+      assertNotMigratedTable(hmsTable.getParameters(), currentAlterTableOp.getName().toUpperCase());
+      handleDropColumn(hmsTable);
     } else if (AlterTableType.RENAME_COLUMN.equals(currentAlterTableOp)) {
       // passing in the "CHANGE COLUMN" string instead, since RENAME COLUMN is not part of SQL syntax (not to mention
       // that users can change data types or reorder columns too with this alter op type, so its name is misleading..)
@@ -581,6 +644,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           preAlterTableProperties.partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else if (currentAlterTableOp != null) {
       switch (currentAlterTableOp) {
+        case DROP_COLUMN:
         case REPLACE_COLUMNS:
         case RENAME_COLUMN:
         case ADDCOLS:
@@ -786,7 +850,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     hmsTable.getParameters().entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
       // translate key names between HMS and Iceberg where needed
-      String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+      String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
       properties.put(icebergKey, e.getValue());
     });
 
@@ -803,7 +867,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (serdeInfo != null) {
       serdeInfo.getParameters().entrySet().stream()
           .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
-            String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+            String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
             properties.put(icebergKey, e.getValue());
           });
     }
@@ -885,6 +949,21 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())), addedCol.getComment());
     }
     updateSchema.commit();
+  }
+
+  private void handleDropColumn(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
+    List<FieldSchema> hmsCols = hmsTable.getSd().getCols();
+    List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
+
+    List<FieldSchema> removedCols = HiveSchemaUtil.getSchemaDiff(icebergCols, hmsCols, false).getMissingFromSecond();
+    if (removedCols.isEmpty()) {
+      return;
+    }
+
+    transaction = icebergTable.newTransaction();
+    transaction.updateSchema().deleteColumn(removedCols.get(0).getName()).commit();
+    LOG.info("handleDropColumn: Dropping the following column for Iceberg table {}, col: {}", hmsTable.getTableName(),
+        removedCols);
   }
 
   private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
@@ -1071,7 +1150,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         // Check if META_TABLE_STORAGE is not present or is not an instance of ICEBERG_STORAGE_HANDLER
         if (storageHandler == null || !isHiveIcebergStorageHandler(storageHandler)) {
           hmsTable.getParameters()
-              .put(hive_metastoreConstants.META_TABLE_STORAGE, HiveTableOperations.HIVE_ICEBERG_STORAGE_HANDLER);
+              .put(hive_metastoreConstants.META_TABLE_STORAGE, HMSTablePropertyHelper.HIVE_ICEBERG_STORAGE_HANDLER);
         }
       } catch (NoSuchTableException | NotFoundException ex) {
         // If the table doesn't exist, ignore throwing exception from here
@@ -1099,6 +1178,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       ExprNodeDesc exprNodeDesc = SerializationUtilities
           .deserializeObjectWithTypeInformation(partExpr.getRight(), true);
       SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) exprNodeDesc);
+      validatePartitionSpec(sarg, icebergTbl.spec());
       return HiveIcebergFilterFactory.generateFilterExpression(sarg);
     }).collect(Collectors.toList());
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
@@ -1124,8 +1204,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         Expression partFilter = Expressions.alwaysTrue();
         for (int index = 0; index < pSpec.fields().size(); index++) {
           PartitionField field = icebergTbl.spec().fields().get(index);
-          partFilter = Expressions.and(
-              partFilter, Expressions.equal(field.name(), partitionData.get(index, Object.class)));
+          UnboundPredicate<Object> equal = getPartitionPredicate(partitionData, field, index, icebergTbl.schema());
+          partFilter = Expressions.and(partFilter, equal);
         }
         partitionSetFilter = Expressions.or(partitionSetFilter, partFilter);
       }
@@ -1136,6 +1216,35 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       throw new MetaException(String.format("Error while fetching the partitions due to: %s", e));
     }
     context.putToProperties(HiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
+  }
+
+  private static void validatePartitionSpec(SearchArgument sarg, PartitionSpec partitionSpec) {
+    for (PredicateLeaf leaf : sarg.getLeaves()) {
+      TransformSpec transformSpec = TransformSpec.fromStringWithColumnName(leaf.getColumnName());
+      Types.NestedField column = partitionSpec.schema().findField(transformSpec.getColumnName());
+      PartitionField partitionColumn =
+          partitionSpec.fields().stream().filter(pf -> pf.sourceId() == column.fieldId()).findFirst().get();
+
+      if (!(partitionColumn.transform() == null && transformSpec.transformTypeString() == null) &&
+          !partitionColumn.transform().toString().equalsIgnoreCase(transformSpec.transformTypeString())) {
+        throw new UnsupportedOperationException(
+            "Invalid transform for column: " + transformSpec.getColumnName() +
+                " Expected: " + partitionColumn.transform() +
+                " Found: " + transformSpec.getTransformType());
+      }
+    }
+  }
+
+  private static UnboundPredicate<Object> getPartitionPredicate(PartitionData partitionData, PartitionField field,
+      int index, Schema schema) {
+    String columName = schema.findField(field.sourceId()).name();
+    TransformSpec transformSpec = TransformSpec.fromString(field.transform().toString(), columName);
+
+    UnboundTerm<Object> partitionColumn =
+        ObjectUtils.defaultIfNull(HiveIcebergFilterFactory.toTerm(columName, transformSpec),
+            Expressions.ref(field.name()));
+
+    return Expressions.equal(partitionColumn, partitionData.get(index, Object.class));
   }
 
   private class PreAlterTableProperties {

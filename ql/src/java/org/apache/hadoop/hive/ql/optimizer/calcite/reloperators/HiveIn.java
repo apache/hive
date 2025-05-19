@@ -29,6 +29,12 @@ import org.apache.calcite.sql.SqlWriter.FrameTypeEnum;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 
+/**
+ * An operator for representing the {@code <in value list>} expression of SQL standard.
+ * Essentially, it means that this operator must not be used for {@code IN} sub-queries.
+ * Consequently, the {@code SqlKind} of the operator must not be {@link SqlKind#IN} since
+ * the latter only appears in the context of a {@link org.apache.calcite.rex.RexSubQuery}.
+ */
 public class HiveIn extends SqlSpecialOperator {
 
   public static final SqlSpecialOperator INSTANCE =
@@ -37,7 +43,7 @@ public class HiveIn extends SqlSpecialOperator {
   private HiveIn() {
     super(
         "IN",
-        SqlKind.IN,
+        SqlKind.OTHER_FUNCTION,
         30,
         true,
         ReturnTypes.BOOLEAN_NULLABLE,
@@ -57,7 +63,7 @@ public class HiveIn extends SqlSpecialOperator {
     SqlNode sqlNode = opList.get(0);
     sqlNode.unparse(writer, leftPrec, getLeftPrec());
     writer.sep("IN");
-    Frame frame = writer.startList(FrameTypeEnum.SETOP, "(", ")");
+    Frame frame = writer.startList(FrameTypeEnum.SIMPLE, "(", ")");
     for (SqlNode op : opList.subList(1, opList.size())) {
       writer.sep(",");
       op.unparse(writer, 0, 0);

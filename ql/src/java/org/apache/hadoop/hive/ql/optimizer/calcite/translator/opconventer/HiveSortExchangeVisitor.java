@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.rel.RelDistribution;
-import org.apache.calcite.rel.RelDistribution.Type;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
@@ -30,6 +33,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer.HiveOpConverter.OpAttr;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 
 class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
   HiveSortExchangeVisitor(HiveOpConverter hiveOpConverter) {
@@ -50,25 +55,48 @@ class HiveSortExchangeVisitor extends HiveRelNodeVisitor<HiveSortExchange> {
     }
 
     RelDistribution distribution = exchangeRel.getDistribution();
-    if (distribution.getType() != Type.HASH_DISTRIBUTED) {
-      throw new SemanticException("Only hash distribution supported for LogicalExchange");
+    List<ExprNodeDesc> partitionKeyList;
+    switch (distribution.getType()) {
+      case HASH_DISTRIBUTED:
+        partitionKeyList = exchangeRel.getDistribution().getKeys().stream()
+                .map(keyIndex -> HiveOpConverterUtils.convertToExprNode(
+                        exchangeRel.getCluster().getRexBuilder().makeInputRef(exchangeRel.getInput(), keyIndex),
+                        exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite))
+                .collect(Collectors.toList());
+        break;
+
+      case ANY:
+        partitionKeyList = Collections.emptyList();
+        break;
+
+      default:
+        throw new SemanticException("Unsupported distribution type in HiveSortExchange: " + distribution.getType());
     }
+
     ExprNodeDesc[] expressions = new ExprNodeDesc[exchangeRel.getKeys().size()];
-    for (int index = 0; index < exchangeRel.getKeys().size(); index++) {
+    StringBuilder order = new StringBuilder();
+    StringBuilder nullOrder = new StringBuilder();
+    for (int index = 0; index < exchangeRel.getCollation().getFieldCollations().size(); index++) {
+      RelFieldCollation fieldCollation = exchangeRel.getCollation().getFieldCollations().get(index);
       expressions[index] = HiveOpConverterUtils.convertToExprNode(exchangeRel.getKeys().get(index),
           exchangeRel.getInput(), inputOpAf.tabAlias, inputOpAf.vcolsInCalcite);
+
+      order.append(DirectionUtils.codeToSign(DirectionUtils.directionToCode(fieldCollation.getDirection())));
+      nullOrder.append(NullOrdering.fromDirection(fieldCollation.nullDirection).getSign());
     }
     exchangeRel.setKeyExpressions(expressions);
 
-    ReduceSinkOperator rsOp = genReduceSink(inputOpAf.inputs.get(0), tabAlias, expressions,
-        -1, -1, Operation.NOT_ACID, hiveOpConverter.getHiveConf());
+    Operator<?> inputOp = inputOpAf.inputs.get(0);
+    List<String> keepColumns = new ArrayList<>();
+    final List<ColumnInfo> inputSchema = inputOp.getSchema().getSignature();
+    for (ColumnInfo columnInfo : inputSchema) {
+      keepColumns.add(columnInfo.getInternalName());
+    }
 
-    return new OpAttr(tabAlias, inputOpAf.vcolsInCalcite, rsOp);
-  }
+    ReduceSinkOperator resultOp = HiveOpConverterUtils.genReduceSink(inputOpAf.inputs.get(0), tabAlias, expressions,
+            -1, partitionKeyList, order.toString(), nullOrder.toString(), -1, Operation.NOT_ACID,
+            hiveOpConverter.getHiveConf());
 
-  private static ReduceSinkOperator genReduceSink(Operator<?> input, String tableAlias, ExprNodeDesc[] keys, int tag,
-      int numReducers, Operation acidOperation, HiveConf hiveConf) throws SemanticException {
-    return HiveOpConverterUtils.genReduceSink(input, tableAlias, keys, tag, new ArrayList<ExprNodeDesc>(), "", "",
-        numReducers, acidOperation, hiveConf);
+    return new OpAttr(tabAlias, inputOpAf.vcolsInCalcite, resultOp);
   }
 }

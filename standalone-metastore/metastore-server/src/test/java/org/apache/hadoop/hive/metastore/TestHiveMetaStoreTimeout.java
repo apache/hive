@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
@@ -174,7 +175,7 @@ public class TestHiveMetaStoreTimeout {
     MetastoreConf.setTimeVar(newConf, ConfVars.CLIENT_CONNECTION_TIMEOUT, 1000,
             TimeUnit.MILLISECONDS);
     // fake host to mock connection time out
-    MetastoreConf.setVar(newConf, ConfVars.THRIFT_URIS, "thrift://1.1.1.1:" + port);
+    MetastoreConf.setVar(newConf, ConfVars.THRIFT_URIS, "thrift://" + IPStackUtils.transformToIPv6("1.1.1.1", port));
     MetastoreConf.setLongVar(newConf, ConfVars.THRIFT_CONNECTION_RETRIES, 1);
 
     Future<Void> future = Executors.newSingleThreadExecutor().submit(() -> {

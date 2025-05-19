@@ -74,6 +74,10 @@ public class TestWarehouseExternalDir {
 
     conf.setVar(ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, whRootExternal);
 
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
+
     miniHS2 = new MiniHS2.Builder().withMiniMR().withRemoteMetastore().withConf(conf).build();
     miniHS2.start(new HashMap<String, String>());
 

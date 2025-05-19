@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 /**
@@ -37,10 +36,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
  */
 public class DummyPartition extends Partition {
 
-  @SuppressWarnings("nls")
-  private static final Logger LOG = LoggerFactory
-      .getLogger("hive.ql.metadata.DummyPartition");
-
   private String name;
   private LinkedHashMap<String, String> partSpec;
   public DummyPartition() {
@@ -49,13 +44,21 @@ public class DummyPartition extends Partition {
   public DummyPartition(Table tbl, String name) {
     setTable(tbl);
     this.name = name;
-  }  
+  }
 
-  public DummyPartition(Table tbl, String name,
-      Map<String, String> partSpec) {
-    setTable(tbl);
-    this.name = name;
-    this.partSpec = new LinkedHashMap<String, String>(partSpec);
+  public DummyPartition(Table tbl) {
+    this(tbl, null, Maps.newHashMap());
+  }
+
+  public DummyPartition(Table tbl, String name, Map<String, String> partSpec) {
+    this(tbl, name);
+    org.apache.hadoop.hive.metastore.api.Partition tPart =
+        new org.apache.hadoop.hive.metastore.api.Partition();
+    tPart.setSd(tbl.getSd().deepCopy());
+    tPart.setParameters(Maps.newHashMap());
+    
+    this.partSpec = Maps.newLinkedHashMap(partSpec);
+    setTPartition(tPart);
   }
 
   public String getName() {

@@ -63,7 +63,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@display
 Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[66][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: explain vectorization only detail MERGE INTO display USING (
   SELECT distinct display_skey, display, display as orig_display 
   FROM (
@@ -160,12 +159,11 @@ STAGE PLANS:
   Stage: Stage-4
     Tez
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Map 9 (XPROD_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 8 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
-        Reducer 5 <- Map 9 (SIMPLE_EDGE), Union 4 (SIMPLE_EDGE)
+        Reducer 5 <- Map 8 (SIMPLE_EDGE), Union 4 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
-        Reducer 7 <- Map 1 (XPROD_EDGE), Map 9 (XPROD_EDGE)
-        Reducer 8 <- Reducer 7 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 7 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -180,10 +178,6 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkEmptyKeyOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
@@ -204,7 +198,7 @@ STAGE PLANS:
                     dataColumns: s_key:bigint, year:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Map 9 
+        Map 8 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -232,11 +226,6 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [4]
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkEmptyKeyOperator
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 4:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
@@ -337,10 +326,6 @@ STAGE PLANS:
                           className: VectorFileSinkOperator
                           native: false
         Reducer 7 
-            MergeJoin Vectorization:
-                enabled: false
-                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
-        Reducer 8 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
@@ -387,7 +372,6 @@ STAGE PLANS:
   Stage: Stage-7
 
 Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[66][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: MERGE INTO display USING (
   SELECT distinct display_skey, display, display as orig_display 
   FROM (

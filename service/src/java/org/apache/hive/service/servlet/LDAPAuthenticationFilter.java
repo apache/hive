@@ -20,12 +20,14 @@ package org.apache.hive.service.servlet;
 
 import org.apache.hive.service.auth.ldap.LdapAuthService;
 import org.apache.hive.service.server.HiveServer2;
+import org.eclipse.jetty.http.HttpMethod;
 
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -34,8 +36,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public class LDAPAuthenticationFilter implements Filter {
 
-  private static final String LOGIN_FORM_URI = "loginForm.jsp";
-  private static final String LOGIN_SERVLET_URI = "login";
+  public static final String LOGIN_FORM_URI = "/loginForm.jsp";
+  public static final String LOGIN_SERVLET_URI = "/login";
   private final LdapAuthService ldapAuthService;
 
   public LDAPAuthenticationFilter(LdapAuthService ldapAuthService) {
@@ -44,27 +46,26 @@ public class LDAPAuthenticationFilter implements Filter {
 
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-
     HttpServletRequest httpRequest = (HttpServletRequest) request;
-    String requestURI = httpRequest.getRequestURI();
-
-    boolean isLoginFormRequest = requestURI.endsWith(LOGIN_FORM_URI);
-    boolean isLoginServletRequest = requestURI.endsWith(LOGIN_SERVLET_URI);
     boolean isLoggedIn = ldapAuthService.authenticate(httpRequest, (HttpServletResponse) response);
-
-    if (isLoggedIn && (isLoginFormRequest || isLoginServletRequest)) {
-      // User is already logged in, and is trying to login again; forward to the main homepage
-      RequestDispatcher dispatcher = request.getRequestDispatcher(HiveServer2.HS2_WEBUI_ROOT_URI);
+    boolean forwardRequest = isLoginRequest(httpRequest) == isLoggedIn;
+    if (forwardRequest) {
+      ServletContext rootContext = request.getServletContext().getContext("/");
+      // if the request is trying to login, forward to the main homepage in case
+      // the user has already logged in, otherwise the login page.
+      String forwardUri = isLoggedIn ? HiveServer2.HS2_WEBUI_ROOT_URI : LOGIN_FORM_URI;
+      RequestDispatcher dispatcher = rootContext.getRequestDispatcher(forwardUri);
       dispatcher.forward(request, response);
-    } else if (isLoggedIn || isLoginFormRequest || isLoginServletRequest) {
-      // User is either already logged in or this is a request for the login page or processing of a login attempt, 
-      // in all these cases allow to continue the request as is without changes 
-      chain.doFilter(request, response);
     } else {
-      // User is not logged in, so authentication is required; forwards to the login page
-      RequestDispatcher dispatcher = request.getRequestDispatcher(LOGIN_FORM_URI);
-      dispatcher.forward(request, response);
+      chain.doFilter(request, response);
     }
+  }
+
+  public boolean isLoginRequest(HttpServletRequest request) {
+    String method = request.getMethod();
+    String servletPath = request.getServletPath();
+    return LOGIN_FORM_URI.equals(servletPath) ||
+        HttpMethod.POST.name().equalsIgnoreCase(method) && LOGIN_SERVLET_URI.equals(servletPath);
   }
 
   public void destroy() {

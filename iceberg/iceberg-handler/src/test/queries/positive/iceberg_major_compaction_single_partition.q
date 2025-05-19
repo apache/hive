@@ -33,7 +33,7 @@ partitioned by (dept_id bigint,
                 city string, 
                 registration_date date)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
 insert into ice_orc_wo_evo VALUES ('fn1','ln1',1,'London','2024-03-11');
 insert into ice_orc_wo_evo VALUES ('fn2','ln2',1,'London','2024-03-11');

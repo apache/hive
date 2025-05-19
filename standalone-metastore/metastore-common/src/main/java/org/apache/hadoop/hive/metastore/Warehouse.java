@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.HarFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
@@ -133,14 +134,8 @@ public class Warehouse {
 
 
   /**
-   * Hadoop File System reverse lookups paths with raw ip addresses The File
-   * System URI always contains the canonical DNS name of the Namenode.
-   * Subsequently, operations on paths with raw ip addresses cause an exception
-   * since they don't match the file system URI.
-   *
-   * This routine solves this problem by replacing the scheme and authority of a
-   * path with the scheme and authority of the FileSystem that it maps to.
-   *
+   * Get a path with canonical scheme and authority.
+   * <p>
    * Since creating a new file system object is expensive, this method
    * mimics getFileSystem() without creating an actual FileSystem object.
    * When the input path lacks a scheme or an authority this is added
@@ -151,40 +146,24 @@ public class Warehouse {
    * @return Path with canonical scheme and authority
    */
   public static Path getDnsPath(Path path, Configuration conf) throws MetaException {
-    if (isBlobStorageScheme(conf, path.toUri().getScheme())) {
-      String scheme = path.toUri().getScheme();
-      String authority = path.toUri().getAuthority();
-      URI defaultUri = FileSystem.getDefaultUri(conf);
-      if ((authority == null && scheme == null)
-              || StringUtils.equalsIgnoreCase(scheme, defaultUri.getScheme())) {
-        if (authority == null) {
-          authority = defaultUri.getAuthority();
-        }
-        if (scheme == null) {
-          scheme = defaultUri.getScheme();
-        }
-        String uriPath = path.toUri().getPath();
-        if (StringUtils.isEmpty(uriPath)) {
-          uriPath = "/";
-        }
-        return new Path(scheme, authority, uriPath);
+    String scheme = path.toUri().getScheme();
+    String authority = path.toUri().getAuthority();
+    URI defaultUri = FileSystem.getDefaultUri(conf);
+    if ((authority == null && scheme == null)
+        || StringUtils.equalsIgnoreCase(scheme, defaultUri.getScheme())) {
+      if (authority == null) {
+        authority = defaultUri.getAuthority();
       }
-      return path;
-    } else { // fallback: for other FS type make the FS instance
-      FileSystem fs = getFs(path, conf);
+      if (scheme == null) {
+        scheme = defaultUri.getScheme();
+      }
       String uriPath = path.toUri().getPath();
       if (StringUtils.isEmpty(uriPath)) {
         uriPath = "/";
       }
-      return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(), uriPath));
+      return new Path(scheme, authority, uriPath);
     }
-  }
-
-  private static boolean isBlobStorageScheme(Configuration conf, String scheme) {
-    final String uriScheme = scheme == null ? FileSystem.getDefaultUri(conf).getScheme() : scheme;
-    return MetastoreConf.getStringCollection(conf, MetastoreConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES)
-            .stream()
-            .anyMatch(each -> each.equalsIgnoreCase(uriScheme));
+    return path;
   }
 
   public Path getDnsPath(Path path) throws MetaException {
@@ -489,6 +468,10 @@ public class Warehouse {
       }
     }
     FileSystem fs = getFs(f);
+    if (fs instanceof HarFileSystem) {
+      LOG.warn("Har path {} is not supported to delete, skipping it.", f);
+      return true;
+    }
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
@@ -702,9 +685,10 @@ public class Warehouse {
     return partSpec;
   }
 
-  public static boolean makeSpecFromName(Map<String, String> partSpec, Path currPath,
+  public static boolean makeSpecFromName(Map<String, String> partSpec, Path path,
       Set<String> requiredKeys) {
     List<String[]> kvs = new ArrayList<>();
+    Path currPath = path;
     do {
       String component = currPath.getName();
       Matcher m = pat.matcher(component);
@@ -728,7 +712,7 @@ public class Warehouse {
       partSpec.put(key, kvs.get(i - 1)[1]);
     }
     if (requiredKeys == null || requiredKeys.isEmpty()) return true;
-    LOG.warn("Cannot create partition spec from " + currPath + "; missing keys " + requiredKeys);
+    LOG.warn("Cannot create partition spec from {}; missing keys {}", path, requiredKeys);
     return false;
   }
 

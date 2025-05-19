@@ -96,7 +96,9 @@ public class TestHS2AuthMechsWithMiniKdc extends AbstractLdapTestUnit {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
       hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
           "uid=%s,ou=People,dc=example,dc=com");
-
+      // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+      // this should be handled with HiveConfForTests when it's used here too
+      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
       AuthenticationProviderFactory.AuthMethods.LDAP.getConf().setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_URL,
           "ldap://localhost:" + ldapServer.getPort());
       AuthenticationProviderFactory.AuthMethods.LDAP.getConf().setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,

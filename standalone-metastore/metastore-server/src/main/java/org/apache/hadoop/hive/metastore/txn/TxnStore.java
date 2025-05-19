@@ -132,6 +132,7 @@ public interface TxnStore extends Configurable {
   char MINOR_TYPE = 'i';
   char REBALANCE_TYPE = 'r';
   char ABORT_TXN_CLEANUP_TYPE = 'c';
+  char SMART_OPTIMIZE_TYPE = '*';
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
       SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };
@@ -185,6 +186,11 @@ public interface TxnStore extends Configurable {
   @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException;
+
+  @SqlRetry
+  @Transactional(POOL_TX)
+  @RetrySemantics.ReadOnly
+  List<Long> getOpenTxnForPolicy(List<Long> openTxnList, String replPolicy);
 
   /**
    * Get the count for open transactions.

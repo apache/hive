@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.Test;
 
 public class TestWarehouseDnsPath {
@@ -40,7 +41,8 @@ public class TestWarehouseDnsPath {
   @Test
   public void testDnsPathWithAuthority() throws Exception {
     conf.set("fs.defaultFS", "hdfs://localhost");
-    assertEquals("hdfs://127.0.0.1/path/1", transformPath("hdfs://127.0.0.1/path/1"));
+    assertEquals(String.format("hdfs://%s/path/1", IPStackUtils.formatIPAddressForURL(IPStackUtils.resolveLoopbackAddress())),
+        transformPath(String.format("hdfs://%s/path/1", IPStackUtils.formatIPAddressForURL(IPStackUtils.resolveLoopbackAddress()))));
     conf.set("fs.defaultFS", "s3a://bucket");
     assertEquals("s3a://bucket/path/1", transformPath("s3a://bucket/path/1"));
   }

@@ -83,6 +83,7 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.tez.common.TezTaskUmbilicalProtocol;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.common.security.JobTokenSecretManager;
@@ -328,7 +329,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       int numHandlers, JobTokenSecretManager jobTokenSecretManager,
       boolean isHadoopSecurityAuthorizationEnabled) throws IOException {
     server = new RPC.Builder(conf).setProtocol(LlapTaskUmbilicalProtocol.class)
-        .setBindAddress("0.0.0.0").setPort(umbilicalPort).setInstance(umbilical)
+        .setBindAddress(IPStackUtils.resolveWildcardAddress()).setPort(umbilicalPort).setInstance(umbilical)
         .setNumHandlers(numHandlers).setSecretManager(jobTokenSecretManager)
         .build();
 

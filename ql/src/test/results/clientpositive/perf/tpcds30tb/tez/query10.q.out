@@ -163,10 +163,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ca
-                  filterExpr: (ca_county) IN ('Walker County', 'Richland County', 'Gaines County', 'Douglas County', 'Dona Ana County') (type: boolean)
+                  filterExpr: (ca_county) IN ('Dona Ana County', 'Douglas County', 'Gaines County', 'Richland County', 'Walker County') (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 4240000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ca_county) IN ('Walker County', 'Richland County', 'Gaines County', 'Douglas County', 'Dona Ana County') (type: boolean)
+                    predicate: (ca_county) IN ('Dona Ana County', 'Douglas County', 'Gaines County', 'Richland County', 'Walker County') (type: boolean)
                     Statistics: Num rows: 103627 Data size: 10984462 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ca_address_sk (type: bigint)

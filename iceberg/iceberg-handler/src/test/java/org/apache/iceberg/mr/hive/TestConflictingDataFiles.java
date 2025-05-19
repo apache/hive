@@ -20,10 +20,8 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.FileFormat;
@@ -47,8 +45,6 @@ import org.mockito.MockedStatic;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.types.Types.NestedField.required;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mockStatic;
 
@@ -62,12 +58,12 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
             .bucket("customer_id", 16).build();
 
-    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
-    method.setAccessible(true);
+//    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
+//    method.setAccessible(true);
 
     try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
-      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
-          .thenAnswer(invocation -> null);
+//      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
+//          .thenAnswer(invocation -> null);
       // create and insert an initial batch of records
       testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
           fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(),
@@ -98,7 +94,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     try {
       Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
         TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp, executionEngine);
+        init(shell, testTables, temp);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
@@ -141,7 +137,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     try {
       Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
         TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp, executionEngine);
+        init(shell, testTables, temp);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
@@ -188,7 +184,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     try {
       Tasks.range(3).executeWith(Executors.newFixedThreadPool(3)).run(i -> {
         TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp, executionEngine);
+        init(shell, testTables, temp);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
@@ -230,7 +226,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
     try {
       Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
         TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp, executionEngine);
+        init(shell, testTables, temp);
         HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
         HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
@@ -299,7 +295,7 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
           throw new RuntimeException(e);
         }
       }
-      init(shell, testTables, temp, executionEngine);
+      init(shell, testTables, temp);
       HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
       HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
 

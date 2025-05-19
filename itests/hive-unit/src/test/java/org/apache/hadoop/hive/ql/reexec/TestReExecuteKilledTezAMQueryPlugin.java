@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.reexec;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.YarnApplicationState;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hive.jdbc.HiveStatement;
-import org.apache.hive.jdbc.TestJdbcWithMiniLlapArrow;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.*;
 import org.slf4j.Logger;
@@ -77,14 +77,13 @@ public class TestReExecuteKilledTezAMQueryPlugin {
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
     Connection conDefault = getConnection(miniHS2.getJdbcURL(),
     System.getProperty("user.name"), "bar");
     Statement stmt = conDefault.createStatement();
     String tblName = testDbName + "." + tableName;
     Path dataFilePath = new Path(dataFileDir, "kv1.txt");
-    String udfName = TestJdbcWithMiniLlapArrow.SleepMsUDF.class.getName();
+    String udfName = SleepMsUDF.class.getName();
     stmt.execute("drop database if exists " + testDbName + " cascade");
     stmt.execute("create database " + testDbName);
     stmt.execute("set role admin");
@@ -103,6 +102,20 @@ public class TestReExecuteKilledTezAMQueryPlugin {
   public static void afterTest() {
     if (miniHS2 != null && miniHS2.isStarted()) {
       miniHS2.stop();
+    }
+  }
+
+  /**
+   * SleepMsUDF
+   */
+  public static class SleepMsUDF extends UDF {
+    public Integer evaluate(int value, int ms) {
+      try {
+        Thread.sleep(ms);
+      } catch (InterruptedException e) {
+        // No-op
+      }
+      return value;
     }
   }
 

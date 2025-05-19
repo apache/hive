@@ -91,8 +91,7 @@ public class AlterTableAlterPartitionOperation extends DDLOperation<AlterTableAl
     Converter converter = ObjectInspectorConverters.getConverter(
         PrimitiveObjectInspectorFactory.javaStringObjectInspector, outputOI);
 
-    List<String> partNames = context.getDb().getPartitionNames(tbl.getDbName(),
-        tbl.getTableName(), (short) -1);
+    List<String> partNames = context.getDb().getPartitionNames(tbl, (short) -1);
     for (String partName : partNames) {
       try {
         List<String> values = Warehouse.getPartValuesFromPartName(partName);

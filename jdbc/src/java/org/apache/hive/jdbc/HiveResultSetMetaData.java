@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.serde2.thrift.Type;
  *
  */
 public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
+  private static final String DOT = ".";
+
   private final List<String> columnNames;
   private final List<String> columnTypes;
   private final List<JdbcColumnAttributes> columnAttributes;
@@ -43,7 +45,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public String getCatalogName(int column) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    // Hive doesn't implement a catalog concept, see
+    // https://issues.apache.org/jira/browse/HIVE-3121.
+    return "";
   }
 
   private Type getHiveType(int column) throws SQLException {
@@ -95,11 +99,23 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public String getSchemaName(int column) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    String tableName = getTableName(column);
+    int index = tableName.lastIndexOf(DOT);
+    if (index >= 0) {
+      return tableName.substring(0, index);
+    }
+    // Impala usually doesn't return fully qualified column names. Return "" to avoid
+    // giving false results.
+    return "";
   }
 
   public String getTableName(int column) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    String columnName = getColumnName(column);
+    int index = columnName.lastIndexOf(DOT);
+    if (index >= 0) {
+      return columnName.substring(0, index);
+    }
+    return "";
   }
 
   public boolean isAutoIncrement(int column) throws SQLException {
@@ -125,7 +141,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public boolean isDefinitelyWritable(int column) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    // Corollary of isReadOnly=true.
+    return false;
   }
 
   public int isNullable(int column) throws SQLException {
@@ -138,15 +155,17 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public boolean isSearchable(int column) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    // All columns can be used in where clauses.
+    return true;
   }
 
   public boolean isSigned(int column) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return JdbcColumn.columnSigned(getHiveType(column));
   }
 
   public boolean isWritable(int column) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    // Corollary of isReadOnly=true.
+    return false;
   }
 
   public boolean isWrapperFor(Class<?> iface) throws SQLException {

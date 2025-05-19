@@ -276,6 +276,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_databases failed: unknown result')
     end
 
+    def get_databases_req(request)
+      send_get_databases_req(request)
+      return recv_get_databases_req()
+    end
+
+    def send_get_databases_req(request)
+      send_message('get_databases_req', Get_databases_req_args, :request => request)
+    end
+
+    def recv_get_databases_req()
+      result = receive_message(Get_databases_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_databases_req failed: unknown result')
+    end
+
     def alter_database(dbname, db)
       send_alter_database(dbname, db)
       recv_alter_database()
@@ -2468,6 +2484,25 @@ module ThriftHiveMetastore
       raise result.o3 unless result.o3.nil?
       raise result.o4 unless result.o4.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'delete_table_column_statistics failed: unknown result')
+    end
+
+    def delete_column_statistics_req(req)
+      send_delete_column_statistics_req(req)
+      return recv_delete_column_statistics_req()
+    end
+
+    def send_delete_column_statistics_req(req)
+      send_message('delete_column_statistics_req', Delete_column_statistics_req_args, :req => req)
+    end
+
+    def recv_delete_column_statistics_req()
+      result = receive_message(Delete_column_statistics_req_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'delete_column_statistics_req failed: unknown result')
     end
 
     def create_function(func)
@@ -4874,6 +4909,17 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_all_databases', seqid)
     end
 
+    def process_get_databases_req(seqid, iprot, oprot)
+      args = read_args(iprot, Get_databases_req_args)
+      result = Get_databases_req_result.new()
+      begin
+        result.success = @handler.get_databases_req(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_databases_req', seqid)
+    end
+
     def process_alter_database(seqid, iprot, oprot)
       args = read_args(iprot, Alter_database_args)
       result = Alter_database_result.new()
@@ -6634,6 +6680,23 @@ module ThriftHiveMetastore
         result.o4 = o4
       end
       write_result(result, oprot, 'delete_table_column_statistics', seqid)
+    end
+
+    def process_delete_column_statistics_req(seqid, iprot, oprot)
+      args = read_args(iprot, Delete_column_statistics_req_args)
+      result = Delete_column_statistics_req_result.new()
+      begin
+        result.success = @handler.delete_column_statistics_req(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
+      rescue ::InvalidInputException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'delete_column_statistics_req', seqid)
     end
 
     def process_create_function(seqid, iprot, oprot)
@@ -8714,6 +8777,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_databases_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetDatabaseObjectsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_databases_req_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetDatabaseObjectsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
@@ -13640,6 +13737,46 @@ module ThriftHiveMetastore
   end
 
   class Delete_table_column_statistics_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::InvalidInputException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Delete_column_statistics_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::DeleteColumnStatisticsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Delete_column_statistics_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

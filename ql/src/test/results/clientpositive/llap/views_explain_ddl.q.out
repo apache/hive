@@ -274,20 +274,6 @@ POSTHOOK: Input: db1@table2_n13
 POSTHOOK: Input: db1@v3_n3
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `db1`;
-CREATE TABLE `db1`.`table2_n13`(
-  `key` string, 
-  `value` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -302,8 +288,22 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE `db1`.`table2_n13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+CREATE TABLE `db1`.`table2_n13`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 ALTER TABLE `db1`.`table1_n19` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `db1`.`table2_n13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v3_n3` AS SELECT `t1`.`key`, `t1`.`value`, `t2`.`key` `k` FROM `db1`.`table1_n19` `t1` JOIN `db1`.`table2_n13` `t2` ON `t1`.`key` = `t2`.`key`;
 
@@ -558,20 +558,6 @@ POSTHOOK: Input: db1@table2_n13
 POSTHOOK: Input: db1@v6
 #### A masked pattern was here ####
 CREATE DATABASE IF NOT EXISTS `db1`;
-CREATE TABLE `db1`.`table2_n13`(
-  `key` string, 
-  `value` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
 CREATE TABLE `db1`.`table1_n19`(
   `key` string, 
   `value` string)
@@ -586,8 +572,22 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE `db1`.`table2_n13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+CREATE TABLE `db1`.`table2_n13`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 ALTER TABLE `db1`.`table1_n19` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `db1`.`table2_n13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 CREATE VIEW `db1`.`v6` AS SELECT `t1`.`key`, `t1`.`value`, `t2`.`key` `k` FROM `db1`.`table1_n19` `t1` JOIN `db1`.`table2_n13` `t2` ON `t1`.`key` = `t2`.`key`;
 

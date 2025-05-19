@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -174,7 +175,7 @@ public class TestReadEntityDirect {
    * Create driver with the test hook set in config
    */
   private static Driver createDriver() {
-    HiveConf conf = new HiveConf(Driver.class);
+    HiveConf conf = new HiveConfForTest(TestReadEntityDirect.class);
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

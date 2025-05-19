@@ -1056,8 +1056,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Map 3 <- Reducer 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
+        Map 3 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1115,7 +1114,7 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         outputColumnNames: _col0
                         input vertices:
-                          1 Reducer 5
+                          1 Map 4
                         Statistics: Num rows: 791 Data size: 68817 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -1153,18 +1152,6 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
         Union 2 
             Vertex: Union 2
 

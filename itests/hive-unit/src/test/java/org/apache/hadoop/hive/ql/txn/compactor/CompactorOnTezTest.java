@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -50,9 +51,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,12 +63,6 @@ import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.dropTables;
  * Superclass for Test[Crud|Mm]CompactorOnTez, for setup and helper classes.
  */
 public abstract class CompactorOnTezTest {
-  private static final AtomicInteger RANDOM_INT = new AtomicInteger(new Random().nextInt());
-  private static final String TEST_DATA_DIR = new File(
-      System.getProperty("java.io.tmpdir") + File.separator + TestCrudCompactorOnTez.class
-          .getCanonicalName() + "-" + System.currentTimeMillis() + "_" + RANDOM_INT
-          .getAndIncrement()).getPath().replaceAll("\\\\", "/");
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   static final String CUSTOM_COMPACTION_QUEUE = "my_compaction_test_queue";
 
   protected HiveConf conf;
@@ -85,7 +78,7 @@ public abstract class CompactorOnTezTest {
   @Before
   // Note: we create a new conf and driver object before every test
   public void setup() throws Exception {
-    HiveConf hiveConf = new HiveConf(this.getClass());
+    HiveConfForTest hiveConf = new HiveConfForTest(this.getClass());
     setupWithConf(hiveConf);
   }
 
@@ -94,19 +87,20 @@ public abstract class CompactorOnTezTest {
     tmpFolder = folder.newFolder().getAbsolutePath();
   }
 
-  protected void setupWithConf(HiveConf hiveConf) throws Exception {
-    File f = new File(TEST_WAREHOUSE_DIR);
+  protected void setupWithConf(HiveConfForTest hiveConf) throws Exception {
+    String testWarehouseDir = hiveConf.getTestDataDir() + "/warehouse";
+    File f = new File(testWarehouseDir);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
     }
-    if (!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
-      throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
+    if (!(new File(testWarehouseDir).mkdirs())) {
+      throw new RuntimeException("Could not create " + testWarehouseDir);
     }
     hiveConf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE, testWarehouseDir);
     MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
@@ -116,27 +110,23 @@ public abstract class CompactorOnTezTest {
     TestTxnDbUtil.prepDb(hiveConf);
     conf = hiveConf;
     // Use tez as execution engine for this test class
-    setupTez(conf);
+    setupTez(hiveConf);
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(conf);
     SessionState.start(new CliSessionState(conf));
   }
 
-  private void setupTez(HiveConf conf) {
+  private void setupTez(HiveConfForTest conf) {
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
     conf.set("tez.am.resource.memory.mb", "128");
     conf.set("tez.am.dag.scheduler.class",
         "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
-    conf.setBoolean("tez.local.mode", true);
-    conf.setBoolean("tez.local.mode.without.network", true);
     conf.set("fs.defaultFS", "file:///");
     conf.setBoolean("tez.runtime.optimize.local.fetch", true);
-    conf.set("tez.staging-dir", TEST_DATA_DIR);
+    conf.set("tez.staging-dir", conf.getTestDataDir());
     conf.setBoolean("tez.ignore.lib.uris", true);
     conf.set("hive.tez.container.size", "128");
     conf.setBoolean("hive.merge.tezfiles", false);
-    conf.setBoolean("hive.in.tez.test", true);
     if (!mmCompaction) {
       // We need these settings to create a table which is not bucketed, but contains multiple files.
       // If these parameters are set when inserting 100 rows into the table, the rows will

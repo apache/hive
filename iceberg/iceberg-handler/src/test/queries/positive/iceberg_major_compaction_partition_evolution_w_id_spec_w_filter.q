@@ -12,6 +12,7 @@
 -- Mask current-snapshot-timestamp-ms
 --! qt:replace:/(\s+current-snapshot-timestamp-ms\s+)\S+(\s*)/$1#Masked#$2/
 --! qt:replace:/(MAJOR\s+succeeded\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
+--! qt:replace:/(MAJOR\s+refused\s+)[a-zA-Z0-9\-\.\s+]+(\s+manual)/$1#Masked#$2/
 -- Mask compaction id as they will be allocated in parallel threads
 --! qt:replace:/^[0-9]/#Masked#/
 -- Mask removed file size
@@ -31,7 +32,7 @@ create table ice_orc (
  )
 partitioned by (company_id bigint)
 stored by iceberg stored as orc 
-tblproperties ('format-version'='2');
+tblproperties ('format-version'='2', 'compactor.threshold.target.size'='1500');
 
 insert into ice_orc VALUES 
     ('fn1','ln1', 1, 10, 100), 
@@ -68,8 +69,8 @@ delete from ice_orc where last_name in ('ln5', 'ln13');
 select * from ice_orc;
 describe formatted ice_orc;
 
-explain alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
-alter table ice_orc COMPACT 'major' and wait where team_id=10 or first_name in ('fn3', 'fn11') or last_name in ('ln7', 'ln15');
+explain alter table ice_orc COMPACT 'major' and wait where company_id=100 or dept_id in (1,2);
+alter table ice_orc COMPACT 'major' and wait where company_id=100 or dept_id in (1,2);
 
 select * from ice_orc;
 describe formatted ice_orc;

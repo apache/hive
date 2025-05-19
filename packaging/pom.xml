@@ -173,6 +173,10 @@
                   \Qhttps://www.eclipse.org/org/documents/epl-v10.php\E
                   \Qhttp://www.eclipse.org/org/documents/epl-v10.php\E
                 </EPL-1.0>
+                <EPL-2.0>
+                  \Qhttps://raw.githubusercontent.com/locationtech/jts/master/LICENSE_EPLv2.txt\E
+                  \Qhttps://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt\E
+                </EPL-2.0>
                 <MIT>
                   https?://(www\.)?opensource\.org/licenses/mit(-license.php)?
                 </MIT>
@@ -422,6 +426,11 @@
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-webhcat-java-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

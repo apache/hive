@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.apache.hadoop.conf.Configuration;
@@ -60,6 +62,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
@@ -71,6 +74,8 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableResult;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
@@ -574,12 +579,26 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   /** {@inheritDoc} */
   @Override
-  public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName, String engine)
-      throws TException {
-    if (getTempTable(dbName, tableName) != null) {
-      return deleteTempTableColumnStats(dbName, tableName, colName);
+  public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
+    String dbName = req.getDb_name();
+    String tableName = req.getTbl_name();
+    org.apache.hadoop.hive.metastore.api.Table table;
+    if ((table = getTempTable(dbName, tableName)) != null) {
+      List<String> colNames = req.getCol_names();
+      if (table.getPartitionKeysSize() == 0) {
+        if (colNames == null || colNames.isEmpty()) {
+          colNames = table.getSd().getCols().stream().map(FieldSchema::getName)
+              .collect(Collectors.toList());
+        }
+        for (String colName : colNames) {
+          deleteTempTableColumnStats(dbName, tableName, colName);
+        }
+      } else {
+        throw new UnsupportedOperationException("Not implemented yet");
+      }
+      return true;
     }
-    return super.deleteTableColumnStatistics(dbName, tableName, colName, engine);
+    return super.deleteColumnStatistics(req);
   }
 
   private void createTempTable(org.apache.hadoop.hive.metastore.api.Table tbl) throws TException {
@@ -777,7 +796,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       HadoopShims.HdfsEncryptionShim shim
               = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
       if (!shim.isPathEncrypted(location)) {
-        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
+        HdfsUtils.HadoopFileStatus status = HdfsUtils.HadoopFileStatus.createInstance(conf, fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
         FileUtils.moveToTrash(fs, location, conf, isSkipTrash);
@@ -1126,6 +1145,17 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> parts = tt.listPartitionsByPartitionValsWithAuthInfo(partialPvals, userName, groupNames);
     return getPartitionsForMaxParts(tableName, parts, maxParts);
+  }
+
+  @Override
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
+          throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(request.getDbName(), request.getTblName());
+    if (table == null) {
+      return super.getPartitionsWithSpecs(request);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    return tt.getPartitionsWithSpecs(request);
   }
 
   @Override
@@ -2505,7 +2535,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       final String fullTableName = TableName.getDbTable(dbName, tblName);
 
       ValidTxnWriteIdList validTxnWriteIdList = (validWriteIds != null) ? 
-          new ValidTxnWriteIdList(validWriteIds) :
+          ValidTxnWriteIdList.fromValue(validWriteIds) :
           SessionState.get().getTxnMgr().getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
       
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);

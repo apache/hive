@@ -1,1 +1,1 @@
-Query returned non-zero code: 1, cause: 'SET hive.cbo.fallback.strategy=NONE' FAILED in validation : Invalid value.. expects one of [NEVER, CONSERVATIVE, ALWAYS, TEST].
+Query returned non-zero code: 1, cause: 'SET hive.cbo.fallback.strategy=NONE' FAILED in validation : Invalid value.. expects one of [NEVER, CONSERVATIVE, ALWAYS].

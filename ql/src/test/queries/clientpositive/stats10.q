@@ -4,7 +4,6 @@ set datanucleus.cache.collections=false;
 set hive.stats.autogather=true;
 ;
 set hive.exec.reducers.max = 1;
-set hive.cbo.fallback.strategy=NEVER;
 
 CREATE TABLE bucket3_1_n0(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS;
 

@@ -47,7 +47,9 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
 
@@ -100,7 +102,15 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
 
       // Server args
       int maxMessageSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE);
-      TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(serverSocket).processorFactory(processorFactory)
+      TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(new TServerSocket(serverSocket.getServerSocket()) {
+        @Override
+        public TSocket accept() throws TTransportException {
+          TSocket ts = super.accept();
+          int maxThriftMessageSize = (int) HiveConf.getSizeVar(
+              hiveConf, HiveConf.ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE);
+          return HiveAuthUtils.configureThriftMaxMessageSize(ts, maxThriftMessageSize);
+        }
+      }).processorFactory(processorFactory)
           .transportFactory(transportFactory).protocolFactory(new TBinaryProtocol.Factory())
           .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize))
           .executorService(executorService);

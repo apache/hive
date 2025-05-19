@@ -1,7 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=more;
-set hive.cbo.fallback.strategy=NEVER;
 
 DESCRIBE FUNCTION explode;
 DESCRIBE FUNCTION EXTENDED explode;

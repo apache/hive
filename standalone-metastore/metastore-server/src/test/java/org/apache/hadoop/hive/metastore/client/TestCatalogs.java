@@ -197,15 +197,16 @@ public class TestCatalogs extends MetaStoreClientTest {
 
   @Test(expected = NoSuchObjectException.class)
   public void dropNonExistentCatalog() throws TException {
-    client.dropCatalog("noSuchCatalog");
-  }
-
-  @Test
-  public void dropNonExistentCatalogIfExists() throws TException {
-    client.dropCatalog("noSuchCatalog", true);
+    // If explicitly set to false, we expect an exception
+    client.dropCatalog("noSuchCatalog", false);
     Assert.assertTrue("dropCatalog completed without throwing an exception", true);
   }
 
+  @Test
+  public void dropCatalogIfExists() throws TException {
+    // With the default ifExists value of true, no exception should be thrown even if the catalog doesn't exist.
+    client.dropCatalog("noSuchCatalog");
+  }
 
   @Test(expected = MetaException.class)
   public void dropHiveCatalog() throws TException {

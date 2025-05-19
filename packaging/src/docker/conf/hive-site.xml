@@ -45,6 +45,10 @@
         <value>false</value>
     </property>
     <property>
+        <name>hive.compactor.worker.threads</name>
+        <value>1</value>
+    </property>
+    <property>
         <name>mapreduce.framework.name</name>
         <value>local</value>
     </property>

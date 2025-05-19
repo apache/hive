@@ -40,8 +40,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   private static final Logger LOG = LoggerFactory.getLogger(HikariCPDataSourceProvider.class);
 
   static final String HIKARI = "hikaricp";
-  private static final String CONNECTION_TIMEOUT_PROPERTY = HIKARI + ".connectionTimeout";
-  private static final String LEAK_DETECTION_THRESHOLD = HIKARI + ".leakDetectionThreshold";
 
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
@@ -52,10 +50,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
 
-    Properties properties = replacePrefix(
-        DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
-    long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
-    long leakDetectionThreshold = hdpConfig.getLong(LEAK_DETECTION_THRESHOLD, 3600000L);
+    Properties properties = replacePrefix(DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
 
     HikariConfig config;
     try {
@@ -67,7 +62,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
-    config.setLeakDetectionThreshold(leakDetectionThreshold);
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }
@@ -79,12 +73,9 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     // so that the connection pool can retire the idle connection aggressively,
     // this will make Metastore more scalable especially if there is a leader in the warehouse.
     if ("mutex".equals(poolName)) {
-      int minimumIdle = Integer.valueOf(hdpConfig.get(HIKARI + ".minimumIdle", "2"));
+      int minimumIdle = Integer.parseInt(hdpConfig.get(HIKARI + ".minimumIdle", "2"));
       config.setMinimumIdle(Math.min(maxPoolSize, minimumIdle));
     }
-
-    //https://github.com/brettwooldridge/HikariCP
-    config.setConnectionTimeout(connectionTimeout);
 
     DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
 

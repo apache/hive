@@ -21,11 +21,8 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TextConverter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Description(name = "string",
 value = "CAST(<value> as STRING) - Converts the argument to a string value.",
@@ -33,10 +30,8 @@ extended = "Example:\n "
 + "  > SELECT CAST(1234 AS string) FROM src LIMIT 1;\n"
 + "  '1234'")
 public class GenericUDFToString extends GenericUDF {
-  private static final Logger LOG = LoggerFactory.getLogger(GenericUDFToString.class.getName());
 
-  private transient PrimitiveObjectInspector argumentOI;
-  private transient TextConverter converter;
+  private transient ObjectInspectorConverters.Converter converter;
 
   public GenericUDFToString() {
   }
@@ -46,14 +41,9 @@ public class GenericUDFToString extends GenericUDF {
     if (arguments.length != 1) {
       throw new UDFArgumentException("STRING cast requires a value argument");
     }
-    try {
-      argumentOI = (PrimitiveObjectInspector) arguments[0];
-    } catch (ClassCastException e) {
-      throw new UDFArgumentException(
-          "The function STRING takes only primitive types");
-    }
 
-    converter = new TextConverter(argumentOI);
+    converter = ObjectInspectorConverters
+        .getConverter(arguments[0], PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
   }
 

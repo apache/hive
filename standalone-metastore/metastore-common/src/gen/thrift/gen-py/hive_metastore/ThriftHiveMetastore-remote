@@ -40,6 +40,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void drop_database_req(DropDatabaseRequest req)')
     print('   get_databases(string pattern)')
     print('   get_all_databases()')
+    print('  GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)')
     print('  void alter_database(string dbname, Database db)')
     print('  void alter_database_req(AlterDatabaseRequest alterDbReq)')
     print('  void create_dataconnector_req(CreateDataConnectorRequest connectorReq)')
@@ -168,6 +169,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  bool set_aggr_stats_for(SetPartitionsStatsRequest request)')
     print('  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name, string engine)')
     print('  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name, string engine)')
+    print('  bool delete_column_statistics_req(DeleteColumnStatisticsRequest req)')
     print('  void create_function(Function func)')
     print('  void drop_function(string dbName, string funcName)')
     print('  void alter_function(string dbName, string funcName, Function newFunc)')
@@ -492,6 +494,12 @@ elif cmd == 'get_all_databases':
         print('get_all_databases requires 0 args')
         sys.exit(1)
     pp.pprint(client.get_all_databases())
+
+elif cmd == 'get_databases_req':
+    if len(args) != 1:
+        print('get_databases_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_databases_req(eval(args[0]),))
 
 elif cmd == 'alter_database':
     if len(args) != 2:
@@ -1260,6 +1268,12 @@ elif cmd == 'delete_table_column_statistics':
         print('delete_table_column_statistics requires 4 args')
         sys.exit(1)
     pp.pprint(client.delete_table_column_statistics(args[0], args[1], args[2], args[3],))
+
+elif cmd == 'delete_column_statistics_req':
+    if len(args) != 1:
+        print('delete_column_statistics_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.delete_column_statistics_req(eval(args[0]),))
 
 elif cmd == 'create_function':
     if len(args) != 1:

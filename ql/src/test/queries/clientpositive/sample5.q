@@ -1,6 +1,4 @@
 --! qt:dataset:srcbucket
-set hive.cbo.fallback.strategy=NEVER;
-
 CREATE TABLE dest1_n69(key INT, value STRING) STORED AS TEXTFILE;
 
 -- SORT_QUERY_RESULTS

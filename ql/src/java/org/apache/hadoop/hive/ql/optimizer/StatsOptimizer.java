@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
@@ -86,6 +87,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 
 /** There is a set of queries which can be answered entirely from statistics stored in metastore.
@@ -300,13 +302,12 @@ public class StatsOptimizer extends Transform {
               "Skip StatsOptimizer.");
           return null;
         }
-        if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())
-            && !tbl.getStorageHandler().canComputeQueryUsingStats(tbl)) {
+        if (tbl.isNonNative() && !tbl.getStorageHandler().canProvideBasicStatistics()) {
           Logger.info("Table " + tbl.getTableName() + " is non Native table. Skip StatsOptimizer.");
           return null;
         }
 
-        Long rowCnt = getRowCnt(pctx, tsOp, tbl);
+        Long rowCnt = getRowCnt(tsOp, tbl);
         // if we can not have correct table stats, then both the table stats and column stats are not useful.
         if (rowCnt == null) {
           return null;
@@ -436,14 +437,14 @@ public class StatsOptimizer extends Transform {
             rowCnt = 0L;
             if (aggr.getParameters().isEmpty()) {
               // Its either count (*) or count() case
-              rowCnt = getRowCnt(pctx, tsOp, tbl);
+              rowCnt = getRowCnt(tsOp, tbl);
               if (rowCnt == null) {
                 return null;
               }
             } else if (aggr.getParameters().get(0) instanceof ExprNodeConstantDesc) {
               if (((ExprNodeConstantDesc) aggr.getParameters().get(0)).getValue() != null) {
                 // count (1)
-                rowCnt = getRowCnt(pctx, tsOp, tbl);
+                rowCnt = getRowCnt(tsOp, tbl);
                 if (rowCnt == null) {
                   return null;
                 }
@@ -453,7 +454,7 @@ public class StatsOptimizer extends Transform {
                 && exprMap.get(((ExprNodeColumnDesc) aggr.getParameters().get(0)).getColumn()) instanceof ExprNodeConstantDesc) {
               if (((ExprNodeConstantDesc) (exprMap.get(((ExprNodeColumnDesc) aggr.getParameters()
                   .get(0)).getColumn()))).getValue() != null) {
-                rowCnt = getRowCnt(pctx, tsOp, tbl);
+                rowCnt = getRowCnt(tsOp, tbl);
                 if (rowCnt == null) {
                   return null;
                 }
@@ -929,23 +930,28 @@ public class StatsOptimizer extends Transform {
       return result.values();
     }
 
-    private Long getRowCnt(
-        ParseContext pCtx, TableScanOperator tsOp, Table tbl) throws HiveException {
-      Long rowCnt = 0L;
-      if (tbl.isPartitioned()) {
-        for (Partition part : pctx.getPrunedPartitions(
-            tsOp.getConf().getAlias(), tsOp).getPartitions()) {
-          if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(part.getTable(), part.getParameters())) {
+    private Long getRowCnt(TableScanOperator tsOp, Table tbl) throws HiveException {
+      long rowCnt = 0L;
+      final List<Partish> partishList;
+      if (tbl.isPartitioned() && StatsUtils.checkCanProvidePartitionStats(tbl)) {
+        partishList = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions().stream()
+          .map(Partish::buildFor)
+          .collect(Collectors.toList());
+      } else {
+        partishList = Lists.newArrayList(Partish.buildFor(tbl));
+      }
+      for (Partish partish : partishList) {
+        Map<String, String> basicStats = partish.getPartParameters();
+        if (tbl.isNonNative()) {
+          if (!tbl.getStorageHandler().canComputeQueryUsingStats(partish)) {
             return null;
           }
-          long partRowCnt = Long.parseLong(part.getParameters().get(StatsSetupConst.ROW_COUNT));
-          rowCnt += partRowCnt;
-        }
-      } else { // unpartitioned table
-        if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(tbl, tbl.getParameters())) {
+          basicStats = tbl.getStorageHandler().getBasicStatistics(partish);
+        } else if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(partish.getTable(), partish.getPartParameters())) {
           return null;
         }
-        rowCnt = Long.valueOf(tbl.getProperty(StatsSetupConst.ROW_COUNT));
+        long partRowCnt = Long.parseLong(basicStats.get(StatsSetupConst.ROW_COUNT));
+        rowCnt += partRowCnt;
       }
       return rowCnt;
     }

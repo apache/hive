@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -176,7 +177,7 @@ public class TestOperationLogManager {
   private class FakeHiveSession extends HiveSessionImpl {
     public FakeHiveSession(SessionHandle sessionHandle, HiveConf serverConf) {
       super(sessionHandle, TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11, "dummy", "",
-          serverConf, "0.0.0.0", null);
+          serverConf, IPStackUtils.resolveWildcardAddress(), null);
     }
   }
 

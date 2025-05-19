@@ -184,7 +184,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
           }
           // If partKey is a constant, we can check whether the partitions
           // have been already filtered
-          if (plist == null || plist.getPartitions().size() != 0) {
+          if (plist == null || !plist.getPartitions().isEmpty()) {
             LOG.info("Dynamic partitioning: " + table.getCompleteName() + "." + column);
             generateEventOperatorPlan(ctx, parseContext, ts, column, columnType, null);
           } else {

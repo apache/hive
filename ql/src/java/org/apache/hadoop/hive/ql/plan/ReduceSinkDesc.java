@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import java.util.function.ToIntFunction;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -36,6 +37,10 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc.ReduceSinkKeyType;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -45,6 +50,8 @@ import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc.ReduceSinkKeyType;
 @Explain(displayName = "Reduce Output Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ReduceSinkDesc extends AbstractOperatorDesc {
   private static final long serialVersionUID = 1L;
+  private static final Logger LOG = LoggerFactory.getLogger(ReduceSinkDesc.class);
+
   /**
    * Key columns are passed to reducer in the "key".
    */
@@ -87,6 +94,12 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    * Partition columns are not passed to reducer.
    */
   private List<ExprNodeDesc> partitionCols;
+  /**
+   * The hash function that generates custom hash codes for partitioning. This is configured when Partition-Aware
+   * Optimization requires a special hash function, e.g. the bucket function of Apache Iceberg. Otherwise, this is NULL
+   * and this operator uses the standard hash function of Hive.
+   */
+  private CustomBucketFunction customBucketFunction;
 
   private int numReducers;
 
@@ -291,6 +304,28 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return true;
     }
     return false;
+  }
+
+  public void setCustomPartitionFunction(CustomBucketFunction customBucketFunction) {
+    this.customBucketFunction = customBucketFunction;
+  }
+
+  public ToIntFunction<Object[]> getPartitionFunction(ObjectInspector[] objectInspectors) {
+    // acidOp flag has to be checked to use JAVA hash which works like
+    // identity function for integers, necessary to read RecordIdentifier
+    // incase of ACID updates/deletes.
+    final boolean acidOp = writeType == AcidUtils.Operation.UPDATE || writeType == AcidUtils.Operation.DELETE;
+    if (customBucketFunction != null) {
+      LOG.info("Use {} for partitioning", customBucketFunction);
+      customBucketFunction.initialize(objectInspectors);
+      return customBucketFunction::getBucketHashCode;
+    } else if (getBucketingVersion() == 2 && !acidOp) {
+      LOG.info("Use v2 hash for partitioning");
+      return fields -> ObjectInspectorUtils.getBucketHashCode(fields, objectInspectors);
+    } else {
+      LOG.info("Use v1 hash for partitioning");
+      return fields -> ObjectInspectorUtils.getBucketHashCodeOld(fields, objectInspectors);
+    }
   }
 
   @Signature

@@ -87,9 +87,7 @@ public class TestHttpJwtAuthentication {
   public static void makeEnvModifiable() throws Exception {
     envMap = new HashMap<>();
     Class<?> envClass = Class.forName("java.lang.ProcessEnvironment");
-    Field theEnvironmentField = envClass.getDeclaredField("theEnvironment");
     Field theUnmodifiableEnvironmentField = envClass.getDeclaredField("theUnmodifiableEnvironment");
-    removeStaticFinalAndSetValue(theEnvironmentField, envMap);
     removeStaticFinalAndSetValue(theUnmodifiableEnvironmentField, envMap);
   }
 

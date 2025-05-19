@@ -1,7 +1,6 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 set hive.support.quoted.identifiers=none;
-set hive.cbo.fallback.strategy=NEVER;
 -- TOK_ALLCOLREF
 explain cbo select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t;
 explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t;

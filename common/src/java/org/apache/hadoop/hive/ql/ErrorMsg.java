@@ -351,6 +351,7 @@ public enum ErrorMsg {
       "Resource type GLOBAL is not supported in this authorization setting", "28000"),
   UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_COLUMN(10258,
       "Resource type COLUMN is not supported in this authorization setting", "28000"),
+  CANNOT_DROP_COLUMN(10259, "Drop column is not supported for table {0}. SerDe may be incompatible.", true),
 
   TXNMGR_NOT_SPECIFIED(10260, "Transaction manager not specified correctly, " +
       "set hive.txn.manager"),
@@ -362,6 +363,8 @@ public enum ErrorMsg {
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
   TXNMGR_NOT_ACID(10265, "This command is not allowed on an ACID table {0}.{1} with a non-ACID transaction manager", true),
+  DROP_COLUMN_UNCASCADED(10266, "Drop column is not supported without cascade for partitioned table. SerDe may be incompatible.", true),
+
   LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
       "may have timed out", true),
   LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
@@ -492,6 +495,9 @@ public enum ErrorMsg {
   NONICEBERG_COMPACTION_WITH_FILTER_NOT_SUPPORTED(10440, "Compaction with filter is not allowed on non-Iceberg table {0}.{1}", true),
   ICEBERG_COMPACTION_WITH_PART_SPEC_AND_FILTER_NOT_SUPPORTED(10441, "Compaction command with both partition spec and filter is not supported on Iceberg table {0}.{1}", true),
   COMPACTION_THREAD_INITIALIZATION(10442, "Compaction thread failed during initialization", false),
+  ALTER_TABLE_COMPACTION_NON_PARTITIONED_COLUMN_NOT_ALLOWED(10443, "Filter expression can contain only partition columns."),
+  CATALOG_ALREADY_EXISTS(10444, "Catalog {0} already exists", true),
+  CATALOG_NOT_EXISTS(10445, "Catalog {0} does not exists:", true),
 
   //========================== 20000 range starts here ========================//
 

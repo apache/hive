@@ -63,9 +63,27 @@ public class TestDataSourceProviderFactory {
   }
 
   @Test
-  public void testSetHikariCpLeakDetectionThresholdProperty() throws SQLException {
+  public void testDefaultHikariCpProperties() throws SQLException {
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    HikariDataSource hds = (HikariDataSource) ds;
+    Assert.assertEquals(30000L, hds.getConnectionTimeout());
+    Assert.assertEquals(1800000L, hds.getMaxLifetime());
+    Assert.assertEquals(0L, hds.getLeakDetectionThreshold());
+    Assert.assertEquals(1L, hds.getInitializationFailTimeout());
+  }
+
+  @Test
+  public void testSetHikariCpProperties() throws SQLException {
 
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".connectionTimeout", "2000");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".maxLifetime", "50000");
     conf.set(HikariCPDataSourceProvider.HIKARI + ".leakDetectionThreshold", "3600");
     conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
 
@@ -74,7 +92,23 @@ public class TestDataSourceProviderFactory {
 
     DataSource ds = dsp.create(conf);
     Assert.assertTrue(ds instanceof HikariDataSource);
-    Assert.assertEquals(3600L, ((HikariDataSource)ds).getLeakDetectionThreshold());
+    HikariDataSource hds = (HikariDataSource) ds;
+    Assert.assertEquals(2000L, hds.getConnectionTimeout());
+    Assert.assertEquals(50000L, hds.getMaxLifetime());
+    Assert.assertEquals(3600L, hds.getLeakDetectionThreshold());
+    Assert.assertEquals(-1L, hds.getInitializationFailTimeout());
+  }
+
+  @Test
+  public void testHikariCpMaxPoolSize() {
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    PersistenceManagerProvider.updatePmfProperties(conf);
+    PersistenceManagerFactory pmf =
+            PersistenceManagerProvider.getPersistenceManager().getPersistenceManagerFactory();
+    HikariDataSource hikariDs = (HikariDataSource) pmf.getConnectionFactory();
+    HikariDataSource hikariDs2 = (HikariDataSource) pmf.getConnectionFactory2();
+    Assert.assertEquals(hikariDs.getMaximumPoolSize(), MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS));
+    Assert.assertEquals(hikariDs2.getMaximumPoolSize(), MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_SECONDARY_CONNECTIONS));
   }
 
   @Test

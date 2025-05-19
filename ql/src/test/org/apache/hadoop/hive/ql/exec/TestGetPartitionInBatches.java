@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
@@ -64,9 +65,10 @@ public class TestGetPartitionInBatches {
 
     @BeforeClass
     public static void setupClass() throws HiveException {
-        hiveConf = new HiveConf(TestGetPartitionInBatches.class);
-        hive = Hive.get();
-        SessionState.start(hiveConf);
+        hiveConf = new HiveConfForTest(TestGetPartitionInBatches.class);
+        hiveConf.set("hive.security.authorization.manager","org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
+        SessionState ss = SessionState.start(hiveConf);
+        hive = ss.getHiveDb();
         try {
             msc = new HiveMetaStoreClient(hiveConf);
         } catch (MetaException e) {
@@ -87,7 +89,7 @@ public class TestGetPartitionInBatches {
     }
 
     @Test
-    public void TestNumberOfPartitionsRetrieved() throws HiveException {
+    public void testNumberOfPartitionsRetrieved() throws HiveException {
         List<String> numParts = hive.getPartitionNames(dbName, tableName, (short)-1);
         Assert.assertEquals(numParts.size(), NUM_PARTITIONS);
         List<Partition> partitions = hive.getPartitionsByNames(new org.apache.hadoop.hive.ql.metadata.Table(table),

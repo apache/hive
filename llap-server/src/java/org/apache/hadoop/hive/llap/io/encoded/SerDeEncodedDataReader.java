@@ -221,7 +221,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       throw new RuntimeException(e);
     }
 
-    fs = split.getPath().getFileSystem(daemonConf);
+    fs = split.getPath().getFileSystem(jobConf);
     PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
     fileKey = determineCacheKey(fs, split, partitionDesc, daemonConf);
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)

@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 --%>
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8"
+  import="org.apache.hive.service.servlet.LoginServlet"
+%>
 <!--[if IE]>
 <!DOCTYPE html>
 <![endif]-->
@@ -43,6 +45,14 @@
                 <div class="form-group">
                     <input id="password" name="password" type="password" class="form-control" placeholder="Password" required="required">
                 </div>
+                 <%
+                        String status = (String)request.getAttribute(LoginServlet.LOGIN_FAILURE_MESSAGE);
+                        if(status != null) {
+                 %>
+                          <p style="color:red;"><%= status %></p>
+                 <%
+                        }
+                 %>
                 <input id="redirectPath" name="redirectPath" type="hidden">
                 <div class="form-group">
                     <button id="submit" type="submit" class="btn btn-primary btn-block">Log In</button>

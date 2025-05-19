@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.collect.Maps;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -59,6 +60,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
@@ -73,6 +75,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -82,6 +85,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
@@ -90,7 +94,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class CompactorUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CompactorUtil.class);
   public static final String COMPACTOR = "compactor";
+  public static final String COMPACTOR_PREFIX = COMPACTOR + ".";
   private static final String COMPACTOR_THRESHOLD_PREFIX = "compactorthreshold.";
+
 
   /**
    * List of accepted properties for defining the compactor's job queue.
@@ -162,16 +168,13 @@ public class CompactorUtil {
     return (p == null) ? t.getSd() : p.getSd();
   }
 
-  public static StorageDescriptor resolveStorageDescriptor(Table t) {
-    return resolveStorageDescriptor(t, null);
-  }
-
   public static boolean isDynPartAbort(Table t, String partName) {
     return Optional.ofNullable(t).map(Table::getPartitionKeys).filter(pk -> !pk.isEmpty()).isPresent()
             && partName == null;
   }
 
-  public static List<Partition> getPartitionsByNames(HiveConf conf, String dbName, String tableName, String partName) throws MetaException {
+  public static List<Partition> getPartitionsByNames(HiveConf conf, String dbName, String tableName, String partName) 
+      throws MetaException {
     try {
       return getMSForConf(conf).getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName,
               Collections.singletonList(partName));
@@ -247,7 +250,7 @@ public class CompactorUtil {
             break;
         }
 
-        if (parts == null || parts.size() == 0) {
+        if (CollectionUtils.isEmpty(parts)) {
           // The partition got dropped before we went looking for it.
           return null;
         }
@@ -296,37 +299,39 @@ public class CompactorUtil {
    *   <li>Query based compaction is not enabled OR</li>
    *   <li>The table has only acid data in it.</li>
    * </ul>
-   * @param tblproperties The properties of the table to check
+   * @param tblProperties The properties of the table to check
    * @param dir The {@link AcidDirectory} instance pointing to the table's folder on the filesystem.
    * @return Returns true if minor compaction is supported based on the given parameters, false otherwise.
    */
-  public static boolean isMinorCompactionSupported(HiveConf conf, Map<String, String> tblproperties, AcidDirectory dir) {
+  public static boolean isMinorCompactionSupported(HiveConf conf, Map<String, String> tblProperties, AcidDirectory dir) {
     //Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them.
-    return AcidUtils.isInsertOnlyTable(tblproperties) || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
-        || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
+    return AcidUtils.isInsertOnlyTable(tblProperties) 
+        || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
+        || dir.getOriginalFiles().isEmpty() && dir.getCurrentDirectories().stream().noneMatch(ParsedDelta::isRawFormat);
   }
 
-  public static LockRequest createLockRequest(HiveConf conf, CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
+  public static LockRequest createLockRequest(HiveConf conf, CompactionInfo ci, long txnId, 
+      LockType lockType, DataOperationType opType) {
     String agentInfo = Thread.currentThread().getName();
-    LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
-    requestBuilder.setUser(ci.runAs);
-    requestBuilder.setTransactionId(txnId);
-
+    
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
-        .setLock(lockType)
-        .setOperationType(opType)
-        .setDbName(ci.dbname)
-        .setTableName(ci.tableName)
-        .setIsTransactional(true);
+      .setLock(lockType)
+      .setOperationType(opType)
+      .setDbName(ci.dbname)
+      .setTableName(ci.tableName)
+      .setIsTransactional(true);
 
     if (ci.partName != null) {
       lockCompBuilder.setPartitionName(ci.partName);
     }
-    requestBuilder.addLockComponent(lockCompBuilder.build());
-
-    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
-        !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
-    return requestBuilder.build();
+    return new LockRequestBuilder(agentInfo)
+      .setTransactionId(txnId)
+      .setUser(ci.runAs)
+      .setZeroWaitReadEnabled(
+          !conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)
+            || !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK))
+      .addLockComponent(lockCompBuilder.build())
+      .build();
   }
 
   private static CompactionResponse requestCompaction(CompactionInfo ci, String runAs, String hostname,
@@ -354,7 +359,7 @@ public class CompactorUtil {
   private static CompactionType determineCompactionType(CompactionInfo ci, AcidDirectory dir,
       Map<String, String> tblProperties, long baseSize, long deltaSize, HiveConf conf) {
     boolean noBase = false;
-    List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
+    List<ParsedDelta> deltas = dir.getCurrentDirectories();
     if (baseSize == 0 && deltaSize > 0) {
       noBase = true;
     } else {
@@ -453,7 +458,7 @@ public class CompactorUtil {
     long baseSize = getBaseSize(acidDirectory);
     FileSystem fs = acidDirectory.getFs();
     Map<Path, Long> deltaSizes = new HashMap<>();
-    for (AcidUtils.ParsedDelta delta : acidDirectory.getCurrentDirectories()) {
+    for (ParsedDelta delta : acidDirectory.getCurrentDirectories()) {
       deltaSizes.put(delta.getPath(), getDirSize(fs, delta));
     }
     long deltaSize = deltaSizes.values().stream().reduce(0L, Long::sum);
@@ -484,7 +489,7 @@ public class CompactorUtil {
 
   private static ValidWriteIdList resolveValidWriteIds(Table t, TxnStore txnHandler, HiveConf conf)
       throws NoSuchTxnException, MetaException {
-    ValidTxnList validTxnList = new ValidReadTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+    ValidTxnList validTxnList = ValidReadTxnList.fromValue(conf.get(ValidTxnList.VALID_TXNS_KEY));
     // The response will have one entry per table and hence we get only one ValidWriteIdList
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
     GetValidWriteIdsRequest validWriteIdsRequest =
@@ -525,7 +530,8 @@ public class CompactorUtil {
   }
 
   public static CompactionResponse initiateCompactionForPartition(Table table, Partition partition,
-      CompactionRequest compactionRequest, String hostName, TxnStore txnHandler, HiveConf inputConf) throws MetaException {
+      CompactionRequest compactionRequest, String hostName, TxnStore txnHandler, HiveConf inputConf) 
+      throws MetaException {
     ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
     HiveConf conf = new HiveConf(inputConf);
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
@@ -576,5 +582,21 @@ public class CompactorUtil {
       poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
     }
     return poolName;
+  }
+
+  public static void overrideConfProps(HiveConf conf, CompactionInfo ci, Map<String, String> properties) {
+    overrideConfProps(conf, new StringableMap(ci.properties), properties);
+  }
+
+  public static void overrideConfProps(
+          HiveConf conf, Map<String, String> ciProperties, Map<String, String> properties) {
+    Stream.of(properties, ciProperties)
+            .filter(Objects::nonNull)
+            .flatMap(map -> map.entrySet().stream())
+            .filter(entry -> entry.getKey().startsWith(COMPACTOR_PREFIX))
+            .forEach(entry -> {
+              String property = entry.getKey().substring(COMPACTOR_PREFIX.length());
+              conf.set(property, entry.getValue());
+            });
   }
 }

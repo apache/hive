@@ -24,8 +24,7 @@ import java.net.URISyntaxException;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hive.service.ServiceUtils;
-import org.apache.hive.service.auth.HiveAuthConstants;
+import org.apache.hadoop.hive.common.IPStackUtils;
 
 public class HiveSamlUtils {
 
@@ -65,9 +64,9 @@ public class HiveSamlUtils {
     }
   }
 
-  public static final String LOOP_BACK_INTERFACE = "127.0.0.1";
-  public static String getLoopBackAddress(int port) {
-    return String.format("http://%s:%s",LOOP_BACK_INTERFACE, port);
+  public static final String LOOP_BACK_INTERFACE = IPStackUtils.resolveLoopbackAddress();
+  public static String resolveLoopbackAddress(int port) {
+    return String.format("http://%s", IPStackUtils.concatHostPort(LOOP_BACK_INTERFACE, port));
   }
 
   /**

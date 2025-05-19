@@ -88,7 +88,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -1886,13 +1888,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> ret = null;
     Exception ex = null;
     try {
-      if (parsedDbNamed[DB_NAME] == null) {
-        ret = getMS().getAllDatabases(parsedDbNamed[CAT_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
-      } else {
-        ret = getMS().getDatabases(parsedDbNamed[CAT_NAME], parsedDbNamed[DB_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
+      GetDatabaseObjectsRequest req = new GetDatabaseObjectsRequest();
+      req.setCatalogName(parsedDbNamed[CAT_NAME]);
+      if (parsedDbNamed[DB_NAME] != null) {
+        req.setPattern(parsedDbNamed[DB_NAME]);
       }
+
+      GetDatabaseObjectsResponse response = get_databases_req(req);
+      ret = response.getDatabases().stream()
+          .map(Database::getName)
+          .collect(Collectors.toList());
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
@@ -1906,6 +1911,32 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<String> get_all_databases() throws MetaException {
     // get_databases filters results already. No need to filter here
     return get_databases(MetaStoreUtils.prependCatalogToDbName(null, null, conf));
+  }
+
+  @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)
+      throws MetaException {
+    String pattern = request.isSetPattern() ? request.getPattern() : null;
+    String catName = request.isSetCatalogName() ? request.getCatalogName() : getDefaultCatalog(conf);
+
+    startFunction("get_databases_req", ": catalogName=" + catName + " pattern=" + pattern);
+
+    GetDatabaseObjectsResponse response = new GetDatabaseObjectsResponse();
+    List<Database> dbs = null;
+    Exception ex = null;
+
+    try {
+      dbs = getMS().getDatabaseObjects(catName, pattern);
+      dbs = FilterUtils.filterDatabaseObjectsIfEnabled(isServerFilterEnabled, filterHook, dbs);
+      response.setDatabases(dbs);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_databases_req", dbs != null, ex);
+    }
+
+    return response;
   }
 
   private void create_dataconnector_core(RawStore ms, final DataConnector connector)
@@ -3177,8 +3208,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      LOG.error("Failed to delete directory: " + path +
-          " " + e.getMessage());
+      LOG.error("Failed to delete directory: {}", path, e);
     }
   }
 
@@ -3362,95 +3392,95 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return;
   }
 
-  private void alterPartitionForTruncate(RawStore ms, String catName, String dbName, String tableName,
-                                         Table table, Partition partition, String validWriteIds, long writeId) throws Exception {
+  private void alterPartitionsForTruncate(RawStore ms, String catName, String dbName, String tableName,
+      Table table, List<Partition> partitions, String validWriteIds, long writeId) throws Exception {
     EnvironmentContext environmentContext = new EnvironmentContext();
-    updateStatsForTruncate(partition.getParameters(), environmentContext);
-
-    if (!transactionalListeners.isEmpty()) {
-      MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-          EventType.ALTER_PARTITION,
-          new AlterPartitionEvent(partition, partition, table, true, true,
-              writeId, this));
+    if (partitions.isEmpty()) {
+      return;
     }
-
-    if (!listeners.isEmpty()) {
-      MetaStoreListenerNotifier.notifyEvent(listeners,
-          EventType.ALTER_PARTITION,
-          new AlterPartitionEvent(partition, partition, table, true, true,
-              writeId, this));
+    List<List<String>> partValsList = new ArrayList<>();
+    for (Partition partition: partitions) {
+      updateStatsForTruncate(partition.getParameters(), environmentContext);
+      if (writeId > 0) {
+        partition.setWriteId(writeId);
+      }
+      partition.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
+          .currentTimeMillis() / 1000));
+      partValsList.add(partition.getValues());
     }
-
-    if (writeId > 0) {
-      partition.setWriteId(writeId);
+    ms.alterPartitions(catName, dbName, tableName, partValsList, partitions, writeId, validWriteIds);
+    if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
+          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+      if (shouldSendSingleEvent) {
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
+            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
+      } else {
+        for (Partition partition : partitions) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
+              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
+              environmentContext);
+        }
+      }
     }
-    alterHandler.alterPartition(ms, wh, catName, dbName, tableName, null, partition,
-        environmentContext, this, validWriteIds);
+    if (listeners != null && !listeners.isEmpty()) {
+      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
+          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
+      if (shouldSendSingleEvent) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITIONS,
+            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
+      } else {
+        for (Partition partition : partitions) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITION,
+              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
+              environmentContext);
+        }
+      }
+    }
   }
 
   private void alterTableStatsForTruncate(RawStore ms, String catName, String dbName,
-                                          String tableName, Table table, List<String> partNames,
-                                          String validWriteIds, long writeId) throws Exception {
-    if (partNames == null) {
-      if (0 != table.getPartitionKeysSize()) {
-        for (Partition partition : ms.getPartitions(catName, dbName, tableName, -1)) {
-          alterPartitionForTruncate(ms, catName, dbName, tableName, table, partition,
-              validWriteIds, writeId);
-        }
-      } else {
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        updateStatsForTruncate(table.getParameters(), environmentContext);
-
-        boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
-        if (!transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.ALTER_TABLE,
-              new AlterTableEvent(table, table, true, true,
-                  writeId, this, isReplicated));
-        }
-
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.ALTER_TABLE,
-              new AlterTableEvent(table, table, true, true,
-                  writeId, this, isReplicated));
-        }
-
-        // TODO: this should actually pass thru and set writeId for txn stats.
-        if (writeId > 0) {
-          table.setWriteId(writeId);
-        }
-        alterHandler.alterTable(ms, wh, catName, dbName, tableName, table,
-            environmentContext, this, validWriteIds);
-      }
+      String tableName, Table table, List<Partition> partitionsList,
+      String validWriteIds, long writeId) throws Exception {
+    if (0 != table.getPartitionKeysSize()) {
+      alterPartitionsForTruncate(ms, catName, dbName, tableName, table, partitionsList,
+          validWriteIds, writeId);
     } else {
-      for (Partition partition : ms.getPartitionsByNames(catName, dbName, tableName, partNames)) {
-        alterPartitionForTruncate(ms, catName, dbName, tableName, table, partition,
-            validWriteIds, writeId);
+      EnvironmentContext environmentContext = new EnvironmentContext();
+      updateStatsForTruncate(table.getParameters(), environmentContext);
+      boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
+      if (!transactionalListeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+            EventType.ALTER_TABLE,
+            new AlterTableEvent(table, table, true, true,
+                writeId, this, isReplicated));
       }
+
+      if (!listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.ALTER_TABLE,
+            new AlterTableEvent(table, table, true, true,
+                writeId, this, isReplicated));
+      }
+      // TODO: this should actually pass thru and set writeId for txn stats.
+      if (writeId > 0) {
+        table.setWriteId(writeId);
+      }
+      ms.alterTable(catName, dbName, tableName, table, validWriteIds);
     }
     return;
   }
 
-  private List<Path> getLocationsForTruncate(final RawStore ms,
-                                             final String catName,
-                                             final String dbName,
-                                             final String tableName,
-                                             final Table table,
-                                             final List<String> partNames) throws Exception {
+  private List<Path> getLocationsForTruncate(final RawStore ms, final String catName,
+      final String dbName, final String tableName, final Table table,
+      List<Partition> partitionsList)  throws Exception {
     List<Path> locations = new ArrayList<>();
-    if (partNames == null) {
-      if (0 != table.getPartitionKeysSize()) {
-        for (Partition partition : ms.getPartitions(catName, dbName, tableName, -1)) {
-          locations.add(new Path(partition.getSd().getLocation()));
-        }
-      } else {
-        locations.add(new Path(table.getSd().getLocation()));
-      }
-    } else {
-      for (Partition partition : ms.getPartitionsByNames(catName, dbName, tableName, partNames)) {
+    if (0 != table.getPartitionKeysSize()) {
+      for (Partition partition : partitionsList) {
         locations.add(new Path(partition.getSd().getLocation()));
       }
+    } else {
+      locations.add(new Path(table.getSd().getLocation()));
     }
     return locations;
   }
@@ -3490,7 +3520,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .map(prop -> prop.get(TRUNCATE_SKIP_DATA_DELETION))
           .map(Boolean::parseBoolean)
           .orElse(false);
-
+      List<Partition> partitionsList = new ArrayList<>();
+      if (partNames == null) {
+        if (0 != tbl.getPartitionKeysSize()) {
+          partitionsList = getMS().getPartitions(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+              tableName, -1);
+        }
+      } else {
+        partitionsList = getMS().getPartitionsByNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+            tableName, partNames);
+      }
       if (TxnUtils.isTransactionalTable(tbl) || !skipDataDeletion) {
         if (!skipDataDeletion) {
           isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
@@ -3500,7 +3539,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         // This is not transactional
         for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-            tbl, partNames)) {
+            tbl, partitionsList)) {
           if (!skipDataDeletion) {
             truncateDataFiles(location, isSkipTrash, needCmRecycle);
           } else {
@@ -3513,7 +3552,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       // Alter the table/partition stats and also notify truncate table event
       alterTableStatsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-          tableName, tbl, partNames, validWriteIds, writeId);
+          tableName, tbl, partitionsList, validWriteIds, writeId);
     } catch (Exception e) {
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
           .convertIfInstance(IOException.class, MetaException.class)
@@ -5123,14 +5162,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new NoSuchObjectException("Partition doesn't exist. " + part_vals);
       }
       isArchived = MetaStoreUtils.isArchived(part);
-      if (tableDataShouldBeDeleted && isArchived) {
-        archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-        verifyIsWritablePath(archiveParentDir);
-      }
-
-      if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
-        partPath = new Path(part.getSd().getLocation());
-        verifyIsWritablePath(partPath);
+      if (tableDataShouldBeDeleted) {
+        if (isArchived) {
+          // Archived partition is only able to delete original location.
+          archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+          verifyIsWritablePath(archiveParentDir);
+        } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+          partPath = new Path(part.getSd().getLocation());
+          verifyIsWritablePath(partPath);
+        }
       }
 
       String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
@@ -5370,15 +5410,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (colNames != null) {
           partNames.add(FileUtils.makePartName(colNames, part.getValues()));
         }
-        if (tableDataShouldBeDeleted && MetaStoreUtils.isArchived(part)) {
-          Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-          verifyIsWritablePath(archiveParentDir);
-          archToDelete.add(archiveParentDir);
-        }
-        if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
-          Path partPath = new Path(part.getSd().getLocation());
-          verifyIsWritablePath(partPath);
-          dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
+        if (tableDataShouldBeDeleted) {
+          if (MetaStoreUtils.isArchived(part)) {
+            // Archived partition is only able to delete original location.
+            Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+            verifyIsWritablePath(archiveParentDir);
+            archToDelete.add(archiveParentDir);
+          } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+            Path partPath = new Path(part.getSd().getLocation());
+            verifyIsWritablePath(partPath);
+            dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
+          }
         }
       }
 
@@ -6141,8 +6183,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, null, tmpPart, this));
       }
-      oldParts = alterHandler.alterPartitions(getMS(), wh,
-          catName, db_name, tbl_name, new_parts, environmentContext, writeIdList, writeId, this);
+      oldParts = alterHandler.alterPartitions(getMS(), wh, catName, db_name, tbl_name, new_parts,
+          environmentContext, writeIdList, writeId, this);
       Iterator<Partition> olditr = oldParts.iterator();
 
       for (Partition tmpPart : new_parts) {
@@ -6442,9 +6484,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (Exception e) { /* ignore */ }
 
     try {
-      ret = getMS().getAllTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      ret = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+      if (getIfServerFilterenabled()) {
+        List<TableMeta> filteredTableMetas = get_table_meta(dbname, "*", null);
+        ret = filteredTableMetas.stream()
+            .map(TableMeta::getTableName)
+            .collect(Collectors.toList());
+      } else {
+        ret = getMS().getAllTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      }
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
@@ -7370,6 +7417,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return new SetPartitionsStatsResponse(ret);
   }
 
+  @Deprecated
   @Override
   public boolean delete_partition_column_statistics(String dbName, String tableName,
                                                     String partName, String colName, String engine) throws TException {
@@ -7379,47 +7427,97 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (colName != null) {
       colName = colName.toLowerCase();
     }
-    startFunction("delete_column_statistics_by_partition",": table=" +
-        TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
-        " partition=" + partName + " column=" + colName);
-    boolean ret = false, committed = false;
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
+    request.setEngine(engine);
+    request.setCat_name(parsedDbName[CAT_NAME]);
+    request.addToCol_names(colName);
+    request.addToPart_names(partName);
+    return delete_column_statistics_req(request);
+  }
 
-    getMS().openTransaction();
+  @Override
+  public boolean delete_column_statistics_req(DeleteColumnStatisticsRequest req) throws TException {
+    String dbName = normalizeIdentifier(req.getDb_name());
+    String tableName = normalizeIdentifier(req.getTbl_name());
+    List<String> colNames = req.getCol_names();
+    String engine = req.getEngine();
+    String[] parsedDbName = parseDbName(dbName, conf);
+    if (req.getCat_name() != null) {
+      parsedDbName[CAT_NAME] = normalizeIdentifier(req.getCat_name());
+    }
+    startFunction("delete_column_statistics_req", ": table=" +
+        TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
+        " partitions=" + req.getPart_names() + " column=" + colNames + " engine=" + engine);
+    boolean ret = false, committed = false;
+    List<ListenerEvent> events = new ArrayList<>();
+    EventType eventType = null;
+    final RawStore rawStore = getMS();
+    rawStore.openTransaction();
     try {
-      List<String> partVals = getPartValsFromName(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, partName);
-      Table table = getMS().getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-      // This API looks unused; if it were used we'd need to update stats state and write ID.
-      // We cannot just randomly nuke some txn stats.
+      Table table = rawStore.getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+      boolean isPartitioned = table.getPartitionKeysSize() > 0;
       if (TxnUtils.isTransactionalTable(table)) {
         throw new MetaException("Cannot delete stats via this API for a transactional table");
       }
-
-      ret = getMS().deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-          partName, partVals, colName, engine);
-      if (ret) {
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.DELETE_PARTITION_COLUMN_STAT,
-              new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                  partName, partVals, colName, engine, this));
+      if (!isPartitioned || req.isTableLevel()) {
+        ret = rawStore.deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colNames, engine);
+        if (ret) {
+          eventType = EventType.DELETE_TABLE_COLUMN_STAT;
+          for (String colName :
+              colNames == null ? table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList()) : colNames) {
+            if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
+                  new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
+            }
+            events.add(new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
+          }
         }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.DELETE_PARTITION_COLUMN_STAT,
-              new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+      } else {
+        List<String> partNames = new ArrayList<>();
+        if (req.getPart_namesSize() > 0) {
+          partNames.addAll(req.getPart_names());
+        } else {
+          partNames.addAll(rawStore.listPartitionNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, (short) -1));
+        }
+        if (partNames.isEmpty()) {
+          // no partition found, bail out early
+          return true;
+        }
+        ret = rawStore.deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                partNames, colNames, engine);
+        if (ret) {
+          eventType = EventType.DELETE_PARTITION_COLUMN_STAT;
+          for (String colName : colNames == null ? table.getSd().getCols().stream().map(FieldSchema::getName)
+              .collect(Collectors.toList()) : colNames) {
+            for (String partName : partNames) {
+              List<String> partVals = getPartValsFromName(table, partName);
+              if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
+                    new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                        partName, partVals, colName, engine, this));
+              }
+              events.add(new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
                   partName, partVals, colName, engine, this));
+            }
+          }
         }
       }
-      committed = getMS().commitTransaction();
+      committed = rawStore.commitTransaction();
     } finally {
       if (!committed) {
-        getMS().rollbackTransaction();
+        rawStore.rollbackTransaction();
       }
-      endFunction("delete_column_statistics_by_partition", ret != false, null, tableName);
+      if (!listeners.isEmpty()) {
+        for (ListenerEvent event : events) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType, event);
+        }
+      }
+      endFunction("delete_column_statistics_req", ret, null, tableName);
     }
     return ret;
   }
 
+  @Deprecated
   @Override
   public boolean delete_table_column_statistics(String dbName, String tableName, String colName, String engine)
       throws TException {
@@ -7431,44 +7529,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (colName != null) {
       colName = colName.toLowerCase();
     }
-    startFunction("delete_column_statistics_by_table", ": table=" +
-        TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) + " column=" +
-        colName);
 
-
-    boolean ret = false, committed = false;
-    getMS().openTransaction();
-    try {
-      Table table = getMS().getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-      // This API looks unused; if it were used we'd need to update stats state and write ID.
-      // We cannot just randomly nuke some txn stats.
-      if (TxnUtils.isTransactionalTable(table)) {
-        throw new MetaException("Cannot delete stats via this API for a transactional table");
-      }
-
-      ret = getMS().deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine);
-      if (ret) {
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.DELETE_TABLE_COLUMN_STAT,
-              new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-                  tableName, colName, engine, this));
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.DELETE_TABLE_COLUMN_STAT,
-              new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-                  tableName, colName, engine, this));
-        }
-      }
-      committed = getMS().commitTransaction();
-    } finally {
-      if (!committed) {
-        getMS().rollbackTransaction();
-      }
-      endFunction("delete_column_statistics_by_table", ret != false, null, tableName);
-    }
-    return ret;
+    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(parsedDbName[DB_NAME], tableName);
+    request.setEngine(engine);
+    request.setCat_name(parsedDbName[CAT_NAME]);
+    request.addToCol_names(colName);
+    request.setTableLevel(true);
+    return delete_column_statistics_req(request);
   }
 
   @Override
@@ -10895,14 +10962,57 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     startFunction("scheduled_query_poll");
     Exception ex = null;
     try {
+      String query = request.getScheduledQuery().getQuery();
+      ScheduledQueryMaintenanceRequestType requestType = request.getType();
       RawStore ms = getMS();
       ms.scheduledQueryMaintenance(request);
+      if (requestType == ScheduledQueryMaintenanceRequestType.DROP) {
+        abortReplCreatedOpenTxnsForDatabase(query);
+      }
     } catch (Exception e) {
       LOG.error("Caught exception", e);
       ex = e;
       throw e;
     } finally {
       endFunction("scheduled_query_poll", ex == null, ex);
+    }
+  }
+
+  private void abortReplCreatedOpenTxnsForDatabase(String query) throws TException {
+    List<Long> toBeAbortedTxns = null;
+    List<TxnType> txnListExcludingReplCreated = new ArrayList<>();
+    String pattern = "(?<=REPL LOAD )\\w+(?= INTO \\w+)";
+    Pattern regex = Pattern.compile(pattern);
+    Matcher matcher = regex.matcher(query);
+    String dbName;
+    if (matcher.find()) {
+      dbName = matcher.group();
+      String replPolicy = dbName + ".*";
+      for (TxnType type : TxnType.values()) {
+        // exclude REPL_CREATED txn
+        if (type != TxnType.REPL_CREATED) {
+          txnListExcludingReplCreated.add(type);
+        }
+      }
+      List<Long> openTxnList = null;
+      GetOpenTxnsResponse openTxnsResponse = null;
+      try {
+        openTxnsResponse = getTxnHandler()
+                .getOpenTxns(txnListExcludingReplCreated);
+      } catch (Exception e) {
+        LOG.error("Got an error : " + e);
+      }
+      if (openTxnsResponse != null) {
+        openTxnList = openTxnsResponse.getOpen_txns();
+        if (openTxnList != null) {
+          toBeAbortedTxns = getTxnHandler()
+                  .getOpenTxnForPolicy(openTxnList, replPolicy);
+          if (!toBeAbortedTxns.isEmpty()) {
+            LOG.info("Aborting Repl created open transactions");
+            abort_txns(new AbortTxnsRequest(toBeAbortedTxns));
+          }
+        }
+      }
     }
   }
 

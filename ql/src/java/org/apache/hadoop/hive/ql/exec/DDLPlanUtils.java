@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.Comparator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -521,10 +522,9 @@ public class DDLPlanUtils {
     throws HiveException {
     List<String> alterTblStmt = new ArrayList<>();
     List<String> accessedColumns = getTableColumnNames(tbl);
-    List<ColumnStatisticsObj> tableColumnStatistics = Hive.get().getTableColumnStatistics(tbl.getDbName(),
-      tbl.getTableName(),
-      accessedColumns,
-      true);
+    List<ColumnStatisticsObj> tableColumnStatistics = Hive.get().getTableColumnStatistics(
+        tbl, accessedColumns, true);
+    
     ColumnStatisticsObj[] columnStatisticsObj = tableColumnStatistics.toArray(new ColumnStatisticsObj[0]);
     for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
       alterTblStmt.add(getAlterTableStmtCol(
@@ -589,8 +589,8 @@ public class DDLPlanUtils {
                                                              String ptName,
                                                              String dbName) {
     List<String> alterTableStmt = new ArrayList<>();
-    ColumnStatisticsObj[] columnStatisticsObj = columnStatisticsObjList.toArray(new ColumnStatisticsObj[0]);
-    for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
+    final Comparator<ColumnStatisticsObj> colNameComparator = Comparator.comparing(ColumnStatisticsObj::getColName);
+    columnStatisticsObjList.stream().sorted(colNameComparator).forEach(statisticsObj -> {
       alterTableStmt.add(getAlterTableStmtPartitionColStat(
           statisticsObj.getStatsData(), statisticsObj.getColName(), tblName, ptName, dbName));
       String base64BitVectors = checkBitVectors(statisticsObj.getStatsData());
@@ -613,7 +613,7 @@ public class DDLPlanUtils {
         command.add(BASE_64_VALUE, base64Histogram);
         alterTableStmt.add(command.render());
       }
-    }
+    });
     return alterTableStmt;
   }
 
@@ -650,7 +650,7 @@ public class DDLPlanUtils {
 
   public List<String> getDDLPlanForPartitionWithStats(Table table,
                                                       Map<String, List<Partition>> tableToPartitionList
-  ) throws MetaException, HiveException {
+  ) throws HiveException {
     List<String> alterTableStmt = new ArrayList<String>();
     String tableName = table.getTableName();
     for (Partition pt : tableToPartitionList.get(tableName)) {
@@ -661,19 +661,18 @@ public class DDLPlanUtils {
     List<String> partNames = new ArrayList<String>();
     //TODO : Check if only Accessed Column Statistics Can be Retrieved From the HMS.
     List<String> columnNames = getTableColumnNames(table);
-    tableToPartitionList.get(tableName).stream().forEach(p -> partNames.add(p.getName()));
+    tableToPartitionList.get(tableName).forEach(p -> partNames.add(p.getName()));
     Map<String, List<ColumnStatisticsObj>> partitionColStats =
       Hive.get().getPartitionColumnStatistics(databaseName,
         tableName, partNames, columnNames,
         true);
     Map<String, String> partitionToActualName = new HashMap<>();
-    tableToPartitionList.get(tableName).stream().forEach(p -> partitionToActualName.put(p.getName(),
-      getPartitionActualName(p)));
-    for (String partitionName : partitionColStats.keySet()) {
+    tableToPartitionList.get(tableName).forEach(p -> partitionToActualName.put(p.getName(), getPartitionActualName(p)));
+    partitionColStats.keySet().stream().sorted().forEach(partitionName ->
       alterTableStmt.addAll(getAlterTableStmtPartitionStatsColsAll(partitionColStats.get(partitionName),
         tableName, partitionToActualName.get(partitionName),
-        databaseName));
-    }
+        databaseName))
+    );
     return alterTableStmt;
   }
 

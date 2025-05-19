@@ -1376,6 +1376,26 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "1");
   }
 
+  @Test
+  public void testExecuteImmediateLoadDataShouldNotThrowError() throws Throwable {
+    String scriptText =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (id bigint, name string) stored as textfile;\n" +
+            "EXECUTE IMMEDIATE 'load data local inpath ''../../data/files/hplsql.txt'' OVERWRITE INTO table result';";
+    // Inverted match, output should not have HPL/SQL error
+    testScriptFile(scriptText, args(), "^(.(?!(Error: Error running HPL/SQL operation)))*$", OutStream.ERR);
+  }
+
+  @Test
+  public void testExecuteImmediateLoadData() throws Throwable {
+    String scriptText =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (id bigint, name string);\n" +
+            "EXECUTE IMMEDIATE 'load data local inpath ''../../data/files/hplsql.txt'' OVERWRITE INTO table result';\n" +
+            "SELECT * FROM result;";
+    testScriptFile(scriptText, args(), "100.*Bob");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", USER_NAME);

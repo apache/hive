@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
@@ -57,12 +58,15 @@ public class TransactionContextManager {
    * @param propagation The transaction propagation to use.
    */
   public TransactionContext getNewTransaction(int propagation) {
-    TransactionContext context = new TransactionContext(realTransactionManager.getTransaction(
-        new DefaultTransactionDefinition(propagation)), this);
+    DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition(propagation);
+    // The TxnStore default isolation level is READ_COMMITTED
+    transactionDefinition.setIsolationLevel(Isolation.READ_COMMITTED.value());
+    TransactionContext context = new TransactionContext(
+        realTransactionManager.getTransaction(transactionDefinition), this);
     contexts.set(context);
     return context;
   }
-  
+
   public TransactionContext getActiveTransaction() {
     return contexts.get();
   }

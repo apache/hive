@@ -2,7 +2,6 @@
 --! qt:dataset:src1
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
-set hive.cbo.fallback.strategy=NEVER;
 DROP VIEW view1;
 DROP VIEW view2;
 DROP VIEW view3;

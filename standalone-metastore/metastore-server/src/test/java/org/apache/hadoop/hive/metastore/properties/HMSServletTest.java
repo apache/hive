@@ -18,25 +18,6 @@ package org.apache.hadoop.hive.metastore.properties;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.PropertyServlet;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import org.eclipse.jetty.server.Server;
-import org.junit.Assert;
-import org.junit.Test;
-
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -51,39 +32,71 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.PropertyServlet;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.eclipse.jetty.server.Server;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreUnitTest.class)
 public class HMSServletTest extends HMSTestBase {
-  protected static final String CLI = "hmscli";
+  String path = null;
   Server servletServer = null;
-  int sport = -1;
+  int servletPort = -1;
+  
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+  }
 
-
-  @Override protected int createServer(Configuration conf) throws Exception {
+  @Override
+  protected int createServer(Configuration conf) throws Exception {
     if (servletServer == null) {
       servletServer = PropertyServlet.startServer(conf);
       if (servletServer == null || !servletServer.isStarted()) {
         Assert.fail("http server did not start");
       }
-      sport = servletServer.getURI().getPort();
+      servletPort = servletServer.getURI().getPort();
     }
-    return sport;
+    return servletPort;
   }
 
   /**
    * Stops the server.
    * @param port the server port
    */
-  @Override protected void stopServer(int port) throws Exception {
+  @Override
+  protected void stopServer(int port) throws Exception {
     if (servletServer != null) {
       servletServer.stop();
       servletServer = null;
-      sport = -1;
+      servletPort = -1;
     }
   }
 
+
   @Override
   protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
-    URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    URL url = new URL("http://hive@localhost:" + sport + "/" + path + "/" + NS);
     String jwt = generateJWT();
     return new JSonClient(jwt, url);
   }
@@ -143,7 +156,7 @@ public class HMSServletTest extends HMSTestBase {
 
   @Test
   public void testServletEchoA() throws Exception {
-    URL url = new URL("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+    URL url = new URL("http://hive@localhost:" + servletPort + "/" + path + "/" + NS);
     Map<String, String> json = Collections.singletonMap("method", "echo");
     String jwt = generateJWT();
     // succeed
@@ -175,8 +188,8 @@ public class HMSServletTest extends HMSTestBase {
         .setScheme("http")
         .setUserInfo("hive")
         .setHost("localhost")
-        .setPort(sport)
-        .setPath("/" + CLI + "/" + NS)
+        .setPort(servletPort)
+        .setPath("/" + path + "/" + NS)
         .setParameters(nvp)
         .build();
     HttpGet get = new HttpGet(uri);
@@ -292,7 +305,7 @@ public class HMSServletTest extends HMSTestBase {
    * @throws Exception
    */
   private HttpPost createPost(String jwt, String msgBody) {
-    HttpPost method = new HttpPost("http://hive@localhost:" + sport + "/" + CLI + "/" + NS);
+    HttpPost method = new HttpPost("http://hive@localhost:" + servletPort + "/" + path + "/" + NS);
     method.addHeader("Authorization", "Bearer " + jwt);
     method.addHeader("Content-Type", "application/json");
     method.addHeader("Accept", "application/json");

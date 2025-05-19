@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TConfiguration;
 import org.apache.thrift.protocol.TField;
 import org.apache.thrift.protocol.TList;
@@ -319,8 +320,8 @@ public class TestTCTLSeparatedProtocol {
    */
   @Test
   public void test1ApacheLogFormat() throws Exception {
-    final String sample =
-      "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326";
+    final String sample = String.format(
+      "%s - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326", IPStackUtils.resolveLoopbackAddress());
 
     TMemoryBuffer trans = new TMemoryBuffer(4096);
     trans.write(sample.getBytes(), 0, sample.getBytes().length);
@@ -345,7 +346,7 @@ public class TestTCTLSeparatedProtocol {
     final String ip = prot.readString();
     prot.readFieldEnd();
 
-    assertEquals("127.0.0.1", ip);
+    assertTrue(IPStackUtils.isActiveStackLoopbackIP(ip));
 
     // identd
     prot.readFieldBegin();

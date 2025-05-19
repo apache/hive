@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -198,6 +200,10 @@ public final class TempTable {
 
   List<Partition> listPartitionsByFilter(String filter) throws MetaException {
     return pTree.getPartitionsByFilter(filter);
+  }
+
+  GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest getPartitionsRequest) throws MetaException {
+    return pTree.getPartitionsWithSpecs(getPartitionsRequest);
   }
 
 }

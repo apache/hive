@@ -313,7 +313,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   private Collection<Partition> getPartitions(Table table) {
     Collection<Partition> partitions = null;
     if (work.getPartitions() == null || work.getPartitions().isEmpty()) {
-      if (table.isPartitioned()) {
+      if (table.isPartitioned() && !table.hasNonNativePartitionSupport()) {
         partitions = table.getTableSpec().partitions;
       }
     } else {

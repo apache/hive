@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,8 +53,7 @@ public class HiveIncrementalRelMdRowCount extends HiveRelMdRowCount {
   }
 
   public static RelMetadataProvider source(RelOptMaterialization materialization) {
-    MaterializedViewMetadata mvMetadata = ((RelOptHiveTable) materialization.tableRel.getTable())
-            .getHiveTableMD().getMVMetadata();
+    MaterializedViewMetadata mvMetadata = HiveMaterializedViewUtils.extractTable(materialization).getMVMetadata();
     Map<String, SourceTable> sourceTableMap = new HashMap<>(mvMetadata.getSourceTables().size());
     for (SourceTable sourceTable : mvMetadata.getSourceTables()) {
       Table table = sourceTable.getTable();

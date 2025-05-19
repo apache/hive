@@ -23,12 +23,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -37,7 +39,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -60,9 +65,13 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
+
 public abstract class TxnCommandsBaseForTests {
   private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
-  
+
   //bucket count for test tables; set it to 1 for easier debugging
   final static int BUCKET_COUNT = 2;
   @Rule
@@ -71,6 +80,7 @@ public abstract class TxnCommandsBaseForTests {
   protected HiveConf hiveConf;
   protected Driver d;
   protected TxnStore txnHandler;
+  private DatabaseProduct databaseProduct;
 
   public enum Table {
     ACIDTBL("acidTbl"),
@@ -106,10 +116,15 @@ public abstract class TxnCommandsBaseForTests {
     }
   }
   void initHiveConf() {
-    hiveConf = new HiveConf(this.getClass());
-    //TODO: HIVE-28029: Make unit tests based on TxnCommandsBaseForTests run on Tez
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    hiveConf = new HiveConfForTest(this.getClass());
+    // Multiple tests requires more than one buckets per write. Use a very small value for grouping size to create
+    // multiple mapper instances with FileSinkOperators. The number of buckets are depends on the size of the data
+    // written and the grouping size. Most test cases expects 2 buckets.
+    hiveConf.set("tez.grouping.max-size", "10");
+    hiveConf.set("tez.grouping.min-size", "1");
+    databaseProduct = determineDatabaseProduct(DatabaseProduct.DERBY_NAME, hiveConf);
   }
+
   void setUpInternal() throws Exception {
     initHiveConf();
     Path workDir = new Path(System.getProperty("test.tmp.dir",
@@ -304,19 +319,41 @@ public abstract class TxnCommandsBaseForTests {
     throw new RuntimeException("Didn't get expected failure!");
   }
 
-  /**
-   * Runs Vectorized Explain on the query and checks if the plan is vectorized as expected
-   * @param vectorized {@code true} - assert that it's vectorized
-   */
-  void assertVectorized(boolean vectorized, String query) throws Exception {
-    List<String> rs = runStatementOnDriver("EXPLAIN VECTORIZATION DETAIL " + query);
-    for(String line : rs) {
-      if(line != null && line.contains("Execution mode: vectorized")) {
-        Assert.assertTrue("Was vectorized when it wasn't expected", vectorized);
-        return;
+  protected void assertMappersAreVectorized(String query)
+          throws Exception {
+    List<String> rs = runStatementOnDriver("EXPLAIN FORMATTED VECTORIZATION DETAIL " + query);
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String, Object> plan = objectMapper.readValue(rs.get(0), Map.class);
+    Map<String, Object> stages = (Map<String, Object>) plan.get("STAGE PLANS");
+    Map<String, Object> tezStage = null;
+    if (stages == null) {
+      Assert.fail("Execution plan of query does not have have stages: " + rs.get(0));
+    }
+    for (Map.Entry<String, Object> stageEntry : stages.entrySet()) {
+      Map<String, Object> stage = (Map<String, Object>) stageEntry.getValue();
+      tezStage = (Map<String, Object>) stage.get("Tez");
+      if (tezStage != null) {
+        break;
       }
     }
-    Assert.assertTrue("Din't find expected 'vectorized' in plan", !vectorized);
+    if (tezStage == null) {
+      Assert.fail("Execution plan of query does not contain a Tez stage: " + rs.get(0));
+    }
+    Map<String, Object> vertices = (Map<String, Object>) tezStage.get("Vertices:");
+    if (vertices == null) {
+      Assert.fail("Execution plan of query does not contain Tez vertices: " + rs.get(0));
+    }
+    for (Map.Entry<String, Object> vertexEntry : stages.entrySet()) {
+      if (vertexEntry.getKey() == null || !vertexEntry.getKey().startsWith("Map")) {
+        continue;
+      }
+      Map<String, Object> mapVertex = (Map<String, Object>) vertexEntry.getValue();
+      String executionMode = (String) mapVertex.get("Execution mode");
+      boolean vectorized = isNotBlank(executionMode) && executionMode.contains("vectorized");
+      String message = "Mapper was " + (shouldVectorized() ? "not vectorized: " : "vectorized but was not expected: ");
+      Assert.assertTrue(message + rs.get(0),
+              shouldVectorized() ^ vectorized);
+    }
   }
   /**
    * Will assert that actual files match expected.
@@ -340,7 +377,7 @@ public abstract class TxnCommandsBaseForTests {
     }
     Assert.assertEquals("Unexpected file list", expectedFiles, actualFiles);
   }
-  void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG, boolean checkFileName) {
+  void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG) {
     LOG.warn(testName.getMethodName() + ": read data(" + msg + "): ");
     logResult(LOG, rs);
     Assert.assertEquals(testName.getMethodName() + ": " + msg + "; " + rs,
@@ -348,9 +385,9 @@ public abstract class TxnCommandsBaseForTests {
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
       Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i) + "; expected " + expected[i][0], rs.get(i).startsWith(expected[i][0]));
-      if(checkFileName) {
+      if (expected.length == 2) {
         Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i),
-            rs.get(i).endsWith(expected[i][1]) || rs.get(i).matches(expected[i][1]));
+                rs.get(i).endsWith(expected[i][1]) || rs.get(i).matches(expected[i][1]));
       }
     }
   }
@@ -367,10 +404,15 @@ public abstract class TxnCommandsBaseForTests {
    * which will currently make the query non-vectorizable.  This means we can't check the file name
    * for vectorized version of the test.
    */
-  protected void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
+  protected void checkResultAndVectorization(String[][] expectedResult, String query, String msg, Logger LOG)
+          throws Exception {
+    checkResult(expectedResult, query, msg, LOG);
+    assertMappersAreVectorized(query);
+  }
+  protected void checkResult(String[][] expectedResult, String query, String msg, Logger LOG)
+          throws Exception {
     List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
-    assertVectorized(isVectorized, query);
+    checkExpected(rs, expectedResult, msg + (shouldVectorized() ? " vect" : ""), LOG);
   }
   void dropTables(String... tables) throws Exception {
     HiveConf queryConf = d.getQueryState().getConf();
@@ -384,5 +426,24 @@ public abstract class TxnCommandsBaseForTests {
     Driver tmp = d;
     d = otherDriver;
     return tmp;
+  }
+
+  protected void waitUntilAllTxnFinished() throws Exception {
+    long openTxnTimeOutMillis = MetastoreConf.getTimeVar(
+            hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    while (getOpenTxnCount(openTxnTimeOutMillis) > 0) {
+      Thread.sleep(openTxnTimeOutMillis);
+    }
+  }
+
+  protected int getOpenTxnCount(long openTxnTimeOutMillis) throws Exception {
+    return TestTxnDbUtil.countQueryAgent(hiveConf,
+            "select count(*) from TXNS where TXN_STATE = '" + TxnStatus.OPEN.getSqlConst() + "' " +
+                    "or TXN_STARTED >= (" + getEpochFn(databaseProduct) +
+                    " - " + openTxnTimeOutMillis + ")");
+  }
+
+  protected boolean shouldVectorized() {
+    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
   }
 }

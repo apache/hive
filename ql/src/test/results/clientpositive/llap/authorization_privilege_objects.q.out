@@ -1,5 +1,5 @@
 outputHObjs:
-HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db}
+HIVE PRIVILEGE OBJECT { type: DATABASE actionType: OTHER dbName: test_auth_obj_db OWNER: testuser OWNERTYPE: USER}
 PREHOOK: query: CREATE DATABASE test_auth_obj_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_auth_obj_db

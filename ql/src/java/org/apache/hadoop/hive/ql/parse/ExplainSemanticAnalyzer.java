@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -61,6 +63,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
   public ExplainSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
     config = new ExplainConfiguration();
+    setSqlKind(SqlKind.EXPLAIN);
   }
 
   @Override
@@ -288,5 +291,9 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
       queryState.createHMSCache();
     }
+  }
+
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.DQL);
   }
 }

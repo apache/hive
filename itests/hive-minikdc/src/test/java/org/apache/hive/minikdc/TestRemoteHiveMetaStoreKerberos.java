@@ -21,7 +21,7 @@ package org.apache.hive.minikdc;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestRemoteHiveMetaStore;
-import org.apache.hadoop.hive.metastore.TestHiveMetaStore;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -91,6 +91,18 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
     List<Partition> partitions = client.listPartitions(dbName, tblName, (short) -1);
     assertNotNull(partitions);
     assertEquals("expected to receive the same number of partitions added", values.size(), partitions.size());
+
+    // Set the max massage size on Metastore
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1024");
+    MetastoreConf.setVar(clientConf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1048576000");
+    try (HiveMetaStoreClient client1 = new HiveMetaStoreClient(clientConf)) {
+      TTransportException te = assertThrows(TTransportException.class,
+          () -> client1.alter_partitions(dbName, tblName, partitions, new EnvironmentContext()));
+      assertEquals(TTransportException.END_OF_FILE, te.getType());
+      assertTrue(te.getMessage().contains("Socket is closed by peer"));
+    } finally {
+      conf.unset(ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE.getVarname());
+    }
 
     cleanUp(dbName, tblName, typeName);
   }

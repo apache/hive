@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -107,6 +108,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -266,6 +268,66 @@ public class TestObjectStore {
     Assert.assertEquals(DB2, databases.get(0));
 
     objectStore.dropDatabase(catName, DB2);
+  }
+
+  /**
+   * Test database objects operations
+   */
+  @Test
+  public void testDatabaseObjectsOps() throws MetaException, InvalidObjectException,
+      NoSuchObjectException {
+    String catName = "tdo2_cat";
+    createTestCatalog(catName);
+
+    Database db1 = new Database(DB1, "db1 description", "/db1/location", null);
+    db1.setCatalogName(catName);
+    db1.setOwnerName("user1");
+    db1.setOwnerType(PrincipalType.USER);
+
+    Database db2 = new Database(DB2, "db2 description", "/db2/location", null);
+    db2.setCatalogName(catName);
+    db2.setOwnerName("user2");
+    db2.setOwnerType(PrincipalType.USER);
+
+    Map<String, String> db1Params = new HashMap<>();
+    db1Params.put("key1", "value1");
+    db1Params.put("environment", "test");
+    db1.setParameters(db1Params);
+
+    Map<String, String> db2Params = new HashMap<>();
+    db2Params.put("key2", "value2");
+    db2Params.put("environment", "prod");
+    db2.setParameters(db2Params);
+
+    objectStore.createDatabase(db1);
+    objectStore.createDatabase(db2);
+
+    List<Database> allDbs = objectStore.getDatabaseObjects(catName, "*");
+    Assert.assertEquals("Should return 2 database objects", 2, allDbs.size());
+
+    Database fetchedDb1 = allDbs.stream()
+        .filter(db -> DB1.equals(db.getName()))
+        .findFirst()
+        .orElse(null);
+    Assert.assertNotNull("DB1 should be found", fetchedDb1);
+    Assert.assertEquals("DB1 description should match", "db1 description", fetchedDb1.getDescription());
+    Assert.assertEquals("DB1 location should match", "/db1/location", fetchedDb1.getLocationUri());
+    Assert.assertEquals("DB1 owner should match", "user1", fetchedDb1.getOwnerName());
+    Assert.assertEquals("DB1 parameters should match", db1Params, fetchedDb1.getParameters());
+
+    // Test getDatabaseObjects with pattern
+    List<Database> db1Match = objectStore.getDatabaseObjects(catName, DB1);
+    Assert.assertEquals("Pattern matching DB1 should return 1 result", 1, db1Match.size());
+    Assert.assertEquals("Result should be DB1", DB1, db1Match.get(0).getName());
+
+    // Test pattern matching with wildcards
+    List<Database> dbsWithPattern = objectStore.getDatabaseObjects(catName, "testobject*");
+    Assert.assertEquals("Wildcard pattern should match both databases", 2, dbsWithPattern.size());
+
+    objectStore.dropDatabase(catName, DB1);
+    objectStore.dropDatabase(catName, DB2);
+    List<Database> remainingDbs = objectStore.getDatabaseObjects(catName, "*");
+    Assert.assertEquals("No databases should remain", 0, remainingDbs.size());
   }
 
   /**
@@ -893,7 +955,7 @@ public class TestObjectStore {
   }
 
   @Test
-  public void testGetPartitionStatistics() throws Exception {
+  public void testPartitionStatisticsOps() throws Exception {
     createPartitionedTable(true, true);
 
     List<List<ColumnStatistics>> stat;
@@ -911,6 +973,60 @@ public class TestObjectStore {
     ColumnStatisticsData computedStats = stat.get(0).get(0).getStatsObj().get(0).getStatsData();
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
         .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
+    assertEqualStatistics(expectedStats, computedStats);
+
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        "test_part_col=a0", Arrays.asList("a0"), null, ENGINE);
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(1, stat.size());
+    Assert.assertEquals(2, stat.get(0).size());
+
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        "test_part_col=a1", Arrays.asList("a1"), "test_part_col", null);
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(1, stat.size());
+    Assert.assertEquals(1, stat.get(0).size());
+
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        "test_part_col=a2", Arrays.asList("a2"), null, null);
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(0, stat.size());
+  }
+
+  @Test
+  public void testAggrStatsUseDB() throws Exception {
+    Configuration conf2 = MetastoreConf.newMetastoreConf(conf);
+    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_BITVECTOR, false);
+    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_KLL, false);
+    objectStore.setConf(conf2);
+
+    createPartitionedTable(true, true);
+
+    AggrStats aggrStats;
+    try (AutoCloseable c = deadline()) {
+      aggrStats = objectStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"), ENGINE);
+    }
+    List<ColumnStatisticsObj> stats = aggrStats.getColStats();
+    Assert.assertEquals(1, stats.size());
+    Assert.assertEquals(3, aggrStats.getPartsFound());
+
+    ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
+        .low(3L).high(4L).build();
     assertEqualStatistics(expectedStats, computedStats);
   }
 

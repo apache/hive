@@ -4,7 +4,6 @@ set hive.mapred.mode=nonstrict;
 set hive.archive.enabled = true;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;
-set hive.cbo.fallback.strategy=NEVER;
 
 drop table tstsrc_n2;
 drop table tstsrcpart_n2;

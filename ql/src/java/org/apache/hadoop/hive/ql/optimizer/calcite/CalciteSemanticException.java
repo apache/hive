@@ -33,7 +33,7 @@ public class CalciteSemanticException extends SemanticException {
     Distinct_without_an_aggregation, Duplicates_in_RR,
     Having_clause_without_any_groupby, Invalid_column_reference, Invalid_decimal,
     Less_than_equal_greater_than, Others, Same_name_in_multiple_expressions,
-    Schema_less_table, Select_alias_in_having_clause, Select_transform, Subquery,
+    Select_alias_in_having_clause, Select_transform, Subquery,
     Table_sample_clauses, UDTF, Unique_join,
     HighPrecisionTimestamp // CALCITE-1690
   };
