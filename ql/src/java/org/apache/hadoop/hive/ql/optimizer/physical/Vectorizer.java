@@ -2428,8 +2428,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode =
         HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
-    if (hiveVectorAdaptorUsageMode != HiveVectorAdaptorUsageMode.CHOSEN &&
-        hiveVectorAdaptorUsageMode != HiveVectorAdaptorUsageMode.ALL) {
+    if (hiveVectorAdaptorUsageMode != HiveVectorAdaptorUsageMode.CHOSEN) {
       return;
     }
 
@@ -2440,7 +2439,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           supportedGenericUDFs.add(cls);
           LOG.info("Registered custom UDF: {}", udf);
         } else {
-          LOG.warn("Custom UDF is not extends GenericUDF: {}", udf);
+          LOG.warn("{} must inherit from the GenericUDF", udf);
         }
       } catch (ClassNotFoundException e) {
         LOG.warn("Failed to register custom UDF: {}", udf, e);
