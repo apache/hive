@@ -157,12 +157,14 @@ class CompactionType(object):
     MAJOR = 2
     REBALANCE = 3
     ABORT_TXN_CLEANUP = 4
+    SMART_OPTIMIZE = 5
 
     _VALUES_TO_NAMES = {
         1: "MINOR",
         2: "MAJOR",
         3: "REBALANCE",
         4: "ABORT_TXN_CLEANUP",
+        5: "SMART_OPTIMIZE",
     }
 
     _NAMES_TO_VALUES = {
@@ -170,6 +172,7 @@ class CompactionType(object):
         "MAJOR": 2,
         "REBALANCE": 3,
         "ABORT_TXN_CLEANUP": 4,
+        "SMART_OPTIMIZE": 5,
     }
 
 
