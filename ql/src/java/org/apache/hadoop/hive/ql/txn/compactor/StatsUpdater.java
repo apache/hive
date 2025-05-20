@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideConfProps;
@@ -81,10 +83,14 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
-            if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER) && ci.isMajorCompaction()) {
-                List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
+            if (ci.isMajorCompaction()) {
+                List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci)).stream()
+                        .filter(columnName -> !StatsSetupConst.areColumnStatsUptoDate(tableProperties, columnName))
+                        .collect(Collectors.toList());
                 if (!columnList.isEmpty()) {
                     sb.append(" for columns ").append(String.join(",", columnList));
+                } else if (StatsSetupConst.areBasicStatsUptoDate(tableProperties)) {
+                    sb.append(" noscan");
                 }
             } else {
                 sb.append(" noscan");
