@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.hive.HiveIcebergFilterFactory;
@@ -140,7 +139,7 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       } catch (MetaException e) {
         throw new HiveException(e);
       }
-      String partitionPredicate = buildPartitionPredicate(ci, icebergTable);
+      String partitionPredicate = buildPartitionPredicate(ci, spec);
 
       compactionQuery = String.format("INSERT OVERWRITE TABLE %1$s SELECT * FROM %1$s WHERE %2$s IN " +
           "(SELECT FILE_PATH FROM %1$s.FILES WHERE %3$s AND SPEC_ID = %4$d) %5$s %6$s",
@@ -150,14 +149,14 @@ public class IcebergQueryCompactor extends QueryCompactor  {
     return compactionQuery;
   }
 
-  private String buildPartitionPredicate(CompactionInfo ci, Table icebergTable) {
+  private String buildPartitionPredicate(CompactionInfo ci, PartitionSpec spec) {
     Map<String, String> partSpecMap = new LinkedHashMap<>();
     Warehouse.makeSpecFromName(partSpecMap, new Path(ci.partName), null);
 
-    Map<String, PartitionField> partitionFieldMap = IcebergTableUtil.getPartitionFields(icebergTable, false)
-        .stream().collect(Collectors.toMap(PartitionField::name, Function.identity()));
+    Map<String, PartitionField> partitionFieldMap = spec.fields().stream()
+        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
 
-    Types.StructType partitionType = Partitioning.partitionType(icebergTable);
+    Types.StructType partitionType = spec.partitionType();
     return  partitionType.fields().stream().map(field -> {
       String value = partSpecMap.get(field.name());
       String literal = "NULL";
