@@ -240,15 +240,17 @@ int _kCompactionTypeValues[] = {
   CompactionType::MINOR,
   CompactionType::MAJOR,
   CompactionType::REBALANCE,
-  CompactionType::ABORT_TXN_CLEANUP
+  CompactionType::ABORT_TXN_CLEANUP,
+  CompactionType::SMART_OPTIMIZE
 };
 const char* _kCompactionTypeNames[] = {
   "MINOR",
   "MAJOR",
   "REBALANCE",
-  "ABORT_TXN_CLEANUP"
+  "ABORT_TXN_CLEANUP",
+  "SMART_OPTIMIZE"
 };
-const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kCompactionTypeValues, _kCompactionTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kCompactionTypeValues, _kCompactionTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const CompactionType::type& val) {
   std::map<int, const char*>::const_iterator it = _CompactionType_VALUES_TO_NAMES.find(val);

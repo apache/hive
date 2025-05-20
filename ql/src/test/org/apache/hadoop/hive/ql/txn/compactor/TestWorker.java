@@ -1051,7 +1051,7 @@ public class TestWorker extends CompactorTest {
 
     worker.findNextCompactionAndExecute(true, true);
 
-    Mockito.verify(statsUpdater, Mockito.never()).gatherStats(any(), any(), any(), any(), any());
+    Mockito.verify(statsUpdater, Mockito.never()).gatherStats(any(), any(), any(), any(), any(), any());
   }
 
   @Test

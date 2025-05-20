@@ -82,6 +82,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.execSelectAndDumpData;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
@@ -858,7 +859,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
+    new StatsUpdater().gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
@@ -3165,7 +3166,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", compactionType);
-    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
+    new StatsUpdater().gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
