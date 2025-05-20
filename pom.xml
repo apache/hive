@@ -164,7 +164,6 @@
     <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
-    <jts.version>1.19.0</jts.version>
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.11.2</junit.jupiter.version>
     <junit.vintage.version>5.11.2</junit.vintage.version>
@@ -350,12 +349,6 @@
         <artifactId>value-annotations</artifactId>
         <version>${immutables.version}</version>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.locationtech.jts</groupId>
-        <artifactId>jts-core</artifactId>
-        <version>${jts.version}</version>
-        <scope>runtime</scope>
       </dependency>
       <dependency>
         <groupId>com.sun.jersey</groupId>
