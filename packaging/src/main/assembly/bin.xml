@@ -49,6 +49,7 @@
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
         <exclude>org.apache.hive:hive-contrib</exclude>
+        <exclude>org.locationtech.jts:*</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>

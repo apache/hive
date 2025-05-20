@@ -1109,6 +1109,7 @@
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>com.github.luben:zstd-jni</include>
+                  <include>org.locationtech.jts:jts-core</include>
                 </includes>
               </artifactSet>
               <filters>
