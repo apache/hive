@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -524,9 +525,10 @@ public class IcebergTableUtil {
   }
 
 
-  public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath) throws MetaException {
+  public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
+      throws MetaException, HiveException {
     if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
-      throw new IllegalArgumentException("Table and partitionPath must not be null or empty.");
+      throw new HiveException("Table and partitionPath must not be null or empty.");
     }
 
     // Extract field names from the path: "field1=val1/field2=val2" → [field1, field2]
@@ -540,7 +542,7 @@ public class IcebergTableUtil {
           return specFieldNames.equals(fieldNames);
         })
         .findFirst() // Supposed to be only one matching spec
-        .orElse(null);
+        .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {

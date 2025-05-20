@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -134,12 +133,13 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       conf.set(IcebergCompactionService.PARTITION_PATH, new Path(ci.partName).toString());
 
       PartitionSpec spec;
+      String partitionPredicate;
       try {
         spec = IcebergTableUtil.getPartitionSpec(icebergTable, ci.partName);
+        partitionPredicate = buildPartitionPredicate(ci, spec);
       } catch (MetaException e) {
         throw new HiveException(e);
       }
-      String partitionPredicate = buildPartitionPredicate(ci, spec);
 
       compactionQuery = String.format("INSERT OVERWRITE TABLE %1$s SELECT * FROM %1$s WHERE %2$s IN " +
           "(SELECT FILE_PATH FROM %1$s.FILES WHERE %3$s AND SPEC_ID = %4$d) %5$s %6$s",
@@ -149,10 +149,8 @@ public class IcebergQueryCompactor extends QueryCompactor  {
     return compactionQuery;
   }
 
-  private String buildPartitionPredicate(CompactionInfo ci, PartitionSpec spec) {
-    Map<String, String> partSpecMap = new LinkedHashMap<>();
-    Warehouse.makeSpecFromName(partSpecMap, new Path(ci.partName), null);
-
+  private String buildPartitionPredicate(CompactionInfo ci, PartitionSpec spec) throws MetaException {
+    Map<String, String> partSpecMap = Warehouse.makeSpecFromName(ci.partName);
     Map<String, PartitionField> partitionFieldMap = spec.fields().stream()
         .collect(Collectors.toMap(PartitionField::name, Function.identity()));
 
