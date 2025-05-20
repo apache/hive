@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -37,8 +36,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -79,6 +80,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
@@ -522,15 +524,13 @@ public class IcebergTableUtil {
   }
 
 
-  public static Integer getPartitionSpecId(Table icebergTable, String partitionPath) {
+  public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath) throws MetaException {
     if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
       throw new IllegalArgumentException("Table and partitionPath must not be null or empty.");
     }
 
     // Extract field names from the path: "field1=val1/field2=val2" → [field1, field2]
-    List<String> fieldNames = Arrays.stream(partitionPath.split("/"))
-        .map(s -> s.split("=")[0])
-        .collect(Collectors.toList());
+    List<String> fieldNames = Lists.newArrayList(Warehouse.makeSpecFromName(partitionPath).keySet());
 
     return icebergTable.specs().values().stream()
         .filter(spec -> {
@@ -539,7 +539,6 @@ public class IcebergTableUtil {
               .collect(Collectors.toList());
           return specFieldNames.equals(fieldNames);
         })
-        .map(PartitionSpec::specId)
         .findFirst() // Supposed to be only one matching spec
         .orElse(null);
   }

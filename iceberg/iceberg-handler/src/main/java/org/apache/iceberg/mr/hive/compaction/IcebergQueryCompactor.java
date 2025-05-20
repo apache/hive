@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.DriverUtils;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.apache.iceberg.PartitionField;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -132,14 +134,18 @@ public class IcebergQueryCompactor extends QueryCompactor  {
       HiveConf.setVar(conf, ConfVars.REWRITE_POLICY, RewritePolicy.PARTITION.name());
       conf.set(IcebergCompactionService.PARTITION_PATH, new Path(ci.partName).toString());
 
-      int specId = IcebergTableUtil.getPartitionSpecId(icebergTable, ci.partName);
+      PartitionSpec spec;
+      try {
+        spec = IcebergTableUtil.getPartitionSpec(icebergTable, ci.partName);
+      } catch (MetaException e) {
+        throw new HiveException(e);
+      }
       String partitionPredicate = buildPartitionPredicate(ci, icebergTable);
 
       compactionQuery = String.format("INSERT OVERWRITE TABLE %1$s SELECT * FROM %1$s WHERE %2$s IN " +
-          "(SELECT FILE_PATH FROM %1$s.FILES WHERE %3$s AND SPEC_ID = %7$d) AND %6$s = %7$d %4$s %5$s",
-      compactTableName, VirtualColumn.FILE_PATH.getName(), partitionPredicate,
-      fileSizePredicate == null ? "" : "AND " + fileSizePredicate, orderBy,
-      VirtualColumn.PARTITION_SPEC_ID.getName(), specId);
+          "(SELECT FILE_PATH FROM %1$s.FILES WHERE %3$s AND SPEC_ID = %4$d) %5$s %6$s",
+      compactTableName, VirtualColumn.FILE_PATH.getName(), partitionPredicate, spec.specId(),
+      fileSizePredicate == null ? "" : "AND " + fileSizePredicate, orderBy);
     }
     return compactionQuery;
   }
