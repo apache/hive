@@ -21,6 +21,7 @@
  */
 package org.apache.hadoop.hive.metastore.model;
 
+import javax.jdo.annotations.NotPersistent;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.List;
@@ -31,29 +32,36 @@ import java.util.List;
  * A wrapper around a list of columns.
  */
 public class MColumnDescriptor {
-  private List<MColumn> columns;
+  private List<MColumn> fields;
+
+  @NotPersistent
+  private List<MFieldSchema> columns;
   private long id;
 
   public MColumnDescriptor() {}
 
   public MColumnDescriptor(List<MFieldSchema> cols) {
-    columns = cols.stream().map(schema ->
+    fields = cols.stream().map(schema ->
         new MColumn(schema.getName(), schema.getType(), schema.getComment()))
             .collect(Collectors.toList());
+    columns = new ArrayList<>();
   }
 
   public List<MColumn> getFields() {
-    return columns;
+    return fields;
   }
 
   public List<MFieldSchema> getCols() {
-    List<MFieldSchema> schemas = new ArrayList<>();
-    if (getFields() != null) {
-      schemas = getFields().stream().map(column ->
-          new MFieldSchema(column.getName(), column.getType(), column.getComment()))
-              .collect(Collectors.toList());
+    if (!columns.isEmpty()) {
+      return columns;
     }
-    return schemas;
+    columns = new ArrayList<>();
+    if (fields != null) {
+      columns = fields.stream().map(column ->
+              new MFieldSchema(column.getName(), column.getType(), column.getComment()))
+          .collect(Collectors.toList());
+    }
+    return columns;
   }
 
   public long getId() {
