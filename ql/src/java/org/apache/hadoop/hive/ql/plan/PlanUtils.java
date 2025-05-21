@@ -93,7 +93,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_COMMENTS;
  */
 public final class PlanUtils {
 
-  private static final Logger LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.plan.PlanUtils");
+  private static final Logger LOG = LoggerFactory.getLogger(PlanUtils.class);
 
   private static long countForMapJoinDumpFilePrefix = 0;
 

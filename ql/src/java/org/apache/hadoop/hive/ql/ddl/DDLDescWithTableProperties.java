@@ -26,12 +26,14 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public abstract class DDLDescWithTableProperties implements DDLDesc {
   protected List<String> partColNames;
   protected Map<String, String> tblProps;
+  private List<FieldSchema> cols;
   private List<FieldSchema> partCols;
   private String inputFormat;
   private String outputFormat;
@@ -39,6 +41,8 @@ public abstract class DDLDescWithTableProperties implements DDLDesc {
   private String serde;
   private String storageHandler;
   private Map<String, String> serdeProps;
+  private String comment;
+  private boolean ifNotExists;
   private Long initialWriteId; // Initial write ID for CTAS/CMV and import.
   // The FSOP configuration for the FSOP that is going to write initial data during CTAS/CMV.
   // This is not needed beyond compilation, so it is transient.
@@ -50,29 +54,41 @@ public abstract class DDLDescWithTableProperties implements DDLDesc {
   protected DDLDescWithTableProperties() {
   }
 
-  protected DDLDescWithTableProperties(List<FieldSchema> partCols, Map<String, String> tblProps,
-      String inputFormat, String outputFormat,
-      String location, String serde, String storageHandler, Map<String, String> serdeProps) {
-    this(tblProps, inputFormat, outputFormat, location, serde, storageHandler, serdeProps);
+  protected DDLDescWithTableProperties(List<FieldSchema> cols, List<FieldSchema> partCols, String comment, 
+      String inputFormat, String outputFormat, String location, String serde, String storageHandler, 
+      Map<String, String> serdeProps, Map<String, String> tblProps, boolean ifNotExists) {
+    if (cols != null) {
+      this.cols = new ArrayList<>(cols);
+    }
     this.partCols = partCols;
-  }
-
-  protected DDLDescWithTableProperties(Map<String, String> tblProps, 
-      String inputFormat, String outputFormat,
-      String location, String serde, String storageHandler, Map<String, String> serdeProps) {
-    this.tblProps = tblProps;
+    this.comment = comment;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.location = location;
     this.serde = serde;
     this.storageHandler = storageHandler;
     this.serdeProps = serdeProps;
+    this.tblProps = tblProps;
+    this.ifNotExists = ifNotExists;
   }
 
   public abstract TableName getFullTableName();
 
+  @Explain(displayName = "columns")
+  public List<String> getColsString() {
+    return Utilities.getFieldSchemaString(getCols());
+  }
+
+  public List<FieldSchema> getCols() {
+    return cols;
+  }
+
+  public void setCols(List<FieldSchema> cols) {
+    this.cols = cols;
+  }
+  
   @Explain(displayName = "partition columns")
-  public List<String> getPartColsStr() {
+  public List<String> getPartColsString() {
     return Utilities.getFieldSchemaString(partCols);
   }
 
@@ -82,6 +98,15 @@ public abstract class DDLDescWithTableProperties implements DDLDesc {
 
   public void setPartCols(List<FieldSchema> partCols) {
     this.partCols = partCols;
+  }
+
+  @Explain(displayName = "comment")
+  public String getComment() {
+    return comment;
+  }
+
+  public void setComment(String comment) {
+    this.comment = comment;
   }
   
   @Explain(displayName = "location")
@@ -166,6 +191,15 @@ public abstract class DDLDescWithTableProperties implements DDLDesc {
    */
   public void setTblProps(Map<String, String> tblProps) {
     this.tblProps = tblProps;
+  }
+
+  @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
+  public boolean getIfNotExists() {
+    return ifNotExists;
+  }
+
+  public void setIfNotExists(boolean ifNotExists) {
+    this.ifNotExists = ifNotExists;
   }
 
   public FileSinkDesc getAndUnsetWriter() {

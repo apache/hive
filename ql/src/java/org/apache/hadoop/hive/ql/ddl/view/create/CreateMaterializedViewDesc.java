@@ -54,10 +54,6 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
   private static final Logger LOG = LoggerFactory.getLogger(CreateMaterializedViewDesc.class);
 
   private String viewName;
-  private List<FieldSchema> schema;
-  private String comment;
-  private boolean ifNotExists;
-
   private String originalText;
   private String expandedText;
   private boolean rewriteEnabled;
@@ -75,15 +71,13 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
       List<String> distributeColNames, boolean ifNotExists, boolean rewriteEnabled,
       String inputFormat, String outputFormat, String location,
       String serde, String storageHandler, Map<String, String> serdeProps) {
-    super(tblProps, inputFormat, outputFormat, location, serde, storageHandler, serdeProps);
+    super(schema, null, comment, inputFormat, outputFormat, location, serde, storageHandler, 
+      serdeProps, tblProps, ifNotExists);
     
     this.viewName = viewName;
-    this.schema = schema;
-    this.comment = comment;
     this.partColNames = partColNames;
     this.sortColNames = sortColNames;
     this.distributeColNames = distributeColNames;
-    this.ifNotExists = ifNotExists;
 
     this.rewriteEnabled = rewriteEnabled;
   }
@@ -126,19 +120,6 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
 
   public void setRewriteEnabled(boolean rewriteEnabled) {
     this.rewriteEnabled = rewriteEnabled;
-  }
-
-  @Explain(displayName = "columns")
-  public List<String> getSchemaString() {
-    return Utilities.getFieldSchemaString(schema);
-  }
-
-  public List<FieldSchema> getSchema() {
-    return schema;
-  }
-
-  public void setSchema(List<FieldSchema> schema) {
-    this.schema = schema;
   }
 
   public boolean isOrganized() {
@@ -186,24 +167,6 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
 
   public void setDistributeColNames(List<String> distributeColNames) {
     this.distributeColNames = distributeColNames;
-  }
-
-  @Explain(displayName = "comment")
-  public String getComment() {
-    return comment;
-  }
-
-  public void setComment(String comment) {
-    this.comment = comment;
-  }
-
-  @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
-  public boolean getIfNotExists() {
-    return ifNotExists;
-  }
-
-  public void setIfNotExists(boolean ifNotExists) {
-    this.ifNotExists = ifNotExists;
   }
 
   public Set<TableName> getTablesUsed() {
@@ -269,7 +232,7 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
 
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
-    setColumnsAndStorePartitionTransformSpecOfTable(getSchema(), getPartCols(), conf, tbl);
+    setColumnsAndStorePartitionTransformSpecOfTable(getCols(), getPartCols(), conf, tbl);
 
     /*
      * If the user didn't specify a SerDe, we use the default.

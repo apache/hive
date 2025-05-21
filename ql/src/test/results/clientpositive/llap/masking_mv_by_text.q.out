@@ -101,9 +101,9 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
+      columns: key int
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-      columns: key int
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
       name: default.masking_test_view_n_mv
