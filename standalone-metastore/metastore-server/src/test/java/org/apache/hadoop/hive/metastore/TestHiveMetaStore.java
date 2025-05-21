@@ -3780,6 +3780,30 @@ public abstract class TestHiveMetaStore {
     silentDropDatabase(dbName);
   }
 
+  @Test(expected = InvalidOperationException.class)
+  public void testAlterTableCascadeExceedsPartitionLimits() throws Throwable {
+    String dbName = "alterTblDb";
+    String tblName = "altertbl";
+    String ds = "2025-05-21 23:47:12";
+
+    cleanUp(dbName, tblName, null);
+
+    // Create too many partitions, just enough to validate over limit requests
+    List<List<String>> values = new ArrayList<>();
+    for (int i = 0; i < DEFAULT_LIMIT_PARTITION_REQUEST + 1; i++) {
+      values.add(makeVals(ds, Integer.toString(i)));
+    }
+
+    createMultiPartitionTableSchema(dbName, tblName, null, values);
+
+    Table tbl = client.getTable(dbName, tblName);
+    List<FieldSchema> cols = tbl.getSd().getCols();
+    cols.add(new FieldSchema("new_col", ColumnType.STRING_TYPE_NAME, ""));
+    tbl.getSd().setCols(cols);
+    //add new column with cascade option
+    client.alter_table(dbName, tblName, tbl, true);
+  }
+
   @Test
   public void testDataConnector() throws Throwable {
     final String connector_name1 = "test_connector1";
