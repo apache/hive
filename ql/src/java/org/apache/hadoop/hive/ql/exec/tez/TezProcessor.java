@@ -65,7 +65,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
    * This provides the ability to pass things into TezProcessor, which is normally impossible
    * because of how Tez APIs are structured. Piggyback on ExecutionContext.
    */
-  public static interface Hook {
+  private interface Hook {
     void initializeHook(TezProcessor source);
   }
 
@@ -309,19 +309,15 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
         if (rproc != null) {
           rproc.close();
         }
-      } catch (Throwable t) {
         if (originalThrowable == null) {
-          originalThrowable = t;
-        }
-      }
-
-      // commit the output tasks
-      try {
-        for (LogicalOutput output : outputs.values()) {
-          if (output instanceof MROutput) {
-            MROutput mrOutput = (MROutput) output;
-            if (mrOutput.isCommitRequired()) {
-              mrOutput.commit();
+          
+          // commit the output tasks
+          for (LogicalOutput output : outputs.values()) {
+            if (output instanceof MROutput) {
+              MROutput mrOutput = (MROutput) output;
+              if (mrOutput.isCommitRequired()) {
+                mrOutput.commit();
+              }
             }
           }
         }
