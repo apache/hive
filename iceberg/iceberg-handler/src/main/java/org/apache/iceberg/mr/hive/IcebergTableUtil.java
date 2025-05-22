@@ -36,12 +36,15 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -78,6 +81,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
@@ -520,25 +524,25 @@ public class IcebergTableUtil {
     }
   }
 
-  public static long getPartitionHash(Table icebergTable, String partitionPath) throws IOException {
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
-        .createMetadataTableInstance(icebergTable, MetadataTableType.PARTITIONS);
 
-    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
-      return FluentIterable.from(fileScanTasks)
-          .transformAndConcat(task -> task.asDataTask().rows())
-          .transform(row -> {
-            StructProjection data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-            PartitionSpec spec = icebergTable.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
-            PartitionData partitionData = IcebergTableUtil.toPartitionData(data,
-                Partitioning.partitionType(icebergTable), spec.partitionType());
-            String path = spec.partitionToPath(partitionData);
-            return Maps.immutableEntry(path, data);
-          })
-          .filter(e -> e.getKey().equals(partitionPath))
-          .transform(e -> IcebergAcidUtil.computeHash(e.getValue()))
-          .get(0);
+  public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
+      throws MetaException, HiveException {
+    if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
+      throw new HiveException("Table and partitionPath must not be null or empty.");
     }
+
+    // Extract field names from the path: "field1=val1/field2=val2" → [field1, field2]
+    List<String> fieldNames = Lists.newArrayList(Warehouse.makeSpecFromName(partitionPath).keySet());
+
+    return icebergTable.specs().values().stream()
+        .filter(spec -> {
+          List<String> specFieldNames = spec.fields().stream()
+              .map(PartitionField::name)
+              .collect(Collectors.toList());
+          return specFieldNames.equals(fieldNames);
+        })
+        .findFirst() // Supposed to be only one matching spec
+        .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
