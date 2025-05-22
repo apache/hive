@@ -44,7 +44,6 @@ public class MColumnDescriptor {
     fields = cols.stream().map(schema ->
         new MColumn(schema.getName(), schema.getType(), schema.getComment()))
             .collect(Collectors.toList());
-    columns = new ArrayList<>();
   }
 
   public List<MColumn> getFields() {
@@ -52,7 +51,7 @@ public class MColumnDescriptor {
   }
 
   public List<MFieldSchema> getCols() {
-    if (!columns.isEmpty()) {
+    if (columns != null) {
       return columns;
     }
     columns = new ArrayList<>();

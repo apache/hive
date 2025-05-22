@@ -384,9 +384,12 @@
       <field name="id" primary-key="true" value-strategy="native">
         <column name="CD_ID" jdbc-type="BIGINT" />
       </field>
-      <field name="columns" mapped-by="cd">
+      <field name="fields" mapped-by="cd">
         <order column="INTEGER_IDX"/>
         <collection element-type="MColumn" dependent-element="true" />
+      </field>
+      <field name="columns" persistence-modifier="none">
+        <collection element-type="MFieldSchema" dependent-element="true" default-fetch-group="false"/>
       </field>
     </class>
 
