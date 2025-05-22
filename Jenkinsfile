@@ -93,11 +93,12 @@ set -x
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx2g"
 export -n HIVE_CONF_DIR
-cp $SETTINGS .git/settings.xml
-OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
+mkdir -p .m2/repository
+cp $SETTINGS .m2/settings.xml
+OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
 OPTS+=" -Pitests,qsplits,dist,errorProne"
 OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
-OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
+OPTS+=" -Dmaven.repo.local=$PWD/.m2/repository"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
