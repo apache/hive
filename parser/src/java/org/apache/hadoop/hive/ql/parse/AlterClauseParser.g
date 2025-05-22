@@ -103,6 +103,7 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixUpdateStats[partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
+  | alterStatementSuffixDropCol
   | alterStatementSuffixUpdateColumns
   ;
 
@@ -116,7 +117,7 @@ optimizeTblRewriteDataSuffix
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
     : KW_REWRITE KW_DATA compactPool? whereClause? orderByClause?
-    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING compactPool? whereClause? orderByClause?)
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'SMART_OPTIMIZE'"] compactPool? whereClause? orderByClause?)
     ;
 
 alterStatementPartitionKeyType
@@ -221,6 +222,13 @@ alterStatementSuffixAddCol
     : (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN restrictOrCascade?
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList restrictOrCascade?)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList restrictOrCascade?)
+    ;
+
+alterStatementSuffixDropCol
+@init { gParent.pushMsg("drop column statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_COLUMN ifExists? columnName restrictOrCascade?
+    -> ^(TOK_ALTERTABLE_DROPCOL ifExists? columnName restrictOrCascade?)
     ;
 
 alterStatementSuffixAddConstraint

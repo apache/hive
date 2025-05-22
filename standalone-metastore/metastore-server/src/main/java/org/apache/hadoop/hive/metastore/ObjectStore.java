@@ -1053,6 +1053,57 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<Database> getDatabaseObjects(String catName, String pattern) throws MetaException {
+    boolean commited = false;
+    List<Database> databases = new ArrayList<>();
+    Query query = null;
+    catName = normalizeIdentifier(catName);
+    try {
+      openTransaction();
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> parameterVals = new ArrayList<>();
+      appendSimpleCondition(filterBuilder, "catalogName", new String[]{catName}, parameterVals);
+      if (!(pattern == null || pattern.equals("*"))) {
+        String[] subpatterns = pattern.trim().split("\\|");
+        appendPatternCondition(filterBuilder, "name", subpatterns, parameterVals);
+      }
+      query = pm.newQuery(MDatabase.class, filterBuilder.toString());
+      query.setOrdering("name ascending");
+      Collection<MDatabase> mDBs = (Collection<MDatabase>) query.executeWithArray(parameterVals.toArray(new String[0]));
+      for (MDatabase mdb : mDBs) {
+        databases.add(convertToDatabase(mdb));
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return databases;
+  }
+
+  private Database convertToDatabase(MDatabase mdb) {
+    Database db = new Database();
+    db.setName(mdb.getName());
+    db.setDescription(mdb.getDescription());
+    db.setParameters(convertMap(mdb.getParameters()));
+    db.setOwnerName(mdb.getOwnerName());
+    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
+    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
+    db.setOwnerType(principalType);
+    if (mdb.getType().equalsIgnoreCase(DatabaseType.NATIVE.name())) {
+      db.setType(DatabaseType.NATIVE);
+      db.setLocationUri(mdb.getLocationUri());
+      db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
+    } else {
+      db.setType(DatabaseType.REMOTE);
+      db.setConnector_name(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getDataConnectorName(), null));
+      db.setRemote_dbname(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getRemoteDatabaseName(), null));
+    }
+    db.setCatalogName(mdb.getCatalogName());
+    db.setCreateTime(mdb.getCreateTime());
+    return db;
+  }
+
+  @Override
   public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
     boolean commited = false;
     MDataConnector mDataConnector = new MDataConnector();
@@ -11293,6 +11344,16 @@ public class ObjectStore implements RawStore, Configurable {
           parameterVals.add(normalizeIdentifier(tableName));
           parameterBuilder.append(", java.lang.String para" + parameterVals.size());
           filterBuilder.append("tableName == para" + parameterVals.size()+ " || ");
+        }
+        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        filterBuilder.append(") ");
+      }
+      if (rqst.isSetEventTypeList()) {
+        filterBuilder.append(" && (");
+        for (String eventType : rqst.getEventTypeList()) {
+          parameterVals.add(eventType);
+          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+          filterBuilder.append("eventType == para" + parameterVals.size() + " || ");
         }
         filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
         filterBuilder.append(") ");

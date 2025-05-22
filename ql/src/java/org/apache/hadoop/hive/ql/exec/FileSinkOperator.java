@@ -636,7 +636,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       jc = new JobConf(hconf);
       setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
       setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
-              dpCtx != null && dpCtx.hasCustomSortExprs());
+              dpCtx != null && dpCtx.hasCustomSortExpression());
       setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),
           Boolean.parseBoolean((String) getConf().getTableInfo().getProperties().get(
               MERGE_TASK_ENABLED + getConf().getTableInfo().getTableName())));

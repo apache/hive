@@ -36,6 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
@@ -371,6 +372,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
 
+      addOpensFlagsIfNeeded(job);
       jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
@@ -487,6 +489,19 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     return (returnVal);
+  }
+
+  private static void addOpensFlagsIfNeeded(JobConf job) {
+    String addOpens = JavaVersionUtils.getAddOpensFlagsIfNeeded();
+    if(!addOpens.isEmpty()) {
+      addJavaOpts(job, "mapreduce.map.java.opts", addOpens);
+      addJavaOpts(job, "mapreduce.reduce.java.opts", addOpens);
+      addJavaOpts(job, "yarn.app.mapreduce.am.command-opts", addOpens);
+    }
+  }
+  private static void addJavaOpts(JobConf job, String conf, String extraOpts) {
+    String javaOpts = StringUtils.defaultString(job.get(conf));
+    job.set(conf, javaOpts + extraOpts);
   }
 
   public static void propagateSplitSettings(JobConf job, MapWork work) {

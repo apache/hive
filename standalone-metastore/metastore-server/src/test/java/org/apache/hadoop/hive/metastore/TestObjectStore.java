@@ -108,6 +108,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -267,6 +268,66 @@ public class TestObjectStore {
     Assert.assertEquals(DB2, databases.get(0));
 
     objectStore.dropDatabase(catName, DB2);
+  }
+
+  /**
+   * Test database objects operations
+   */
+  @Test
+  public void testDatabaseObjectsOps() throws MetaException, InvalidObjectException,
+      NoSuchObjectException {
+    String catName = "tdo2_cat";
+    createTestCatalog(catName);
+
+    Database db1 = new Database(DB1, "db1 description", "/db1/location", null);
+    db1.setCatalogName(catName);
+    db1.setOwnerName("user1");
+    db1.setOwnerType(PrincipalType.USER);
+
+    Database db2 = new Database(DB2, "db2 description", "/db2/location", null);
+    db2.setCatalogName(catName);
+    db2.setOwnerName("user2");
+    db2.setOwnerType(PrincipalType.USER);
+
+    Map<String, String> db1Params = new HashMap<>();
+    db1Params.put("key1", "value1");
+    db1Params.put("environment", "test");
+    db1.setParameters(db1Params);
+
+    Map<String, String> db2Params = new HashMap<>();
+    db2Params.put("key2", "value2");
+    db2Params.put("environment", "prod");
+    db2.setParameters(db2Params);
+
+    objectStore.createDatabase(db1);
+    objectStore.createDatabase(db2);
+
+    List<Database> allDbs = objectStore.getDatabaseObjects(catName, "*");
+    Assert.assertEquals("Should return 2 database objects", 2, allDbs.size());
+
+    Database fetchedDb1 = allDbs.stream()
+        .filter(db -> DB1.equals(db.getName()))
+        .findFirst()
+        .orElse(null);
+    Assert.assertNotNull("DB1 should be found", fetchedDb1);
+    Assert.assertEquals("DB1 description should match", "db1 description", fetchedDb1.getDescription());
+    Assert.assertEquals("DB1 location should match", "/db1/location", fetchedDb1.getLocationUri());
+    Assert.assertEquals("DB1 owner should match", "user1", fetchedDb1.getOwnerName());
+    Assert.assertEquals("DB1 parameters should match", db1Params, fetchedDb1.getParameters());
+
+    // Test getDatabaseObjects with pattern
+    List<Database> db1Match = objectStore.getDatabaseObjects(catName, DB1);
+    Assert.assertEquals("Pattern matching DB1 should return 1 result", 1, db1Match.size());
+    Assert.assertEquals("Result should be DB1", DB1, db1Match.get(0).getName());
+
+    // Test pattern matching with wildcards
+    List<Database> dbsWithPattern = objectStore.getDatabaseObjects(catName, "testobject*");
+    Assert.assertEquals("Wildcard pattern should match both databases", 2, dbsWithPattern.size());
+
+    objectStore.dropDatabase(catName, DB1);
+    objectStore.dropDatabase(catName, DB2);
+    List<Database> remainingDbs = objectStore.getDatabaseObjects(catName, "*");
+    Assert.assertEquals("No databases should remain", 0, remainingDbs.size());
   }
 
   /**

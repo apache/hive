@@ -169,9 +169,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *
    * <h1>IMPORTANT</h1>
    *
-   * This method is called indirectly by HiveMetastoreClient and HiveMetaStoreClientPreCatalog
-   * using reflection. It can not be removed and its arguments can't be changed without matching
-   * change in HiveMetastoreClient and HiveMetaStoreClientPreCatalog.
+   * This method is called indirectly by HiveMetastoreClient using reflection.
+   * It can not be removed and its arguments can't be changed without matching
+   * change in HiveMetastoreClient.
    *
    * @param conf configuration to use
    * @throws MetaException
