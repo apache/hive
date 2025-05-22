@@ -388,9 +388,7 @@
         <order column="INTEGER_IDX"/>
         <collection element-type="MColumn" dependent-element="true" />
       </field>
-      <field name="columns" persistence-modifier="none">
-        <collection element-type="MFieldSchema" dependent-element="true" default-fetch-group="false"/>
-      </field>
+      <field name="columns" persistence-modifier="none"></field>
     </class>
 
    <class name="MStringList" identity-type="datastore" table="Skewed_STRING_LIST" detachable="true">
