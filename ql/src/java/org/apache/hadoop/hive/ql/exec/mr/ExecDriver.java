@@ -525,6 +525,20 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       HiveConf.setLongVar(job, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE_PER_RACK, work.getMinSplitSizePerRack());
     }
   }
+  private void setJobOptions(JobConf job) {
+    String commonAddOpens = String.join(" ",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+        "--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens java.base/java.util.regex=ALL-UNNAMED"
+    );
+    job.set("yarn.app.mapreduce.am.command-opts", commonAddOpens);
+    job.set("mapreduce.map.java.opts", commonAddOpens);
+    job.set("mapreduce.reduce.java.opts", commonAddOpens);
+  }
 
   private void handleSampling(Context context, MapWork mWork, JobConf job)
       throws Exception {
