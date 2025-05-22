@@ -361,7 +361,7 @@ public class HiveAlterHandler implements AlterHandler {
           String catalogName = catName;
           // alterPartition is only for changing the partition location in the table rename
           if (dataWasMoved) {
-            PartitionsRequest req = new PartitionsRequest(dbname, name);
+            PartitionsRequest req = new PartitionsRequest(newDbName, newTblName);
             req.setCatName(catName);
             req.setMaxParts((short) -1);
             parts = handler.get_partitions_req(req).getPartitions();
@@ -462,6 +462,8 @@ public class HiveAlterHandler implements AlterHandler {
       }
       // commit the changes
       success = msdb.commitTransaction();
+    } catch (MetaException e) {
+      throw e;
     } catch (TException e) {
       LOG.debug("Failed to get object from Metastore ", e);
       throw new InvalidOperationException(
