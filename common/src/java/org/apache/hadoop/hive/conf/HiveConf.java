@@ -2564,9 +2564,6 @@ public class HiveConf extends Configuration {
         "if the complete small table can fit in memory, and a map-join can be performed."),
 
     HIVE_SCRIPT_OPERATOR_TRUST("hive.exec.script.trust", false, ""),
-    HIVE_ROW_OFFSET("hive.exec.rowoffset", false,
-        "Whether to provide the row offset virtual column"),
-
     // Optimizer
     HIVE_OPT_INDEX_FILTER("hive.optimize.index.filter", true, "Whether to enable automatic use of indexes"),
 
@@ -6782,7 +6779,6 @@ public class HiveConf extends Configuration {
       ConfVars.HIVE_MAPRED_MODE.varname,
       ConfVars.HIVE_MAPSIDE_AGGREGATE.varname,
       ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES.varname,
-      ConfVars.HIVE_ROW_OFFSET.varname,
       ConfVars.HIVE_VARIABLE_SUBSTITUTE.varname,
       ConfVars.HIVE_VARIABLE_SUBSTITUTE_DEPTH.varname,
       ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,
