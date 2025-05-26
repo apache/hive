@@ -11988,7 +11988,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // put virtual columns into RowResolver.
-      List<VirtualColumn> vcList = tab.getVirtualColumns(conf);
+      List<VirtualColumn> vcList = tab.getVirtualColumns();
 
       vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
               vc.getTypeInfo(), alias, true, vc.getIsHidden()

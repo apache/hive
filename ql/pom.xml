@@ -857,10 +857,6 @@
       <artifactId>value-annotations</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.locationtech.jts</groupId>
-      <artifactId>jts-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.sun.jersey.contribs</groupId>
       <artifactId>jersey-multipart</artifactId>
       <version>${jersey.version}</version>
@@ -1109,6 +1105,7 @@
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>com.github.luben:zstd-jni</include>
+                  <include>org.locationtech.jts:jts-core</include>
                 </includes>
               </artifactSet>
               <filters>
