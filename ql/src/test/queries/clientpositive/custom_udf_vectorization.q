@@ -3,6 +3,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.vectorized.execution.enabled=true;
 set hive.vectorized.adaptor.usage.mode=chosen;
+set hive.llap.execution.mode=auto;
 
 CREATE TEMPORARY FUNCTION CDATE_SUB AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFCustomDateSub';
 

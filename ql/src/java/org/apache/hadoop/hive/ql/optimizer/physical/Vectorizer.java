@@ -2420,21 +2420,23 @@ public class Vectorizer implements PhysicalPlanResolver {
       return;
     }
 
+    if (HiveVectorAdaptorUsageMode.CHOSEN !=
+        HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf)) {
+      return;
+    }
+
     String[] udfs =
-        HiveConf.getTrimmedStringsVar(hiveConf, HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
+        HiveConf.getTrimmedStringsVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
     if (udfs == null) {
       return;
     }
 
-    HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode =
-        HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
-    if (hiveVectorAdaptorUsageMode != HiveVectorAdaptorUsageMode.CHOSEN) {
-      return;
-    }
+    ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
 
     for (String udf : udfs) {
       try {
-        Class<?> cls = Class.forName(udf);
+        Class<?> cls = Class.forName(udf, true, loader);
         if (GenericUDF.class.isAssignableFrom(cls)) {
           supportedGenericUDFs.add(cls);
           LOG.info("Registered custom UDF: {}", udf);
