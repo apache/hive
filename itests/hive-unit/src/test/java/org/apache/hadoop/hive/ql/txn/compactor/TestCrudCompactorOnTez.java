@@ -3673,8 +3673,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMajorCompactionUpdateMissingColumnStats() throws Exception {
-    executeStatementOnDriver("create table " + TABLE1 + "(a int, b varchar(128), c float) stored as orc TBLPROPERTIES " +
-            "('transactional'='true')", driver);
+    executeStatementOnDriver("drop table if exists " + TABLE1, driver);
+    executeStatementOnDriver("create table " + TABLE1 + "(a int, b varchar(128), c float) " +
+            "stored as orc TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("insert into " + TABLE1 + "(a, b, c) values (1, 'one', 1.1)", driver);
     executeStatementOnDriver("insert into " + TABLE1 + "(a, b, c) values (2, 'two', 2.2)", driver);
 
@@ -3691,6 +3692,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMajorCompactionUpdateMissingColumnStatsOfPartition() throws Exception {
+    executeStatementOnDriver("drop table if exists " + TABLE1, driver);
     executeStatementOnDriver("create table " + TABLE1 + "(a int, b varchar(128), c float) partitioned by (p string) " +
             "stored as orc TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("insert into " + TABLE1 + "(a, b, c, p) values (1, 'one', 1.1, 'p1')", driver);
