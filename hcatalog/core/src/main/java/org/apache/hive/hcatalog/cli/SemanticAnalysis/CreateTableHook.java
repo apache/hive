@@ -151,7 +151,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
         HiveStorageHandler storageHandlerInst = HCatUtil
           .getStorageHandler(context.getConf(),
             desc.getStorageHandler(),
-            desc.getSerName(),
+            desc.getSerde(),
             desc.getInputFormat(),
             desc.getOutputFormat());
         //Authorization checks are performed by the storageHandler.getAuthorizationProvider(), if
