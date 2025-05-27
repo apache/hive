@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.DriverUtils;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideConfProps;
@@ -71,6 +74,8 @@ public final class StatsUpdater {
             // compute statistics for columns viewtime
             StringBuilder sb = new StringBuilder("analyze table ")
                     .append(StatsUtils.getFullyQualifiedTableName(ci.dbname, ci.tableName));
+
+            final Map<String, String> properties;
             if (ci.partName != null) {
                 sb.append(" partition(");
                 Map<String, String> partitionColumnValues = Warehouse.makeEscSpecFromName(ci.partName);
@@ -79,12 +84,23 @@ public final class StatsUpdater {
                 }
                 sb.setLength(sb.length() - 1); //remove trailing ,
                 sb.append(")");
+
+                Partition partition = CompactorUtil.resolvePartition(
+                        hiveConf, msc, ci.dbname, ci.tableName, ci.partName, CompactorUtil.METADATA_FETCH_MODE.REMOTE);
+                properties = partition.getParameters();
+            } else {
+                properties = tableProperties;
             }
+
             sb.append(" compute statistics");
-            if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER) && ci.isMajorCompaction()) {
-                List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
+            if (ci.isMajorCompaction()) {
+                List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci)).stream()
+                        .filter(columnName -> !StatsSetupConst.areColumnStatsUptoDate(properties, columnName))
+                        .collect(Collectors.toList());
                 if (!columnList.isEmpty()) {
                     sb.append(" for columns ").append(String.join(",", columnList));
+                } else if (StatsSetupConst.areBasicStatsUptoDate(properties)) {
+                    sb.append(" noscan");
                 }
             } else {
                 sb.append(" noscan");
