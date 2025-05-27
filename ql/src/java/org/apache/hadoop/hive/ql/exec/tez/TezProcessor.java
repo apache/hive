@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.function.IOConsumer;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.runtime.api.TaskFailureType;
@@ -282,8 +283,8 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       Map<String, LogicalOutput> outputs)
       throws Exception {
     Throwable originalThrowable = null;
-    try {
 
+    try {
       MRTaskReporter mrReporter = new MRTaskReporter(getContext());
       // Init and run are both potentially long, and blocking operations. Synchronization
       // with the 'abort' operation will not work since if they end up blocking on a monitor
@@ -292,16 +293,16 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
       rproc.setAborted(true);
       originalThrowable = t;
+
     } finally {
-      if (originalThrowable != null && (originalThrowable instanceof Error ||
-        Throwables.getRootCause(originalThrowable) instanceof Error)) {
+      if (originalThrowable != null && (originalThrowable instanceof Error || 
+          Throwables.getRootCause(originalThrowable) instanceof Error)) {
         LOG.error("Cannot recover from this FATAL error", originalThrowable);
-        getContext().reportFailure(TaskFailureType.FATAL, originalThrowable,
-                      "Cannot recover from this error");
+        getContext().reportFailure(TaskFailureType.FATAL, originalThrowable, "Cannot recover from this error");
+
         throw new RuntimeException(originalThrowable);
       }
 
@@ -310,16 +311,9 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
           rproc.close();
         }
         if (originalThrowable == null) {
-          
-          // commit the output tasks
-          for (LogicalOutput output : outputs.values()) {
-            if (output instanceof MROutput) {
-              MROutput mrOutput = (MROutput) output;
-              if (mrOutput.isCommitRequired()) {
-                mrOutput.commit();
-              }
-            }
-          }
+          closeOutputTasks(outputs, MROutput::commit);
+
+          perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
         }
       } catch (Throwable t) {
         if (originalThrowable == null) {
@@ -329,19 +323,23 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
       if (originalThrowable != null) {
         LOG.error("Failed initializeAndRunProcessor", originalThrowable);
-        // abort the output tasks
-        for (LogicalOutput output : outputs.values()) {
-          if (output instanceof MROutput) {
-            MROutput mrOutput = (MROutput) output;
-            if (mrOutput.isCommitRequired()) {
-              mrOutput.abort();
-            }
-          }
-        }
+        closeOutputTasks(outputs, MROutput::abort);
+
         if (originalThrowable instanceof InterruptedException) {
           throw (InterruptedException) originalThrowable;
-        } else {
-          throw new RuntimeException(originalThrowable);
+        }
+        throw new RuntimeException(originalThrowable);
+      }
+    }
+  }
+
+  private static void closeOutputTasks(
+      Map<String, LogicalOutput> outputs, IOConsumer<MROutput> committer) throws IOException {
+    for (LogicalOutput output : outputs.values()) {
+      if (output instanceof MROutput) {
+        MROutput mrOutput = (MROutput) output;
+        if (mrOutput.isCommitRequired()) {
+          committer.accept(mrOutput);
         }
       }
     }
