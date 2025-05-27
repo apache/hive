@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
@@ -29,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
@@ -88,7 +91,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -100,6 +102,7 @@ import org.apache.hadoop.util.StringUtils;
 public final class ObjectInspectorUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(ObjectInspectorUtils.class.getName());
+  private static final Slot slot = getSlot();
 
   /**
    * This enum controls how we copy primitive objects.
@@ -559,7 +562,9 @@ public final class ObjectInspectorUtils {
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
     Field[] f = c.getDeclaredFields();
     ArrayList<Field> af = new ArrayList<Field>();
-    Arrays.sort(f, Comparator.comparingInt(ObjectInspectorUtils::getSlotValue));
+    if (slot != null) {
+      Arrays.sort(f, Comparator.comparingInt(slot::get));
+    }
     for (int i = 0; i < f.length; ++i) {
       if (!Modifier.isStatic(f[i].getModifiers())) {
         af.add(f[i]);
@@ -1655,25 +1660,63 @@ public final class ObjectInspectorUtils {
     // prevent instantiation
   }
 
-  /**
-   * Returns slot value used for ordering the fields to make it deterministic
-   * @param field : field of a given class
-   * @return
-   */
-  private static int getSlotValue(Field field) {
-    Field slotField = null;
-    boolean originalAccessible = false;
+  private static class Slot {
+    private final Field slot;
+
+    private Slot(Field slot) {
+      this.slot = Objects.requireNonNull(slot);
+    }
+
+    /**
+     * Returns slot value used for ordering the fields to make it deterministic
+     * @param field : field of a given class
+     * @return
+     */
+    private int get(Field field) {
+      boolean originalAccessible = slot.isAccessible();
+      slot.setAccessible(true);
+      try {
+        return slot.getInt(field);
+      } catch (IllegalAccessException | IllegalArgumentException e) {
+        LOG.error("Error getting field {} slot value:", field.getName(), e);
+        // preserve old non deterministic behavior
+        return 0;
+      } finally {
+        slot.setAccessible(originalAccessible);
+      }
+    }
+  }
+
+  private static Slot getSlot() {
+    String name = "slot";
     try {
-      slotField = Field.class.getDeclaredField("slot");
-      originalAccessible = slotField.isAccessible();
-      slotField.setAccessible(true);
-      return slotField.getInt(field);
-    } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
-      LOG.error("Error getting a slot value:", e);
-      throw new RuntimeException("Error getting a slot value");
-    } finally {
-      if (slotField != null) {
-        slotField.setAccessible(originalAccessible);
+      return new Slot(Field.class.getDeclaredField(name));
+    } catch (NoSuchFieldException e) {
+      // Workaround for Java 12 and above
+      Method getDeclaredFields0;
+      try {
+        getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0",
+            boolean.class);
+      } catch (NoSuchMethodException | SecurityException ex) {
+        LOG.error("Error getting \"getDeclaredFields0\" method:", e);
+        return null;
+      }
+      boolean originalAccessible = getDeclaredFields0.isAccessible();
+      getDeclaredFields0.setAccessible(true);
+      try {
+        Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
+        for (Field f : fields) {
+          if (name.equals(f.getName())) {
+            return new Slot(f);
+          }
+        }
+        LOG.error("Slot field is not found");
+        return null;
+      } catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException ex) {
+        LOG.error("Error invoking \"getDeclaredFields0\":", e);
+        return null;
+      } finally {
+        getDeclaredFields0.setAccessible(originalAccessible);
       }
     }
   }
