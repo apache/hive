@@ -18,7 +18,7 @@ UNION ALL
 SELECT CDATE_SUB('2000-01-01', CAST(key as int)) FROM src WHERE key <> '' AND value <> ''
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN VECTORIZATION
 SELECT CDATE_SUB('2000-01-01', 1) FROM src
 UNION ALL
@@ -33,7 +33,7 @@ UNION ALL
 SELECT CDATE_SUB('2000-01-01', CAST(key as int)) FROM src WHERE key <> '' AND value <> ''
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
