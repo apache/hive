@@ -560,21 +560,13 @@ public final class ObjectInspectorUtils {
    * Get all the declared non-static fields of Class c.
    */
   public static Field[] getDeclaredNonStaticFields(Class<?> c) {
-    Field[] f = c.getDeclaredFields();
-    ArrayList<Field> af = new ArrayList<Field>();
-    if (slot != null) {
+    Field[] f = Arrays.stream(c.getDeclaredFields())
+        .filter(field -> !Modifier.isStatic(field.getModifiers()))
+        .toArray(Field[]::new);
+    if (f.length > 1 && slot != null) {
       Arrays.sort(f, Comparator.comparingInt(slot::get));
     }
-    for (int i = 0; i < f.length; ++i) {
-      if (!Modifier.isStatic(f[i].getModifiers())) {
-        af.add(f[i]);
-      }
-    }
-    Field[] r = new Field[af.size()];
-    for (int i = 0; i < af.size(); ++i) {
-      r[i] = af.get(i);
-    }
-    return r;
+    return f;
   }
 
   /**
