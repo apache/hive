@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ import java.util.Map;
 @InterfaceStability.Stable
 public class ReloadEvent extends ListenerEvent {
     private final Table tableObj;
-    private final Partition ptnObj;
+    private final List<Partition> ptns;
     private final boolean refreshEvent;
 
     /**
@@ -52,7 +53,7 @@ public class ReloadEvent extends ListenerEvent {
      * @param refreshEvent status of insert,
      * @param handler handler that is firing the event
      */
-    public ReloadEvent(String catName, String db, String table, List<String> partVals, boolean status,
+    public ReloadEvent(String catName, String db, String table, List<List<String>> partVals, boolean status,
                        boolean refreshEvent, Map<String, String> tblParams, IHMSHandler handler) throws MetaException,
             NoSuchObjectException {
         super(status, handler);
@@ -67,10 +68,13 @@ public class ReloadEvent extends ListenerEvent {
                 this.tableObj.getParameters().putAll(tblParams);
             }
             if (partVals != null) {
-                this.ptnObj = handler.get_partition(MetaStoreUtils.prependNotNullCatToDbName(catName, db),
-                        table, partVals);
+                this.ptns = new ArrayList<>();
+                for(List<String> partVal : partVals) {
+                    this.ptns.add(handler.get_partition(MetaStoreUtils.prependNotNullCatToDbName(catName, db),
+                        table, partVal));
+                }
             } else {
-                this.ptnObj = null;
+                this.ptns = null;
             }
         } catch (NoSuchObjectException e) {
             // This is to mimic previous behavior where NoSuchObjectException was thrown through this
@@ -93,8 +97,8 @@ public class ReloadEvent extends ListenerEvent {
     /**
      * @return Partition object
      */
-    public Partition getPartitionObj() {
-        return ptnObj;
+    public List<Partition> getPartitions() {
+        return ptns;
     }
 
     /**
