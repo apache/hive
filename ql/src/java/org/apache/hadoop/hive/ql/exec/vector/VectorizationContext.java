@@ -277,18 +277,6 @@ import com.google.common.annotations.VisibleForTesting;
 
   private HiveVectorIfStmtMode hiveVectorIfStmtMode;
 
-  private Set<String> allowedCustomUDFs;
-
-  private Set<String> getAllowedCustomUDFs(HiveConf hiveConf) {
-    String udfs = HiveConf.getVar(hiveConf,
-        HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
-    if (udfs != null && !udfs.isEmpty()) {
-      return new HashSet<>(Arrays.asList(udfs.split(",")));
-    }
-
-    return new HashSet<>();
-  }
-
   //when set to true use the overflow checked vector expressions
   private boolean useCheckedVectorExpressions;
 
@@ -310,7 +298,6 @@ import com.google.common.annotations.VisibleForTesting;
     adaptorSuppressEvaluateExceptions =
         HiveConf.getBoolVar(
             hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS);
-    this.allowedCustomUDFs = getAllowedCustomUDFs(hiveConf);
   }
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
@@ -1050,7 +1037,7 @@ import com.google.common.annotations.VisibleForTesting;
                 "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
                   + " because hive.vectorized.adaptor.usage.mode=none");
           case CHOSEN:
-            if (isNonVectorizedPathUDF(expr, mode, allowedCustomUDFs)) {
+            if (isNonVectorizedPathUDF(expr, mode)) {
               ve = getCustomUDFExpression(expr, mode);
             } else {
               throw new HiveException(
@@ -1460,7 +1447,7 @@ import com.google.common.annotations.VisibleForTesting;
    * may be implemented in the future with an optimized VectorExpression.
    */
   private static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr,
-      VectorExpressionDescriptor.Mode mode, Set<String> allowCustomUDFs) {
+      VectorExpressionDescriptor.Mode mode) {
     GenericUDF gudf = expr.getGenericUDF();
     if (gudf instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
@@ -1497,8 +1484,6 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
       return true;
     } else if (gudf instanceof GenericUDFConcat && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
-      return true;
-    } else if (allowCustomUDFs.contains(gudf.getClass().getName())) {
       return true;
     }
     return false;

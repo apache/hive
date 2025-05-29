@@ -4702,9 +4702,9 @@ public class HiveConf extends Configuration {
         "The default value is true."),
 
     HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST("hive.vectorized.adaptor.custom.udf.whitelist", "",
-        "Custom UDF allowed when hive.vectorized.adaptor.usage.mode is chosen.\n" +
-        "Specify classes separated by commas:\n" +
-        "package.FooClass,package.BarClass"),
+        "A comma-separated list of custom UDFs allowed to operate in vectorized mode " +
+        "when hive.vectorized.adaptor.usage.mode is set to chosen.\n" +
+        "Only Generic UDFs are supported for whitelisting; ensure that each custom UDF class extends GenericUDF"),
 
     HIVE_VECTORIZATION_PTF_MAX_MEMORY_BUFFERING_BATCH_COUNT("hive.vectorized.ptf.max.memory.buffering.batch.count", 25,
         "Maximum number of vectorized row batches to buffer in memory for PTF\n" +
