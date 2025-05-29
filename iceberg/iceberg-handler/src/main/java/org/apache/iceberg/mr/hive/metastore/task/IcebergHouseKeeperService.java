@@ -50,6 +50,7 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   private Configuration conf;
   private TxnStore txnHandler;
   private boolean shouldUseMutex;
+  private ExecutorService deleteExecutorService = null;
 
   // table cache to avoid making repeated requests for the same Iceberg tables more than once per day
   private final Cache<TableName, Table> tableCache = Caffeine.newBuilder()
@@ -126,25 +127,10 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
    */
   private void expireSnapshotsForTable(Table icebergTable) {
     ExpireSnapshots expireSnapshots = icebergTable.expireSnapshots();
-
-    int numThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
-        HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
-
-    ExecutorService deleteExecutorService = null;
-    try {
-      if (numThreads > 0) {
-        LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(), numThreads);
-      }
-      if (deleteExecutorService != null) {
-        expireSnapshots.executeDeleteWith(deleteExecutorService);
-      }
-      expireSnapshots.commit();
-    } finally {
-      if (deleteExecutorService != null) {
-        deleteExecutorService.shutdown();
-      }
+    if (deleteExecutorService != null) {
+      expireSnapshots.executeDeleteWith(deleteExecutorService);
     }
+    expireSnapshots.commit();
   }
 
   @Override
@@ -161,5 +147,12 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   public void setConf(Configuration configuration) {
     conf = configuration;
     txnHandler = TxnUtils.getTxnStore(conf);
+
+    int numThreads = conf.getInt(HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
+        HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
+    if (numThreads > 0) {
+      LOG.info("Will expire Iceberg snapshots using an executor service with {} threads", numThreads);
+      deleteExecutorService = IcebergTableUtil.newDeleteThreadPool("iceberg-housekeeper-service", numThreads);
+    }
   }
 }

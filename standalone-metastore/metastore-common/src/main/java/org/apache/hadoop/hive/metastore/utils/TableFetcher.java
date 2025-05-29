@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ public class TableFetcher {
     if ("*".equalsIgnoreCase(builder.catalogName)) {
       LOG.warn("Invalid wildcard '*' parameter for catalogName, exact catalog name is expected instead of regexp");
     }
-    this.catalogName = Optional.ofNullable(builder.catalogName).orElse("hive");
+    this.catalogName = Optional.ofNullable(builder.catalogName).orElse(Warehouse.DEFAULT_CATALOG_NAME);
     this.dbPattern = Optional.ofNullable(builder.dbPattern).orElse("");
     String tablePattern = Optional.ofNullable(builder.tablePattern).orElse("");
     String stringTableTypes = Optional.ofNullable(builder.tableTypes).orElse("");
