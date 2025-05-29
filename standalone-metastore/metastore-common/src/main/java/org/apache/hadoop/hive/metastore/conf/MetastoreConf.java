@@ -921,13 +921,14 @@ public class MetastoreConf {
     ICEBERG_TABLE_EXPIRY_INTERVAL("metastore.iceberg.table.expiry.interval",
         "hive.metastore.iceberg.table.expiry.interval", 3600, TimeUnit.SECONDS,
         "Time interval describing how often the iceberg table expiry service runs."),
+    // TODO: HIVE-28974: Implement pattern-based catalog retrieval in metastore client
     ICEBERG_TABLE_EXPIRY_CATALOG_NAME("metastore.iceberg.table.expiry.catalog.name",
         "hive.metastore.iceberg.table.expiry.catalog.name", "hive",
         "Iceberg table expiry service looks for tables under the specified catalog name"),
     ICEBERG_TABLE_EXPIRY_DATABASE_PATTERN("metastore.iceberg.table.expiry.database.pattern",
-        "hive.metastore.iceberg.table.expiry.database.pattern", "none",
+        "hive.metastore.iceberg.table.expiry.database.pattern", "",
         "Iceberg table expiry service searches for tables using the specified database pattern. " +
-            "By default, the pattern is set to 'none', which results in no matches (this is intentional" +
+            "By default, the pattern is set to empty string, which results in no matches (this is intentional" +
             "to avoid expensive metastore calls unless explicitly configured by the user)."),
     ICEBERG_TABLE_EXPIRY_TABLE_PATTERN("metastore.iceberg.table.expiry.table.pattern",
         "hive.metastore.iceberg.table.expiry.table.pattern", "none",
