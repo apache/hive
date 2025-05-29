@@ -72,7 +72,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * data of a row split, as the key part of a record, and all the data of a row
  * split as the value part. When writing, RCFile.Writer first holds records'
  * value bytes in memory, and determines a row split if the raw bytes size of
- * buffered records overflow a given parameter<tt>Writer.columnsBufferSize</tt>,
+ * buffered records overflow a given parameter<pre>Writer.columnsBufferSize</pre>,
  * which can be set like: <code>conf.setInt(COLUMNS_BUFFER_SIZE_CONF_STR,
           4 * 1024 * 1024)</code> .
  * <p>
@@ -99,10 +99,10 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
  * The {@link Reader} is used to read and explain the bytes of RCFile.
  * </p>
  *
- * <h3 id="Formats">RCFile Formats</h3>
+ * <h2 id="Formats">RCFile Formats</h2>
  *
  *
- * <h4 id="Header">RC Header</h4>
+ * <h3 id="Header">RC Header</h3>
  * <ul>
  * <li>version - 3 bytes of magic header <b>RCF</b>, followed by 1 byte of
  * actual version number (e.g. RCF1)</li>

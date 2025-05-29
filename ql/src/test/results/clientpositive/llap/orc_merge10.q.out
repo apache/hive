@@ -788,6 +788,7 @@ Stripes:
       Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
 File length: 1763 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -839,6 +840,7 @@ Stripes:
       Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
 File length: 1763 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

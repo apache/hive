@@ -722,6 +722,8 @@ public class HiveConf extends Configuration {
         "Streaming jobs that log to standard error with this prefix can log counter or status information."),
     STREAM_REPORTER_ENABLED("stream.stderr.reporter.enabled", true,
         "Enable consumption of status and counter messages for streaming jobs."),
+    ORC_COMPRESS("hive.exec.orc.default.compress", "ZLIB", "Define the default compression codec for ORC file. " +
+            "ZLIB is the default value in hive until ZSTD which is default from orc 2.x is tested"),
     COMPRESS_RESULT("hive.exec.compress.output", false,
         "This controls whether the final outputs of a query (to a local/HDFS file or a Hive table) is compressed. \n" +
         "The compression codec and other options are determined from Hadoop config variables mapred.output.compress*"),
