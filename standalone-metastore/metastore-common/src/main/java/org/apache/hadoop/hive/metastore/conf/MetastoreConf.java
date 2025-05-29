@@ -1829,29 +1829,29 @@ public class MetastoreConf {
             new StringSetValidator("simple", "jwt"),
         "Property-maps servlet authentication method (simple or jwt)."
     ),
-    ICEBERG_CATALOG_SERVLET_FACTORY("hive.metastore.catalog.servlet.factory",
-            "hive.metastore.catalog.servlet.factory",
+    ICEBERG_CATALOG_SERVLET_FACTORY("metastore.iceberg.catalog.servlet.factory",
+            "hive.metastore.iceberg.catalog.servlet.factory",
             "org.apache.iceberg.rest.HMSCatalogFactory",
             "HMS Iceberg Catalog servlet factory class name."
             + "The factory needs to expose a method: "
             + "public static HttpServlet createServlet(Configuration configuration);"
     ),
-    ICEBERG_CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
-        "hive.metastore.catalog.servlet.path", "iceberg",
+    ICEBERG_CATALOG_SERVLET_PATH("metastore.iceberg.catalog.servlet.path",
+        "hive.metastore.iceberg.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
     ),
-    ICEBERG_CATALOG_SERVLET_PORT("hive.metastore.catalog.servlet.port",
-        "hive.metastore.catalog.servlet.port", -1,
+    ICEBERG_CATALOG_SERVLET_PORT("metastore.iceberg.catalog.servlet.port",
+        "hive.metastore.iceberg.catalog.servlet.port", -1,
         "HMS Iceberg Catalog servlet server port. Negative value disables the servlet," +
             " 0 will let the system determine the catalog server port," +
             " positive value will be used as-is."
     ),
-    ICEBERG_CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
-        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
+    ICEBERG_CATALOG_SERVLET_AUTH("metastore.iceberg.catalog.servlet.auth",
+        "hive.metastore.iceberg.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
-    ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",
-        "hive.metastore.catalog.cache.expiry", 60_000L,
+    ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
+        "hive.metastore.iceberg.catalog.cache.expiry", 60_000L,
         "HMS Iceberg Catalog cache expiry."
     ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
