@@ -10265,6 +10265,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName, Warehouse.DEFAULT_DATABASE_NAME);
     catName = normalizeIdentifier(catName);
+    // use directSql to compeletely delete the parameter COLUMN_STATS_ACCUARTE on partition level
+    directSql.deleteColumnStatsState(getTable(catName, dbName, tableName).getId());
     return new GetHelper<Boolean>(catName, dbName, tableName, true, true) {
       @Override
       protected String describeResult() {

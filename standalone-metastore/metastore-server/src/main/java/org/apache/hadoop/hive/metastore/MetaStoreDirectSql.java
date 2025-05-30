@@ -183,7 +183,7 @@ class MetaStoreDirectSql {
 
   // Table names with schema name, if necessary
   @TableName
-  private String DBS, TBLS, PARTITIONS, DATABASE_PARAMS, PARTITION_PARAMS, SORT_COLS, SD_PARAMS,
+  private String DBS, TBLS, PARTITIONS, DATABASE_PARAMS, TABLE_PARAMS, PARTITION_PARAMS, SORT_COLS, SD_PARAMS,
       SDS, SERDES, SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, BUCKETING_COLS, SKEWED_COL_NAMES,
       SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, PARTITION_KEYS, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
       TAB_COL_STATS, PARTITION_KEY_VALS, PART_PRIVS, PART_COL_PRIVS, SKEWED_STRING_LIST, CDS,
@@ -3211,6 +3211,45 @@ class MetaStoreDirectSql {
     }
   }
 
+//  public Long getTableId(String dbName, String tableName) throws MetaException {
+//    String queryText;
+//    switch (dbType.dbType) {
+//      case MYSQL:
+//        queryText = ""
+//                + "SELECT t.TBL_ID FROM " + TBLS + " t "
+//                + " JOIN " + DBS + " d ON t.DB_ID = d.DB_ID "
+//                + " WHERE d.NAME = ? AND t.TBL_NAME = ?";
+//        break;
+//      case DERBY:
+//      case POSTGRES:
+//      default:
+//        queryText = ""
+//                + "SELECT t.\"TBL_ID\" FROM " + TBLS + " t "
+//                + " JOIN " + DBS + " d ON t.\"DB_ID\" = d.\"DB_ID\" "
+//                + " WHERE d.\"NAME\" = ? AND t.\"TBL_NAME\" = ?";
+//        break;
+//    }
+//
+//    List<String> params = Arrays.asList(dbName, tableName);
+//
+//    try (QueryWrapper queryWrapper = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+//      List<Object> results = executeWithArray(queryWrapper.getInnerQuery(), params.toArray(), queryText, 1);
+//
+//      if (results.isEmpty()) {
+//        return null;
+//      }
+//
+//      Object row = results.get(0);
+//      if (row instanceof Number) {
+//        return ((Number) row).longValue();
+//      } else if (row instanceof Object[]) {
+//        return ((Number) ((Object[]) row)[0]).longValue();
+//      } else {
+//        throw new MetaException("Unexpected result type for table ID: " + row.getClass());
+//      }
+//    }
+//  }
+
   public void deleteColumnStatsState(long tbl_id) throws MetaException {
     String queryText;
     switch (dbType.dbType) {
@@ -3241,6 +3280,26 @@ class MetaStoreDirectSql {
       throw new MetaException("Error removing column stat states:" + e.getMessage());
     }
   }
+
+//  public void deleteTblColumnStatsState(long tbl_id) throws MetaException {
+//    String queryText;
+//    switch (dbType.dbType) {
+//      // delete the table parameter COLUMN_STATS_ACCURATE
+//      default:
+//        // @formatter:off
+//        queryText = ""
+//            + "DELETE FROM " + TABLE_PARAMS
+//            + " WHERE \"TBL_ID\" = " + tbl_id
+//            + " AND \"PARAM_KEY\" = '" + StatsSetupConst.COLUMN_STATS_ACCURATE + "'";
+//        // @formatter:on
+//      }
+//
+//      try {
+//        executeNoResult(queryText);
+//    } catch (SQLException e) {
+//      throw new MetaException("Error removing column stats states: " + e.getMessage());
+//    }
+//  }
 
   public boolean deleteTableColumnStatistics(long tableId, List<String> colNames, String engine) {
     String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = " + tableId;
