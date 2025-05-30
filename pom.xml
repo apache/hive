@@ -168,6 +168,7 @@
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.11.2</junit.jupiter.version>
     <junit.vintage.version>5.11.2</junit.vintage.version>
+    <json-smart.version>2.5.2</json-smart.version>
     <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
@@ -1320,7 +1321,7 @@
       <dependency>
         <groupId>net.minidev</groupId>
         <artifactId>json-smart</artifactId>
-        <version>2.5.2</version>
+        <version>${json-smart.version}</version>
         <scope>runtime</scope>
       </dependency>
       <dependency>
