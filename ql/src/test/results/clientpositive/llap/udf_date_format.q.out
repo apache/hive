@@ -149,13 +149,13 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 10	30	45	10 AM	08	123	123	NULL
 PREHOOK: query: select
 date_format('2015-04-08', ''),
-date_format('2015-04-08', 'B')
+date_format('2015-04-08', 'C')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: select
 date_format('2015-04-08', ''),
-date_format('2015-04-08', 'B')
+date_format('2015-04-08', 'C')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####

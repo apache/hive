@@ -28,12 +28,11 @@
     <!-- Upgrade roaringbit version in parent pom.xml whenever upgrading iceberg version -->
     <iceberg.version>1.6.1</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
-    <iceberg.mockito-core.version>3.4.4</iceberg.mockito-core.version>
+    <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
     <iceberg.avro.version>1.11.4</iceberg.avro.version>
     <iceberg.checkstyle.plugin.version>3.5.0</iceberg.checkstyle.plugin.version>
-    <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
-    <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
-    <google.errorprone.version>2.5.1</google.errorprone.version>
+    <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
+    <google.errorprone.version>2.29.2</google.errorprone.version>
     <assertj.version>3.24.2</assertj.version>
     <awaitility.version>4.2.1</awaitility.version>
     <immutables.value.version>2.10.0</immutables.value.version>
@@ -243,6 +242,7 @@
         <version>${spotless.maven.plugin.version}</version>
         <configuration>
           <skip>${validate.skip}</skip>
+          <argLine>--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</argLine>
           <java>
             <removeUnusedImports/>
             <importOrder>
@@ -308,7 +308,16 @@
               <compilerArgs>
                 <arg>-XDcompilePolicy=simple</arg>
                 <arg>-Xplugin:ErrorProne -Xep:BanSerializableRead:WARN</arg>
-                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${google.errorprone.javac.version}/javac-${google.errorprone.javac.version}.jar</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>
               <annotationProcessorPaths>
                 <path>
