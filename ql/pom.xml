@@ -1116,6 +1116,7 @@
                   <include>org.apache.orc:orc-core</include>
                   <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
+                  <include>org.apache.orc:orc-format</include>
                   <include>joda-time:joda-time</include>
                   <include>com.google.re2j:re2j</include>
                   <include>io.dropwizard.metrics:metrics-core</include>
