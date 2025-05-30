@@ -5188,7 +5188,7 @@ public class ObjectStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
-    MPartition newp = convertToMPart(newPart, table, false);
+    MPartition newp = convertToMPart(newPart, table, true);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {
@@ -5248,9 +5248,6 @@ public class ObjectStore implements RawStore, Configurable {
     Partition result = null;
     try {
       openTransaction();
-      if (newPart.isSetWriteId()) {
-        LOG.warn("Alter partitions with write ID called without transaction information");
-      }
       Ref<MColumnDescriptor> oldCd = new Ref<>();
       result = alterPartitionNoTxn(catName, dbname, name, part_vals, newPart, validWriteIds, oldCd);
       removeUnusedColumnDescriptor(oldCd.t);

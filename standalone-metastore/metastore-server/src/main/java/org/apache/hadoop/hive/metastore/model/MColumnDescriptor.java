@@ -44,6 +44,7 @@ public class MColumnDescriptor {
     fields = cols.stream().map(schema ->
         new MColumn(schema.getName(), schema.getType(), schema.getComment()))
             .collect(Collectors.toList());
+    fields.forEach(column -> column.setCd(this));
   }
 
   public List<MColumn> getFields() {
