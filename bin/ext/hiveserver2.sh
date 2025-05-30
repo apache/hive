@@ -50,7 +50,7 @@ hiveserver2() {
     timeout=$(exec $HADOOP jar $JAR $CLASS $HIVE_OPTS --getHiveConf $TIMEOUT_KEY | grep $TIMEOUT_KEY'=' | awk -F'=' '{print $2}')
     killAndWait $pid $timeout
   else
-    export HADOOP_CLIENT_OPTS=" -Dproc_hiveserver2 --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED  --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED $HADOOP_CLIENT_OPTS "
+    export HADOOP_CLIENT_OPTS=" -Dproc_hiveserver2 --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED  --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED $HADOOP_CLIENT_OPTS "
     export HADOOP_OPTS="$HIVESERVER2_HADOOP_OPTS $HADOOP_OPTS"
     commands=$(exec $HADOOP jar $JAR $CLASS -H | grep -v '-hiveconf' | awk '{print $1}')
     start_hiveserver2='Y'
