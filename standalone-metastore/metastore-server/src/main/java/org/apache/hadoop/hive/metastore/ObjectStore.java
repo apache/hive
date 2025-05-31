@@ -561,17 +561,10 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean openTransaction() {
     openTrasactionCalls++;
-    if (openTrasactionCalls == 1) {
+    if (currentTransaction == null || !currentTransaction.isActive()){
       currentTransaction = pm.currentTransaction();
       currentTransaction.begin();
       transactionStatus = TXN_STATUS.OPEN;
-    } else {
-      // openTransactionCalls > 1 means this is an interior transaction
-      // We should already have a transaction created that is active.
-      if ((currentTransaction == null) || (!currentTransaction.isActive())){
-        throw new RuntimeException("openTransaction called in an interior"
-            + " transaction scope, but currentTransaction is not active.");
-      }
     }
 
     boolean result = currentTransaction.isActive();
@@ -629,13 +622,13 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
-    openTrasactionCalls--;
-    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
 
-    if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
+    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
+    if ((openTrasactionCalls == 1) && currentTransaction.isActive()) {
       transactionStatus = TXN_STATUS.COMMITED;
       currentTransaction.commit();
     }
+    openTrasactionCalls--;
     return true;
   }
 
@@ -662,7 +655,7 @@ public class ObjectStore implements RawStore, Configurable {
         currentTransaction.rollback();
       }
     } finally {
-      openTrasactionCalls = 0;
+      openTrasactionCalls--;
       transactionStatus = TXN_STATUS.ROLLBACK;
       // remove all detached objects from the cache, since the transaction is
       // being rolled back they are no longer relevant, and this prevents them
@@ -3305,31 +3298,38 @@ public class ObjectStore implements RawStore, Configurable {
   public Partition getPartitionWithAuth(String catName, String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
-    boolean success = false;
-    try {
-      openTransaction();
-      MPartition mpart = getMPartition(catName, dbName, tblName, partVals, null);
-      if (mpart == null) {
-        commitTransaction();
-        throw new NoSuchObjectException("partition values="
-            + partVals.toString());
-      }
-      MTable mtbl = mpart.getTable();
-
-      Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()));
-      if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-        String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
-            .getPartitionKeys()), partVals);
-        PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(catName, dbName,
-            tblName, partName, user_name, group_names);
-        part.setPrivileges(partAuth);
+    return new GetHelper<Partition>(catName, dbName, tblName, false, true) {
+      @Override
+      protected String describeResult() {
+        return "partition with auth";
       }
 
-      success = commitTransaction();
-      return part;
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
+      @Override
+      protected Partition getSqlResult(GetHelper<Partition> ctx) throws MetaException {
+        throw new UnsupportedOperationException("UnsupportedOperationException");
+      }
+
+      @Override
+      protected Partition getJdoResult(GetHelper<Partition> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        MPartition mpart = getMPartition(catName, dbName, tblName, partVals, null);
+        if (mpart == null) {
+          throw new NoSuchObjectException("partition values="
+              + partVals.toString());
+        }
+        MTable mtbl = mpart.getTable();
+
+        Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()));
+        if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+          String partName = Warehouse.makePartName(convertToFieldSchemas(mtbl
+              .getPartitionKeys()), partVals);
+          PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, dbName,
+              tblName, partName, user_name, group_names);
+          part.setPrivileges(partAuth);
+        }
+        return part;
+      }
+    }.run(false);
   }
 
   private List<Partition> convertToParts(String catName, String dbName, String tblName,
