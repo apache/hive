@@ -166,6 +166,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       for(Annotation a : directives) {
         if(a instanceof RetrySemantics.CannotRetry) {
           allowRetry = false;
+          break;
         }
       }
     }
