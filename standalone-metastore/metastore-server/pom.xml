@@ -491,6 +491,53 @@
         </plugins>
       </reporting>
     </profile>
+    <profile>
+      <id>dist</id>
+    </profile>
+    <profile>
+      <id>docker</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-metastore</artifactId>
+          <version>4.1.0-SNAPSHOT</version>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
+          <version>4.1.0-SNAPSHOT</version>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-docker-image</id>
+                <phase>install</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>bash</executable>
+                  <environmentVariables>
+                    <SOURCE_DIR>${standalone.metastore.path.to.root}</SOURCE_DIR>
+                  </environmentVariables>
+                  <arguments>
+                    <argument>src/docker/build.sh</argument>
+                    <argument>-hadoop ${hadoop.version}</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <!--
   <profile>
     <id>checkin</id>
