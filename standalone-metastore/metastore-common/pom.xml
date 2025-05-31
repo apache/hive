@@ -549,7 +549,7 @@
                 </outputTarget>
                 <outputTarget>
                   <type>grpc-java</type>
-                  <pluginArtifact>io.grpc:protoc-gen-grpc-java:${io.grpc.version}</pluginArtifact>
+                  <pluginPath>/opt/homebrew/Cellar/protoc-gen-grpc-java/1.73.0/bin/protoc-gen-grpc-java</pluginPath>
                 </outputTarget>
               </outputTargets>
             </configuration>
