@@ -39,10 +39,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                  filterExpr: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400')))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400')))) (type: boolean)
                     Statistics: Num rows: 72 Data size: 12816 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -60,10 +60,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                  filterExpr: (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 110 Data size: 9570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -322,10 +322,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                  filterExpr: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400')))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((value < 'val_50') or (key > '2')) and (((key > '20') and (key < '4')) or ((key > '4') and (key < '400')))) (type: boolean)
                     Statistics: Num rows: 72 Data size: 12816 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -343,10 +343,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                  filterExpr: (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) and key is not null) (type: boolean)
+                    predicate: (((key > '20') and (key < '4')) or ((key > '4') and (key < '400'))) (type: boolean)
                     Statistics: Num rows: 110 Data size: 9570 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
