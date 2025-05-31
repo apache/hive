@@ -39,8 +39,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections.MapUtils;
@@ -1133,7 +1131,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       if (numThreads > 0) {
         LOG.info("Executing delete orphan files on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
+        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(),
+            numThreads);
       }
 
       HiveIcebergDeleteOrphanFiles deleteOrphanFiles = new HiveIcebergDeleteOrphanFiles(conf, icebergTable);
@@ -1156,7 +1155,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       if (numThreads > 0) {
         LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = getDeleteExecutorService(icebergTable.name(), numThreads);
+        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(), numThreads);
       }
       if (expireSnapshotsSpec == null) {
         expireSnapshotWithDefaultParams(icebergTable, deleteExecutorService);
@@ -1233,15 +1232,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
       expireSnapshots.commit();
     }
-  }
-
-  private ExecutorService getDeleteExecutorService(String completeName, int numThreads) {
-    AtomicInteger deleteThreadsIndex = new AtomicInteger(0);
-    return Executors.newFixedThreadPool(numThreads, runnable -> {
-      Thread thread = new Thread(runnable);
-      thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
-      return thread;
-    });
   }
 
   @Override
