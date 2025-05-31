@@ -5769,6 +5769,9 @@ public class HiveConf extends Configuration {
     HIVE_QUERY_HISTORY_REPOSITORY_CLASS("hive.query.history.repository.class",
         "org.apache.hadoop.hive.ql.queryhistory.repository.IcebergRepository",
         "The class implementing QueryHistoryRepository to be used for persisting Record instances"),
+    HIVE_QUERY_HISTORY_ICEBERG_SNAPSHOT_EXPIRY_INVERVAL_SECONDS(
+        "hive.query.history.iceberg.snapshot.expiry.interval.seconds", 3600,
+        "The iceberg repository of query history service expires snapshots periodically according to this config."),
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
         false,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),
