@@ -18,23 +18,20 @@
 
 package org.apache.hadoop.hive.ql.session;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SessionStateUtil {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SessionStateUtil.class);
   private static final String COMMIT_INFO_PREFIX = "COMMIT_INFO.";
   public static final String DEFAULT_TABLE_LOCATION = "defaultLocation";
 
   private SessionStateUtil() {
-
   }
 
   /**
@@ -44,7 +41,8 @@ public class SessionStateUtil {
    * could not be found
    */
   public static Optional<Object> getResource(Configuration conf, String key) {
-    return getQueryState(conf).map(state -> state.getResource(key));
+    return getQueryState(conf)
+        .map(queryState -> queryState.getResource(key));
   }
 
   /**
@@ -54,29 +52,24 @@ public class SessionStateUtil {
    * resource itself could not be found, or the resource is not of type String
    */
   public static Optional<String> getProperty(Configuration conf, String key) {
-    return getResource(conf, key).filter(o -> o instanceof String).map(o -> (String) o);
+    return getResource(conf, key).filter(obj -> obj instanceof String)
+        .map(obj -> (String) obj);
   }
 
   /**
    * @param conf Configuration object used for getting the query state, should contain the query id
    * @param key The resource identifier
    * @param resource The resource to save into the QueryState
-   * @return whether operation succeeded
    */
-  public static boolean addResource(Configuration conf, String key, Object resource) {
-    Optional<QueryState> queryState = getQueryState(conf);
-    if (queryState.isPresent()) {
-      queryState.get().addResource(key, resource);
-      return true;
-    } else {
-      return false;
-    }
+  public static void addResource(Configuration conf, String key, Object resource) {
+    getQueryState(conf)
+        .ifPresent(queryState -> queryState.addResource(key, resource));
   }
 
   public static void addResourceOrThrow(Configuration conf, String key, Object resource) {
     getQueryState(conf)
-            .orElseThrow(() -> new IllegalStateException("Query state is missing; failed to add resource for " + key))
-            .addResource(key, resource);
+        .orElseThrow(() -> new IllegalStateException("Query state is missing; failed to add resource for " + key))
+        .addResource(key, resource);
   }
 
   /**
@@ -85,7 +78,8 @@ public class SessionStateUtil {
    * @return the CommitInfo map. Key: jobId, Value: {@link CommitInfo}, or empty Optional if not present
    */
   public static Optional<Map<String, CommitInfo>> getCommitInfo(Configuration conf, String tableName) {
-    return getResource(conf, COMMIT_INFO_PREFIX + tableName).map(o -> (Map<String, CommitInfo>)o);
+    return getResource(conf, COMMIT_INFO_PREFIX + tableName)
+        .map(obj -> (Map<String, CommitInfo>) obj);
   }
 
   /**
@@ -94,30 +88,28 @@ public class SessionStateUtil {
    * @param jobId The job ID
    * @param taskNum The number of successful tasks for the job
    * @param additionalProps Any additional properties related to the job commit
-   * @return whether the operation succeeded
    */
-  public static boolean addCommitInfo(Configuration conf, String tableName, String jobId, int taskNum,
-                                         Map<String, String> additionalProps) {
+  public static void addCommitInfo(
+      Configuration conf, String tableName, String jobId, int taskNum, Map<String, String> additionalProps) {
 
     CommitInfo commitInfo = new CommitInfo()
-            .withJobID(jobId)
-            .withTaskNum(taskNum)
-            .withProps(additionalProps);
+        .withJobID(jobId)
+        .withTaskNum(taskNum)
+        .withProps(additionalProps);
 
-    Optional<Map<String, CommitInfo>> commitInfoMap = getCommitInfo(conf, tableName);
-    if (commitInfoMap.isPresent()) {
-      commitInfoMap.get().put(jobId, commitInfo);
-      return true;
-    }
+    getCommitInfo(conf, tableName)
+        .ifPresentOrElse(commitInfoMap -> commitInfoMap.put(jobId, commitInfo),
+              () -> {
+                Map<String, CommitInfo> newCommitInfoMap = Maps.newHashMap();
+                newCommitInfoMap.put(jobId, commitInfo);
 
-    Map<String, CommitInfo> newCommitInfoMap = new HashMap<>();
-    newCommitInfoMap.put(jobId, commitInfo);
-
-    return addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
+                addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
+              });
   }
 
   public static Optional<QueryState> getQueryState(Configuration conf) {
-    return Optional.ofNullable(SessionState.get()).map(ss -> ss.getQueryState(HiveConf.getQueryId(conf)));
+    return Optional.ofNullable(SessionState.get())
+        .map(ss -> ss.getQueryState(HiveConf.getQueryId(conf)));
   }
 
   /**
