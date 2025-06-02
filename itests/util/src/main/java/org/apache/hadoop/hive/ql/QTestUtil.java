@@ -60,6 +60,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsRequest;
 import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsResponse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
@@ -395,7 +397,6 @@ public class QTestUtil {
 
     conf.set("hive.metastore.filter.hook", "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl");
     db = Hive.get(conf);
-
     // First delete any MVs to avoid race conditions
     for (String dbName : db.getAllDatabases()) {
       SessionState.get().setCurrentDatabase(dbName);
@@ -432,7 +433,14 @@ public class QTestUtil {
             LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
             continue;
           }
-          db.dropTable(dbName, tblName, true, true, miniClusters.fsNeedsPurge(fsType));
+          try {
+            db.dropTable(dbName, tblName, true, true, miniClusters.fsNeedsPurge(fsType));
+          } catch (HiveException e) {
+            if (e.getCause() != null && e.getCause() instanceof MetaException && e.getCause().getMessage().startsWith("Cannot drop table as it is used in the following materialized views")) {
+              LOG.warn("Trying to drop a table that is used in a materialized view");
+              continue;
+            }
+          }
         }
       }
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
