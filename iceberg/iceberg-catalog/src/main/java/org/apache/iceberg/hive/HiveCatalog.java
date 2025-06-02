@@ -73,8 +73,8 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveCatalog extends BaseMetastoreViewCatalog
-        implements SupportsNamespaces, Configurable {
+public class HiveCatalog extends BaseMetastoreViewCatalog implements SupportsNamespaces, Configurable {
+
   public static final String LIST_ALL_TABLES = "list-all-tables";
   public static final String LIST_ALL_TABLES_DEFAULT = "false";
 
