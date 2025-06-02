@@ -184,6 +184,11 @@ final class Constant extends \Thrift\Type\TConstant
         return "serde";
     }
 
+    protected static function init_META_OBJECT_TYPE()
+    {
+        return "object_type";
+    }
+
     protected static function init_META_TABLE_PARTITION_COLUMNS()
     {
         return "partition_columns";
