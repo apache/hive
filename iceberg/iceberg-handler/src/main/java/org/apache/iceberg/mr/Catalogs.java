@@ -33,12 +33,15 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.view.View;
+import org.apache.parquet.Strings;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -75,6 +78,15 @@ public final class Catalogs {
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
               InputFormatConfig.CATALOG_NAME);
+
+  public static final String MATERIALIZED_VIEW_PROPERTY_KEY = "iceberg.materialized.view";
+  public static final String MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY =
+          "iceberg.materialized.view.storage.table";
+  public static final String MATERIALIZED_VIEW_BASE_SNAPSHOT_PROPERTY_KEY_PREFIX =
+          "iceberg.base.snapshot.";
+  public static final String MATERIALIZED_VIEW_VERSION_PROPERTY_KEY =
+          "iceberg.materialized.view.version";
+  private static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = ".storage.table";
 
   private Catalogs() {
   }
@@ -278,5 +290,35 @@ public final class Catalogs {
       }
     }
     return map;
+  }
+
+  public static View createMaterializedView(Configuration conf, Properties props) {
+    Schema schema = schema(props);
+    PartitionSpec spec = spec(props, schema);
+    String location = props.getProperty(LOCATION);
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+    SortOrder sortOrder = getSortOrder(props, schema);
+    if (!catalog.isPresent()) {
+      throw new IllegalStateException("Unable to load catalog: " + catalogName);
+    }
+    String name = props.getProperty(NAME);
+    Preconditions.checkNotNull(name, "Table identifier not set");
+
+    ViewCatalog viewCatalog = (ViewCatalog) catalog.get();
+
+    Map<String, String> map = filterIcebergTableProperties(props);
+    String storageTableIdentifier = name + MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX;
+    Table storageTable = catalog.get().buildTable(TableIdentifier.parse(storageTableIdentifier), schema)
+            .withPartitionSpec(spec).withLocation(location).withProperties(map).withSortOrder(sortOrder).create();
+
+    Map<String, String> viewProperties = Maps.newHashMapWithExpectedSize(2);
+    viewProperties.put(MATERIALIZED_VIEW_PROPERTY_KEY, "true");
+    viewProperties.put(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY,
+            storageTableIdentifier);
+
+    return viewCatalog.buildView(TableIdentifier.parse(name)).withLocation(location)
+            .withProperties(viewProperties).create();
   }
 }
