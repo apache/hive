@@ -38,6 +38,7 @@ class hive_metastoreConstants {
   std::string META_TABLE_DB;
   std::string META_TABLE_LOCATION;
   std::string META_TABLE_SERDE;
+  std::string META_OBJECT_TYPE;
   std::string META_TABLE_PARTITION_COLUMNS;
   std::string META_TABLE_PARTITION_COLUMN_TYPES;
   std::string FILE_INPUT_FORMAT;
