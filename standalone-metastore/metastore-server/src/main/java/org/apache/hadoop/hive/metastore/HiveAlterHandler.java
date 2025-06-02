@@ -409,6 +409,7 @@ public class HiveAlterHandler implements AlterHandler {
           if (runPartitionMetadataUpdate) {
             // Don't validate table-level stats for a partitoned table.
             msdb.alterTable(catName, dbname, name, newt, null);
+
             if (cascade || retainOnColRemoval) {
               parts = msdb.getPartitions(catName, dbname, name, -1);
               for (Partition part : parts) {

@@ -16,9 +16,6 @@
  * limitations under the License.
  */
 
-/**
- *
- */
 package org.apache.hadoop.hive.metastore.model;
 
 import javax.jdo.annotations.NotPersistent;
@@ -42,9 +39,8 @@ public class MColumnDescriptor {
 
   public MColumnDescriptor(List<MFieldSchema> cols) {
     fields = cols.stream().map(schema ->
-        new MColumn(schema.getName(), schema.getType(), schema.getComment()))
+        new MColumn(this, schema.getName(), schema.getType(), schema.getComment()))
             .collect(Collectors.toList());
-    fields.forEach(column -> column.setCd(this));
   }
 
   public List<MColumn> getFields() {
