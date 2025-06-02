@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.NoMutex;
@@ -89,11 +90,15 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
       LOG.debug("{} candidate tables found", tables.size());
 
       for (TableName table : tables) {
-        expireSnapshotsForTable(getIcebergTable(table, msc));
+        try {
+          expireSnapshotsForTable(getIcebergTable(table, msc));
+        } catch (Exception e) {
+          LOG.error("Exception while running iceberg expiry service on catalog/db/table: {}/{}/{}",
+              catalogName, dbPattern, tablePattern, e);
+        }
       }
-    } catch (Exception e) {
-      LOG.error("Exception while running iceberg expiry service on catalog/db/table: {}/{}/{}",
-          catalogName, dbPattern, tablePattern, e);
+    } catch (MetaException e) {
+      throw new RuntimeException("Error while opening metastore client", e);
     }
   }
 

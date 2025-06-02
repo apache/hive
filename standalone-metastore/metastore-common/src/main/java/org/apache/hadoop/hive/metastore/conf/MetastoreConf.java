@@ -931,9 +931,9 @@ public class MetastoreConf {
             "By default, the pattern is set to empty string, which results in no matches (this is intentional" +
             "to avoid expensive metastore calls unless explicitly configured by the user)."),
     ICEBERG_TABLE_EXPIRY_TABLE_PATTERN("metastore.iceberg.table.expiry.table.pattern",
-        "hive.metastore.iceberg.table.expiry.table.pattern", "none",
+        "hive.metastore.iceberg.table.expiry.table.pattern", "",
         "Iceberg table expiry service tables for tables using the specified table pattern. " +
-            "By default, the pattern is set to 'none', which results in no matches (this is intentional" +
+            "By default, the pattern is set to empty string, which results in no matches (this is intentional" +
             "to avoid expensive metastore calls unless explicitly configured by the user)."),
     IDENTIFIER_FACTORY("datanucleus.identifierFactory",
         "datanucleus.identifierFactory", "datanucleus1",
