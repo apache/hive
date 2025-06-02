@@ -53,6 +53,8 @@ META_TABLE_LOCATION = %q"location"
 
 META_TABLE_SERDE = %q"serde"
 
+META_OBJECT_TYPE = %q"object_type"
+
 META_TABLE_PARTITION_COLUMNS = %q"partition_columns"
 
 META_TABLE_PARTITION_COLUMN_TYPES = %q"partition_columns.types"
