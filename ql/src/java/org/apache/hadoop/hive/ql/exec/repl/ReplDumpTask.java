@@ -1031,8 +1031,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (tblName != null) {
             try {
               Table table = hiveDb.getTable(dbName, tblName);
-              if (table != null && TableType.MATERIALIZED_VIEW.equals(table.getTableType())) {
-                LOG.info("Attempt to dump materialized view : " + tblName);
+              if (table != null && TableType.ALL_MATERIALIZED_VIEWS.contains(table.getTableType())) {
+                LOG.info("Attempt to dump materialized view : {}", tblName);
                 continue;
               }
             } catch (InvalidTableException te) {
@@ -1447,8 +1447,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
               //disable materialized-view replication if not configured
               if(tableTuple != null && !isMaterializedViewsReplEnabled()
-                      && TableType.MATERIALIZED_VIEW.equals(tableTuple.object.getTableType())){
-                LOG.info("Attempt to dump materialized view : " + tblName);
+                      && TableType.ALL_MATERIALIZED_VIEWS.contains(tableTuple.object.getTableType())){
+                LOG.info("Attempt to dump materialized view : {}", tblName);
                 continue;
               }
 

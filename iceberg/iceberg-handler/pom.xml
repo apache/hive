@@ -140,6 +140,10 @@
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>patched-iceberg-core</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
