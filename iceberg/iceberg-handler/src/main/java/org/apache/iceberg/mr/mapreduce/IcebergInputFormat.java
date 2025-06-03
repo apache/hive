@@ -212,8 +212,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     String[] groupingPartitionColumns = conf.getStrings(InputFormatConfig.GROUPING_PARTITION_COLUMNS);
     generateInputSplits(scan, table, groupingPartitionColumns, taskGroup -> {
-      if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
-          model == InputFormatConfig.InMemoryDataModel.PIG)) {
+      if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE)) {
         // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
         checkResiduals(taskGroup);
       }

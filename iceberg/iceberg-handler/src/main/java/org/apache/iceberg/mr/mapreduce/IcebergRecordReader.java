@@ -190,9 +190,6 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   @SuppressWarnings("unchecked")
   private CloseableIterable<T> open(FileScanTask currentTask, Schema readSchema) {
     switch (getInMemoryDataModel()) {
-      case PIG:
-        // TODO: Support Pig and Hive object models for IcebergInputFormat
-        throw new UnsupportedOperationException("Pig and Hive object models are not supported.");
       case HIVE:
         return openVectorized(currentTask, readSchema);
       case GENERIC:
