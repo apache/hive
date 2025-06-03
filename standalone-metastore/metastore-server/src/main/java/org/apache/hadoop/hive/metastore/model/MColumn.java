@@ -62,7 +62,8 @@ public class MColumn {
   public MColumn() {
   }
 
-  public MColumn(String name, String type, String comment) {
+  public MColumn(MColumnDescriptor cd, String name, String type, String comment) {
+    this.cd = cd;
     this.name = name;
     this.type = type;
     this.comment = comment;
