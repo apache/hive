@@ -97,8 +97,8 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
               catalogName, dbPattern, tablePattern, e);
         }
       }
-    } catch (MetaException e) {
-      throw new RuntimeException("Error while opening metastore client", e);
+    } catch (Exception e) {
+      throw new RuntimeException("Error while getting tables from metastore", e);
     }
   }
 
