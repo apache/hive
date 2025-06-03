@@ -181,7 +181,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           return tbl;
         });
     final ExecutorService workerPool =
-        ThreadPools.newWorkerPool("iceberg-plan-worker-pool",
+        ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool",
             conf.getInt(SystemConfigs.WORKER_THREAD_POOL_SIZE.propertyKey(), ThreadPools.WORKER_THREAD_POOL_SIZE));
     try {
       return planInputSplits(table, conf, workerPool);
