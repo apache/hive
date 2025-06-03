@@ -500,13 +500,13 @@
         <dependency>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-metastore</artifactId>
-          <version>4.1.0-SNAPSHOT</version>
+          <version>${project.version}</version>
           <scope>runtime</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
-          <version>4.1.0-SNAPSHOT</version>
+          <version>${project.version}</version>
           <scope>runtime</scope>
         </dependency>
       </dependencies>

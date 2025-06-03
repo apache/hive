@@ -29,8 +29,6 @@ Run Apache Hive Metastore inside docker container
 
 Here are the latest images:
 - 4.0.0
-- 4.0.0-beta-1
-- 3.1.3
 
 ```shell
 docker pull apache/hive-metastore:4.0.0
@@ -90,7 +88,7 @@ export HIVE_VERSION=$(mvn -f pom.xml -q help:evaluate -Dexpression=project.versi
 
 For a quick start, launch the Metastore with Derby,
   ```shell
-  docker run -d -p 9083:9083 --name metastore-standalone apache/hive:${HIVE_VERSION}
+  docker run -d -p 9083:9083 --name metastore-standalone apache/hive-metastore:${HIVE_VERSION}
   ```
   Everything would be lost when the service is down. In order to save the Hive table's schema and data, start the container with an external Postgres and Volume to keep them,
 
@@ -99,16 +97,16 @@ For a quick start, launch the Metastore with Derby,
        --env SERVICE_OPTS="-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password" \
        --mount source=warehouse,target=/opt/hive/data/warehouse \
        --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
-       --name metastore-standalone apache/hive:${HIVE_VERSION}
+       --name metastore-standalone apache/hive-metastore:${HIVE_VERSION}
   ```
 
-  If you want to use your own `hdfs-site.xml` or `yarn-site.xml` for the service, you can provide the environment variable `HIVE_CUSTOM_CONF_DIR` for the command. For instance, put the custom configuration file under the directory `/opt/hive/conf`, then run,
+  If you want to use your own `hdfs-site.xml` for the service, you can provide the environment variable `HIVE_CUSTOM_CONF_DIR` for the command. For instance, put the custom configuration file under the directory `/opt/hive/conf`, then run,
 
   ```shell
    docker run -d -p 9083:9083 --env DB_DRIVER=postgres \
         -v /opt/hive/conf:/hive_custom_conf --env HIVE_CUSTOM_CONF_DIR=/hive_custom_conf \
         --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
-        --name metastore apache/hive:${HIVE_VERSION}
+        --name metastore apache/hive-metastore:${HIVE_VERSION}
   ```
 
 NOTE:
