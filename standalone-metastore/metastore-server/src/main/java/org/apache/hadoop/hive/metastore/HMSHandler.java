@@ -9826,7 +9826,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
       dbName = rqst.getDbName();
       tblName = rqst.getTableName();
-      List<List<String>> partitionVals = rqst.getBatchPartitionValsForRefresh();
+      List<List<String>> partitionVals;
+      if (rqst.getPartitionVals() != null && !rqst.getPartitionVals().isEmpty()) {
+        partitionVals = Arrays.asList(rqst.getPartitionVals());
+      } else {
+        partitionVals = rqst.getBatchPartitionValsForRefresh();
+      }
       Map<String, String> tableParams = rqst.getTblParams();
       ReloadEvent event = new ReloadEvent(catName, dbName, tblName, partitionVals, rqst.isSuccessful(),
               rqst.getData().getRefreshEvent(), tableParams, this);
