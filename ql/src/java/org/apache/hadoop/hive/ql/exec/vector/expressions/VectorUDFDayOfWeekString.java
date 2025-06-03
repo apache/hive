@@ -45,7 +45,7 @@ public final class VectorUDFDayOfWeekString extends VectorUDFTimestampFieldStrin
       String decoded = Text.decode(bytes, start, length);
       Date date = DateParser.parseDate(decoded);
       if (date == null) {
-        throw new ParseException("Unable to parse date string: " + decoded, 0);
+        throw new ParseException("Unable to parse date string", 0);
       }
       return date.getDayOfWeek();
     } catch (CharacterCodingException e) {
