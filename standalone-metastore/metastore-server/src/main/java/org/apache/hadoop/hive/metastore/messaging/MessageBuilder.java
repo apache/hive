@@ -303,12 +303,12 @@ public class MessageBuilder {
     return new JSONOpenTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, fromTxnId, toTxnId, now());
   }
 
-  public CommitTxnMessage buildCommitTxnMessage(Long txnId) {
-    return new JSONCommitTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnId, now());
+  public CommitTxnMessage buildCommitTxnMessage(Long txnId,  List<String> databases,  List<Long> writeIds) {
+    return new JSONCommitTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnId, now(), databases, writeIds);
   }
 
-  public AbortTxnMessage buildAbortTxnMessage(Long txnId, List<String> dbsUpdated) {
-    return new JSONAbortTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnId, now(), dbsUpdated);
+  public AbortTxnMessage buildAbortTxnMessage(Long txnId, List<String> dbsUpdated, List<Long> writeIds) {
+    return new JSONAbortTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnId, now(), dbsUpdated, writeIds);
   }
 
   public AllocWriteIdMessage buildAllocWriteIdMessage(List<TxnToWriteId> txnToWriteIdList,
