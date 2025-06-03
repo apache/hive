@@ -124,7 +124,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private transient boolean isShutdown = false;
   private transient boolean jobKilled = false;
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(ExecDriver.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(ExecDriver.class);
 
   private RunningJob rj;
 

@@ -52,7 +52,7 @@ import static org.apache.hadoop.hdfs.protocol.OpenFilesIterator.OpenFilesType.AL
 
 public class ReplicationMigrationTool implements Tool {
 
-  protected static transient Logger LOG = LoggerFactory.getLogger(ReplicationMigrationTool.class);
+  protected static Logger LOG = LoggerFactory.getLogger(ReplicationMigrationTool.class);
   private Configuration conf;
   private String help = "\tSample Usage: \n"
       + "hive --replMigration -dumpFilePath <path to external table info file> [-dirLevelCheck] "

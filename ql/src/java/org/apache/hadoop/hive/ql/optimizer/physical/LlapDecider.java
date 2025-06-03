@@ -90,7 +90,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LlapDecider implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(LlapDecider.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(LlapDecider.class);
 
   private HiveConf conf;
 

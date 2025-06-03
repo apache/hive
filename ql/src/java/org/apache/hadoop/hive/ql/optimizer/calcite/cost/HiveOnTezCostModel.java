@@ -52,7 +52,7 @@ public class HiveOnTezCostModel extends HiveCostModel {
 
   private static HiveAlgorithmsUtil algoUtils;
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(HiveOnTezCostModel.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveOnTezCostModel.class);
 
   synchronized public static HiveOnTezCostModel getCostModel(HiveConf conf) {
     if (INSTANCE == null) {
