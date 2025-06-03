@@ -51,15 +51,15 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
   private final String inputFormat;
   private final FileFormat fileFormat;
 
-  @Parameterized.Parameters(name = "inputFormat = {0}, fileFormat={1}")
+  @Parameterized.Parameters(name = "fileFormat = {0}, inputFormat={1}")
   public static Object[][] parameters() {
     return new Object[][] {
-        { "IcebergInputFormat", FileFormat.PARQUET },
-        { "IcebergInputFormat", FileFormat.AVRO },
-        { "IcebergInputFormat", FileFormat.ORC },
-        { "MapredIcebergInputFormat", FileFormat.PARQUET },
-        { "MapredIcebergInputFormat", FileFormat.AVRO },
-        { "MapredIcebergInputFormat", FileFormat.ORC },
+        { FileFormat.PARQUET, "IcebergInputFormat" },
+        { FileFormat.AVRO, "IcebergInputFormat" },
+        { FileFormat.ORC, "IcebergInputFormat" },
+        { FileFormat.PARQUET, "MapredIcebergInputFormat" },
+        { FileFormat.AVRO, "MapredIcebergInputFormat" },
+        { FileFormat.ORC, "MapredIcebergInputFormat" },
     };
   }
 
