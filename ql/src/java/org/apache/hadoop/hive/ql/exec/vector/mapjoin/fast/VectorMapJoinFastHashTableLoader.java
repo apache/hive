@@ -18,11 +18,15 @@
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAccumulator;
@@ -148,8 +152,9 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     }
   }
 
-  private void submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
+  private List<Future<?>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
       throws InterruptedException, IOException, SerDeException {
+    List<Future<?>> futures = new ArrayList<>();
     for (int partitionId = 0; partitionId < numLoadThreads; partitionId++) {
       int finalPartitionId = partitionId;
       this.loadExecService.submit(() -> {
@@ -157,10 +162,12 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
           LOG.info("Partition id {} with Queue size {}", finalPartitionId, loadBatchQueues[finalPartitionId].size());
           drainAndLoadForPartition(finalPartitionId, vectorMapJoinFastTableContainer);
         } catch (IOException | InterruptedException | SerDeException | HiveException e) {
+          LOG.error("Caught error while starting HT threads: " + e.getMessage(), e);
           throw new RuntimeException("Failed to start HT Load threads", e);
         }
       });
     }
+    return futures;
   }
 
   private void drainAndLoadForPartition(int partitionId, VectorMapJoinFastTableContainer tableContainer)
@@ -271,7 +278,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
         tableContainer.setSerde(null, null); // No SerDes here.
         // Submit parallel loading Threads
-        submitQueueDrainThreads(tableContainer);
+        List<Future<?>> futures = submitQueueDrainThreads(tableContainer);
 
         long receivedEntries = 0;
         long startTime = System.currentTimeMillis();
@@ -310,6 +317,13 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
         if (!loadExecService.awaitTermination(2, TimeUnit.MINUTES)) {
           throw new HiveException("Failed to complete the hash table loader. Loading timed out.");
+        }
+        for (Future<?> f : futures) {
+          try {
+            f.get(); // This will throw if the thread threw
+          } catch (ExecutionException e) {
+            throw new HiveException("One of the loader threads failed", e.getCause());
+          }
         }
         batchPool.clear();
         LOG.info("Total received entries: {} Threads {} HT entries: {}", receivedEntries, numLoadThreads, totalEntries.get());
