@@ -30,6 +30,7 @@ import org.apache.hive.common.util.DateParser;
  * Extends {@link VectorUDFTimestampFieldString}
  */
 public final class VectorUDFDayOfWeekString extends VectorUDFTimestampFieldString {
+  private static final long serialVersionUID = 1L;
 
   public VectorUDFDayOfWeekString(int colNum, int outputColumnNum) {
     super(colNum, outputColumnNum, -1, -1);
