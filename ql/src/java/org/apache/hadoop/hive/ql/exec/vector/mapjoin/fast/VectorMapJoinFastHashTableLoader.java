@@ -157,7 +157,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     List<Future<?>> futures = new ArrayList<>();
     for (int partitionId = 0; partitionId < numLoadThreads; partitionId++) {
       int finalPartitionId = partitionId;
-      this.loadExecService.submit(() -> {
+      Future<?> future = this.loadExecService.submit(() -> {
         try {
           LOG.info("Partition id {} with Queue size {}", finalPartitionId, loadBatchQueues[finalPartitionId].size());
           drainAndLoadForPartition(finalPartitionId, vectorMapJoinFastTableContainer);
@@ -166,6 +166,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
           throw new RuntimeException("Failed to start HT Load threads", e);
         }
       });
+      futures.add(future);
     }
     return futures;
   }
