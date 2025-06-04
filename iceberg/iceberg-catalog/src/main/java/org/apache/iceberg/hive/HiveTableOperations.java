@@ -240,6 +240,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
         LOG.error("Cannot tell if commit to {}.{} succeeded, attempting to reconnect and check.",
             database, tableName, e);
+        commitStatus = BaseMetastoreOperations.CommitStatus.UNKNOWN;
         commitStatus =
                 BaseMetastoreOperations.CommitStatus.valueOf(
                         checkCommitStatus(newMetadataLocation, metadata).name());
