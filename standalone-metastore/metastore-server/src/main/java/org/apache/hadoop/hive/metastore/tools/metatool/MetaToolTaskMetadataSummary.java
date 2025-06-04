@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.tools.metatool;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -169,6 +170,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
   Pair<MetaSummarySchema, List<MetadataTableSummary>> obtainAndFilterSummary() throws MetaException {
     Deadline.registerIfNot(taskTimeout);
     boolean isTimerStarted = false;
+    ExecutorService service = null;
     try {
       isTimerStarted = Deadline.startTimer("obtainAndFilterSummary");
       MetaToolObjectStore objectStore = getObjectStore();
@@ -183,24 +185,44 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       MetaSummarySchema extraSchema = new MetaSummarySchema();
       for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keys()) {
         Configuration conf = getObjectStore().getConf();
+        List<Future<?>> futures = new ArrayList<>();
         try (MetaSummaryHandler summaryHandler = JavaUtils.newInstance(handler)) {
           summaryHandler.setConf(conf);
           summaryHandler.initialize(MetaStoreUtils.getDefaultCatalog(conf), formatJson, extraSchema);
           List<MetadataTableSummary> tableSummaries = nonNativeSummaries.get(handler);
           // Filter those we don't want to collect
           Set<Long> tableIds = getObjectStore().filterTablesForSummary(tableSummaries, recentUpdatedDays, maxNonNativeTables);
+          if (service == null) {
+            int nThreads = Math.min(MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METADATA_SUMMARY_NONNATIVE_THREADS),
+                tableIds.size());
+            if (nThreads > 1) {
+              service = Executors.newFixedThreadPool(nThreads,
+                  new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MetaToolTaskMetadataSummary #%d").build());
+            }
+          }
           for (MetadataTableSummary summary : tableSummaries) {
-            if (tableIds.contains(summary.getTableId())) {
+            if (!tableIds.contains(summary.getTableId())) {
+              filteredSummary.put(summary, null);
+            } else {
               TableName tableName = new TableName(summary.getCatalogName(),
                   summary.getDbName(), summary.getTblName());
-              summaryHandler.appendSummary(tableName, summary);
-            } else {
-              filteredSummary.put(summary, null);
+              Runnable task = () -> {
+                summaryHandler.appendSummary(tableName, summary);
+                // If there is an exception while collecting the summary, remove it
+                if (summary.isDropped()) {
+                  filteredSummary.put(summary, null);
+                }
+              };
+              if (service != null) {
+                futures.add(service.submit(task));
+              } else {
+                task.run();
+              }
             }
-            // If there is an exception while collecting the summary, remove it
-            if (summary.isDropped()) {
-              filteredSummary.put(summary, null);
-            }
+          }
+          // Waiting for the result before closing the MetaSummaryHandler
+          for (Future<?> future : futures) {
+            future.get();
           }
         } catch (Exception e) {
           System.err.println(ExceptionUtils.getStackTrace(e));
@@ -214,6 +236,9 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       }
       return Pair.of(extraSchema, allSummaries);
     } finally {
+      if (service != null) {
+        service.shutdownNow();
+      }
       if (isTimerStarted) {
         Deadline.stopTimer();
       }
