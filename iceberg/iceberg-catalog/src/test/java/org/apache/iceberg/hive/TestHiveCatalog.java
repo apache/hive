@@ -151,6 +151,34 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     return catalog;
   }
 
+  @Override
+  protected HiveCatalog initCatalog(String catalogName, Map<String, String> additionalProperties) {
+    Map<String, String> properties =
+            ImmutableMap.of(
+                    CatalogProperties.CLIENT_POOL_CACHE_EVICTION_INTERVAL_MS,
+                    String.valueOf(TimeUnit.SECONDS.toMillis(10)),
+                    CatalogProperties.TABLE_DEFAULT_PREFIX + "default-key1",
+                    "catalog-default-key1",
+                    CatalogProperties.TABLE_DEFAULT_PREFIX + "default-key2",
+                    "catalog-default-key2",
+                    CatalogProperties.TABLE_DEFAULT_PREFIX + "override-key3",
+                    "catalog-default-key3",
+                    CatalogProperties.TABLE_OVERRIDE_PREFIX + "override-key3",
+                    "catalog-override-key3",
+                    CatalogProperties.TABLE_OVERRIDE_PREFIX + "override-key4",
+                    "catalog-override-key4");
+
+    return (HiveCatalog)
+            CatalogUtil.loadCatalog(
+                    HiveCatalog.class.getName(),
+                    catalogName,
+                    ImmutableMap.<String, String>builder()
+                            .putAll(properties)
+                            .putAll(additionalProperties)
+                            .build(),
+                    HIVE_METASTORE_EXTENSION.hiveConf());
+  }
+
   private Schema getTestSchema() {
     return new Schema(
         required(1, "id", Types.IntegerType.get(), "unique ID"),
