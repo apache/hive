@@ -31,7 +31,6 @@ import org.apache.iceberg.BaseMetastoreOperations;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.exceptions.NoSuchIcebergTableException;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -121,15 +120,6 @@ public interface HiveOperationsBase {
             return null;
           });
     }
-  }
-
-  /**
-   * @deprecated since 1.6.0, will be removed in 1.7.0; Use {@link #storageDescriptor(Schema,
-   *     String, boolean)} instead
-   */
-  @Deprecated
-  static StorageDescriptor storageDescriptor(TableMetadata metadata, boolean hiveEngineEnabled) {
-    return storageDescriptor(metadata.schema(), metadata.location(), hiveEngineEnabled);
   }
 
   static StorageDescriptor storageDescriptor(
