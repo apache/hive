@@ -28,12 +28,12 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>4.1.0-SNAPSHOT</version>
+      <version>${hive.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-metastore</artifactId>
-      <version>4.1.0-SNAPSHOT</version>
+      <version>${hive.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -500,13 +500,13 @@
         <dependency>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-metastore</artifactId>
-          <version>${project.version}</version>
+          <version>${hive.version}</version>
           <scope>runtime</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
-          <version>${project.version}</version>
+          <version>${hive.version}</version>
           <scope>runtime</scope>
         </dependency>
       </dependencies>
