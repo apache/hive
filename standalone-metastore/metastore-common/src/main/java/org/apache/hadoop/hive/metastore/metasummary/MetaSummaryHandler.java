@@ -32,7 +32,7 @@ public interface MetaSummaryHandler extends AutoCloseable, Configurable {
    * @param formatJson True if the summary is printed as json, false otherwise.
    * @param schema Extra summary fields
    */
-  public void initialize(String catalog,
+  void initialize(String catalog,
       boolean formatJson, MetaSummarySchema schema) throws SummaryInitializationException;
 
   /**
@@ -40,12 +40,12 @@ public interface MetaSummaryHandler extends AutoCloseable, Configurable {
    * @param tableName The input table
    * @param tableSummary The original summary collected from HMS for this table, which needs to be updated.
    */
-  public void appendSummary(TableName tableName, MetadataTableSummary tableSummary);
+  void appendSummary(TableName tableName, MetadataTableSummary tableSummary);
 
   /**
    * The exception throws from the summary initialization
    */
-  public class SummaryInitializationException extends RuntimeException {
+  class SummaryInitializationException extends RuntimeException {
     public SummaryInitializationException(String message) {
       super(message);
     }
