@@ -115,3 +115,37 @@ NOTE:
 then add "--env SCHEMA_COMMAND=upgradeSchema" to the command.
 
 2) If the full Acid support (Compaction) is needed, use the Hive docker image to bring up the container.
+
+- Metastore with Postgres
+
+To spin up Metastore with a remote DB, there is a `docker-compose.yml` placed under `packaging/src/docker` for this purpose,
+specify the `POSTGRES_LOCAL_PATH` first:
+```shell
+export POSTGRES_LOCAL_PATH=your_local_path_to_postgres_driver
+```
+Example:
+```shell
+mvn dependency:copy -Dartifact="org.postgresql:postgresql:42.7.3" && \
+export POSTGRES_LOCAL_PATH=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar 
+```
+If you don't install maven or have problem in resolving the postgres driver, you can always download this jar yourself,
+change the `POSTGRES_LOCAL_PATH` to the path of the downloaded jar.
+
+Then,
+```shell
+docker compose up -d
+```
+Metastore and Postgres services will be started as a consequence.
+
+Volumes:
+- hive_db
+
+  The volume persists the metadata of Hive tables inside Postgres container.
+- warehouse
+
+  The volume stores tables' files inside HiveServer2 container.
+
+To stop/remove them all,
+```shell
+docker compose down
+```
