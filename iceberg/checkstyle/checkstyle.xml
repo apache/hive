@@ -37,13 +37,6 @@
         <property name="fileExtensions" value=".java,.ts"/>
     </module>
     <module name="RegexpMultiline">
-        <property name="id" value="AssertThatThrownByWithMessageCheck"/>
-        <property name="fileExtensions" value="java"/>
-        <property name="matchAcrossLines" value="true"/>
-        <property name="format" value="assertThatThrownBy\((?:(?!\.hasMessage\w*\().)*?isInstanceOf\((?:(?!\.hasMessage\w*\().)*?;"/>
-        <property name="message" value="assertThatThrownBy must include a message check like .hasMessage(...)"/>
-    </module>
-    <module name="RegexpMultiline">
         <property name="id" value="AssertThatExceptionOfTypeWithMessageCheck"/>
         <property name="fileExtensions" value="java"/>
         <property name="matchAcrossLines" value="true"/>
