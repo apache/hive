@@ -51,7 +51,5 @@ if [[ "${SKIP_SCHEMA_INIT}" == "false" ]]; then
   initialize_hive
 fi
 
-
 export METASTORE_PORT=${METASTORE_PORT:-9083}
 exec "$HIVE_HOME/bin/start-metastore" 
-

@@ -106,7 +106,7 @@ cp    "$SOURCE_DIR/metastore-server/src/docker/Dockerfile" "$WORK_DIR/"
 docker build \
         "$WORK_DIR" \
         -f "$WORK_DIR/Dockerfile" \
-        -t "$repo/hive-metastore:$HIVE_VERSION" \
+        -t "$repo/hive:standalone-metastore-$HIVE_VERSION" \
         --build-arg "BUILD_ENV=unarchive" \
         --build-arg "HIVE_VERSION=$HIVE_VERSION" \
         --build-arg "HADOOP_VERSION=$HADOOP_VERSION" \

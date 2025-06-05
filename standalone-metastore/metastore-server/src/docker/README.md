@@ -25,13 +25,13 @@ Run Apache Hive Metastore inside docker container
 
 ## Quickstart
 ### STEP 1: Pull the image
-- Pull the image from DockerHub: https://hub.docker.com/r/apache/hive-metastore/tags. 
+- Pull the image from DockerHub: https://hub.docker.com/r/apache/hive/tags. 
 
 Here are the latest images:
-- 4.0.0
+- standalone-metastore-4.0.0
 
 ```shell
-docker pull apache/hive-metastore:4.0.0
+docker pull apache/hive:standalone-metastore-4.0.0
 ```
 ### STEP 2: Export the Hive version
 ```shell
@@ -40,7 +40,7 @@ export HIVE_VERSION=4.0.0
 
 ### STEP 3: Launch Standalone Metastore backed by Derby,
 ```shell
-docker run -d -p 9083:9083 --name metastore-standalone apache/hive-metastore:${HIVE_VERSION}
+docker run -d -p 9083:9083 --name metastore-standalone apache/hive:standalone-metastore-${HIVE_VERSION}
 ```
 
 ### Detailed Setup
@@ -51,7 +51,7 @@ The `build.sh` provides ways to build the image against specified version of the
 
 ##### Build from source
 ```shell
-mvn clean package -pl metastore-server -DskipTests -Pdocker
+mvn clean install -DskipTests -Pdocker
 ```
 ##### Build with specified version
 There are some arguments to specify the component version:
@@ -71,7 +71,7 @@ together with Hadoop 3.1.0 to build the image,
 ```shell
 ./build.sh -hadoop 3.1.0
 ```
-After building successfully,  we can get a Docker image named `apache/hive-metastore` by default, the image is tagged by the provided Hive version.
+After building successfully, we can get a Docker image named `apache/hive` tagged with `standalone-metastore` prefix and the provided Hive version.
 
 #### Run services
 
@@ -88,7 +88,7 @@ export HIVE_VERSION=$(mvn -f pom.xml -q help:evaluate -Dexpression=project.versi
 
 For a quick start, launch the Metastore with Derby,
   ```shell
-  docker run -d -p 9083:9083 --name metastore-standalone apache/hive-metastore:${HIVE_VERSION}
+  docker run -d -p 9083:9083 --name metastore-standalone apache/hive:standalone-metastore-${HIVE_VERSION}
   ```
   Everything would be lost when the service is down. In order to save the Hive table's schema and data, start the container with an external Postgres and Volume to keep them,
 
@@ -97,7 +97,7 @@ For a quick start, launch the Metastore with Derby,
        --env SERVICE_OPTS="-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver -Djavax.jdo.option.ConnectionURL=jdbc:postgresql://postgres:5432/metastore_db -Djavax.jdo.option.ConnectionUserName=hive -Djavax.jdo.option.ConnectionPassword=password" \
        --mount source=warehouse,target=/opt/hive/data/warehouse \
        --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
-       --name metastore-standalone apache/hive-metastore:${HIVE_VERSION}
+       --name metastore-standalone apache/hive:standalone-metastore-${HIVE_VERSION}
   ```
 
   If you want to use your own `hdfs-site.xml` for the service, you can provide the environment variable `HIVE_CUSTOM_CONF_DIR` for the command. For instance, put the custom configuration file under the directory `/opt/hive/conf`, then run,
@@ -106,10 +106,12 @@ For a quick start, launch the Metastore with Derby,
    docker run -d -p 9083:9083 --env DB_DRIVER=postgres \
         -v /opt/hive/conf:/hive_custom_conf --env HIVE_CUSTOM_CONF_DIR=/hive_custom_conf \
         --mount type=bind,source=`mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout`/org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar,target=/opt/hive/lib/postgres.jar \
-        --name metastore apache/hive-metastore:${HIVE_VERSION}
+        --name metastore apache/hive:standalone-metastore-${HIVE_VERSION}
   ```
 
 NOTE:
 
-For Hive releases before 4.0, if you want to upgrade the existing external Metastore schema to the target version,
+1) For Hive releases before 4.0, if you want to upgrade the existing external Metastore schema to the target version,
 then add "--env SCHEMA_COMMAND=upgradeSchema" to the command.
+
+2) If the full Acid support (Compaction) is needed, use the Hive docker image to bring up the container.
