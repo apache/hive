@@ -547,7 +547,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (snapshot != null && table.spec().isPartitioned()) {
       PartitionStatisticsFile statsFile = IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId());
       if (statsFile == null) {
-        statsFile = PartitionStatsHandler.computeAndWriteStatsFile(table);
+        try {
+          statsFile = PartitionStatsHandler.computeAndWriteStatsFile(table);
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
 
         table.updatePartitionStatistics()
             .setPartitionStatistics(statsFile)
