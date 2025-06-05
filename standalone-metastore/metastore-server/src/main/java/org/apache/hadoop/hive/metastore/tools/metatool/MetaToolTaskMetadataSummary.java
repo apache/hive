@@ -33,7 +33,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -181,7 +181,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       }
       ArrayListMultimap<Class<? extends MetaSummaryHandler>, MetadataTableSummary> nonNativeSummaries =
           findNonNativeSummaries(allSummaries);
-      Map<MetadataTableSummary, Void> filteredSummary = new IdentityHashMap<>();
+      Set<MetadataTableSummary> filteredSummary = new HashSet<>();
       MetaSummarySchema extraSchema = new MetaSummarySchema();
       for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keys()) {
         Configuration conf = getObjectStore().getConf();
@@ -202,7 +202,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
           }
           for (MetadataTableSummary summary : tableSummaries) {
             if (!tableIds.contains(summary.getTableId())) {
-              filteredSummary.put(summary, null);
+              filteredSummary.add(summary);
             } else {
               TableName tableName = new TableName(summary.getCatalogName(),
                   summary.getDbName(), summary.getTblName());
@@ -210,7 +210,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
                 summaryHandler.appendSummary(tableName, summary);
                 // If there is an exception while collecting the summary, remove it
                 if (summary.isDropped()) {
-                  filteredSummary.put(summary, null);
+                  filteredSummary.add(summary);
                 }
               };
               if (service != null) {
@@ -232,7 +232,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
       // Filter the table summary from the output
       if (!filteredSummary.isEmpty()) {
         allSummaries = allSummaries.stream()
-            .filter(s -> !filteredSummary.containsKey(s)).collect(Collectors.toList());
+            .filter(s -> !filteredSummary.contains(s)).collect(Collectors.toList());
       }
       return Pair.of(extraSchema, allSummaries);
     } finally {
