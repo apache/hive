@@ -599,25 +599,25 @@ public class HiveStrictManagedMigration {
   void run() throws Exception {
     LOG.info("Starting with {}", runOptions);
 
-    ForkJoinPool tablePool = new ForkJoinPool(
+    try (ForkJoinPool tablePool = new ForkJoinPool(
         runOptions.tablePoolSize,
         new NamedForkJoinWorkerThreadFactory("Table-"),
         getUncaughtExceptionHandler(),
-        false);
+        false)) {
 
-    List<String> databases = null;
+      List<String> databases = null;
 
-    if (controlConfig == null) {
-      databases = hms.get().getDatabases(runOptions.dbRegex); //TException
-    } else {
-      databases = hms.get().getAllDatabases().stream()
-          .filter(db -> controlConfig.getDatabaseIncludeLists().containsKey(db)).collect(toList());
+      if (controlConfig == null) {
+        databases = hms.get().getDatabases(runOptions.dbRegex); //TException
+      } else {
+        databases = hms.get().getAllDatabases().stream()
+                .filter(db -> controlConfig.getDatabaseIncludeLists().containsKey(db)).collect(toList());
+      }
+      LOG.info("Found {} databases", databases.size());
+
+      databases.forEach(dbName -> processDatabase(dbName, tablePool));
+      LOG.info("Done processing databases.");
     }
-    LOG.info("Found {} databases", databases.size());
-
-    databases.forEach(dbName -> processDatabase(dbName, tablePool));
-    LOG.info("Done processing databases.");
-
     if (failuresEncountered.get()) {
       throw new HiveException("One or more failures encountered during processing.");
     }
