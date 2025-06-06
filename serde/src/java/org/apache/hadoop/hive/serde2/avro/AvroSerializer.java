@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
@@ -231,6 +232,14 @@ class AvroSerializer {
     case TIMESTAMP:
       Timestamp timestamp =
         ((TimestampObjectInspector) fieldOI).getPrimitiveJavaObject(structFieldData);
+      LogicalType logicalType = schema.getLogicalType();
+      if (logicalType != null && logicalType.getName().equalsIgnoreCase(AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS)) {
+        long micros = defaultProleptic ? timestamp.toEpochMicro() :
+                CalendarUtils.convertTimeToHybridMicros(timestamp.toEpochMicro());
+        timestamp = TimestampTZUtil.convertTimestampToZone(
+                Timestamp.ofEpochMicro(micros), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, legacyConversion);
+        return timestamp.toEpochMicro();
+      }
       long millis = defaultProleptic ? timestamp.toEpochMilli() :
           CalendarUtils.convertTimeToHybrid(timestamp.toEpochMilli());
       timestamp = TimestampTZUtil.convertTimestampToZone(
