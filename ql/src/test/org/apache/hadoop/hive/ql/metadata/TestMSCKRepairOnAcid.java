@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
@@ -32,6 +33,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.List;
+import java.text.MessageFormat;
 
 /**
  * Tests for the MSCK REPAIR TABLE operation on transactional tables.
@@ -163,6 +165,19 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     // that is higher than the allocated max in the table
     CommandProcessorException e = runStatementOnDriverNegative("msck repair table " + acidTblPartMsck);
     Assert.assertEquals(-1, e.getErrorCode());
+
+    String tableName = acidTblPartMsck.toLowerCase(); // Match Hive's internal table naming
+    long maxWriteIdOnFilesystem = 2L; // From source table insertions (2 operations)
+    long maxAllocatedWriteId = 1L; // From target table insertion (1 operation)
+
+    String expectedMessage = MessageFormat.format(
+            "The maximum writeId {0} in table {1} is greater than the maximum allocated in the metastore {2}",
+            maxWriteIdOnFilesystem, tableName, maxAllocatedWriteId
+    );
+
+    Assert.assertTrue("Root exception should be MetaException", e.getCause() instanceof MetaException);
+    MetaException metaEx = (MetaException) e.getCause();
+    Assert.assertEquals("Error message mismatch", expectedMessage, metaEx.getMessage());
 
     runStatementOnDriver("drop table if exists " + acidTblPartMsck);
   }
