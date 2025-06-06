@@ -35,6 +35,7 @@ INSERT INTO srcbucket_big VALUES
 ('d', 104, null),
 ('e', 105, 'val_105'),
 ('f', null, null);
+ALTER TABLE srcbucket_big CREATE TAG bucket_4;
 
 ALTER TABLE srcbucket_big SET PARTITION SPEC (bucket(8, key));
 
@@ -45,6 +46,16 @@ INSERT INTO srcbucket_big VALUES
 ('j', 104, null),
 ('k', 105, 'val_105'),
 ('l', null, null);
+ALTER TABLE srcbucket_big CREATE TAG bucket_4_and_8;
+
+CREATE TABLE src_small(key int, value string);
+INSERT INTO src_small VALUES
+(101, 'val_101'),
+(null, 'val_102'),
+(103, 'val_103'),
+(104, null),
+(105, 'val_105'),
+(null, null);
 
 desc formatted default.srcbucket_big;
 SELECT * FROM default.srcbucket_big ORDER BY id;
@@ -52,6 +63,42 @@ SELECT * FROM default.srcbucket_big ORDER BY id;
 select `partition`, spec_id, record_count
 from default.srcbucket_big.partitions
 order by `partition`, spec_id, record_count;
+
+-- Both bucket(4, key) and bucket(8, key) belong to the current snapshot
+EXPLAIN
+SELECT *
+FROM default.srcbucket_big a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+SELECT *
+FROM default.srcbucket_big a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+-- Only bucket(4, key) belongs to buckets_4
+EXPLAIN
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+-- Both bucket(4, key) and bucket(8, key) belong to buckets_4_and_8
+EXPLAIN
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4_and_8 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4_and_8 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
 
 alter table srcbucket_big compact 'minor' and wait;
 show compactions order by 'partition';
@@ -62,3 +109,39 @@ SELECT * FROM default.srcbucket_big ORDER BY id;
 select `partition`, spec_id, record_count
 from default.srcbucket_big.partitions
 order by `partition`, spec_id, record_count;
+
+-- Only bucket(8, key) belongs to the current snapshot thanks to the compaction
+EXPLAIN
+SELECT *
+FROM default.srcbucket_big a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+SELECT *
+FROM default.srcbucket_big a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+-- Only bucket(4, key) belongs to buckets_4
+EXPLAIN
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+-- Both bucket(4, key) and bucket(8, key) belong to buckets_4_and_8
+EXPLAIN
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4_and_8 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
+
+SELECT *
+FROM default.srcbucket_big.tag_bucket_4_and_8 a
+JOIN default.src_small b ON a.key = b.key
+ORDER BY a.id;
