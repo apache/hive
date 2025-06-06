@@ -49,7 +49,6 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
 
   // parametrized variables
   private final String inputFormat;
-  private final int formatVersion;
   private final FileFormat fileFormat;
 
   @Parameterized.Parameters(name = "fileFormat = {0}, formatVersion = {1}, inputFormat={2}")
@@ -61,8 +60,8 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
         { FileFormat.PARQUET, 2, "MapredIcebergInputFormat" },
         { FileFormat.AVRO, 2, "MapredIcebergInputFormat" },
         { FileFormat.ORC, 2, "MapredIcebergInputFormat" },
-        {FileFormat.PARQUET, 3, "IcebergInputFormat"},
-        {FileFormat.PARQUET, 3, "MapredIcebergInputFormat"},
+        { FileFormat.PARQUET, 3, "IcebergInputFormat" },
+        { FileFormat.PARQUET, 3, "MapredIcebergInputFormat" },
     };
   }
 
@@ -73,10 +72,10 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
     super.writeTestDataFile();
   }
 
-  public TestInputFormatReaderDeletes(String inputFormat, int formatVersion, FileFormat fileFormat) {
-    this.inputFormat = inputFormat;
-    this.formatVersion = formatVersion;
+  public TestInputFormatReaderDeletes(FileFormat fileFormat, int formatVersion, String inputFormat) {
+    super(formatVersion);
     this.fileFormat = fileFormat;
+    this.inputFormat = inputFormat;
   }
 
   @Override
