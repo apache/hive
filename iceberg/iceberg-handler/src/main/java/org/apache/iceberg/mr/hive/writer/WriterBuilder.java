@@ -41,6 +41,7 @@ public class WriterBuilder {
   private final Context context;
   private String tableName;
   private TaskAttemptID attemptID;
+  private String outputId;
   private String queryId;
   private Operation operation;
 
@@ -67,6 +68,11 @@ public class WriterBuilder {
 
   public WriterBuilder attemptID(TaskAttemptID newAttemptID) {
     this.attemptID = newAttemptID;
+    return this;
+  }
+
+  public WriterBuilder outputId(String identifier) {
+    this.outputId = identifier;
     return this;
   }
 
@@ -137,7 +143,7 @@ public class WriterBuilder {
       }
     }
 
-    WriterRegistry.registerWriter(attemptID, tableName, writer);
+    WriterRegistry.registerWriter(attemptID, outputId, tableName, writer);
     return writer;
   }
 
