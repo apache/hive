@@ -31,16 +31,14 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SortOrder;
-import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.parquet.Strings;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -144,7 +142,7 @@ public final class Catalogs {
     Map<String, String> map = filterIcebergTableProperties(props);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
-    SortOrder sortOrder = getSortOrder(props, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
     if (catalog.isPresent()) {
       String name = props.getProperty(NAME);
       Preconditions.checkNotNull(name, "Table identifier not set");
@@ -154,12 +152,6 @@ public final class Catalogs {
 
     Preconditions.checkNotNull(location, "Table location not set");
     return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
-  }
-
-  private static SortOrder getSortOrder(Properties props, Schema schema) {
-    String sortOrderJsonString = props.getProperty(TableProperties.DEFAULT_SORT_ORDER);
-    return Strings.isNullOrEmpty(sortOrderJsonString) ?
-        SortOrder.unsorted() : SortOrderParser.fromJson(schema, sortOrderJsonString);
   }
 
   /**
@@ -227,7 +219,7 @@ public final class Catalogs {
       return catalog.get().registerTable(TableIdentifier.parse(name), metadataLocation);
     }
     Preconditions.checkNotNull(location, "Table location not set");
-    SortOrder sortOrder = getSortOrder(props, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
     return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
   }
 
