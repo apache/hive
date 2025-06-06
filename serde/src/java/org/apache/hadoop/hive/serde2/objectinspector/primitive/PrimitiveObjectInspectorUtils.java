@@ -384,7 +384,7 @@ public final class PrimitiveObjectInspectorUtils {
    * Get the TypeEntry for the given base type name (int, varchar, etc).
    */
   public static PrimitiveTypeEntry getTypeEntryFromTypeName(String typeName) {
-    return typeNameToTypeEntry.get(typeName);
+    return typeNameToTypeEntry.get(typeName.toLowerCase());
   }
 
   /**
