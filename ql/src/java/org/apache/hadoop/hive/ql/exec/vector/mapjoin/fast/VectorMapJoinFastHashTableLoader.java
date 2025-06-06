@@ -31,6 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAccumulator;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.common.Pool;
@@ -109,6 +110,23 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
+  @VisibleForTesting
+  protected void initHTLoadingServiceForTest(Configuration conf, long estKeyCount, ExecutorService loadExecService) {
+    this.hconf = conf;
+    initHTLoadingService(estKeyCount);
+    this.loadExecService = loadExecService;
+  }
+
+  @VisibleForTesting
+  protected void initHTLoadingServiceForTest(Configuration conf, long estKeyCount, ExecutorService loadExecService,
+                                             BlockingQueue<?>[] loadBatchQueues) {
+    this.hconf = conf;
+    initHTLoadingService(estKeyCount);
+    this.loadExecService = loadExecService;
+    this.loadBatchQueues = (BlockingQueue<HashTableElementBatch>[]) loadBatchQueues;
+  }
+
+
   private void initHTLoadingService(long estKeyCount) {
     if (estKeyCount < VectorMapJoinFastHashTable.FIRST_SIZE_UP) {
       // Avoid many small HTs that will rehash multiple times causing GCs
@@ -150,6 +168,12 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
       loadBatchQueues[i] = new LinkedBlockingQueue();
       elementBatches[i] = batchPool.take();
     }
+  }
+
+  @VisibleForTesting
+  protected List<Future<?>> submitQueueDrainThreadsForTest(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
+          throws IOException, InterruptedException, SerDeException {
+    return submitQueueDrainThreads(vectorMapJoinFastTableContainer);
   }
 
   private List<Future<?>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
