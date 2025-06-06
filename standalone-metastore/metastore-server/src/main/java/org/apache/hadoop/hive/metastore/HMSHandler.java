@@ -854,7 +854,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (timerContext != null) {
       long timeTaken = timerContext.stop();
       LOG.debug((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
-          function + "time taken(ns): " + timeTaken);
+          function + " time taken(ns): " + timeTaken);
     }
     Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
     if (counter != null) {
