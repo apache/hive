@@ -82,7 +82,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>jline</groupId>
+      <groupId>org.jline</groupId>
       <artifactId>jline</artifactId>
     </dependency>
     <dependency>
@@ -108,6 +108,11 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-webapp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>1.18</version>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>
