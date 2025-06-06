@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -71,7 +72,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       //       Not clear of ReplCopyWork should inherit from CopyWork.
       if (work.getFromPaths().length > 1 || work.getToPaths().length > 1) {
         throw new RuntimeException("Invalid ReplCopyWork: "
-            + work.getFromPaths() + ", " + work.getToPaths());
+            + Arrays.toString(work.getFromPaths()) + "; " + Arrays.toString(work.getToPaths()));
       }
       Path fromPath = work.getFromPaths()[0];
       toPath = work.getToPaths()[0];
