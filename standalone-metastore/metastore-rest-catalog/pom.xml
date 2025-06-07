@@ -26,7 +26,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
     <hive.version>${project.parent.version}</hive.version>
-    <iceberg.version>1.6.1</iceberg.version>
+    <iceberg.version>1.9.1</iceberg.version>
   </properties>
   <dependencies>
     <dependency>
