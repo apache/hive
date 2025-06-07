@@ -452,20 +452,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     String branchName = null;
 
     Long snapshotId = null;
-    Expression filterExpr = Expressions.alwaysTrue();
+    Expression filterExpr = null;
 
     for (JobContext jobContext : jobContexts) {
       JobConf conf = jobContext.getJobConf();
+
       table = Optional.ofNullable(table).orElseGet(() -> Catalogs.loadTable(conf, catalogProperties));
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
       snapshotId = getSnapshotId(outputTable.table, branchName);
 
-      Expression jobContextFilterExpr = (Expression) SessionStateUtil.getResource(conf, InputFormatConfig.QUERY_FILTERS)
-          .orElse(Expressions.alwaysTrue());
-      if (!filterExpr.equals(jobContextFilterExpr)) {
-        filterExpr = Expressions.and(filterExpr, jobContextFilterExpr);
-      }
-      LOG.debug("Filter Expression :{}", filterExpr);
+      filterExpr = (Expression) SessionStateUtil.getResource(conf,
+              InputFormatConfig.QUERY_FILTERS + catalogProperties.get(Catalogs.NAME))
+          .orElse(null);
+
       LOG.info("Committing job has started for table: {}, using location: {}",
           table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
@@ -485,6 +484,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       deleteFiles.addAll(writeResults.deleteFiles());
       replacedDataFiles.addAll(writeResults.replacedDataFiles());
       referencedDataFiles.addAll(writeResults.referencedDataFiles());
+
       mergedAndDeletedFiles.addAll(writeResults.mergedAndDeletedFiles());
     }
 
@@ -492,7 +492,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     deleteFiles.removeIf(deleteFile -> mergedAndDeletedFiles.contains(new Path(String.valueOf(deleteFile.path()))));
 
     FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles,
-            Collections.emptySet());
+        Collections.emptySet());
     long startTime = System.currentTimeMillis();
 
     if (Operation.IOW != operation) {
@@ -505,7 +505,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation, filterExpr);
       }
     } else {
-
       RewritePolicy rewritePolicy = RewritePolicy.fromString(jobContexts.stream()
           .findAny()
           .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
@@ -558,7 +557,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
-      write.conflictDetectionFilter(filterExpr);
+      if (filterExpr != null) {
+        LOG.debug("Conflict detection Filter Expression :{}", filterExpr);
+        write.conflictDetectionFilter(filterExpr);
+      }
       write.validateNoConflictingData();
       write.validateNoConflictingDeletes();
       commit(write);
@@ -584,8 +586,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (snapshotId != null) {
         write.validateFromSnapshot(snapshotId);
       }
-      write.conflictDetectionFilter(filterExpr);
-
+      if (filterExpr != null) {
+        LOG.debug("Conflict detection Filter Expression :{}", filterExpr);
+        write.conflictDetectionFilter(filterExpr);
+      }
       if (!results.dataFiles().isEmpty()) {
         write.validateDeletedFiles();
         write.validateNoConflictingDeleteFiles();
