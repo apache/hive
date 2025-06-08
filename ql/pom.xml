@@ -33,10 +33,6 @@
     <!-- intra-project -->
     <!-- used for vector code-gen -->
     <dependency>
-      <groupId>org.openjdk.nashorn</groupId>
-      <artifactId>nashorn-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-v2</artifactId>
       <version>${atlas.version}</version>
@@ -88,6 +84,11 @@
           <artifactId>spring-context</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jol</groupId>
+      <artifactId>jol-core</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-configuration</groupId>
@@ -1002,7 +1003,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${maven.test.jvm.args}</argLine>
+          <argLine>${maven.test.jvm.args} -Djol.magicFieldOffset=true</argLine>
           <environmentVariables>
             <HIVE_CLUSTER_ID>hive-test-cluster-id-env</HIVE_CLUSTER_ID>
             <TZ>US/Pacific</TZ>

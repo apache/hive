@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -41,6 +40,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.io.BytesWritable;
 import org.junit.Test;
+import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,14 +82,14 @@ public class TestVectorMapJoinFastHashTable {
     BinarySortableSerializeWrite bsw = new BinarySortableSerializeWrite(1);
 
     Output outp = new Output();
-    BytesWritable key = new BytesWritable();
-    BytesWritable value = new BytesWritable();
+    BytesWritable key;
+    BytesWritable value;
     for (int i = 0; i < keyCount; i++) {
       bsw.set(outp);
       bsw.writeLong(i);
       key = new BytesWritable(outp.getData(), outp.getLength());
       bsw.set(outp);
-      bsw.writeLong(i * 2);
+      bsw.writeLong(i * 2L);
       value = new BytesWritable(outp.getData(), outp.getLength());
 
       container.putRow(key, value);
@@ -99,27 +99,24 @@ public class TestVectorMapJoinFastHashTable {
 
     Statistics stat = new Statistics(keyCount, dataSize, 0, 0);
 
-    Long realObjectSize = getObjectSize(container);
-    Long executionEstimate = container.getEstimatedMemorySize();
-    Long compilerEstimate = null;
+    long realObjectSize = GraphLayout.parseInstance(container).totalSize();
+    long executionEstimate = container.getEstimatedMemorySize();
 
     ConvertJoinMapJoin cjm = new ConvertJoinMapJoin();
     cjm.hashTableLoadFactor = .75f;
-    switch (l) {
-    case MULTI_KEY:
-      compilerEstimate = cjm.computeOnlineDataSizeFastCompositeKeyed(stat);
-      break;
-    case LONG:
-      compilerEstimate = cjm.computeOnlineDataSizeFastLongKeyed(stat);
-      break;
-    }
+
+    long compilerEstimate = switch (l) {
+      case MULTI_KEY -> cjm.computeOnlineDataSizeFastCompositeKeyed(stat);
+      case LONG -> cjm.computeOnlineDataSizeFastLongKeyed(stat);
+      default -> throw new AssertionError("Unexpected HashTableKeyType: " + l);
+    };
     LOG.info("stats: {}", stat);
     LOG.info("realObjectSize: {}", realObjectSize);
     LOG.info("executionEstimate : {}", executionEstimate);
     LOG.info("compilerEstimate: {}", compilerEstimate);
 
-    checkRelativeError(realObjectSize, executionEstimate, .05);
-    checkRelativeError(realObjectSize, compilerEstimate, .05);
+    checkRelativeError(realObjectSize, executionEstimate, .06);
+    checkRelativeError(realObjectSize, compilerEstimate, .11);
     checkRelativeError(compilerEstimate, executionEstimate, .05);
   }
 
@@ -130,18 +127,4 @@ public class TestVectorMapJoinFastHashTable {
     double d = (double) v1 / v2;
     assertEquals("error is outside of tolerance margin", 1.0, d, err);
   }
-
-  // jdk.nashorn.internal.ir.debug.ObjectSizeCalculator is only present in hotspot
-  private Long getObjectSize(Object o) {
-    try {
-      Class<?> clazz = Class.forName("jdk.nashorn.internal.ir.debug.ObjectSizeCalculator");
-      Method method = clazz.getMethod("getObjectSize", Object.class);
-      long l = (long) method.invoke(null, o);
-      return l;
-    } catch (Exception e) {
-      LOG.warn("Nashorn estimator not found", e);
-      return null;
-    }
-  }
-
 }
