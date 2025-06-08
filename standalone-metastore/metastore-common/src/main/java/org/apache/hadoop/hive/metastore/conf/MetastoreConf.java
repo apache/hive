@@ -1905,6 +1905,8 @@ public class MetastoreConf {
         "Only collect the non-native table's summary that has been updated/changed in configured recent days."),
     METADATA_SUMMARY_MAX_NONNATIVE_TABLES("hive.metatool.summary.maxNonNativeTables", "hive.metatool.summary.maxNonNativeTables", "",
         "The maximum non-native tables allowed per table type during collecting the summary."),
+    METADATA_SUMMARY_NONNATIVE_THREADS("hive.metatool.summary.nonnative.threads", "hive.metatool.summary.nonnative.threads", 20,
+        "Number of threads to be allocated for MetaToolTaskMetadataSummary for collecting the non-native table's summary."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
