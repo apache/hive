@@ -560,11 +560,13 @@ public class BeeLine implements Closeable {
     BeeLine beeLine = new BeeLine();
     try {
       int status = beeLine.begin(args, inputStream);
+      System.out.println("after beeline.begin");
 
       if (!Boolean.getBoolean(BeeLineOpts.PROPERTY_NAME_EXIT)) {
           System.exit(status);
       }
     } finally {
+      System.out.println("mainWithInputRedirection ends, called finally");
       beeLine.close();
     }
   }
@@ -577,6 +579,7 @@ public class BeeLine implements Closeable {
     this.isBeeLine = isBeeLine;
     this.signalHandler = new SunSignalHandler(this);
     this.shutdownHook = () -> {
+      info("Running shutdown hook");
       try {
         if (history != null) {
           history.save();
@@ -1124,6 +1127,7 @@ public class BeeLine implements Closeable {
     initializeLineReader();
     if (isBeeLine) {
       int code = initArgs(args);
+      info("initArgs returns: " + code);
       if (code != 0) {
         return code;
       }
@@ -1306,6 +1310,7 @@ public class BeeLine implements Closeable {
         }
       }
     }
+    info(String.format("initialized, exit: %s, executionResult: %d", exit, executionResult));
     return executionResult;
   }
 
@@ -1372,6 +1377,7 @@ public class BeeLine implements Closeable {
   }
 
   private int execute(LineReader reader, boolean exitOnError) {
+    System.out.println("Execute with line reader");
     int lastExecutionResult = ERRNO_OK;
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
                        : LineReaderImpl.NULL_MASK;
@@ -1379,6 +1385,7 @@ public class BeeLine implements Closeable {
     String line;
     while (!exit) {
       try {
+        info("trying to parse next line");
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
         line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
@@ -1398,6 +1405,7 @@ public class BeeLine implements Closeable {
           lastExecutionResult = ERRNO_OK;
         }
       } catch (EndOfFileException t) {
+        info("EndOfFileException caught");
         /*
          * If you're reading from a normal file (not from standard input or a terminal), JLine might raise an
          * EndOfFileException when it reaches the end of the file. JLine uses readLine() for reading input, and it
@@ -1431,6 +1439,7 @@ public class BeeLine implements Closeable {
 
   private void addBeelineShutdownHook() throws IOException {
     // add shutdown hook to flush the history to history file and it also close all open connections
+    info("Add shutdown hook");
     ShutdownHookManager.addShutdownHook(getShutdownHook());
   }
 
@@ -1492,9 +1501,11 @@ public class BeeLine implements Closeable {
 
   protected Terminal buildTerminal(InputStream inputStream) throws IOException {
     if (inputStream != null) { // typically when there is a file script to read from
+      info("Build terminal on stream");
       return TerminalBuilder.builder().streams(inputStream, getErrorStream()).build();
     } else { // no input stream, normal operation: proper behavior needs a system terminal
       // system terminal can only be created with system streams
+      info("Build terminal on system in/err");
       return TerminalBuilder.builder().system(true).dumb(false).streams(System.in, System.err).build();
     }
   }
