@@ -1529,6 +1529,7 @@ public class Commands {
 
 
   public boolean connect(String line) throws Exception {
+    beeLine.info("Connect: line: " + line);
     String example = "Usage: connect <url> <username> <password> [driver]"
         + BeeLine.getSeparator();
 
