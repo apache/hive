@@ -47,23 +47,7 @@ class TestVectorMapJoinFastHashTableLoader {
         mockTableContainer = mock(VectorMapJoinFastTableContainer.class);
         vectorMapJoinFastHashTableLoader = new VectorMapJoinFastHashTableLoader();
     }
-    @Test
-    public void testSubmitQueueDrainThreads_SubmitsCorrectNumberOfTasks() throws IOException, InterruptedException, SerDeException {
-        mockExecutorService = mock(ExecutorService.class);
-        vectorMapJoinFastHashTableLoader.initHTLoadingServiceForTest(conf, 1048577, mockExecutorService);
-        Future<?> mockFuture = mock(Future.class);
-        doReturn(mockFuture)
-                .when(mockExecutorService)
-                .submit(any(Runnable.class));
-        List<Future<?>> futures = vectorMapJoinFastHashTableLoader.submitQueueDrainThreadsForTest(mockTableContainer);
-        assertEquals(2, futures.size());
-        assertTrue(futures.contains(mockFuture));
-        for (Future<?> f : futures) {
-            // Since mockFuture.get() returns null by default, this should not throw
-            assertDoesNotThrow(() -> f.get());
 
-        }
-    }
     @Test
     public void testSubmitQueueDrainThreads_FutureGetThrowsExecutionException() throws
             IOException, InterruptedException, SerDeException, ExecutionException, HiveException {
@@ -77,19 +61,18 @@ class TestVectorMapJoinFastHashTableLoader {
         for (int i = 0; i < numLoadThreads; i++) {
             loadBatchQueues[i] = mock(LinkedBlockingQueue.class); //We need to mock its behaviour to throw InterruptedException
             doThrow(new InterruptedException("Simulated interruption")).when(loadBatchQueues[i]).take();
-
         }
-
         vectorMapJoinFastHashTableLoader.initHTLoadingServiceForTest(conf, 1048577, executorService, loadBatchQueues);
-        List<Future<?>> futures = vectorMapJoinFastHashTableLoader.submitQueueDrainThreadsForTest(mockTableContainer);
+        List<CompletableFuture<Void>> loaderTasks = vectorMapJoinFastHashTableLoader.submitQueueDrainThreadsForTest(mockTableContainer);
 
-        assertEquals(2, futures.size());
-        for (Future<?> f : futures) {
-            ExecutionException thrown = assertThrows(ExecutionException.class, f::get);
-            Throwable cause = thrown.getCause();
-            assertInstanceOf(RuntimeException.class, cause);
-            assertInstanceOf(InterruptedException.class, cause.getCause());
-        }
+        assertEquals(2, loaderTasks.size());
+        ExecutionException thrown = assertThrows(ExecutionException.class, () -> {
+            CompletableFuture.allOf(loaderTasks.toArray(new CompletableFuture[0]))
+                    .get(2, TimeUnit.MINUTES);
+        });
+        Throwable cause = thrown.getCause();
+        assertInstanceOf(RuntimeException.class, cause);
+        assertInstanceOf(InterruptedException.class, cause.getCause());
         if (!executorService.isShutdown()) {
             executorService.shutdownNow();
             try {

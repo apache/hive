@@ -23,12 +23,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.LongAccumulator;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -111,13 +112,6 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
   }
 
   @VisibleForTesting
-  protected void initHTLoadingServiceForTest(Configuration conf, long estKeyCount, ExecutorService loadExecService) {
-    this.hconf = conf;
-    initHTLoadingService(estKeyCount);
-    this.loadExecService = loadExecService;
-  }
-
-  @VisibleForTesting
   protected void initHTLoadingServiceForTest(Configuration conf, long estKeyCount, ExecutorService loadExecService,
                                              BlockingQueue<?>[] loadBatchQueues) {
     this.hconf = conf;
@@ -171,28 +165,27 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
   }
 
   @VisibleForTesting
-  protected List<Future<?>> submitQueueDrainThreadsForTest(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
+  protected List<CompletableFuture<Void>> submitQueueDrainThreadsForTest(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
           throws IOException, InterruptedException, SerDeException {
     return submitQueueDrainThreads(vectorMapJoinFastTableContainer);
   }
-
-  private List<Future<?>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
-      throws InterruptedException, IOException, SerDeException {
-    List<Future<?>> futures = new ArrayList<>();
+  private List<CompletableFuture<Void>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
+          throws InterruptedException, IOException, SerDeException {
+    List<CompletableFuture<Void>> loaderTasks = new ArrayList<>();
     for (int partitionId = 0; partitionId < numLoadThreads; partitionId++) {
       int finalPartitionId = partitionId;
-      Future<?> future = this.loadExecService.submit(() -> {
+      CompletableFuture<Void> asyncTask = CompletableFuture.runAsync(() -> {
         try {
           LOG.info("Partition id {} with Queue size {}", finalPartitionId, loadBatchQueues[finalPartitionId].size());
           drainAndLoadForPartition(finalPartitionId, vectorMapJoinFastTableContainer);
         } catch (IOException | InterruptedException | SerDeException | HiveException e) {
           LOG.error("Caught error while starting HT threads: " + e.getMessage(), e);
-          throw new RuntimeException("Failed to start HT Load threads", e);
+          throw new RuntimeException("Failed to start HT Load thread", e);
         }
-      });
-      futures.add(future);
+      }, loadExecService);
+      loaderTasks.add(asyncTask);
     }
-    return futures;
+    return loaderTasks;
   }
 
   private void drainAndLoadForPartition(int partitionId, VectorMapJoinFastTableContainer tableContainer)
@@ -303,7 +296,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
         tableContainer.setSerde(null, null); // No SerDes here.
         // Submit parallel loading Threads
-        List<Future<?>> futures = submitQueueDrainThreads(tableContainer);
+        List<CompletableFuture<Void>> loaderTasks = submitQueueDrainThreads(tableContainer);
 
         long receivedEntries = 0;
         long startTime = System.currentTimeMillis();
@@ -339,15 +332,18 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         LOG.info("Finished loading the queue for input: {} waiting {} minutes for TPool shutdown", inputName, 2);
         addQueueDoneSentinel();
         loadExecService.shutdown();
-
-        if (!loadExecService.awaitTermination(2, TimeUnit.MINUTES)) {
+        try {
+          CompletableFuture.allOf(loaderTasks.toArray(new CompletableFuture[0]))
+                  .get(2, TimeUnit.MINUTES);
+        } catch (TimeoutException e) {
           throw new HiveException("Failed to complete the hash table loader. Loading timed out.");
-        }
-        for (Future<?> f : futures) {
-          try {
-            f.get(); // This will throw if the thread threw
-          } catch (ExecutionException e) {
-            throw new HiveException("One of the loader threads failed", e.getCause());
+        } catch (ExecutionException e) {
+          throw new HiveException("One of the loader threads failed", e.getCause());
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        } finally {
+          if (loadExecService != null && !loadExecService.isTerminated()) {
+            loadExecService.shutdownNow();
           }
         }
         batchPool.clear();
