@@ -18,13 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.tez.common.counters.TezCounter;
+import org.apache.tez.common.counters.TezCounters;
+import org.apache.tez.runtime.api.ProcessorContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,37 +42,56 @@ import static org.mockito.Mockito.*;
 class TestVectorMapJoinFastHashTableLoader {
 
     private VectorMapJoinFastHashTableLoader vectorMapJoinFastHashTableLoader;
-    private ExecutorService mockExecutorService;
+    private Configuration hconf;
+
+    @Mock
     private VectorMapJoinFastTableContainer mockTableContainer;
-    private Configuration conf;
-    private final int numLoadThreads = 2;
+
+    @Mock
+    private TezContext mockTezContext;
+
+    @Mock
+    private MapJoinOperator mockJoinOp;
+
+    @Mock
+    private ProcessorContext mockProcessorContext;
+
+    @Mock
+    private TezCounters mockTezCounters;
+
+    @Mock
+    private TezCounter mockTezCounter;
+
+    @Mock
+    private MapJoinDesc joinDesc;
 
 
     @BeforeEach
     void setUp() {
-        conf = new Configuration(true);
-        mockTableContainer = mock(VectorMapJoinFastTableContainer.class);
-        vectorMapJoinFastHashTableLoader = new VectorMapJoinFastHashTableLoader();
+        MockitoAnnotations.openMocks(this);
+        hconf = new Configuration(true);
+        when(mockTezContext.getTezProcessorContext()).thenReturn(mockProcessorContext);
+        when(mockProcessorContext.getCounters()).thenReturn(mockTezCounters);
+        when(mockTezCounters.findCounter(anyString(), anyString())).thenReturn(mockTezCounter);
+
+        when(mockJoinOp.getConf()).thenReturn(joinDesc);
+        when(mockJoinOp.getCacheKey()).thenReturn("testCacheKey");
+
+        vectorMapJoinFastHashTableLoader = spy(new VectorMapJoinFastHashTableLoader(
+                mockTezContext, hconf, mockJoinOp));
+
     }
 
     @Test
     public void testSubmitQueueDrainThreads_FutureGetThrowsExecutionException() throws
             IOException, InterruptedException, SerDeException, ExecutionException, HiveException {
-        ExecutorService executorService = Executors.newFixedThreadPool(numLoadThreads,
-                new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setPriority(Thread.NORM_PRIORITY)
-                        .setNameFormat("HT-Load-Thread-%d")
-                        .build());
-        BlockingQueue<?>[] loadBatchQueues = new BlockingQueue[numLoadThreads];
-        for (int i = 0; i < numLoadThreads; i++) {
-            loadBatchQueues[i] = mock(LinkedBlockingQueue.class); //We need to mock its behaviour to throw InterruptedException
-            doThrow(new InterruptedException("Simulated interruption")).when(loadBatchQueues[i]).take();
-        }
-        vectorMapJoinFastHashTableLoader.initHTLoadingServiceForTest(conf, 1048577, executorService, loadBatchQueues);
-        List<CompletableFuture<Void>> loaderTasks = vectorMapJoinFastHashTableLoader.submitQueueDrainThreadsForTest(mockTableContainer);
-
+        doThrow(new InterruptedException("Simulated interruption")).when(vectorMapJoinFastHashTableLoader)
+                .drainAndLoadForPartition(anyInt(), any(VectorMapJoinFastTableContainer.class));
+        vectorMapJoinFastHashTableLoader.initHTLoadingService(1048577);
+        List<CompletableFuture<Void>> loaderTasks = vectorMapJoinFastHashTableLoader.submitQueueDrainThreads(mockTableContainer);
         assertEquals(2, loaderTasks.size());
+        vectorMapJoinFastHashTableLoader.getLoadExecService().shutdown();
+
         ExecutionException thrown = assertThrows(ExecutionException.class, () -> {
             CompletableFuture.allOf(loaderTasks.toArray(new CompletableFuture[0]))
                     .get(2, TimeUnit.MINUTES);
@@ -73,6 +99,11 @@ class TestVectorMapJoinFastHashTableLoader {
         Throwable cause = thrown.getCause();
         assertInstanceOf(RuntimeException.class, cause);
         assertInstanceOf(InterruptedException.class, cause.getCause());
+    }
+
+    @AfterEach
+    void tearDown() {
+        ExecutorService executorService = vectorMapJoinFastHashTableLoader.getLoadExecService();
         if (!executorService.isShutdown()) {
             executorService.shutdownNow();
             try {
@@ -83,10 +114,6 @@ class TestVectorMapJoinFastHashTableLoader {
                 Thread.currentThread().interrupt();
             }
         }
-    }
-
-    @AfterEach
-    void tearDown() {
     }
 
 }

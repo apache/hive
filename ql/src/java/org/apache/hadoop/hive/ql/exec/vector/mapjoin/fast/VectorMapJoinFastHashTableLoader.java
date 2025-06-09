@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.LongAccumulator;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.common.Pool;
@@ -89,6 +88,10 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
   }
 
+  protected ExecutorService getLoadExecService() {
+    return loadExecService;
+  }
+
   public VectorMapJoinFastHashTableLoader(TezContext context, Configuration hconf, MapJoinOperator joinOp) {
     this.tezContext = context;
     this.hconf = hconf;
@@ -111,17 +114,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
-  @VisibleForTesting
-  protected void initHTLoadingServiceForTest(Configuration conf, long estKeyCount, ExecutorService loadExecService,
-                                             BlockingQueue<?>[] loadBatchQueues) {
-    this.hconf = conf;
-    initHTLoadingService(estKeyCount);
-    this.loadExecService = loadExecService;
-    this.loadBatchQueues = (BlockingQueue<HashTableElementBatch>[]) loadBatchQueues;
-  }
-
-
-  private void initHTLoadingService(long estKeyCount) {
+  protected void initHTLoadingService(long estKeyCount) {
     if (estKeyCount < VectorMapJoinFastHashTable.FIRST_SIZE_UP) {
       // Avoid many small HTs that will rehash multiple times causing GCs
       this.numLoadThreads = 1;
@@ -164,12 +157,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     }
   }
 
-  @VisibleForTesting
-  protected List<CompletableFuture<Void>> submitQueueDrainThreadsForTest(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
-          throws IOException, InterruptedException, SerDeException {
-    return submitQueueDrainThreads(vectorMapJoinFastTableContainer);
-  }
-  private List<CompletableFuture<Void>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
+  protected List<CompletableFuture<Void>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
           throws InterruptedException, IOException, SerDeException {
     List<CompletableFuture<Void>> loaderTasks = new ArrayList<>();
     for (int partitionId = 0; partitionId < numLoadThreads; partitionId++) {
@@ -188,7 +176,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     return loaderTasks;
   }
 
-  private void drainAndLoadForPartition(int partitionId, VectorMapJoinFastTableContainer tableContainer)
+  protected void drainAndLoadForPartition(int partitionId, VectorMapJoinFastTableContainer tableContainer)
       throws InterruptedException, IOException, HiveException, SerDeException {
     LOG.info("Starting draining thread {}", partitionId);
     long totalProcessedEntries = 0;
