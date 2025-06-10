@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
@@ -163,6 +164,11 @@ public class TestMSCKRepairOnAcid extends TxnCommandsBaseForTests {
     // that is higher than the allocated max in the table
     CommandProcessorException e = runStatementOnDriverNegative("msck repair table " + acidTblPartMsck);
     Assert.assertEquals(-1, e.getErrorCode());
+
+    String expectedMessage = "The highest writeId [2] in the table 'acidtblpartmsck' is greater than the maximum writeId allocated in the metastore [1]";
+
+    Assert.assertTrue(e.getCause() instanceof MetaException);
+    Assert.assertEquals(expectedMessage, e.getCause().getMessage());
 
     runStatementOnDriver("drop table if exists " + acidTblPartMsck);
   }
