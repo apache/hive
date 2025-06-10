@@ -346,9 +346,14 @@ public class TestHiveViewCommits {
             .hasSize(2);
   }
 
+  /**
+   * // The view name contains a not supported character.
+   * @see org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.SPECIAL_CHARACTERS_IN_TABLE_NAMES
+   * @see org.apache.hadoop.hive.metastore.conf.MetastoreConf.SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES
+   */
   @Test
   public void testInvalidObjectException() {
-    TableIdentifier badTi = TableIdentifier.of(DB_NAME, "`test_iceberg_view`");
+    TableIdentifier badTi = TableIdentifier.of(DB_NAME, "`€test_iceberg_view`");
     assertThatThrownBy(
             () ->
                     catalog
@@ -358,7 +363,7 @@ public class TestHiveViewCommits {
                             .withQuery("hive", "select * from ns.tbl")
                             .create())
             .isInstanceOf(ValidationException.class)
-            .hasMessage("Invalid Hive object for " + DB_NAME + "." + "`test_iceberg_view`");
+            .hasMessage("Invalid Hive object for " + DB_NAME + "." + "`€test_iceberg_view`");
   }
 
   /** Uses NoLock and pretends we throw an error because of a concurrent commit */
