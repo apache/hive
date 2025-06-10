@@ -175,6 +175,48 @@ public class FileHelpers {
         .build();
   }
 
+  public static DeleteFile writePosDeleteFile(
+          Table table, OutputFile out, StructLike partition, List<PositionDelete<?>> deletes)
+          throws IOException {
+    return writePosDeleteFile(table, out, partition, deletes, 2);
+  }
+
+  public static DeleteFile writePosDeleteFile(
+          Table table,
+          OutputFile out,
+          StructLike partition,
+          List<PositionDelete<?>> deletes,
+          int formatVersion)
+          throws IOException {
+    if (formatVersion >= 3) {
+      OutputFileFactory fileFactory =
+              OutputFileFactory.builderFor(table, 1, 1).format(FileFormat.PUFFIN).build();
+      DVFileWriter writer = new BaseDVFileWriter(fileFactory, p -> null);
+      try (DVFileWriter closeableWriter = writer) {
+        for (PositionDelete<?> delete : deletes) {
+          closeableWriter.delete(delete.path().toString(), delete.pos(), table.spec(), partition);
+        }
+      }
+
+      return Iterables.getOnlyElement(writer.result().deleteFiles());
+    } else {
+      FileWriterFactory<Record> factory =
+              GenericFileWriterFactory.builderFor(table)
+                      .positionDeleteRowSchema(table.schema())
+                      .build();
+
+      PositionDeleteWriter<?> writer =
+              factory.newPositionDeleteWriter(encrypt(out), table.spec(), partition);
+      try (Closeable toClose = writer) {
+        for (PositionDelete delete : deletes) {
+          writer.write(delete);
+        }
+      }
+
+      return writer.toDeleteFile();
+    }
+  }
+
   private static EncryptedOutputFile encrypt(OutputFile out) {
     return EncryptedFiles.encryptedOutput(out, EncryptionKeyMetadata.EMPTY);
   }
