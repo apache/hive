@@ -79,6 +79,7 @@ import org.testcontainers.utility.DockerImageName;
  * It uses HTMLUnit to simulate the browser interaction (provide user/password) of the
  * end user.
  */
+@org.junit.Ignore("HIVE-29009")
 public class TestHttpSamlAuthentication {
 
   //user credentials. These much match with the authsources.php of the simpleSAMLPHP

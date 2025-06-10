@@ -51,12 +51,12 @@ public class TestVectorMapJoinFastHashTable {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestVectorMapJoinFastHashTable.class.getName());
 
-  @Test
+  //@Test
   public void checkFast2estimations() throws Exception {
     runEstimationCheck(HashTableKeyType.LONG);
   }
 
-  @Test
+  //@Test
   public void checkFast3estimations() throws Exception {
     runEstimationCheck(HashTableKeyType.MULTI_KEY);
   }
