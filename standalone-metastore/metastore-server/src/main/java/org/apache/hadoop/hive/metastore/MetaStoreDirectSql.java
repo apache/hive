@@ -449,6 +449,52 @@ class MetaStoreDirectSql {
     }
   }
 
+  public List<String> getDatabases(String catName, String pattern) throws MetaException {
+    List<String> result = new ArrayList<>();
+    StringBuilder queryText = new StringBuilder("SELECT \"NAME\" FROM ")
+            .append(DBS)
+            .append(" WHERE \"CTLG_NAME\" = ?");
+
+    List<Object> params = new ArrayList<>();
+    params.add(catName);
+
+    if (pattern != null && !pattern.equals("*")) {
+      List<String> validPatterns = Arrays.stream(pattern.split("\\|"))
+              .map(String::trim)
+              .filter(s -> !s.isEmpty())
+              .distinct()
+              .toList();
+      if (!validPatterns.isEmpty()) {
+        queryText.append(" AND (");
+        for (int i = 0; i < validPatterns.size(); i++) {
+          if (i > 0) queryText.append(" OR ");
+          queryText.append("\"NAME\" LIKE ?");
+          params.add(validPatterns.get(i).replace('*', '%'));
+        }
+        queryText.append(")");
+      }
+    }
+
+    queryText.append(" ORDER BY \"NAME\" ASC");
+
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText.toString()))) {
+      List<Object> sqlResult = executeWithArray(
+              query.getInnerQuery(), params.toArray(), queryText.toString());
+      for (Object row : sqlResult) {
+        String dbName = MetastoreDirectSqlUtils.extractSqlString(row);
+        if (dbName == null || dbName.isEmpty()) {
+          continue;
+        }
+        result.add(dbName);
+      }
+    }
+    return result;
+  }
+
+  public List<String> getAllDatabases(String catName) throws MetaException {
+    return getDatabases(catName, "*");
+  }
+
   /**
    * Get table names by using direct SQL queries.
    * @param catName catalog name

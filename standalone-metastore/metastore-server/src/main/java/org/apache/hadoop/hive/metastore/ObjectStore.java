@@ -993,8 +993,37 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getDatabases(String catName, String pattern) throws MetaException {
+    catName = normalizeIdentifier(catName);
+    try {
+      return getDatabasesInternal(catName, pattern);
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(ExceptionUtils.getStackTrace(e));
+    }
+  }
+
+  private List<String> getDatabasesInternal(String catName, String pattern)
+          throws MetaException, NoSuchObjectException {
+    return new GetHelper<List<String>>(catName, null, pattern, true, true) {
+      @Override
+      protected String describeResult() {
+        return "List of databases matching pattern";
+      }
+
+      @Override
+      protected List<String> getSqlResult(GetHelper<List<String>> ctx) throws MetaException {
+        return directSql.getDatabases(catName, pattern);
+      }
+
+      @Override
+      protected List<String> getJdoResult(GetHelper<List<String>> ctx) throws MetaException {
+        return getGetDatabasesViaJdo(catName, pattern);
+      }
+    }.run(false);
+  }
+
+  private List<String> getGetDatabasesViaJdo(String catName, String pattern) throws MetaException {
     if (pattern == null || pattern.equals("*")) {
-      return getAllDatabases(catName);
+      return getAllDatabasesViaJdo(catName);
     }
     boolean commited = false;
     List<String> databases = null;
@@ -1022,11 +1051,38 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getAllDatabases(String catName) throws MetaException {
+    catName = normalizeIdentifier(catName);
+    try {
+      return getAllDatabasesInternal(catName);
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(ExceptionUtils.getStackTrace(e));
+    }
+  }
+
+  private List<String> getAllDatabasesInternal(String catName) throws MetaException, NoSuchObjectException {
+    return new GetHelper<List<String>>(catName, null, null, true, true) {
+      @Override
+      protected String describeResult() {
+        return "List of all databases";
+      }
+
+      @Override
+      protected List<String> getSqlResult(GetHelper<List<String>> ctx) throws MetaException {
+        return directSql.getAllDatabases(catName);
+      }
+
+      @Override
+      protected List<String> getJdoResult(GetHelper<List<String>> ctx) throws MetaException {
+        return getAllDatabasesViaJdo(catName);
+      }
+    }.run(false);
+  }
+
+  private List<String> getAllDatabasesViaJdo(String catName) throws MetaException {
     boolean commited = false;
     List<String> databases = null;
 
     Query query = null;
-    catName = normalizeIdentifier(catName);
 
     openTransaction();
     try {

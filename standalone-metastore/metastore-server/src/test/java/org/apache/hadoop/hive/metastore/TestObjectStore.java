@@ -257,7 +257,21 @@ public class TestObjectStore {
     objectStore.createDatabase(db1);
     objectStore.createDatabase(db2);
 
-    List<String> databases = objectStore.getAllDatabases(catName);
+    // Test getDatabases with pattern
+    List<String> databases = objectStore.getDatabases(catName, "*");
+    Assert.assertEquals(2, databases.size());
+    Assert.assertEquals(DB1, databases.get(0));
+    Assert.assertEquals(DB2, databases.get(1));
+
+    databases = objectStore.getDatabases(catName, DB1);
+    Assert.assertEquals(1, databases.size());
+    Assert.assertEquals(DB1, databases.get(0));
+
+    databases = objectStore.getDatabases(catName, "non_existent_db");
+    Assert.assertEquals(0, databases.size());
+
+    // Test getAllDatabases
+    databases = objectStore.getAllDatabases(catName);
     LOG.info("databases: " + databases);
     Assert.assertEquals(2, databases.size());
     Assert.assertEquals(DB1, databases.get(0));
