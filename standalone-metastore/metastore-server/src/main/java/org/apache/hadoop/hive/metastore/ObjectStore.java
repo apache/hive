@@ -1030,7 +1030,7 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(false);
   }
 
-  private List<String> getGetDatabasesViaJdo(String catName, String pattern) throws MetaException {
+  private List<String> getGetDatabasesViaJdo(String catName, String pattern) {
     if (pattern == null || pattern.equals("*")) {
       return getAllDatabasesViaJdo(catName);
     }
@@ -1087,7 +1087,7 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(false);
   }
 
-  private List<String> getAllDatabasesViaJdo(String catName) throws MetaException {
+  private List<String> getAllDatabasesViaJdo(String catName) {
     boolean commited = false;
     List<String> databases = null;
 
