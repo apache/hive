@@ -1025,12 +1025,12 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected List<String> getJdoResult(GetHelper<List<String>> ctx) throws MetaException {
-        return getGetDatabasesViaJdo(catName, pattern);
+        return getDatabasesViaJdo(catName, pattern);
       }
     }.run(false);
   }
 
-  private List<String> getGetDatabasesViaJdo(String catName, String pattern) {
+  private List<String> getDatabasesViaJdo(String catName, String pattern) {
     if (pattern == null || pattern.equals("*")) {
       return getAllDatabasesViaJdo(catName);
     }
