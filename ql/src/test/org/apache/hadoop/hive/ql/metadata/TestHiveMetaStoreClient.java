@@ -96,15 +96,6 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
     return false;
   }
 
-  public Table getTable(String dbName, String tableName, boolean getColumnStats, String engine)
-      throws TException {
-    GetTableRequest getTableRequest = new GetTableRequest( dbName, tableName);
-    getTableRequest.setGetColumnStats(getColumnStats);
-    getTableRequest.setEngine(engine);
-    return getTable(getTableRequest);
-
-  }
-
   public Table getTable(GetTableRequest getTableRequest) throws TException {
     Table tTable = new Table();
     tTable.setDbName(getTableRequest.getDbName());
