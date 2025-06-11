@@ -41,6 +41,7 @@ public class MockMetaStoreFilterHook implements MetaStoreFilterHook {
   private static final Logger LOG = LoggerFactory.getLogger(MockMetaStoreFilterHook.class);
   private static final String AUTHORIZED_OWNER = TestHiveMetaStoreAuthorizer.authorizedUser;
 
+  @SuppressWarnings("unused")
   public MockMetaStoreFilterHook(Configuration conf) {
     LOG.info("Initialized MockMetaStoreFilterHook with authorized owner: " + AUTHORIZED_OWNER);
   }
