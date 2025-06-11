@@ -1464,6 +1464,14 @@ public interface IMetaStoreClient extends AutoCloseable {
       throws TException;
 
   /**
+   * Get list of partitions matching specified serialized expression
+   * @param req PartitionsByExprRequest object
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException;
+
+  /**
    * List partitions, fetching the authorization information along with the partitions.
    * @param dbName database name
    * @param tableName table name
@@ -3777,7 +3785,8 @@ public interface IMetaStoreClient extends AutoCloseable {
   void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
-    IncompatibleMetastoreException(String message) {
+    // SG:FIXME
+    public IncompatibleMetastoreException(String message) {
       super(message);
     }
   }
