@@ -1697,7 +1697,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             // Remove from all tables
             uniqueTableNames.remove(materializedView.getTableName());
           }
-          return null;
+          return Collections.emptyList();
         }
       });
 
@@ -1739,14 +1739,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             dropRequest.setDeleteData(false);
             dropRequest.setDropPartitions(true);
             TableOperationsHandler.DropTableResult result =
-                TableOperationsHandler.ofNew(HMSHandler.this, false, dropRequest).getDropTableResult();
+                TableOperationsHandler.offer(HMSHandler.this, dropRequest).getDropTableResult();
             if (tableDataShouldBeDeleted
                 && result.success()
                 && result.getPartPaths() != null) {
               partitionPaths.addAll(result.getPartPaths());
             }
           }
-          return null;
+          return Collections.emptyList();
         }
       });
 
@@ -3076,24 +3076,22 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      TableOperationsHandler<?> tableOp;
-      Optional<TableOperationsHandler<?>> fromCache = TableOperationsHandler.ofCache(dropTableReq.getId(), dropTableReq.isCancel());
-      if (fromCache.isPresent()) {
-        tableOp = fromCache.get();
-      } else {
-        tableOp = TableOperationsHandler.ofNew(this, dropTableReq.isAsyncDrop(), dropTableReq);
+      TableOperationsHandler<?> tableOp = TableOperationsHandler.offer(this, dropTableReq);
+      TableOpResp resp = tableOp.toTableOpResp();
+      if (resp.isFinished() && tableOp.tableDataShouldBeDeleted()) {
+        TableOperationsHandler.DropTableResult result = tableOp.getDropTableResult();
+        // Drop the table data on success
+        if (result.success()) {
+          boolean ifPurge = result.ifPurge();
+          boolean shouldEnableCm = result.shouldEnableCm();
+          // Data needs deletion. Check if trash may be skipped.
+          // Delete the data in the partitions which have other locations
+          deletePartitionData(result.getPartPaths(), ifPurge, shouldEnableCm);
+          // Delete the data in the table
+          deleteTableData(tableOp.getTablePath(), ifPurge, shouldEnableCm);
+        }
       }
-      TableOpResp tableOpResp = tableOp.toTableOpResp();
-      TableOperationsHandler.DropTableResult result;
-      if (tableOpResp.isFinished() && tableOp.tableDataShouldBeDeleted() &&
-          (result = tableOp.getDropTableResult()).success()) {
-        // Data needs deletion. Check if trash may be skipped.
-        // Delete the data in the partitions which have other locations
-        deletePartitionData(result.getPartPaths(), result.ifPurge(), result.shouldEnableCm());
-        // Delete the data in the table
-        deleteTableData(tableOp.getTablePath(), result.ifPurge(), result.shouldEnableCm());
-      }
-      return tableOpResp;
+      return resp;
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)

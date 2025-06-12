@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +67,8 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class TableOperationsHandler<T extends TBase> {
   private static final Logger LOG = LoggerFactory.getLogger(TableOperationsHandler.class);
-  private static final Map<String, TableOperationsHandler<?>> OPID_TO_HANDLER = new ConcurrentHashMap<>();
+  private static final Map<String, TableOperationsHandler<?>>
+      OPID_TO_HANDLER = new ConcurrentHashMap<>();
   private static final ScheduledExecutorService OPID_CLEANER = Executors.newScheduledThreadPool(1, r -> {
     Thread thread = new Thread(r);
     thread.setDaemon(true);
@@ -78,9 +78,9 @@ public class TableOperationsHandler<T extends TBase> {
 
   private volatile StringBuffer state = new StringBuffer("Preparing context");
   private String id;
-  private final IHMSHandler handler_;
-  private final T request_;
-  private final ExecutorService executor_;
+  private final IHMSHandler handler;
+  private final T request;
+  private final ExecutorService executor;
   private final boolean async;
   private Future<?> future;
   private boolean tableDataShouldBeDeleted;
@@ -99,31 +99,31 @@ public class TableOperationsHandler<T extends TBase> {
   private TableOperationsHandler(IHMSHandler handler, boolean async, T request)
        throws TException, IOException {
     this.id = UUID.randomUUID().toString();
-    this.handler_ = handler;
-    this.request_ = request;
+    this.handler = handler;
+    this.request = request;
     this.async = async;
     OPID_TO_HANDLER.put(id, this);
     if (async) {
-      this.executor_ = Executors.newFixedThreadPool(1, r -> {
+      this.executor = Executors.newFixedThreadPool(1, r -> {
         Thread thread = new Thread(r);
         thread.setDaemon(true);
         thread.setName("TableOperationsHandler " + id);
         return thread;
       });
     } else {
-      this.executor_ = MoreExecutors.newDirectExecutorService();
+      this.executor = MoreExecutors.newDirectExecutorService();
     }
     this.runTableOperation();
   }
 
   public DropTableResult dropTable() throws TException {
-    DropTableRequest dropReq = (DropTableRequest) request_;
+    DropTableRequest dropReq = (DropTableRequest) request;
     boolean success = false;
     List<Path> partPaths = null;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
     Database db = null;
     boolean isReplicated = false;
-    RawStore ms = handler_.getMS();
+    RawStore ms = handler.getMS();
     try {
       ms.openTransaction();
       String catName = tableName.getCat();
@@ -145,14 +145,14 @@ public class TableOperationsHandler<T extends TBase> {
             " views %s%n", isPartOfMV));
       }
 
-      ((HMSHandler) handler_).firePreEvent(new PreDropTableEvent(tbl, dropReq.isDeleteData(), handler_));
+      ((HMSHandler) handler).firePreEvent(new PreDropTableEvent(tbl, dropReq.isDeleteData(), handler));
 
       state = new StringBuffer();
       // Drop the partitions and get a list of locations which need to be deleted
       if (dropReq.isDropPartitions()) {
         checkInterrupted();
         List<String> locations = ms.dropAllPartitionsAndGetLocations(tableName,
-            tblPath != null ? handler_.getWh().getDnsPath(tblPath).toString() : null, state);
+            tblPath != null ? handler.getWh().getDnsPath(tblPath).toString() : null, state);
         partPaths = locations.stream().map(Path::new).collect(Collectors.toList());
       }
       // Drop any constraints on the table
@@ -164,12 +164,11 @@ public class TableOperationsHandler<T extends TBase> {
         throw new MetaException("Unable to drop table " + tableName);
       } else {
         state = new StringBuffer("Notifying transaction listeners");
-        if (!handler_.getTransactionalListeners().isEmpty()) {
+        if (!handler.getTransactionalListeners().isEmpty()) {
           transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(handler_.getTransactionalListeners(),
+              MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
                   EventMessage.EventType.DROP_TABLE,
-                  new DropTableEvent(tbl, true, dropReq.isDeleteData(),
-                      handler_, isReplicated),
+                  new DropTableEvent(tbl, true, dropReq.isDeleteData(), handler, isReplicated),
                   dropReq.getEnvContext());
         }
         checkInterrupted();
@@ -182,9 +181,9 @@ public class TableOperationsHandler<T extends TBase> {
         if (!success) {
           ms.rollbackTransaction();
         }
-        if (!handler_.getListeners().isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(handler_.getListeners(), EventMessage.EventType.DROP_TABLE,
-              new DropTableEvent(tbl, success, dropReq.isDeleteData(), handler_, isReplicated), dropReq.getEnvContext(),
+        if (!handler.getListeners().isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(handler.getListeners(), EventMessage.EventType.DROP_TABLE,
+              new DropTableEvent(tbl, success, dropReq.isDeleteData(), handler, isReplicated), dropReq.getEnvContext(),
               transactionalListenerResponses, ms);
         }
       } finally {
@@ -225,7 +224,7 @@ public class TableOperationsHandler<T extends TBase> {
     return resp;
   }
 
-  static Optional<TableOperationsHandler<?>>
+  private static TableOperationsHandler<?>
       ofCache(String opId, boolean shouldCancel) throws TException, IOException {
     TableOperationsHandler<?> tableOp = null;
     if (opId != null) {
@@ -237,7 +236,7 @@ public class TableOperationsHandler<T extends TBase> {
         if (tableOp != null) {
           tableOp.cancelOperation();
         } else {
-          tableOp = new TableOperationsHandler<TBase>(opId) {
+          tableOp = new TableOperationsHandler<>(opId) {
             @Override
             public TableOpResp toTableOpResp() throws TException {
               TableOpResp resp = new TableOpResp(opId);
@@ -249,28 +248,36 @@ public class TableOperationsHandler<T extends TBase> {
         }
       }
     }
-    return Optional.ofNullable(tableOp);
+    return tableOp;
   }
 
-  static <T extends TBase> TableOperationsHandler<?>
-      ofNew(IHMSHandler handler, boolean async, T req) throws TException, IOException {
-    return new TableOperationsHandler<>(handler, async, req);
+  public static <T extends TBase> TableOperationsHandler<T> offer(IHMSHandler handler, T req)
+      throws TException, IOException {
+    if (req instanceof DropTableRequest dropTableReq) {
+      TableOperationsHandler<T> tableOp = (TableOperationsHandler<T>)
+          ofCache(dropTableReq.getId(), dropTableReq.isCancel());
+      if (tableOp == null) {
+        tableOp = new TableOperationsHandler<>(handler, dropTableReq.isAsyncDrop(), req);
+      }
+      return tableOp;
+    }
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   private void runTableOperation() throws TException, IOException {
     try {
       // currently this class only supports the drop table, we can the alter table if possible in the future
-      if (request_ instanceof DropTableRequest dropReq) {
+      if (request instanceof DropTableRequest dropReq) {
         // drop any partitions
         String catName = normalizeIdentifier(
-            dropReq.isSetCatalogName() ? dropReq.getCatalogName() : getDefaultCatalog(handler_.getConf()));
+            dropReq.isSetCatalogName() ? dropReq.getCatalogName() : getDefaultCatalog(handler.getConf()));
         String name = normalizeIdentifier(dropReq.getTableName());
         String dbname = normalizeIdentifier(dropReq.getDbName());
         tableName = new TableName(catName, dbname, name);
         logMsgPrefix = "Drop " + id + " on table " + tableName + ":";
         GetTableRequest req = new GetTableRequest(dropReq.getDbName(), dropReq.getTableName());
         req.setCatName(catName);
-        tbl = handler_.get_table_core(req);
+        tbl = handler.get_table_core(req);
         if (tbl == null) {
           throw new NoSuchObjectException(tableName + " doesn't exist");
         }
@@ -282,15 +289,15 @@ public class TableOperationsHandler<T extends TBase> {
           tblPath = new Path(tbl.getSd().getLocation());
         }
         if (tableDataShouldBeDeleted && tblPath != null) {
-          if (!handler_.getWh().isWritable(tblPath.getParent())) {
+          if (!handler.getWh().isWritable(tblPath.getParent())) {
             throw new MetaException(
                 tableName + " not deleted since " + tblPath.getParent() + " is not writable by " + SecurityUtils.getUser());
           }
         }
-        this.future = executor_.submit(this::dropTable);
+        this.future = executor.submit(this::dropTable);
       }
     } finally {
-      this.executor_.shutdown();
+      this.executor.shutdown();
     }
   }
 
@@ -300,11 +307,11 @@ public class TableOperationsHandler<T extends TBase> {
       future.cancel(true);
       aborted.set(true);
     }
-    executor_.shutdownNow();
+    executor.shutdownNow();
   }
 
   public DropTableResult getDropTableResult() throws TException {
-    if (!(request_ instanceof DropTableRequest)) {
+    if (!(request instanceof DropTableRequest)) {
       throw new IllegalStateException("Current operation " + id + "is not a drop table operation");
     }
     TableOpResp resp = toTableOpResp();
