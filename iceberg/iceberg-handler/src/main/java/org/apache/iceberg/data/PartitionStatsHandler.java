@@ -159,6 +159,11 @@ public class PartitionStatsHandler {
         FileFormat.fromString(
             table.properties().getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT));
 
+    if (fileFormat == FileFormat.ORC) {
+      // Internal writers are not supported for ORC yet. Temporary we go with AVRO.
+      fileFormat = FileFormat.AVRO;
+    }
+
     OutputFile outputFile = newPartitionStatsFile(table, fileFormat, snapshotId);
 
     try (DataWriter<StructLike> writer = dataWriter(dataSchema, outputFile, fileFormat)) {
