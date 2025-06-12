@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -98,8 +99,10 @@ public class JavaUtils {
    */
   public static <T> T newInstance(Class<T> theClass) {
     try {
-      return theClass.newInstance();
-    } catch (InstantiationException|IllegalAccessException e) {
+      Constructor<T> constructor = theClass.getDeclaredConstructor();
+      constructor.setAccessible(true);
+      return constructor.newInstance();
+    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
     }
   }

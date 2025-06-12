@@ -87,7 +87,7 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
       Map<String, String> tblProps = tbl.getTTable().getParameters();
       Path tlocation = null;
       try {
-        Warehouse wh = new Warehouse(context.getConf());
+        Warehouse wh = Warehouse.create(context.getConf());
         tlocation = wh.getDefaultTablePath(context.getDb().getDatabase(tbl.getDbName()), tbl.getTableName(),
                 tblProps == null || !AcidUtils.isTablePropertyTransactional(tblProps));
       } catch (MetaException e) {

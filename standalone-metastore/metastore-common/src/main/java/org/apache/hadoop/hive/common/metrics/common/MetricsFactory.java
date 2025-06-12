@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.common.metrics.common;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.metrics.LegacyMetrics;
+import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 import java.lang.reflect.Constructor;
@@ -36,10 +38,14 @@ public class MetricsFactory {
    */
   public synchronized static void init(Configuration conf) throws Exception {
     if (metrics == null) {
-      Class metricsClass = conf.getClassByName(
+      Class<?> metricsClass = conf.getClassByName(
           MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_CLASS));
-      Constructor constructor = metricsClass.getConstructor(Configuration.class);
-      metrics = (Metrics) constructor.newInstance(conf);
+      Constructor<?> constructor = metricsClass.getConstructor(Configuration.class);
+      if (constructor.getDeclaringClass() == LegacyMetrics.class) {
+        metrics = LegacyMetrics.createLegacyMetrics();
+      } else if (constructor.getDeclaringClass() == CodahaleMetrics.class) {
+        metrics = new CodahaleMetrics(conf);
+      }
     }
   }
 

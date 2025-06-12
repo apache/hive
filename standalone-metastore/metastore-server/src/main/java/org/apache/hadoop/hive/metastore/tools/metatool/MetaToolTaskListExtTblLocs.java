@@ -70,7 +70,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
           JSONException {
     ObjectStore objectStore = getObjectStore();
     conf = msConf != null ? msConf : objectStore.getConf();
-    Warehouse wh = new Warehouse(conf);
+    Warehouse wh = Warehouse.create(conf);
     String defaultCatalog = MetaStoreUtils.getDefaultCatalog(conf);
     List<String> databases = objectStore.getDatabases(defaultCatalog, dbPattern);
     System.out.println("Number of databases found for given pattern: " + databases.size());

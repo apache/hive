@@ -227,16 +227,26 @@ public class TestMetaTookTaskMetadataSummary {
       Assert.assertEquals(i * 10, summary.getNumRows());
       Assert.assertEquals(i * 1000, summary.getTotalSize());
       Assert.assertEquals("ICEBERG", summary.getTableType());
-      Assert.assertEquals("v2", summary.getExtraSummary().remove(FakeIcebergSummaryHandler.VERSION));
+      Assert.assertEquals("v2", summary.getExtraSummary().get(FakeIcebergSummaryHandler.VERSION));
       Map<String, Object> icebergSummary = FakeIcebergSummaryHandler.TABLE_TO_SUMMARY.get(tableName);
       Assert.assertFalse(icebergSummary.isEmpty());
       if (TASK.formatJson) {
-        Assert.assertEquals(icebergSummary,
-            summary.getExtraSummary().get(FakeIcebergSummaryHandler.METADATA));
+        assertIcebergSummaryMetadata(icebergSummary,
+                (Map<String, Object>) summary.getExtraSummary().get(FakeIcebergSummaryHandler.METADATA));
+        Assert.assertEquals(icebergSummary.get("format-version"),
+                summary.getExtraSummary().get(FakeIcebergSummaryHandler.VERSION));
       } else {
         Assert.assertEquals(icebergSummary, summary.getExtraSummary());
       }
     }
+  }
+
+  private void assertIcebergSummaryMetadata(Map<String, Object> icebergSummary, Map<String, Object> summaryMetadata) {
+    Assert.assertEquals(4 ,summaryMetadata.size());
+    Assert.assertEquals(icebergSummary.get("numSnapshots"), summaryMetadata.get("numSnapshots"));
+    Assert.assertEquals(icebergSummary.get("numBranches"), summaryMetadata.get("numBranches"));
+    Assert.assertEquals(icebergSummary.get("numTags"), summaryMetadata.get("numTags"));
+    Assert.assertEquals(icebergSummary.get("numDataFiles"), summaryMetadata.get("numDataFiles"));
   }
 
   public static class FakeIcebergSummaryHandler implements MetaSummaryHandler {
@@ -287,7 +297,8 @@ public class TestMetaTookTaskMetadataSummary {
           .add(NUM_BRANCHES, numBranches)
           .add(NUM_TAGS, numTags)
           .add(NUM_SNAPSHOTS, numSnapshots)
-          .add(NUM_DATA_FILES, numDataFiles);
+          .add(NUM_DATA_FILES, numDataFiles)
+          .add(VERSION, "v2");
       TABLE_TO_SUMMARY.put(tableName, builder.build());
     }
 

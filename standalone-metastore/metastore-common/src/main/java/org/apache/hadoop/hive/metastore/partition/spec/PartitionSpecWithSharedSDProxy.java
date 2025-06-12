@@ -36,14 +36,18 @@ import java.util.Map;
  */
 public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
 
-  private PartitionSpec partitionSpec;
+  private final PartitionSpec partitionSpec;
 
-  public PartitionSpecWithSharedSDProxy(PartitionSpec partitionSpec) throws MetaException {
+  public PartitionSpecWithSharedSDProxy(PartitionSpec partitionSpec) {
+    this.partitionSpec = partitionSpec;
+  }
+
+  public static PartitionSpecWithSharedSDProxy createInstance(PartitionSpec partitionSpec) throws MetaException {
     assert partitionSpec.isSetSharedSDPartitionSpec();
     if (partitionSpec.getSharedSDPartitionSpec().getSd() == null) {
       throw new MetaException("The shared storage descriptor must be set.");
     }
-    this.partitionSpec = partitionSpec;
+    return new PartitionSpecWithSharedSDProxy(partitionSpec);
   }
 
   @Override

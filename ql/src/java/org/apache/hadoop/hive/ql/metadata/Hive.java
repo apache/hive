@@ -4077,7 +4077,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table table = getTable(dbName, tableName);
-      if (!dropOptions.deleteData) {
+      if (!dropOptions.isDeleteData()) {
         AcidUtils.TableSnapshot snapshot = AcidUtils.getTableSnapshot(conf, table, true);
         if (snapshot != null) {
           dropOptions.setWriteId(snapshot.getWriteId());

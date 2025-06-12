@@ -183,7 +183,7 @@ public class SerializationProxy<T extends Serializable> implements Externalizabl
    */
   public static <T extends Serializable> void registerType(final int slot, Class<T> clazz) {
     synchronized (REGISTERED) {
-      Type<T> ntype = new Type<>(clazz);
+      Type<T> ntype = Type.create(clazz);
       ntype.slot = slot;
       if (slot >= 255) {
         throw new IllegalArgumentException(ntype + "@" + slot + ": can not register more than 254 types");
@@ -323,7 +323,7 @@ public class SerializationProxy<T extends Serializable> implements Externalizabl
     try {
       @SuppressWarnings("unchecked")
       Class<T> clazz = (Class<T>) Class.forName(cname);
-      return new Type<>(clazz);
+      return Type.create(clazz);
     } catch (ClassNotFoundException xnotfound) {
       throw ProxyException.convert(xnotfound);
     }
@@ -376,13 +376,21 @@ public class SerializationProxy<T extends Serializable> implements Externalizabl
     private final Method[] writes;
     private transient int slot = 255;
 
+    private Type(Constructor<T>[] ctors, Method[] writes) {
+        this.ctors = ctors;
+        this.writes = writes;
+    }
+
     /**
-     * Creates a new instance of type.
-     * @param clazz the proxified class
+     * Static factory method for safely creating Type instances.
+     * @param clazz the class to analyze
+     * @param <T> Serializable type
+     * @return a new Type instance
      */
-    public Type(Class<T> clazz) {
-        ctors = typeConstructors(clazz);
-        writes = typeWrites(clazz);
+    public static <T extends Serializable> Type<T> create(Class<T> clazz) {
+      Constructor<T>[] ctors = typeConstructors(clazz);
+      Method[] writes = typeWrites(clazz);
+      return new Type<>(ctors, writes);
     }
 
     /**

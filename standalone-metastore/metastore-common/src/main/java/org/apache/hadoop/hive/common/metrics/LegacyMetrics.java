@@ -169,9 +169,11 @@ public class LegacyMetrics implements Metrics {
     }
   };
 
-  public LegacyMetrics(Configuration conf) throws Exception {
+  public static LegacyMetrics createLegacyMetrics() throws Exception {
+    LegacyMetrics metrics = new LegacyMetrics();
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
     mbs.registerMBean(metrics, oname);
+    return metrics;
   }
 
   public Long incrementCounter(String name) {

@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.common.AcidConstants.DELETE_DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PREFIX;
 import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
@@ -60,7 +59,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -220,7 +218,7 @@ public class HiveMetaStoreChecker {
 
         if (status.isDirectory() && !tableNames.contains(status.getPath().getName())) {
 
-          result.getTablesNotInMs().add(status.getPath().getName());
+          result.addTableNotInMs(status.getPath().getName());
         }
       }
     }
@@ -256,7 +254,7 @@ public class HiveMetaStoreChecker {
       try {
         table = getMsc().getTable(catName, dbName, tableName);
       } catch (TException e) {
-        result.getTablesNotInMs().add(tableName);
+        result.addTableNotInMs(tableName);
         return;
       }
     }
@@ -316,7 +314,7 @@ public class HiveMetaStoreChecker {
     }
     FileSystem fs = tablePath.getFileSystem(conf);
     if (!fs.exists(tablePath)) {
-      result.getTablesNotOnFs().add(table.getTableName());
+      result.addTableNotOnFs(table.getTableName());
       return;
     }
 
@@ -364,22 +362,22 @@ public class HiveMetaStoreChecker {
       prFromMetastore.setPartitionName(getPartitionName(table, partition));
       prFromMetastore.setTableName(partition.getTableName());
       if (allPartDirs.remove(partPath)) {
-        result.getCorrectPartitions().add(prFromMetastore);
+        result.addCorrectPartitions(prFromMetastore);
       } else {
         // There can be edge case where user can define partition directory outside of table directory
         // to avoid eviction of such partitions
         // we check existence of partition path which are not in table directory
         if (!partPath.toString().contains(tablePathStr)) {
           if (!fs.exists(partPath)) {
-            result.getPartitionsNotOnFs().add(prFromMetastore);
+            result.addPartitionNotOnFs(prFromMetastore);
           } else {
-            result.getCorrectPartitions().add(prFromMetastore);
+            result.addPartitionNotOnFs(prFromMetastore);
           }
         } else {
           // If Partition Path contains table path, we assume to be non-existent partition since
           // Partition spec has to be in format FS://<TablePath>/<PartKeyName>=<PartValue>
           // otherwise partition discovery may fail.
-          result.getPartitionsNotOnFs().add(prFromMetastore);
+          result.addPartitionNotOnFs(prFromMetastore);
         }
       }
 
@@ -391,7 +389,7 @@ public class HiveMetaStoreChecker {
           CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
           pr.setPartitionName(getPartitionName(table, partition));
           pr.setTableName(partition.getTableName());
-          result.getExpiredPartitions().add(pr);
+          result.addExpiredPartitions(pr);
           if (LOG.isDebugEnabled()) {
             LOG.debug("{}.{}.{}.{} expired. createdAt: {} current: {} age: {}s expiry: {}s", table.getCatName(),
                 table.getDbName(), partition.getTableName(), pr.getPartitionName(), createdTime, currentEpochSecs,
@@ -468,9 +466,9 @@ public class HiveMetaStoreChecker {
         if (transactionalTable) {
           setMaxTxnAndWriteIdFromPartition(partPath, pr);
         }
-        result.getPartitionsNotInMs().add(pr);
+        result.addPartitionNotInMs(pr);
         if (result.getPartitionsNotOnFs().contains(pr)) {
-          result.getPartitionsNotOnFs().remove(pr);
+          result.removePartitionNotOnFs(pr);
         }
       }
     }

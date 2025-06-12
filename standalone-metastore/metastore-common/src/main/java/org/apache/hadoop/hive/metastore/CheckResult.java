@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -43,76 +44,84 @@ public class CheckResult {
    * @return a list of tables not found on the filesystem.
    */
   public Set<String> getTablesNotOnFs() {
-    return tablesNotOnFs;
+    return Collections.unmodifiableSet(tablesNotOnFs);
   }
 
   /**
-   * @param tablesNotOnFs
-   *          a list of tables not found on the filesystem.
+   * @param tableName
+   *          a table not found on the filesystem.
    */
-  public void setTablesNotOnFs(Set<String> tablesNotOnFs) {
-    this.tablesNotOnFs = tablesNotOnFs;
+  public void addTableNotOnFs(String tableName) {
+    this.tablesNotOnFs.add(tableName);
   }
 
   /**
    * @return a list of tables not found in the metastore.
    */
   public Set<String> getTablesNotInMs() {
-    return tablesNotInMs;
+    return Collections.unmodifiableSet(tablesNotInMs);
   }
 
   /**
-   * @param tablesNotInMs
+   * @param tableName
    *          a list of tables not found in the metastore.
    */
-  public void setTablesNotInMs(Set<String> tablesNotInMs) {
-    this.tablesNotInMs = tablesNotInMs;
+  public void addTableNotInMs(String tableName) {
+    this.tablesNotInMs.add(tableName);
   }
 
   /**
    * @return a list of partitions not found on the fs
    */
   public Set<PartitionResult> getPartitionsNotOnFs() {
-    return partitionsNotOnFs;
+    return Collections.unmodifiableSet(partitionsNotOnFs);
   }
 
   /**
-   * @param partitionsNotOnFs
+   * @param partitionResult
    *          a list of partitions not found on the fs
    */
-  public void setPartitionsNotOnFs(Set<PartitionResult> partitionsNotOnFs) {
-    this.partitionsNotOnFs = partitionsNotOnFs;
+  public void addPartitionNotOnFs(PartitionResult partitionResult) {
+    this.partitionsNotOnFs.add(partitionResult);
+  }
+
+  /**
+   * @param partitionResult
+   *          a list of partitions not found on the fs
+   */
+  public void removePartitionNotOnFs(PartitionResult partitionResult) {
+    this.partitionsNotOnFs.remove(partitionResult);
   }
 
   /**
    * @return a list of partitions not found in the metastore
    */
   public Set<PartitionResult> getPartitionsNotInMs() {
-    return partitionsNotInMs;
+    return Collections.unmodifiableSet(partitionsNotInMs);
   }
 
   /**
-   * @param partitionsNotInMs
-   *          a list of partitions not found in the metastore
+   * @param partitionResult
+   *          a partition result of a partition not found in the metastore
    */
-  public void setPartitionsNotInMs(Set<PartitionResult> partitionsNotInMs) {
-    this.partitionsNotInMs = partitionsNotInMs;
+  public void addPartitionNotInMs(PartitionResult partitionResult) {
+    this.partitionsNotInMs.add(partitionResult);
   }
 
   public Set<PartitionResult> getExpiredPartitions() {
-    return expiredPartitions;
+    return Collections.unmodifiableSet(expiredPartitions);
   }
 
-  public void setExpiredPartitions(final Set<PartitionResult> expiredPartitions) {
-    this.expiredPartitions = expiredPartitions;
+  public void addExpiredPartitions(PartitionResult partitionResult) {
+    this.expiredPartitions.add(partitionResult);
   }
 
   public Set<PartitionResult> getCorrectPartitions() {
-    return this.correctPartitions;
+    return Collections.unmodifiableSet(correctPartitions);
   }
 
-  public void setCorrectPartitions(final Set<PartitionResult> correctPartitions) {
-    this.correctPartitions = correctPartitions;
+  public void addCorrectPartitions(PartitionResult partitionResult) {
+    this.correctPartitions.add(partitionResult);
   }
 
   public long getMaxWriteId() {

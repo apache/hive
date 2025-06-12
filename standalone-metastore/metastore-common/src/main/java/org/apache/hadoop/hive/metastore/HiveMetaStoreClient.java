@@ -49,7 +49,6 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -437,21 +436,35 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (metastoreUris.length <= 1) {
       return;
     }
-    Random rng = new Random();
-    int index = rng.nextInt(metastoreUris.length - 1) + 1;
+    int index = (int)(Math.random() * (metastoreUris.length - 1)) + 1;
     URI tmp = metastoreUris[0];
     metastoreUris[0] = metastoreUris[index];
     metastoreUris[index] = tmp;
   }
 
   @VisibleForTesting
-  public TTransport getTTransport() {
-    return transport;
+  public boolean isTTransportNull() {
+    return transport == null;
   }
 
   @VisibleForTesting
-  public static AtomicInteger getConnCount() {
-    return connCount;
+  public boolean isTTransportOpen() {
+    return transport.isOpen();
+  }
+
+  @VisibleForTesting
+  public void closeTTransport() {
+    transport.close();
+  }
+
+  @VisibleForTesting
+  public static int getConnCount() {
+    return connCount.get();
+  }
+
+  @VisibleForTesting
+  public static void setConnCount(int value) {
+    connCount.set(value);
   }
 
   @Override
@@ -1999,8 +2012,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     DropPartitionRequest dropPartitionReq = new DropPartitionRequest(db_name, tbl_name);
     dropPartitionReq.setCatName(catName);
     dropPartitionReq.setPartVals(part_vals);
-    dropPartitionReq.setDeleteData(options.deleteData);
-    dropPartitionReq.setEnvironmentContext(options.purgeData ? getEnvironmentContextWithIfPurgeSet() : null);
+    dropPartitionReq.setDeleteData(options.isDeleteData());
+    dropPartitionReq.setEnvironmentContext(options.isPurgeData() ? getEnvironmentContextWithIfPurgeSet() : null);
     return client.drop_partition_req(dropPartitionReq);
   }
 
@@ -2061,21 +2074,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     rps.setExprs(exprs);
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     req.setCatName(catName);
-    req.setDeleteData(options.deleteData);
-    req.setNeedResult(options.returnResults);
-    req.setIfExists(options.ifExists);
+    req.setDeleteData(options.isDeleteData());
+    req.setNeedResult(options.isReturnResults());
+    req.setIfExists(options.isIfExists());
 
-    if (options.purgeData) {
+    if (options.isPurgeData()) {
       LOG.info("Dropped partitions will be purged!");
       context.putToProperties("ifPurge", "true");
     }
-    if (options.writeId != null) {
+    if (options.getWriteId() != null) {
       context = Optional.ofNullable(context).orElse(new EnvironmentContext());
-      context.putToProperties(hive_metastoreConstants.WRITE_ID, options.writeId.toString());
+      context.putToProperties(hive_metastoreConstants.WRITE_ID, options.getWriteId().toString());
     }
-    if (options.txnId != null) {
+    if (options.getTxnId() != null) {
       context = Optional.ofNullable(context).orElse(new EnvironmentContext());
-      context.putToProperties(hive_metastoreConstants.TXN_ID, options.txnId.toString());
+      context.putToProperties(hive_metastoreConstants.TXN_ID, options.getTxnId().toString());
     }
     req.setEnvironmentContext(context);
     boolean skipColumnSchemaForPartition = MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);

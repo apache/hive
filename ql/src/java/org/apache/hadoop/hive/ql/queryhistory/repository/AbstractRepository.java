@@ -51,7 +51,7 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
     this.conf = conf;
     this.schema = schema;
     try {
-      this.warehouse = new Warehouse(conf);
+      this.warehouse = Warehouse.create(conf);
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }

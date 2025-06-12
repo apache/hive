@@ -61,7 +61,7 @@ public class TestSessionHiveMetastoreClientExchangePartitionsTempTable extends T
   @Override
   public void setUp() throws Exception {
     initHiveConf();
-    wh = new Warehouse(conf);
+    wh = Warehouse.create(conf);
     SessionState.start(conf);
     setClient(Hive.get(conf).getMSC());
     getClient().dropDatabase(DB_NAME, true, true, true);

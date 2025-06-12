@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,8 +41,11 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
   private List<PartitionSpecProxy> partitionSpecProxies;
   private int size = 0;
 
-  protected CompositePartitionSpecProxy(List<PartitionSpec> partitionSpecs) throws MetaException {
-    this.partitionSpecs = partitionSpecs;
+  protected CompositePartitionSpecProxy() {
+  }
+
+  public CompositePartitionSpecProxy createInstance(List<PartitionSpec> partitionSpecs) throws MetaException {
+    this.partitionSpecs = Collections.unmodifiableList(partitionSpecs);
     if (partitionSpecs.isEmpty()) {
       catName = null;
       dbName = null;
@@ -60,26 +64,7 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
     }
     // Assert class-invariant.
     assert isValid() : "Invalid CompositePartitionSpecProxy!";
-  }
-
-  @Deprecated
-  protected CompositePartitionSpecProxy(String dbName, String tableName, List<PartitionSpec> partitionSpecs) throws MetaException {
-    this(DEFAULT_CATALOG_NAME, dbName, tableName, partitionSpecs);
-
-  }
-
-  protected CompositePartitionSpecProxy(String catName, String dbName, String tableName,
-                                        List<PartitionSpec> partitionSpecs) throws MetaException {
-    this.catName = catName;
-    this.dbName = dbName;
-    this.tableName = tableName;
-    this.partitionSpecs = partitionSpecs;
-    this.partitionSpecProxies = new ArrayList<>(partitionSpecs.size());
-    for (PartitionSpec partitionSpec : partitionSpecs) {
-      this.partitionSpecProxies.add(PartitionSpecProxy.Factory.get(partitionSpec));
-    }
-    // Assert class-invariant.
-    assert isValid() : "Invalid CompositePartitionSpecProxy!";
+    return new CompositePartitionSpecProxy();
   }
 
   private boolean isValid() {
@@ -246,7 +231,7 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
 
   @Override
   public List<PartitionSpec> toPartitionSpec() {
-    return partitionSpecs;
+    return Collections.unmodifiableList(partitionSpecs);
   }
 
   @Override

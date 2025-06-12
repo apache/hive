@@ -560,7 +560,7 @@ public abstract class TaskCompiler {
       if (!db.databaseExists(names[0])) {
         throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
       }
-      Warehouse wh = new Warehouse(conf);
+      Warehouse wh = Warehouse.create(conf);
       return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1] + suffix, isExternal);
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);

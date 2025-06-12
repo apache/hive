@@ -392,7 +392,7 @@ public abstract class HadoopThriftAuthBridge {
 
       TSaslServerTransport.Factory transFactory = createSaslServerTransportFactory(saslProps);
 
-      return new TUGIAssumingTransportFactory(transFactory, clientValidationUGI);
+      return TUGIAssumingTransportFactory.create(transFactory, clientValidationUGI);
     }
 
     /**
@@ -429,14 +429,14 @@ public abstract class HadoopThriftAuthBridge {
      * the SASL transport.
      */
     public TTransportFactory wrapTransportFactory(TTransportFactory transFactory) {
-      return new TUGIAssumingTransportFactory(transFactory, realUgi);
+      return TUGIAssumingTransportFactory.create(transFactory, realUgi);
     }
 
     /**
      * Similar to the above function, except use client facing UGI.
      */
     public TTransportFactory wrapTransportFactoryInClientUGI(TTransportFactory transFactory) {
-      return new TUGIAssumingTransportFactory(transFactory, clientValidationUGI);
+      return TUGIAssumingTransportFactory.create(transFactory, clientValidationUGI);
     }
 
     /**
@@ -690,15 +690,24 @@ public abstract class HadoopThriftAuthBridge {
      * clients.
      */
     static class TUGIAssumingTransportFactory extends TTransportFactory {
-      private final UserGroupInformation ugi;
-      private final TTransportFactory wrapped;
+      private UserGroupInformation ugi;
+      private TTransportFactory wrapped;
       private Throwable cause = null;
 
-      public TUGIAssumingTransportFactory(TTransportFactory wrapped, UserGroupInformation ugi) {
-        assert wrapped != null;
-        assert ugi != null;
-        this.wrapped = wrapped;
-        this.ugi = ugi;
+      public TUGIAssumingTransportFactory() {
+      }
+
+      public static TUGIAssumingTransportFactory create(TTransportFactory wrapped, UserGroupInformation ugi) {
+        if (wrapped == null) {
+          throw new IllegalArgumentException("Transport factor(wrapped) cannot be null");
+        }
+        if (ugi == null) {
+          throw new IllegalArgumentException("UserGroupInformation(ugi) cannot be null");
+        }
+        TUGIAssumingTransportFactory factory = new TUGIAssumingTransportFactory();
+        factory.wrapped = wrapped;
+        factory.ugi = ugi;
+        return factory;
       }
 
       @Override

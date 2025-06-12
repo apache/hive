@@ -136,7 +136,7 @@ public abstract class TestHiveMetaStore {
   @Before
   public void setUp() throws Exception {
     initConf();
-    warehouse = new Warehouse(conf);
+    warehouse = Warehouse.create(conf);
 
     // set some values to use for getting conf. vars
     MetastoreConf.setBoolVar(conf, ConfVars.METRICS_ENABLED, true);
@@ -3519,7 +3519,7 @@ public abstract class TestHiveMetaStore {
     nonClosingClient.getAllDatabases();
     // Drop connection without calling close. HMS thread deleteContext
     // will trigger cleanup
-    nonClosingClient.getTTransport().close();
+    nonClosingClient.closeTTransport();
 
     MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after transport close", () -> {
       Set<JDOPersistenceManager> objectsAfterDroppedConnection = new HashSet<>(getJDOPersistenceManagerCache());

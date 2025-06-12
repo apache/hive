@@ -56,7 +56,7 @@ public class HMSDirectTest extends HMSTestBase {
         DB = "dbtest" + RND.nextInt(100);
         objectStore = new ObjectStore();
         objectStore.setConf(conf);
-        Warehouse warehouse = new Warehouse(conf);
+        Warehouse warehouse = Warehouse.create(conf);
         HMSHandler.createDefaultCatalog(objectStore, warehouse);
         // configure object store
         objectStore.createDatabase(new DatabaseBuilder()

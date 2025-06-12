@@ -58,7 +58,7 @@ public class TestMetaStoreAuthorization {
     try {
       fs.mkdirs(top);
 
-      Warehouse wh = new Warehouse(conf);
+      Warehouse wh = Warehouse.create(conf);
       FsPermission writePerm = FsPermission.createImmutable((short)0777);
       FsPermission noWritePerm = FsPermission.createImmutable((short)0555);
 

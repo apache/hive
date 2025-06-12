@@ -322,7 +322,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String alterHandlerName = MetastoreConf.getVar(conf, ConfVars.ALTER_HANDLER);
     alterHandler = ReflectionUtils.newInstance(JavaUtils.getClass(
         alterHandlerName, AlterHandler.class), conf);
-    wh = new Warehouse(conf);
+    wh = Warehouse.create(conf);
 
     synchronized (HMSHandler.class) {
       if (currentUrl == null || !currentUrl.equals(MetaStoreInit.getConnectionURL(conf))) {
@@ -3589,7 +3589,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     
     if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
         !FileUtils.pathHasSnapshotSubDir(location, fs)) {
-      HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
+      HdfsUtils.HadoopFileStatus status = HdfsUtils.HadoopFileStatus.createInstance(getConf(), fs, location);
       FileStatus targetStatus = fs.getFileStatus(location);
       String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
       

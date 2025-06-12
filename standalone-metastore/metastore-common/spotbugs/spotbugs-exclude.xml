@@ -21,4 +21,16 @@
     <Match>
         <Class name="~org.apache.hadoop.hive.metastore.api.*" />
     </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.security.TUGIAssumingTransport"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.security.TFilterTransport"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>

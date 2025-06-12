@@ -231,7 +231,7 @@ public class TestFilterHooks {
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
-    warehouse = new Warehouse(conf);
+    warehouse = Warehouse.create(conf);
   }
 
   @After

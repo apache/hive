@@ -352,7 +352,7 @@ public class CachedStore implements RawStore, Configurable {
         String tableDnsPath = null;
         Path tablePath = new Path(dropTableMessage.getTableObj().getSd().getLocation());
         if (tablePath != null) {
-          tableDnsPath = new Warehouse(rawStore.getConf()).getDnsPath(tablePath).toString();
+          tableDnsPath = Warehouse.create(rawStore.getConf()).getDnsPath(tablePath).toString();
         }
 
         while (true) {

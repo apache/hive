@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import javax.security.sasl.AuthenticationException;
 
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
@@ -28,16 +29,16 @@ import org.slf4j.LoggerFactory;
  * This authentication provider implements the {@code CONFIG} authentication. It allows a {@link
  * MetaStorePasswdAuthenticationProvider} to be specified at configuration time which may
  * additionally
- * implement {@link org.apache.hadoop.conf.Configurable Configurable} to grab HMS's {@link
- * org.apache.hadoop.conf.Configuration Configuration}.
+ * implement {@link Configurable Configurable} to grab HMS's {@link
+ * Configuration Configuration}.
  */
 public class MetaStoreConfigAuthenticationProviderImpl implements MetaStorePasswdAuthenticationProvider {
-  private final String userName;
-  private final String password;
+  private static String userName = null;
+  private static String password = null;
   protected static final Logger LOG = LoggerFactory.getLogger(MetaStoreConfigAuthenticationProviderImpl.class);
 
   @SuppressWarnings("unchecked")
-  MetaStoreConfigAuthenticationProviderImpl(Configuration conf) throws AuthenticationException {
+  static MetaStoreConfigAuthenticationProviderImpl createProviderImpl(Configuration conf) throws AuthenticationException {
     userName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_USERNAME);
     password = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_PASSWORD);
 
@@ -50,6 +51,7 @@ public class MetaStoreConfigAuthenticationProviderImpl implements MetaStorePassw
       throw new AuthenticationException("No password specified in " +
               MetastoreConf.ConfVars.THRIFT_AUTH_CONFIG_PASSWORD);
     }
+    return new MetaStoreConfigAuthenticationProviderImpl();
   }
 
   @Override

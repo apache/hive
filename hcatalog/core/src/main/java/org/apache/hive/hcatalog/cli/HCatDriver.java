@@ -124,7 +124,7 @@ public class HCatDriver {
       } else {
         try {
           Hive db = Hive.get();
-          Path dbPath = new Warehouse(conf).getDatabasePath(db.getDatabase(dbName));
+          Path dbPath = Warehouse.create(conf).getDatabasePath(db.getDatabase(dbName));
           FileSystem fs = dbPath.getFileSystem(conf);
           if (perms != null) {
             fs.setPermission(dbPath, perms);

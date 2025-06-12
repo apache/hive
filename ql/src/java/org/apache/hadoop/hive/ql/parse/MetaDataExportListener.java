@@ -61,7 +61,7 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
         tbl);
     IHMSHandler handler = tableEvent.getHandler();
     Configuration conf = handler.getConf();
-    Warehouse wh = new Warehouse(conf);
+    Warehouse wh = Warehouse.create(conf);
     Path tblPath = new Path(tbl.getSd().getLocation());
     fs = wh.getFs(tblPath);
     Date now = new Date();

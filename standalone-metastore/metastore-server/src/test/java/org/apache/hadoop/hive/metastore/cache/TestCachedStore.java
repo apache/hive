@@ -84,7 +84,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     ObjectStore objectStore = new ObjectStore();
     objectStore.setConf(conf);
     // Create the 'hive' catalog
-    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, Warehouse.create(conf));
     // Create 2 database objects
     db1 = createDatabaseObject("cs_db1", "user1");
     objectStore.createDatabase(db1);

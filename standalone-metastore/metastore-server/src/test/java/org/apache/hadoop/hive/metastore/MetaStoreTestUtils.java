@@ -200,7 +200,7 @@ public class MetaStoreTestUtils {
         MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf, withHouseKeepingThreads, waitForHouseKeepers);
 
         // Creating warehouse dir, if not exists
-        Warehouse wh = new Warehouse(conf);
+        Warehouse wh = Warehouse.create(conf);
         if (!wh.isDir(wh.getWhRoot())) {
           FileSystem fs = wh.getWhRoot().getFileSystem(conf);
           fs.mkdirs(wh.getWhRoot());

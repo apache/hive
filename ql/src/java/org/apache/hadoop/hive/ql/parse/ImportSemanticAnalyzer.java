@@ -347,7 +347,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    Warehouse wh = new Warehouse(x.getConf());
+    Warehouse wh = Warehouse.create(x.getConf());
     Table table = tableIfExists(tblDesc, x.getHive());
     boolean tableExists = false;
 

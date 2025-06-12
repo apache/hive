@@ -50,7 +50,7 @@ public class TestMetastoreTransformer {
   @Before
   public void setUp() throws Exception {
     initConf();
-    warehouse = new Warehouse(conf);
+    warehouse = Warehouse.create(conf);
 
     // set some values to use for getting conf. vars
     MetastoreConf.setBoolVar(conf, ConfVars.METRICS_ENABLED, true);
@@ -59,7 +59,7 @@ public class TestMetastoreTransformer {
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
-    warehouse = new Warehouse(conf);
+    warehouse = Warehouse.create(conf);
     client = createClient();
   }
 

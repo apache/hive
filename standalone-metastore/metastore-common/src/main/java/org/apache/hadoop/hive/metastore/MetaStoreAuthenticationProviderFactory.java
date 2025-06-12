@@ -70,9 +70,9 @@ public final class MetaStoreAuthenticationProviderFactory {
     if (authMethod == AuthMethods.LDAP) {
       return new MetaStoreLdapAuthenticationProviderImpl(conf);
     } else if (authMethod == AuthMethods.CUSTOM) {
-      return new MetaStoreCustomAuthenticationProviderImpl(conf);
+      return MetaStoreCustomAuthenticationProviderImpl.create(conf);
     } else if (authMethod == AuthMethods.CONFIG) {
-      return new MetaStoreConfigAuthenticationProviderImpl(conf);
+      return MetaStoreConfigAuthenticationProviderImpl.createProviderImpl(conf);
     } else if (authMethod == AuthMethods.NONE) {
       return new MetaStoreAnonymousAuthenticationProviderImpl();
     } else {

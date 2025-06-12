@@ -110,7 +110,7 @@ public class TestPermsGrp {
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
     hcatConf.set(HiveConf.ConfVars.METASTORE_URIS.varname,
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
-    clientWH = new Warehouse(hcatConf);
+    clientWH = Warehouse.create(hcatConf);
     msc = new HiveMetaStoreClient(hcatConf);
   }
 

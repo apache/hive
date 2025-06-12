@@ -59,7 +59,7 @@ public class TestCatalogCaching {
     objectStore.setConf(conf);
 
     // Create three catalogs
-    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, Warehouse.create(conf));
 
     Catalog cat1 = new CatalogBuilder()
         .setName(CAT1_NAME)

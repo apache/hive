@@ -478,7 +478,7 @@ public class TestTenantBasedStorageHierarchy {
         if (cat == null) {
           cat = new Catalog();
           cat.setName(catalog.toLowerCase());
-          Warehouse wh = new Warehouse(conf);
+          Warehouse wh = Warehouse.create(conf);
           cat.setLocationUri(wh.getWhRootExternal().toString() + File.separator + catalog);
           cat.setDescription("Non-hive catalog");
           client.createCatalog(cat);

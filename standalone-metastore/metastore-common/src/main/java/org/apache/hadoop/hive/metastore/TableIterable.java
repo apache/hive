@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -95,21 +96,20 @@ public class TableIterable implements Iterable<Table> {
    * Primary constructor that fetches all tables in a given msc, given a Hive
    * object,a db name and a table name list.
    */
-  public TableIterable(IMetaStoreClient msc, String dbname, List<String> tableNames, int batchSize)
-      throws TException {
+  public TableIterable(IMetaStoreClient msc, String dbname, List<String> tableNames, int batchSize) {
     this.msc = msc;
     this.catName = null;
     this.dbname = dbname;
-    this.tableNames = tableNames;
+    this.tableNames = Collections.unmodifiableList(tableNames);
     this.batchSize = batchSize;
   }
 
   public TableIterable(IMetaStoreClient msc, String catName, String dbname, List<String>
-          tableNames, int batchSize) throws TException {
+          tableNames, int batchSize) {
     this.msc = msc;
     this.catName = catName;
     this.dbname = dbname;
-    this.tableNames = tableNames;
+    this.tableNames = Collections.unmodifiableList(tableNames);
     this.batchSize = batchSize;
   }
 }

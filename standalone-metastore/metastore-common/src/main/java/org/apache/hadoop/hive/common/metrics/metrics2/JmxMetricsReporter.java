@@ -28,13 +28,9 @@ import org.apache.hadoop.conf.Configuration;
  */
 public class JmxMetricsReporter implements CodahaleReporter {
 
-  private final MetricRegistry registry;
-  private final Configuration conf;
   private final JmxReporter jmxReporter;
 
   public JmxMetricsReporter(MetricRegistry registry, Configuration conf) {
-    this.registry = registry;
-    this.conf = conf;
 
     jmxReporter = JmxReporter.forRegistry(registry)
         .convertRatesTo(TimeUnit.SECONDS)

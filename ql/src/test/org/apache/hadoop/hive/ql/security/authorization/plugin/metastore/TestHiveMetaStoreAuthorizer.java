@@ -118,7 +118,7 @@ public class TestHiveMetaStoreAuthorizer {
     rawStore = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
     // Create the 'hive' catalog with new warehouse directory
-    HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(rawStore, Warehouse.create(conf));
     try {
       DropDataConnectorRequest dropDcReq = new DropDataConnectorRequest(dcName);
       dropDcReq.setIfNotExists(true);

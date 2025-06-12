@@ -42,8 +42,12 @@ public class MetaStoreCustomAuthenticationProviderImpl implements MetaStorePassw
   private final MetaStorePasswdAuthenticationProvider customProvider;
   protected static final Logger LOG = LoggerFactory.getLogger(MetaStoreCustomAuthenticationProviderImpl.class);
 
+  public MetaStoreCustomAuthenticationProviderImpl(MetaStorePasswdAuthenticationProvider customProvider) {
+    this.customProvider = customProvider;
+  }
+
   @SuppressWarnings("unchecked")
-  MetaStoreCustomAuthenticationProviderImpl(Configuration conf) throws AuthenticationException {
+  static MetaStoreCustomAuthenticationProviderImpl create(Configuration conf) throws AuthenticationException {
     String customProviderName = MetastoreConf.getVar(conf,
             MetastoreConf.ConfVars.METASTORE_CUSTOM_AUTHENTICATION_CLASS);
     Class<? extends MetaStorePasswdAuthenticationProvider> customHandlerClass;
@@ -59,7 +63,7 @@ public class MetaStoreCustomAuthenticationProviderImpl implements MetaStorePassw
     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
       customProvider = ReflectionUtils.newInstance(customHandlerClass, conf);
     }
-    this.customProvider = customProvider;
+    return new MetaStoreCustomAuthenticationProviderImpl(customProvider);
   }
 
   @Override
