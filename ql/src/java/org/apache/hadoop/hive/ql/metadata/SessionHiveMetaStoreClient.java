@@ -158,7 +158,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   private Warehouse getWh() throws MetaException {
     if (wh == null) {
-      wh = new Warehouse(conf);
+      wh = Warehouse.create(conf);
     }
     return wh;
   }
@@ -1428,8 +1428,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     }
     Partition droppedPartition = tt.dropPartition(partVals);
     boolean result = droppedPartition != null ? true : false;
-    boolean purgeData = options != null ? options.purgeData : true;
-    boolean deleteData = options != null ? options.deleteData : true;
+    boolean purgeData = options != null ? options.isPurgeData() : true;
+    boolean deleteData = options != null ? options.isDeleteData() : true;
     if (deleteData && !tt.isExternal()) {
       result &= deletePartitionLocation(droppedPartition, purgeData);
     }
@@ -1470,8 +1470,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         Partition droppedPartition = tt.dropPartition(p.getValues());
         if (droppedPartition != null) {
           result.add(droppedPartition);
-          boolean purgeData = options != null ? options.purgeData : true;
-          boolean deleteData = options != null ? options.deleteData : true;
+          boolean purgeData = options != null ? options.isPurgeData() : true;
+          boolean deleteData = options != null ? options.isDeleteData() : true;
           if (deleteData && !tt.isExternal()) {
             deletePartitionLocation(droppedPartition, purgeData);
           }

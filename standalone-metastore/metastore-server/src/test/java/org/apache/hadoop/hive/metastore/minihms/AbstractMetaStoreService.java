@@ -62,7 +62,7 @@ public abstract class AbstractMetaStoreService {
    * @throws Exception if any Exception occurs
    */
   public void start() throws Exception {
-    warehouse = new Warehouse(configuration);
+    warehouse = Warehouse.create(configuration);
     warehouseRootFs = warehouse.getFs(warehouse.getWhRoot());
     TrashPolicy trashPolicy = TrashPolicy.getInstance(configuration, warehouseRootFs);
     trashDir = trashPolicy.getCurrentTrashDir();

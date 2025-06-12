@@ -144,7 +144,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   public CodahaleMetrics(Configuration conf) {
-    this.conf = conf;
+    this.conf = new Configuration(conf);
     //Codahale artifacts are lazily-created.
     timers = CacheBuilder.newBuilder().build(
       new CacheLoader<String, com.codahale.metrics.Timer>() {

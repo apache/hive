@@ -1355,7 +1355,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     //Create the catalog
     Catalog catalog = new Catalog();
     catalog.setName("spark");
-    Warehouse wh = new Warehouse(conf);
+    Warehouse wh = Warehouse.create(conf);
     catalog.setLocationUri(wh.getWhRootExternal().toString() + File.separator + catalog);
     catalog.setDescription("Non-hive catalog");
     Hive.get(primary.hiveConf).getMSC().createCatalog(catalog);

@@ -2632,7 +2632,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               String tableName = getUnescapedName((ASTNode) ast.getChild(0));
               String[] names = Utilities.getDbTableName(tableName);
               try {
-                Warehouse wh = new Warehouse(conf);
+                Warehouse wh = Warehouse.create(conf);
                 //Use destination table's db location.
                 String destTableDb = qb.getTableDesc() != null ? qb.getTableDesc().getDatabaseName() : null;
                 if (destTableDb == null) {
@@ -8263,7 +8263,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       
       String[] names = Utilities.getDbTableName(protoName);
-      Warehouse wh = new Warehouse(conf);
+      Warehouse wh = Warehouse.create(conf);
       if (tbl.getSd() == null || tbl.getSd().getLocation() == null) {
         location = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], false);
       } else {
@@ -8584,7 +8584,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         String suffix = Utilities.getTableOrMVSuffix(ctx,
                 AcidUtils.isTableSoftDeleteEnabled(destinationTable, conf));
-        Warehouse wh = new Warehouse(conf);
+        Warehouse wh = Warehouse.create(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
             tName + suffix, tableDesc.isExternal());
 
@@ -8602,7 +8602,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Path tlocation;
       String [] dbTable = Utilities.getDbTableName(createVwDesc.getViewName());
       try {
-        Warehouse wh = new Warehouse(conf);
+        Warehouse wh = Warehouse.create(conf);
         Map<String, String> tblProps = createVwDesc.getTblProps();
         tlocation = wh.getDefaultTablePath(db.getDatabase(dbTable[0]), dbTable[1],
           tblProps == null || !AcidUtils.isTablePropertyTransactional(tblProps));
@@ -14456,7 +14456,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private String getDefaultLocation(String dbName, String tableName, boolean isExt) throws SemanticException {
     String tblLocation;
     try {
-      Warehouse wh = new Warehouse(conf);
+      Warehouse wh = Warehouse.create(conf);
       tblLocation = wh.getDefaultTablePath(db.getDatabase(dbName), tableName, isExt).toUri().getPath();
     } catch (MetaException | HiveException e) {
       throw new SemanticException(e);

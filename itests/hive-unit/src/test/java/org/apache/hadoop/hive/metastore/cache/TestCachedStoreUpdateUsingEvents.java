@@ -93,7 +93,7 @@ public class TestCachedStoreUpdateUsingEvents {
     CachedStore.stopCacheUpdateService(1);
 
     // Create the 'hive' catalog with new warehouse directory
-    HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(rawStore, Warehouse.create(conf));
   }
 
   private Database createTestDb(String dbName, String dbOwner) throws IOException {
