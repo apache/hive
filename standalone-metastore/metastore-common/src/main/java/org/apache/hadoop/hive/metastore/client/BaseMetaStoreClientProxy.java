@@ -44,7 +44,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 
 abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
 
-  private final IMetaStoreClient delegate;
+  protected final IMetaStoreClient delegate;
   protected final Configuration conf;
 
   public BaseMetaStoreClientProxy(IMetaStoreClient delegate, Configuration conf) {
@@ -153,7 +153,12 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern)
       throws MetaException, TException, UnknownDBException {
-    return delegate.getTables(catName, dbName, tablePattern);
+    try {
+      return delegate.getTables(catName, dbName, tablePattern);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
@@ -165,13 +170,23 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
       throws MetaException, TException, UnknownDBException {
-    return delegate.getTables(catName, dbName, tablePattern, tableType);
+    try {
+      return delegate.getTables(catName, dbName, tablePattern, tableType);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
   public List<Table> getAllMaterializedViewObjectsForRewriting()
       throws MetaException, TException, UnknownDBException {
-    return delegate.getAllMaterializedViewObjectsForRewriting();
+    try {
+      return delegate.getAllMaterializedViewObjectsForRewriting();
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
@@ -189,7 +204,12 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
       throws MetaException, TException, UnknownDBException {
-    return delegate.getMaterializedViewsForRewriting(catName, dbName);
+    try {
+      return delegate.getMaterializedViewsForRewriting(catName, dbName);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
@@ -201,7 +221,12 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
       List<String> tableTypes) throws MetaException, TException, UnknownDBException {
-    return delegate.getTableMeta(catName, dbPatterns, tablePatterns, tableTypes);
+    try {
+      return delegate.getTableMeta(catName, dbPatterns, tablePatterns, tableTypes);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
@@ -212,7 +237,12 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   public List<String> getAllTables(String catName, String dbName)
       throws MetaException, TException, UnknownDBException {
-    return delegate.getAllTables(catName, dbName);
+    try {
+      return delegate.getAllTables(catName, dbName);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
@@ -829,7 +859,7 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   final public void alter_table(String catName, String dbName, String tblName, Table newTable,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
-    alter_table(getDefaultCatalog(conf), dbName, tblName, newTable, null, null);
+    alter_table(catName, dbName, tblName, newTable, null, null);
   }
 
   @Override
@@ -2251,5 +2281,15 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   public AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException {
     return delegate.abortCompactions(request);
   }
-}
 
+  @Override
+  public boolean setProperties(String nameSpace, Map<String, String> properties) throws TException {
+    return delegate.setProperties(nameSpace, properties);
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix,
+      String mapPredicate, String... selection) throws TException {
+    return delegate.getProperties(nameSpace, mapPrefix, mapPredicate, selection);
+  }
+}
