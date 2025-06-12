@@ -84,7 +84,7 @@ class TestVectorMapJoinFastHashTableLoader {
 
     @Test
     public void testSubmitQueueDrainThreads_FutureGetThrowsExecutionException() throws
-            IOException, InterruptedException, SerDeException, ExecutionException, HiveException {
+            IOException, InterruptedException, SerDeException, HiveException {
         doThrow(new InterruptedException("Simulated interruption")).when(vectorMapJoinFastHashTableLoader)
                 .drainAndLoadForPartition(anyInt(), any(VectorMapJoinFastTableContainer.class));
         vectorMapJoinFastHashTableLoader.initHTLoadingService(1048577);
