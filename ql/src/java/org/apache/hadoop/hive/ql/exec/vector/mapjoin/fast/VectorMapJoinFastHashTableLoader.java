@@ -88,7 +88,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
   }
 
-  protected ExecutorService getLoadExecService() {
+  ExecutorService getLoadExecService() {
     return loadExecService;
   }
 
@@ -114,7 +114,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);
   }
 
-  protected void initHTLoadingService(long estKeyCount) {
+   void initHTLoadingService(long estKeyCount) {
     if (estKeyCount < VectorMapJoinFastHashTable.FIRST_SIZE_UP) {
       // Avoid many small HTs that will rehash multiple times causing GCs
       this.numLoadThreads = 1;
@@ -157,7 +157,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     }
   }
 
-  protected List<CompletableFuture<Void>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
+   List<CompletableFuture<Void>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
           throws InterruptedException, IOException, SerDeException {
     List<CompletableFuture<Void>> loaderTasks = new ArrayList<>();
     for (int partitionId = 0; partitionId < numLoadThreads; partitionId++) {
@@ -176,7 +176,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     return loaderTasks;
   }
 
-  protected void drainAndLoadForPartition(int partitionId, VectorMapJoinFastTableContainer tableContainer)
+  void drainAndLoadForPartition(int partitionId, VectorMapJoinFastTableContainer tableContainer)
       throws InterruptedException, IOException, HiveException, SerDeException {
     LOG.info("Starting draining thread {}", partitionId);
     long totalProcessedEntries = 0;
