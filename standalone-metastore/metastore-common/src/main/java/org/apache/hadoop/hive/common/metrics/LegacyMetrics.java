@@ -27,10 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 
-import javax.management.JMException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import javax.management.*;
 
 /**
  * This class may eventually get superseded by org.apache.hadoop.hive.common.metrics2.Metrics.
@@ -169,9 +166,11 @@ public class LegacyMetrics implements Metrics {
     }
   };
 
-  public LegacyMetrics(Configuration conf) throws Exception {
+  public static LegacyMetrics createLegacyMetrics() throws Exception {
+    LegacyMetrics metrics = new LegacyMetrics();
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
     mbs.registerMBean(metrics, oname);
+    return metrics;
   }
 
   public Long incrementCounter(String name) {

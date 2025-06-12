@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.metasummary;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,7 +190,7 @@ public class MetadataTableSummary {
   }
 
   public Map<String, Object> getExtraSummary() {
-    return summary;
+    return Collections.unmodifiableMap(summary);
   }
 
   public MetadataTableSummary addExtra(String key, SummaryMapBuilder builder) {

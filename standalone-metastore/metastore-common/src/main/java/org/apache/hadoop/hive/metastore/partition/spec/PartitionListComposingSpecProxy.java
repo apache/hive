@@ -32,11 +32,15 @@ import java.util.Map;
  */
 public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
 
-  private PartitionSpec partitionSpec;
+  private final PartitionSpec partitionSpec;
 
-  protected PartitionListComposingSpecProxy(PartitionSpec partitionSpec) throws MetaException {
+  protected PartitionListComposingSpecProxy(PartitionSpec partitionSpec) {
+    this.partitionSpec = partitionSpec;
+  }
+
+  public static PartitionListComposingSpecProxy createInstance(PartitionSpec partitionSpec) throws MetaException {
     assert partitionSpec.isSetPartitionList()
-        : "Partition-list should have been set.";
+            : "Partition-list should have been set.";
     PartitionListComposingSpec partitionList = partitionSpec.getPartitionList();
     if (partitionList == null || partitionList.getPartitions() == null) {
       throw new MetaException("The partition list cannot be null.");
@@ -52,8 +56,9 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
         throw new MetaException("Partition value cannot be null.");
       }
     }
-    this.partitionSpec = partitionSpec;
+    return new PartitionListComposingSpecProxy(partitionSpec);
   }
+
 
   @Override
   public String getCatName() {

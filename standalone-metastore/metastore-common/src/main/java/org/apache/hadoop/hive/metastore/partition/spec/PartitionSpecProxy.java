@@ -110,11 +110,11 @@ public abstract class PartitionSpecProxy {
       }
       else
       if (partSpec.isSetPartitionList()) {
-        return new PartitionListComposingSpecProxy(partSpec);
+        return PartitionListComposingSpecProxy.createInstance(partSpec);
       }
       else
       if (partSpec.isSetSharedSDPartitionSpec()) {
-        return new PartitionSpecWithSharedSDProxy(partSpec);
+        return PartitionSpecWithSharedSDProxy.createInstance(partSpec);
       }
 
       assert false : "Unsupported type of PartitionSpec!";
@@ -128,7 +128,7 @@ public abstract class PartitionSpecProxy {
      * @throws MetaException
      */
     public static PartitionSpecProxy get(List<PartitionSpec> partitionSpecs) throws MetaException {
-      return new CompositePartitionSpecProxy(partitionSpecs);
+      return new CompositePartitionSpecProxy().createInstance(partitionSpecs);
     }
 
   } // class Factory;

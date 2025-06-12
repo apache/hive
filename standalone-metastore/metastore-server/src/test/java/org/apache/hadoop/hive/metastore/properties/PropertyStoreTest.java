@@ -64,7 +64,7 @@ public class PropertyStoreTest {
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
     //dropAllStoreObjects(objectStore);
-    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, Warehouse.create(conf));
   }
 
   @After

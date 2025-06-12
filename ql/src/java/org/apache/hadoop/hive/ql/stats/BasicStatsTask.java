@@ -277,7 +277,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
     try {
       // Stats setup:
-      final Warehouse wh = new Warehouse(conf);
+      final Warehouse wh = Warehouse.create(conf);
       if (!getWork().getNoStatsAggregator() && !getWork().isNoScanAnalyzeCommand()) {
         try {
           scc = getContext();

@@ -71,7 +71,7 @@ public abstract class FileMetadataHandler {
    */
   public void configure(
       Configuration conf, PartitionExpressionProxy expressionProxy, MetadataStore store) {
-    this.conf = conf;
+    this.conf = new Configuration(conf);
     this.expressionProxy = expressionProxy;
     this.store = store;
     this.fileFormatProxy = expressionProxy.getFileFormatProxy(getType());

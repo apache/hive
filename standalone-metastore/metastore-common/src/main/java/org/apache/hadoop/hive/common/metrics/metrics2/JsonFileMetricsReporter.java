@@ -84,18 +84,18 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
   // Thread name for reporter thread
   private static final String JSON_REPORTER_THREAD_NAME = "json-metric-reporter";
 
-  private final MetricRegistry metricRegistry;
-  private final ObjectWriter jsonWriter;
+  private static MetricRegistry metricRegistry;
+  private static ObjectWriter jsonWriter;
   private ScheduledExecutorService executorService;
-  private final long interval;
+  private static long interval;
   // Location of JSON file
-  private final Path path;
+  private static Path path;
   // Directory where path resides
-  private final Path metricsDir;
+  private static Path metricsDir;
 
-  public JsonFileMetricsReporter(MetricRegistry registry, Configuration conf) {
-    this.metricRegistry = registry;
-    this.jsonWriter =
+  public static JsonFileMetricsReporter build(MetricRegistry registry, Configuration conf) {
+    metricRegistry = registry;
+    jsonWriter =
         new ObjectMapper().registerModule(new MetricsModule(TimeUnit.MILLISECONDS,
             TimeUnit.MILLISECONDS, false)).writerWithDefaultPrettyPrinter();
 
@@ -106,6 +106,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
     // We want to use metricsDir in the same directory as the destination file to support atomic
     // move of temp file to the destination metrics file
     metricsDir = path.getParent();
+    return new JsonFileMetricsReporter();
   }
 
   @Override
