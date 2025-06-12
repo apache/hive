@@ -231,7 +231,7 @@
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
-    <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->

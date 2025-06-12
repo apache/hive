@@ -123,7 +123,7 @@
     <thrift.args>-I ${thrift.home} -strict --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
     <wiremock.jre8.standalone.version>2.32.0</wiremock.jre8.standalone.version>
-    <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <dependencyManagement>
     <dependencies>
