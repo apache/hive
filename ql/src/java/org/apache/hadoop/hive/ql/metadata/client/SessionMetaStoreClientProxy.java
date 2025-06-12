@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -58,11 +59,13 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
@@ -89,6 +92,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.client.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
@@ -126,6 +130,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
@@ -153,8 +159,6 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public SessionMetaStoreClientProxy(Configuration conf, IMetaStoreClient delegate) {
     super(delegate, conf);
   }
-
-
 
   private Warehouse getWh() throws MetaException {
     if (wh == null) {
@@ -217,6 +221,99 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       return table;
     }
     return getDelegate().getTable(req);
+  }
+
+  @Override
+  public List<String> getTables(String catName, String dbName, String tablePattern) throws TException {
+    List<String> tableNames = getDelegate().getTables(catName, dbName, tablePattern);
+
+    if (catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf))) {
+      // May need to merge with list of temp tables
+      dbName = dbName.toLowerCase();
+      tablePattern = tablePattern.toLowerCase();
+      Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables =
+          getTempTablesForDatabase(dbName, tablePattern);
+      if (tables == null || tables.size() == 0) {
+        return tableNames;
+      }
+      tablePattern = tablePattern.replaceAll("(?<!\\.)\\*", ".*");
+      Pattern pattern = Pattern.compile(tablePattern);
+      Matcher matcher = pattern.matcher("");
+      Set<String> combinedTableNames = new HashSet<String>();
+      for (String tableName : tables.keySet()) {
+        matcher.reset(tableName);
+        if (matcher.matches()) {
+          combinedTableNames.add(tableName);
+        }
+      }
+
+      // Combine/sort temp and normal table results
+      combinedTableNames.addAll(tableNames);
+      tableNames = new ArrayList<String>(combinedTableNames);
+      Collections.sort(tableNames);
+    }
+
+    return tableNames;
+  }
+
+  @Override
+  public List<String> getTables(String catName, String dbname, String tablePattern, TableType tableType)
+      throws TException {
+    List<String> tableNames = getDelegate().getTables(dbname, tablePattern, tableType);
+
+    if (catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf))) {
+      if (tableType == TableType.MANAGED_TABLE || tableType == TableType.EXTERNAL_TABLE) {
+        // May need to merge with list of temp tables
+        dbname = dbname.toLowerCase();
+        tablePattern = tablePattern.toLowerCase();
+        Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables =
+            getTempTablesForDatabase(dbname, tablePattern);
+        if (tables == null || tables.size() == 0) {
+          return tableNames;
+        }
+        tablePattern = tablePattern.replaceAll("(?<!\\.)\\*", ".*");
+        Pattern pattern = Pattern.compile(tablePattern);
+        Matcher matcher = pattern.matcher("");
+        Set<String> combinedTableNames = new HashSet<String>();
+        combinedTableNames.addAll(tableNames);
+        for (Map.Entry<String, org.apache.hadoop.hive.ql.metadata.Table> tableData : tables.entrySet()) {
+          matcher.reset(tableData.getKey());
+          if (matcher.matches()) {
+            if (tableData.getValue().getTableType() == tableType) {
+              // If tableType is the same that we are requesting,
+              // add table the the list
+              combinedTableNames.add(tableData.getKey());
+            } else {
+              // If tableType is not the same that we are requesting,
+              // remove it in case it was added before, as temp table
+              // overrides original table
+              combinedTableNames.remove(tableData.getKey());
+            }
+          }
+        }
+        // Combine/sort temp and normal table results
+        tableNames = new ArrayList<>(combinedTableNames);
+        Collections.sort(tableNames);
+      }
+    }
+
+    return tableNames;
+  }
+
+  @Override
+  public List<Table> getTables(String catName, String dbName, List<String> tableNames,
+      GetProjectionsSpec projectionsSpec) throws TException {
+    if ((catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf)))
+        && projectionsSpec == null) {
+      // TODO: What if projectionsSpec != null
+      List<Table> tables = new ArrayList<>();
+      for (String tableName: tableNames) {
+        tables.add(getTable(catName, dbName, tableName));
+      }
+      return tables;
+    } else {
+      return getDelegate().getTables(catName, dbName, tableNames, projectionsSpec);
+    }
   }
 
   @Override
@@ -2381,4 +2478,3 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     return getDelegate().getPartitionsRequest(req);
   }
 }
-

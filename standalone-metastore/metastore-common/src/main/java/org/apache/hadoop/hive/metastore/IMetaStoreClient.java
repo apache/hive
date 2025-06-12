@@ -4510,5 +4510,5 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
     throw new UnsupportedOperationException();
-  };
+  }
 }
