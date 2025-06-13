@@ -95,6 +95,8 @@
     <mockito-core.version>5.17.0</mockito-core.version>
     <orc.version>2.1.2</orc.version>
     <protobuf.version>3.25.5</protobuf.version>
+    <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
+    <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <io.grpc.version>1.72.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
     <jline.version>2.14.6</jline.version>
