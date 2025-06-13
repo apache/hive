@@ -410,58 +410,44 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options) throws TException {
-    RequestPartsSpec rps = new RequestPartsSpec();
-    List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+      throws TException {
     Table table = getDelegate().getTable(catName, dbName, tblName);
     HiveMetaHook hook = getHook(table);
-    EnvironmentContext context = new EnvironmentContext();
     if (hook != null) {
+      if (context == null) {
+        context = new EnvironmentContext();
+      }
       hook.preDropPartitions(table, context, partExprs);
     }
-    return getDelegate().dropPartitions(catName, dbName, tblName, partExprs, options);
+    return getDelegate().dropPartitions(catName, dbName, tblName, partExprs, options, context);
   }
 
   @Override
   public void dropTable(String catName, String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTable, boolean ifPurge) throws TException {
-    //build new environmentContext with ifPurge;
-    EnvironmentContext envContext = null;
-    if (ifPurge) {
-      Map<String, String> warehouseOptions;
-      warehouseOptions = new HashMap<>();
-      warehouseOptions.put("ifPurge", "TRUE");
-      envContext = new EnvironmentContext(warehouseOptions);
-    }
-    dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, envContext);
-  }
-
-  private void dropTable(String catName, String dbname, String name, boolean deleteData,
-      boolean ignoreUnknownTab, EnvironmentContext envContext) throws MetaException, TException,
-      NoSuchObjectException, UnsupportedOperationException {
     Table tbl;
     try {
-      tbl = getTable(catName, dbname, name);
+      tbl = getTable(catName, dbName, tableName);
     } catch (NoSuchObjectException e) {
-      if (!ignoreUnknownTab) {
+      if (!ignoreUnknownTable) {
         throw e;
       }
       return;
     }
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
-      hook.preDropTable(tbl, deleteData || (envContext != null && "TRUE".equals(envContext.getProperties().get("ifPurge"))));
+      hook.preDropTable(tbl, deleteData || ifPurge);
     }
     boolean success = false;
     try {
-      // SG:FIXME
-      getDelegate().dropTable(dbname, name);
+      getDelegate().dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, ifPurge);
       if (hook != null) {
-        hook.commitDropTable(tbl, deleteData || (envContext != null && "TRUE".equals(envContext.getProperties().get("ifPurge"))));
+        hook.commitDropTable(tbl, deleteData || ifPurge);
       }
       success = true;
     } catch (NoSuchObjectException e) {
-      if (!ignoreUnknownTab) {
+      if (!ignoreUnknownTable) {
         throw e;
       }
     } finally {
@@ -472,33 +458,25 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
   }
 
   @Override
-  public void truncateTable(String dbName, String tableName, List<String> partNames,
-      String validWriteIds, long writeId, boolean deleteData) throws TException {
-    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, null, partNames, validWriteIds, writeId,
-        deleteData);
-  }
-
-  @Override
-  public void truncateTable(TableName table, List<String> partNames) throws TException {
-    truncateTableInternal(table.getCat(), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames,
-        null, -1, true);
-  }
-
-  private void truncateTableInternal(String catName, String dbName, String tableName, String ref,
-      List<String> partNames, String validWriteIds, long writeId, boolean deleteData)
-      throws TException {
+  public void truncateTable(String catName, String dbName, String tableName, String ref,
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData,
+      EnvironmentContext context) throws TException {
     Table table = getTable(catName, dbName, tableName);
     HiveMetaHook hook = getHook(table);
-    EnvironmentContext context = new EnvironmentContext();
-    if (ref != null) {
-      context.putToProperties(SNAPSHOT_REF, ref);
-    }
-    context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     if (hook != null) {
+      if (context == null) {
+        context = new EnvironmentContext();
+      }
+
+      if (ref != null) {
+        context.putToProperties(SNAPSHOT_REF, ref);
+      }
+      context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
+
       hook.preTruncateTable(table, context, partNames);
     }
-    // SG:FIXME
-    getDelegate().truncateTable(dbName, tableName, partNames, validWriteIds, writeId, deleteData);
+    getDelegate().truncateTable(catName, dbName, tableName, ref, partNames, validWriteIds, writeId,
+        deleteData, context);
   }
 
   @Override
@@ -630,12 +608,6 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
     Partition part = getDelegate().getPartition(catName, dbName, tblName, partVals);
     return HiveMetaStoreClientUtils.deepCopy(
         FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, part));
-  }
-
-  @Override
-  public List<Partition> getPartitionsByNames(String dbName, String tableName,
-      List<String> oartNames) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName, oartNames);
   }
 
   @Override

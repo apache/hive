@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslHelper;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.TableIterable;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.Package;
@@ -93,7 +92,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.createThriftPartitionsReq;
@@ -1797,7 +1795,17 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs,
       PartitionDropOptions options) throws TException {
-    EnvironmentContext context = new EnvironmentContext();
+    return dropPartitions(catName, dbName, tblName, partExprs, options, null);
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+      throws NoSuchObjectException, MetaException, TException {
+    if (context == null) {
+      context = new EnvironmentContext();
+    }
+
     if (context.getProperties() != null &&
         Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
       return Lists.newArrayList();
@@ -1917,8 +1925,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId, boolean deleteData) throws TException {
-    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, null, partNames, validWriteIds, writeId,
-        deleteData);
+    truncateTable(getDefaultCatalog(conf), dbName, tableName, null, partNames, validWriteIds, writeId,
+        deleteData, null);
   }
 
   @Override
@@ -1934,8 +1942,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public void truncateTable(TableName table, List<String> partNames) throws TException {
-    truncateTableInternal(table.getCat(), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames,
-        null, -1, true);
+    truncateTable(table.getCat(), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames,
+        null, -1, true, null);
   }
 
   @Override
@@ -1944,10 +1952,13 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     truncateTable(TableName.fromString(tableName, catName, dbName), partNames);
   }
 
-  private void truncateTableInternal(String catName, String dbName, String tableName, String ref,
-      List<String> partNames, String validWriteIds, long writeId, boolean deleteData)
-      throws TException {
-    EnvironmentContext context = new EnvironmentContext();
+  @Override
+  public void truncateTable(String catName, String dbName, String tableName, String ref,
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData,
+      EnvironmentContext context) throws TException {
+    if (context == null) {
+      context = new EnvironmentContext();
+    }
     if (ref != null) {
       context.putToProperties(SNAPSHOT_REF, ref);
     }
@@ -2440,16 +2451,13 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       req.setProcessorIdentifier(processorIdentifier);
-    List<Partition> parts = getPartitionsByNamesInternal(req).getPartitions();
+
+    List<Partition> parts = client.get_partitions_by_names_req(
+        createThriftPartitionsReq(GetPartitionsByNamesRequest.class, conf, req)).getPartitions();
+
     GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
     res.setPartitions(HiveMetaStoreClientUtils.deepCopyPartitions(parts));
     return res;
-  }
-
-  protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
-      throws TException {
-    return client.get_partitions_by_names_req(
-        createThriftPartitionsReq(GetPartitionsByNamesRequest.class, conf, gpbnr));
   }
 
   @Override
