@@ -591,6 +591,9 @@ public interface IMetaStoreClient extends AutoCloseable {
   void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws MetaException, TException;
 
+  void truncateTable(String catName, String dbName, String tableName, String ref, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData, EnvironmentContext context) throws TException;
+
   /**
    * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
    *
@@ -2193,6 +2196,10 @@ public interface IMetaStoreClient extends AutoCloseable {
   List<Partition> dropPartitions(String catName, String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException;
 
   /**

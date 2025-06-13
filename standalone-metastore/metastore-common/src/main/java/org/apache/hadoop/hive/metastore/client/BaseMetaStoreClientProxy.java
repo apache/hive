@@ -147,35 +147,35 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   final public List<String> getTables(String dbName, String tablePattern)
       throws MetaException, TException, UnknownDBException {
-    return getTables(getDefaultCatalog(conf), dbName, tablePattern);
+    try {
+      return getTables(getDefaultCatalog(conf), dbName, tablePattern);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern)
       throws MetaException, TException, UnknownDBException {
-    try {
-      return delegate.getTables(catName, dbName, tablePattern);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-      return null;
-    }
+    return delegate.getTables(catName, dbName, tablePattern);
   }
 
   @Override
   final public List<String> getTables(String dbName, String tablePattern, TableType tableType)
       throws MetaException, TException, UnknownDBException {
-    return getTables(getDefaultCatalog(conf), dbName, tablePattern, tableType);
+    try {
+      return getTables(getDefaultCatalog(conf), dbName, tablePattern, tableType);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
       throws MetaException, TException, UnknownDBException {
-    try {
-      return delegate.getTables(catName, dbName, tablePattern, tableType);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-      return null;
-    }
+    return delegate.getTables(catName, dbName, tablePattern, tableType);
   }
 
   @Override
@@ -291,30 +291,41 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   final public void truncateTable(String dbName, String tableName, List<String> partNames)
       throws MetaException, TException {
-    truncateTable(TableName.fromString(tableName, getDefaultCatalog(conf), dbName), partNames);
+    truncateTable(getDefaultCatalog(conf), dbName, tableName, null, partNames, null, -1, true, null);
   }
 
   @Override
   final public void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws MetaException, TException {
-    truncateTable(TableName.fromString(tableName, catName, dbName), partNames);
+    truncateTable(catName, dbName, tableName, null, partNames, null, -1, true, null);
   }
 
   @Override
-  public void truncateTable(TableName table, List<String> partNames) throws TException {
-    delegate.truncateTable(table, partNames);
+  final public void truncateTable(TableName table, List<String> partNames) throws TException {
+    truncateTable(table.getCat(), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames, null,
+        -1, true, null);
   }
 
   @Override
   final public void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException {
-    truncateTable(dbName, tableName, partNames, validWriteIds, writeId, true);
+    truncateTable(getDefaultCatalog(conf), dbName, tableName, null, partNames, validWriteIds, writeId, true,
+        null);
   }
 
   @Override
-  public void truncateTable(String dbName, String tableName, List<String> partNames, String validWriteIds,
-      long writeId, boolean deleteData) throws TException {
-    delegate.truncateTable(dbName, tableName, partNames, validWriteIds, writeId, deleteData);
+  final public void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException {
+    truncateTable(getDefaultCatalog(conf), dbName, tableName, null, partNames, validWriteIds, writeId,
+        deleteData, null);
+  }
+
+  @Override
+  public void truncateTable(String catName, String dbName, String tableName, String ref,
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData,
+      EnvironmentContext context) throws TException {
+    delegate.truncateTable(catName, dbName, tableName, ref, partNames, validWriteIds, writeId, deleteData,
+        context);
   }
 
   @Override
@@ -756,10 +767,10 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String dbName, String tableName, List<String> oartNames)
+  final public List<Partition> getPartitionsByNames(String dbName, String tableName, List<String> partNames)
       throws NoSuchObjectException, MetaException, TException {
     GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(
-        MetaStoreUtils.prependCatalogToDbName(getDefaultCatalog(conf), dbName, conf), tableName, oartNames);
+        MetaStoreUtils.prependCatalogToDbName(getDefaultCatalog(conf), dbName, conf), tableName, partNames);
     return getPartitionsByNames(req).getPartitions();
   }
 
@@ -794,7 +805,8 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
       List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
       throws MetaException, TException, NoSuchObjectException {
-    return delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
+    return delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts, userName,
+        groupNames);
   }
 
   @Override
@@ -859,7 +871,7 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   final public void alter_table(String catName, String dbName, String tblName, Table newTable,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
-    alter_table(catName, dbName, tblName, newTable, null, null);
+    alter_table(catName, dbName, tblName, newTable, envContext, null);
   }
 
   @Override
@@ -1008,7 +1020,7 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
     PartitionDropOptions options = PartitionDropOptions.instance()
         .deleteData(deleteData)
         .ifExists(ifExists);
-    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options);
+    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options, null);
   }
 
   @Override
@@ -1019,21 +1031,28 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
         .deleteData(deleteData)
         .ifExists(ifExists)
         .returnResults(needResults);
-    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options);
+    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options, null);
   }
 
   @Override
   final public List<Partition> dropPartitions(String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException {
-    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options);
+    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options, null);
+  }
+
+  @Override
+  final public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException {
+    return dropPartitions(catName, dbName, tblName, partExprs, options, null);
   }
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options)
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException {
-    return delegate.dropPartitions(catName, dbName, tblName, partExprs, options);
+    return delegate.dropPartitions(catName, dbName, tblName, partExprs, options, context);
   }
 
   @Override

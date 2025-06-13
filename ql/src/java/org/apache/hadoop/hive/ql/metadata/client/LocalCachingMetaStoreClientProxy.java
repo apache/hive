@@ -381,12 +381,6 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String dbName, String tableName,
-      List<String> oartNames) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), dbName, tableName, oartNames);
-  }
-
-  @Override
   public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
       throws TException {
     if (isCacheEnabledAndInitialized()) {

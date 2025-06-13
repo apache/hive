@@ -623,43 +623,6 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String dbName, String tableName, List<String> oartNames)
-      throws TException {
-    Table tmpTable = getTempTable(dbName, tableName);
-    if (tmpTable != null) {
-      return HiveMetaStoreClientUtils.deepCopyPartitions(
-          getPartitionedTempTable(tmpTable).getPartitionsByNames(oartNames));
-    }
-
-    GetPartitionsByNamesRequest req =
-        MetaStoreUtils.convertToGetPartitionsByNamesRequest(dbName, tableName, oartNames);
-    Map<Object, Object> queryCache = getQueryCache();
-    if (queryCache != null) {
-      MapWrapper cache = new MapWrapper(queryCache);
-      // 1) Retrieve from the cache those ids present, gather the rest
-      Pair<List<Partition>, List<String>> p =
-          MetaStoreClientCacheUtils.getPartitionsByNamesCache(cache, req, null);
-      List<String> partitionsMissing = p.getRight();
-      List<Partition> partitions = p.getLeft();
-      // 2) If they were all present in the cache, return
-      if (partitionsMissing.isEmpty()) {
-        return partitions;
-      }
-      // 3) If they were not, gather the remaining
-      GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(req);
-      newRqst.setNames(partitionsMissing);
-      List<Partition> newPartitions = getDelegate().getPartitionsByNames(dbName, tableName, oartNames);
-      // 4) Populate the cache
-      GetPartitionsByNamesResult r = new GetPartitionsByNamesResult(newPartitions);
-      MetaStoreClientCacheUtils.loadPartitionsByNamesCache(cache, r, req, null);
-      // 5) Sort result (in case there is any assumption) and return
-      return MetaStoreClientCacheUtils.computePartitionsByNamesFinal(req, partitions, newPartitions)
-          .getPartitions();
-    }
-    return getDelegate().getPartitionsByNames(dbName, tableName, oartNames);
-  }
-
-  @Override
   public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
       throws TException {
     String[] parsedNames = MetaStoreUtils.parseDbName(req.getDb_name(), conf);
@@ -732,27 +695,18 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
-  public void truncateTable(TableName tableName, List<String> partNames) throws TException {
-    // First try temp table
-    Table table = getTempTable(tableName.getDb(), tableName.getTable());
-    if (table != null) {
-      truncateTempTable(table);
-      return;
+  public void truncateTable(String catName, String dbName, String tableName, String ref,
+      List<String> partNames, String validWriteIds, long writeId, boolean deleteData,
+      EnvironmentContext context) throws TException {
+    if (catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf))) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        truncateTempTable(table);
+        return;
+      }
     }
-    // Try underlying client
-    getDelegate().truncateTable(tableName, partNames);
-  }
-
-  @Override
-  public void truncateTable(String dbName, String tableName,
-      List<String> partNames, String validWriteIds, long writeId, boolean deleteData)
-      throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table != null) {
-      truncateTempTable(table);
-      return;
-    }
-    getDelegate().truncateTable(dbName, tableName, partNames, validWriteIds, writeId, deleteData);
+    getDelegate().truncateTable(catName, dbName, tableName, ref, partNames, validWriteIds, writeId,
+        deleteData, context);
   }
 
   @Override
@@ -1519,10 +1473,11 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options) throws TException {
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+      throws TException {
     Table table = getTempTable(dbName, tblName);
     if (table == null) {
-      return getDelegate().dropPartitions(catName, dbName, tblName, partExprs, options);
+      return getDelegate().dropPartitions(catName, dbName, tblName, partExprs, options, context);
     }
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> result = new ArrayList<>();
