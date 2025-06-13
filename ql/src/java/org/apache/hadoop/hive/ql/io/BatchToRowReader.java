@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.ql.io;
 
 import com.google.common.collect.Lists;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.llap.DebugUtils;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
@@ -518,7 +521,8 @@ public abstract class BatchToRowReader<StructType, UnionType>
         result = (TimestampWritableV2) previous;
       }
       TimestampColumnVector tcv = (TimestampColumnVector) vector;
-      result.setInternal(tcv.time[row], tcv.nanos[row]);
+      result.set(Timestamp.ofEpochSecond(Math.floorDiv(tcv.time[row], 1000L), tcv.nanos[row],
+          tcv.isUTC() ? ZoneOffset.UTC : ZoneId.systemDefault()));
       return result;
     } else {
       return null;

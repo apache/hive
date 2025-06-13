@@ -18,12 +18,15 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -72,6 +75,12 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       batch = this.schema.createRowBatchV2();
     } else {
       batch = this.schema.createRowBatch();
+    }
+    // Workaround for ORC not initializing TimestampColumnVector properly
+    for (int i = 0; i < batch.numCols; ++i) {
+      if (batch.cols[i] instanceof TimestampColumnVector) {
+        ((TimestampColumnVector) batch.cols[i]).setIsUTC(fileReader.isUTC());
+      }
     }
     rowInBatch = 0;
   }
@@ -458,7 +467,8 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
         result = (TimestampWritableV2) previous;
       }
       TimestampColumnVector tcv = (TimestampColumnVector) vector;
-      result.setInternal(tcv.time[row], tcv.nanos[row]);
+      result.set(Timestamp.ofEpochSecond(Math.floorDiv(tcv.time[row], 1000L), tcv.nanos[row],
+          tcv.isUTC() ? ZoneOffset.UTC : ZoneId.systemDefault()));
       return result;
     } else {
       return null;
