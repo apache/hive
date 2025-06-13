@@ -4264,13 +4264,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private List<Partition> add_partitions_core(final RawStore ms, String catName,
-      String dbName, String tblName, List<Partition> parts, final boolean ifNotExists,
-      boolean isSkipColSchemaForPartition, EnvironmentContext envContext) throws TException {
+  private List<Partition> add_partitions_core(final RawStore ms,
+      AddPartitionsRequest request) throws TException {
+    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+    String dbName = request.getDbName();
+    String tblName = request.getTblName();
     if (dbName == null || tblName == null) {
       throw new MetaException("The database and table name cannot be null.");
     }
-
+    EnvironmentContext envContext = request.getEnvironmentContext();
     boolean success = false;
     // Ensures that the list doesn't have dups, and keeps track of directories we have created.
     final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
@@ -4280,8 +4282,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
     Database db = null;
 
-    List<ColumnStatistics> partsColStats = new ArrayList<>(parts.size());
-    List<Long> partsWriteIds = new ArrayList<>(parts.size());
+    List<ColumnStatistics> partsColStats = new ArrayList<>();
+    List<Long> partsWriteIds = new ArrayList<>();
 
     throwUnsupportedExceptionIfRemoteDB(dbName, "add_partitions");
 
@@ -4292,17 +4294,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       tbl = ms.getTable(catName, dbName, tblName, null);
       if (tbl == null) {
         throw new InvalidObjectException("Unable to add partitions because "
-            + TableName.getQualified(catName, dbName, tblName) +
-            " does not exist");
+            + TableName.getQualified(catName, dbName, tblName) + " does not exist");
       }
       MTable mTable = getMS().ensureGetMTable(catName, dbName, tblName);
       db = ms.getDatabase(catName, dbName);
 
-      Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(parts.size());
-      List<Partition> partitionsToAdd = new ArrayList<>(parts.size());
+      Set<PartValEqWrapperLite> partsToAdd = new HashSet<>();
       List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
-      for (final Partition part : parts) {
-        if(isSkipColSchemaForPartition) {
+      Map<String, Partition> nameToPart = new LinkedHashMap<>();
+      for (final Partition part : request.getParts()) {
+        if(request.isSkipColumnSchemaForPartition()) {
           part.getSd().setCols(tbl.getSd().getCols());
         }
         // Collect partition column stats to be updated if present. Partition objects passed down
@@ -4319,18 +4320,29 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // incorrect, an exception will be thrown before the threads which create the partition
         // folders are submitted. This way we can be sure that no partition and no partition
         // folder will be created if the list contains an invalid partition.
-        if (validatePartition(part, catName, tblName, dbName, partsToAdd, ms, ifNotExists,
-            partitionKeys)) {
-          partitionsToAdd.add(part);
-        } else {
-          existingParts.add(part);
-        }
+        validatePartition(part, catName, tblName, dbName, partsToAdd);
+        nameToPart.put(Warehouse.makePartName(partitionKeys, part.getValues()), part);
       }
 
-      // Only authorize on newly created partitions
-      if (!partitionsToAdd.isEmpty()) {
-        firePreEvent(new PreAddPartitionEvent(tbl, partitionsToAdd, this));
+      List<Partition> existedParts =
+          ms.getPartitionsByNames(catName, dbName, tblName,
+              new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(new ArrayList<>(nameToPart.keySet())).build());
+      List<String> existedPartNames = new ArrayList<>();
+      for (Partition part : existedParts) {
+        String partName = Warehouse.makePartName(partitionKeys, part.getValues());
+        existedPartNames.add(partName);
+        existingParts.add(nameToPart.remove(partName));
       }
+      if (!request.isIfNotExists() && !existedPartNames.isEmpty()) {
+        throw new AlreadyExistsException("Partition(s) already exist, partition name(s): " + existedPartNames);
+      }
+
+      List<Partition> partitionsToAdd = new ArrayList<>(nameToPart.values());
+      if (partitionsToAdd.isEmpty()) {
+        return Collections.emptyList();
+      }
+      // Only authorize on newly created partitions
+      firePreEvent(new PreAddPartitionEvent(tbl, partitionsToAdd, this));
 
       newParts.addAll(createPartitionFolders(partitionsToAdd, tbl, addedPartitions, envContext));
 
@@ -4439,16 +4451,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * @param tblName
    * @param dbName
    * @param partsToAdd
-   * @param ms
-   * @param ifNotExists
    * @return
    * @throws MetaException
    * @throws TException
    */
   private boolean validatePartition(final Partition part, final String catName,
-                                    final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd,
-                                    final RawStore ms, final boolean ifNotExists, List<FieldSchema> partitionKeys) throws MetaException, TException {
-
+                                    final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd)
+      throws MetaException, TException {
+    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
+        partitionValidationPattern);
     if (part.getDbName() == null || part.getTableName() == null) {
       throw new MetaException("The database and table name must be set in the partition.");
     }
@@ -4468,12 +4479,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     if (part.getValues().contains(null)) {
       throw new MetaException("Partition value cannot be null.");
-    }
-
-    boolean shouldAdd = startAddPartition(ms, part, partitionKeys, ifNotExists);
-    if (!shouldAdd) {
-      LOG.info("Not adding partition {} as it already exists", part);
-      return false;
     }
 
     if (!partsToAdd.add(new PartValEqWrapperLite(part))) {
@@ -4592,9 +4597,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       boolean isColSkippedForPartitions = request.isSkipColumnSchemaForPartition();
       // Make sure all the partitions have the catalog set as well
       request.getParts().forEach(p -> p.setCatName(catName));
-      List<Partition> parts = add_partitions_core(getMS(),catName, dbName, tblName,
-          request.getParts(), request.isIfNotExists(),
-          request.isSkipColumnSchemaForPartition(), request.getEnvironmentContext());
+      List<Partition> parts = add_partitions_core(getMS(), request);
       if (request.isNeedResult()) {
         if (isColSkippedForPartitions) {
           if (!parts.isEmpty()) {
@@ -4693,8 +4696,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         partitionsToAdd.add(part);
         partitionIterator.next();
       }
-      ret = add_partitions_core(getMS(), catName, dbName, tableName, partitionsToAdd,
-          false, false, null).size();
+      AddPartitionsRequest request = new AddPartitionsRequest(dbName, tableName, partitionsToAdd, false);
+      request.setCatName(catName);
+      ret = add_partitions_core(getMS(), request).size();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -4704,19 +4708,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       endFunction("add_partitions_pspec", ret != null, ex, tableName);
     }
     return ret;
-  }
-
-  private boolean startAddPartition(
-      RawStore ms, Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists)
-      throws TException {
-    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
-        partitionValidationPattern);
-    boolean doesExist = ms.doesPartitionExist(part.getCatName(),
-        part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
-    if (doesExist && !ifNotExists) {
-      throw new AlreadyExistsException("Partition already exists: " + part);
-    }
-    return !doesExist;
   }
 
   /**
@@ -4834,74 +4825,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         part.putToParameters(key, paramVal);
       }
     }
-  }
-
-  private Partition add_partition_core(final RawStore ms,
-                                       final Partition part, final EnvironmentContext envContext)
-      throws TException {
-    boolean success = false;
-    Table tbl = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    if (!part.isSetCatName()) {
-      part.setCatName(getDefaultCatalog(conf));
-    }
-    try {
-      ms.openTransaction();
-      tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
-      if (tbl == null) {
-        throw new InvalidObjectException(
-            "Unable to add partition because table or database do not exist");
-      }
-
-      firePreEvent(new PreAddPartitionEvent(tbl, part, this));
-
-      if (part.getValues() == null || part.getValues().isEmpty()) {
-        throw new MetaException("The partition values cannot be null or empty.");
-      }
-      boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), false);
-      assert shouldAdd; // start would throw if it already existed here
-      boolean madeDir = createLocationForAddedPartition(tbl, part);
-      try {
-        initializeAddedPartition(tbl, part, madeDir, envContext);
-        initializePartitionParameters(tbl, part);
-        success = ms.addPartition(part);
-      } finally {
-        if (!success && madeDir) {
-          wh.deleteDir(new Path(part.getSd().getLocation()), true, false,
-              ReplChangeManager.shouldEnableCm(ms.getDatabase(part.getCatName(), part.getDbName()), tbl));
-        }
-      }
-
-      // Setting success to false to make sure that if the listener fails, rollback happens.
-      success = false;
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(tbl, Arrays.asList(part), true, this),
-                envContext);
-
-      }
-
-      // we proceed only if we'd actually succeeded anyway, otherwise,
-      // we'd have thrown an exception
-      success = ms.commitTransaction();
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ADD_PARTITION,
-            new AddPartitionEvent(tbl, Arrays.asList(part), success, this),
-            envContext,
-            transactionalListenerResponses, ms);
-
-      }
-    }
-    return part;
   }
 
   @Deprecated
