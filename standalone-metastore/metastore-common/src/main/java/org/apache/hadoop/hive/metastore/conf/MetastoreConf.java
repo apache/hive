@@ -1870,10 +1870,6 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
-    ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
-        "hive.metastore.iceberg.catalog.cache.expiry", 60_000L,
-        "HMS Iceberg Catalog cache expiry."
-    ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,
             "HMS embedded HTTP server minimum number of threads."
