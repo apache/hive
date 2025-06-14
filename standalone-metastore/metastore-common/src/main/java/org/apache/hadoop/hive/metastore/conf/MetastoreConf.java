@@ -741,9 +741,10 @@ public class MetastoreConf {
     DATANUCLEUS_INIT_COL_INFO("datanucleus.rdbms.initializeColumnInfo",
         "datanucleus.rdbms.initializeColumnInfo", "NONE",
         "initializeColumnInfo setting for DataNucleus; set to NONE at least on Postgres."),
-    DATANUCLEUS_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck",
-        "datanucleus.plugin.pluginRegistryBundleCheck", "LOG",
-        "Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]"),
+    DATANUCLEUS_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck".toLowerCase(),
+        "datanucleus.plugin.pluginRegistryBundleCheck", "LOG", true,
+        "Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]",
+        "datanucleus.plugin.pluginRegistryBundleCheck", null),
     DATANUCLEUS_TRANSACTION_ISOLATION("datanucleus.transactionIsolation",
         "datanucleus.transactionIsolation", "read-committed",
         "Default transaction isolation level for identity generation."),
@@ -1983,6 +1984,18 @@ public class MetastoreConf {
       validator = null;
       this.caseSensitive = caseSensitive;
       this.description = description;
+    }
+
+    ConfVars(String varname, String hiveName, String defaultVal, boolean caseSensitive,
+        String description, String deprecatedName, String hiveDeprecatedName) {
+      this.varname = varname;
+      this.hiveName = hiveName;
+      this.defaultVal = defaultVal;
+      validator = null;
+      this.caseSensitive = caseSensitive;
+      this.description = description;
+      this.deprecatedName = deprecatedName;
+      this.hiveDeprecatedName = hiveDeprecatedName;
     }
 
     ConfVars(String varname, String hiveName, long defaultVal, String description) {
