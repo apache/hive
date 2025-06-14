@@ -500,6 +500,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     } catch (Exception err) {
       MetaException e1 = new MetaException("Error getting table path for " + Warehouse.getQualifiedName(table));
       e1.initCause(err);
+      throw e1;
     }
     return tablePath;
   }
