@@ -1003,6 +1003,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       Operator<? extends OperatorDesc> operator =
         (Operator<? extends OperatorDesc>) work;
       final int visitCnt = operatorVisits.merge(operator, 1, Integer::sum);
+      if (conf == null && this.work != null && this.work.getFetchTask() != null) {
+          conf = this.work.getFetchTask().getConf();
+      }
       final int limit = conf.getIntVar(ConfVars.HIVE_EXPLAIN_NODE_VISIT_LIMIT);
       if (visitCnt == limit) {
         throw new IllegalStateException(
