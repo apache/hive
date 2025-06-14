@@ -40,7 +40,7 @@ public abstract class ReloadMessage extends EventMessage {
      *
      * @return The Json format of Partition object if the table is partitioned else return null.
      */
-    public abstract Partition getPtnObj() throws Exception;
+    public abstract Iterable<Partition> getPartitionObjs() throws Exception;
 
     /**
      * Getter for the name of the table being insert into.

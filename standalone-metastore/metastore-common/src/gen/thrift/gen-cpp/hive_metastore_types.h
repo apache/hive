@@ -13161,12 +13161,13 @@ void swap(FireEventRequestData &a, FireEventRequestData &b);
 std::ostream& operator<<(std::ostream& out, const FireEventRequestData& obj);
 
 typedef struct _FireEventRequest__isset {
-  _FireEventRequest__isset() : dbName(false), tableName(false), partitionVals(false), catName(false), tblParams(false) {}
+  _FireEventRequest__isset() : dbName(false), tableName(false), partitionVals(false), catName(false), tblParams(false), batchPartitionValsForRefresh(false) {}
   bool dbName :1;
   bool tableName :1;
   bool partitionVals :1;
   bool catName :1;
   bool tblParams :1;
+  bool batchPartitionValsForRefresh :1;
 } _FireEventRequest__isset;
 
 class FireEventRequest : public virtual ::apache::thrift::TBase {
@@ -13189,6 +13190,7 @@ class FireEventRequest : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  partitionVals;
   std::string catName;
   std::map<std::string, std::string>  tblParams;
+  std::vector<std::vector<std::string> >  batchPartitionValsForRefresh;
 
   _FireEventRequest__isset __isset;
 
@@ -13205,6 +13207,8 @@ class FireEventRequest : public virtual ::apache::thrift::TBase {
   void __set_catName(const std::string& val);
 
   void __set_tblParams(const std::map<std::string, std::string> & val);
+
+  void __set_batchPartitionValsForRefresh(const std::vector<std::vector<std::string> > & val);
 
   bool operator == (const FireEventRequest & rhs) const
   {
@@ -13231,6 +13235,10 @@ class FireEventRequest : public virtual ::apache::thrift::TBase {
     if (__isset.tblParams != rhs.__isset.tblParams)
       return false;
     else if (__isset.tblParams && !(tblParams == rhs.tblParams))
+      return false;
+    if (__isset.batchPartitionValsForRefresh != rhs.__isset.batchPartitionValsForRefresh)
+      return false;
+    else if (__isset.batchPartitionValsForRefresh && !(batchPartitionValsForRefresh == rhs.batchPartitionValsForRefresh))
       return false;
     return true;
   }
