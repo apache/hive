@@ -457,7 +457,7 @@ public final class ConstraintsUtils {
           throw new SemanticException(
               ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid type for CHECK constraint: ") + cc.getCheck_expression());
         }
-        if (checkExpr.getTypeInfo().getTypeName() != serdeConstants.BOOLEAN_TYPE_NAME) {
+        if (!serdeConstants.BOOLEAN_TYPE_NAME.equals(checkExpr.getTypeInfo().getTypeName())) {
           throw new SemanticException(
               ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Only boolean type is supported for CHECK constraint: ") +
               cc.getCheck_expression() + ". Found: " + checkExpr.getTypeInfo().getTypeName());
