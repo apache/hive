@@ -1868,7 +1868,7 @@ public class MetastoreConf {
     ),
     ICEBERG_CATALOG_SERVLET_AUTH("metastore.iceberg.catalog.servlet.auth",
         "hive.metastore.iceberg.catalog.servlet.auth", "jwt", new StringSetValidator("none", "simple", "jwt"),
-        "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
+        "HMS Iceberg Catalog servlet authentication method (none, simple, or jwt)."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
         "hive.metastore.iceberg.catalog.cache.expiry", 60_000L,

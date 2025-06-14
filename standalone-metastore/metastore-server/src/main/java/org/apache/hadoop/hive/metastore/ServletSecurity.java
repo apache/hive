@@ -99,10 +99,6 @@ public class ServletSecurity {
     this.authType = authType;
   }
 
-  public ServletSecurity(Configuration conf, boolean jwt) {
-    this(jwt ? AuthType.JWT : AuthType.SIMPLE, conf);
-  }
-
   /**
    * Should be called in Servlet.init()
    * @throws ServletException if the jwt validator creation throws an exception
@@ -161,7 +157,7 @@ public class ServletSecurity {
    */
   public HttpServlet proxy(HttpServlet servlet) {
     if (authType == AuthType.NONE) {
-      LOG.info("No security enabled, not proxying servlet {}", servlet.toString());
+      LOG.warn("Servlet security is disabled for {}", servlet.toString());
       return servlet;
     }
     try {

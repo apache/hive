@@ -56,7 +56,6 @@ import org.apache.iceberg.types.Types;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.apache.iceberg.types.Types.NestedField.required;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -115,7 +114,6 @@ public class TestHMSCatalogAuthJWT extends HMSTestBase {
   }
 
   @Before
-  @Override
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "jwt");
@@ -124,13 +122,7 @@ public class TestHMSCatalogAuthJWT extends HMSTestBase {
     MOCK_JWKS_SERVER.stubFor(get("/jwks")
         .willReturn(ok()
             .withBody(Files.readAllBytes(JWT_JWKS_FILE.toPath()))));
-    super.setUp();
-  }
-
-  @After
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
+    super.setUp(conf);
   }
 
   @Test

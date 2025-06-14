@@ -39,24 +39,16 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.types.Types;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestHMSCatalogAuthNone extends HMSTestBase {
   @Before
-  @Override
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "none");
-    super.setUp();
-  }
-
-  @After
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
+    super.setUp(conf);
   }
 
   @Test

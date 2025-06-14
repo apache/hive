@@ -126,7 +126,7 @@ public abstract class HMSTestBase {
     MetaStoreTestUtils.close(port);
   }
 
-  public void setUp() throws Exception {
+  protected void setUp(Configuration conf) throws Exception {
     NS = "hms" + RND.nextInt(100);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.CAPABILITY_CHECK, false);
