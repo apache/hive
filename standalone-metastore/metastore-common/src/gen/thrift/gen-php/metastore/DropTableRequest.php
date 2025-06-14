@@ -52,6 +52,21 @@ class DropTableRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        7 => array(
+            'var' => 'id',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        8 => array(
+            'var' => 'asyncDrop',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
+        9 => array(
+            'var' => 'cancel',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -78,6 +93,18 @@ class DropTableRequest
      * @var bool
      */
     public $dropPartitions = null;
+    /**
+     * @var string
+     */
+    public $id = null;
+    /**
+     * @var bool
+     */
+    public $asyncDrop = null;
+    /**
+     * @var bool
+     */
+    public $cancel = null;
 
     public function __construct($vals = null)
     {
@@ -99,6 +126,15 @@ class DropTableRequest
             }
             if (isset($vals['dropPartitions'])) {
                 $this->dropPartitions = $vals['dropPartitions'];
+            }
+            if (isset($vals['id'])) {
+                $this->id = $vals['id'];
+            }
+            if (isset($vals['asyncDrop'])) {
+                $this->asyncDrop = $vals['asyncDrop'];
+            }
+            if (isset($vals['cancel'])) {
+                $this->cancel = $vals['cancel'];
             }
         }
     }
@@ -165,6 +201,27 @@ class DropTableRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->asyncDrop);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 9:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->cancel);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -210,6 +267,21 @@ class DropTableRequest
         if ($this->dropPartitions !== null) {
             $xfer += $output->writeFieldBegin('dropPartitions', TType::BOOL, 6);
             $xfer += $output->writeBool($this->dropPartitions);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->id !== null) {
+            $xfer += $output->writeFieldBegin('id', TType::STRING, 7);
+            $xfer += $output->writeString($this->id);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->asyncDrop !== null) {
+            $xfer += $output->writeFieldBegin('asyncDrop', TType::BOOL, 8);
+            $xfer += $output->writeBool($this->asyncDrop);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->cancel !== null) {
+            $xfer += $output->writeFieldBegin('cancel', TType::BOOL, 9);
+            $xfer += $output->writeBool($this->cancel);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
