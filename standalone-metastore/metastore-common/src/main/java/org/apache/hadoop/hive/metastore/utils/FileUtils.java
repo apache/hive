@@ -600,6 +600,19 @@ public class FileUtils {
     }
     return null;
   }
+
+  public static FileStatus createNewFileStatus(LocatedFileStatus result) throws IOException {
+    return new FileStatus(result.getLen(), result.isDirectory(), result.getReplication(), result.getBlockSize(),
+            result.getModificationTime(), result.getAccessTime(), result.getPermission(), result.getOwner(), result.getGroup(),
+            result.getSymlink(), result.getPath(), result.hasAcl(), result.isEncrypted(), result.isErasureCoded());
+  }
+
+  public static FileStatus createNewFileStatus(FileStatus fileStatus) throws IOException {
+    return new FileStatus(fileStatus.getLen(), fileStatus.isDirectory(), fileStatus.getReplication(), fileStatus.getBlockSize(),
+            fileStatus.getModificationTime(), fileStatus.getAccessTime(), fileStatus.getPermission(), fileStatus.getOwner(), fileStatus.getGroup(),
+            fileStatus.getSymlink(), fileStatus.getPath(), fileStatus.hasAcl(), fileStatus.isEncrypted(), fileStatus.isErasureCoded());
+  }
+
   public static class RemoteIteratorWithFilter implements RemoteIterator<LocatedFileStatus> {
     /**
      * This works with {@link RemoteIterator} which (potentially) produces all files recursively
@@ -641,7 +654,7 @@ public class FileUtils {
       }
       LocatedFileStatus result = nextFile;
       findNext();
-      return result;
+      return new LocatedFileStatus(createNewFileStatus(result), result.getBlockLocations());
     }
 
     void findNext() throws IOException {

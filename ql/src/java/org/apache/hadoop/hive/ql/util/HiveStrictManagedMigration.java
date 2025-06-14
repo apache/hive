@@ -567,7 +567,7 @@ public class HiveStrictManagedMigration {
     }, runOptions.tablePoolSize);
     wh = ThreadLocal.withInitial(() -> {
       try {
-        return new Warehouse(conf);
+        return Warehouse.create(conf);
       } catch (MetaException e) {
         throw new RuntimeException(e);
       }
@@ -578,7 +578,7 @@ public class HiveStrictManagedMigration {
 
       oldWh = ThreadLocal.withInitial(() -> {
         try {
-          return new Warehouse(oldConf);
+          return Warehouse.create(oldConf);
         } catch (MetaException e) {
           throw new RuntimeException(e);
         }

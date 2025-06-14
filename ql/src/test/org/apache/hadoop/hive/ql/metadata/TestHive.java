@@ -344,7 +344,7 @@ public class TestHive {
    * @throws MetaException
    */
   private void validateTable(Table tbl, String tableName) throws MetaException {
-    Warehouse wh = new Warehouse(hiveConf);
+    Warehouse wh = Warehouse.create(hiveConf);
     Table ft = null;
     try {
       // hm.getTable result will not have privileges set (it does not retrieve

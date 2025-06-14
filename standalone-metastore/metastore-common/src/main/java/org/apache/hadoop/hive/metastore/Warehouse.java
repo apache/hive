@@ -87,21 +87,35 @@ public class Warehouse {
   private boolean storageAuthCheck = false;
   private ReplChangeManager cm = null;
 
-  public Warehouse(Configuration conf) throws MetaException {
-    this.conf = conf;
-    whRootString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
-    if (StringUtils.isBlank(whRootString)) {
-      throw new MetaException(ConfVars.WAREHOUSE.getVarname()
-          + " is not set in the config or blank");
-    }
-    whRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
-    fsHandler = getMetaStoreFsHandler(conf);
-    cm = ReplChangeManager.getInstance(conf);
-    storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
-    isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
+  private Warehouse(Configuration conf, String whRootString, String whRootExternalString,
+                    MetaStoreFS fsHandler, ReplChangeManager cm,
+                    boolean storageAuthCheck, boolean isTenantBasedStorage) {
+    this.conf = new Configuration(conf);
+    this.whRootString = whRootString;
+    this.whRootExternalString = whRootExternalString;
+    this.fsHandler = fsHandler;
+    this.cm = cm;
+    this.storageAuthCheck = storageAuthCheck;
+    this.isTenantBasedStorage = isTenantBasedStorage;
   }
 
-  private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
+  public static Warehouse create(Configuration conf) throws MetaException {
+    String whRootString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
+    if (StringUtils.isBlank(whRootString)) {
+      throw new MetaException(ConfVars.WAREHOUSE.getVarname() + " is not set in the config or blank");
+    }
+
+    String whRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
+
+    MetaStoreFS fsHandler = createMetaStoreFsHandler(conf);
+    ReplChangeManager cm = ReplChangeManager.getInstance(conf);
+    boolean storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
+    boolean isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
+
+    return new Warehouse(conf, whRootString, whRootExternalString, fsHandler, cm, storageAuthCheck, isTenantBasedStorage);
+  }
+
+  private static MetaStoreFS createMetaStoreFsHandler(Configuration conf)
       throws MetaException {
     String handlerClassStr = MetastoreConf.getVar(conf, ConfVars.FS_HANDLER_CLS);
     try {

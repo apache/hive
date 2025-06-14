@@ -23,13 +23,13 @@ package org.apache.hadoop.hive.metastore;
  */
 public class PartitionDropOptions {
 
-  public boolean deleteData = true;
-  public boolean ifExists = false;
-  public boolean returnResults = true;
-  public boolean purgeData = false;
+  private boolean deleteData = true;
+  private boolean ifExists = false;
+  private boolean returnResults = true;
+  private boolean purgeData = false;
 
-  public Long writeId;
-  public Long txnId;
+  private Long writeId;
+  private Long txnId;
 
   public static PartitionDropOptions instance() { return new PartitionDropOptions(); }
 
@@ -38,9 +38,17 @@ public class PartitionDropOptions {
     return this;
   }
 
+  public boolean isDeleteData() {
+    return deleteData;
+  }
+
   public PartitionDropOptions ifExists(boolean ifExists) {
     this.ifExists = ifExists;
     return this;
+  }
+
+  public boolean isIfExists() {
+    return ifExists;
   }
 
   public PartitionDropOptions returnResults(boolean returnResults) {
@@ -48,9 +56,17 @@ public class PartitionDropOptions {
     return this;
   }
 
+  public boolean isReturnResults() {
+    return returnResults;
+  }
+
   public PartitionDropOptions purgeData(boolean purgeData) {
     this.purgeData = purgeData;
     return this;
+  }
+
+  public boolean isPurgeData() {
+    return purgeData;
   }
 
   public PartitionDropOptions setWriteId(Long writeId) {
@@ -58,8 +74,16 @@ public class PartitionDropOptions {
     return this;
   }
 
+  public Long getWriteId() {
+    return writeId;
+  }
+
   public void setTxnId(Long txnId) {
     this.txnId = txnId;
+  }
+
+  public Long getTxnId() {
+    return txnId;
   }
 
 } // class PartitionDropSwitches;
