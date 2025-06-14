@@ -1,3 +1,4 @@
+--! qt:replace:/Location\s//
 
 drop table if exists ice_meta_desc;
 create external table ice_meta_desc (id int, value string) stored by iceberg stored as orc;
