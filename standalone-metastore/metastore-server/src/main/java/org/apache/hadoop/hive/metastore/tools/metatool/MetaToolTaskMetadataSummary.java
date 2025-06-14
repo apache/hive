@@ -183,7 +183,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
           findNonNativeSummaries(allSummaries);
       Set<MetadataTableSummary> filteredSummary = new HashSet<>();
       MetaSummarySchema extraSchema = new MetaSummarySchema();
-      for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keys()) {
+      for (Class<? extends MetaSummaryHandler> handler : nonNativeSummaries.keySet()) {
         Configuration conf = getObjectStore().getConf();
         List<Future<?>> futures = new ArrayList<>();
         try (MetaSummaryHandler summaryHandler = JavaUtils.newInstance(handler)) {
@@ -192,6 +192,9 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
           List<MetadataTableSummary> tableSummaries = nonNativeSummaries.get(handler);
           // Filter those we don't want to collect
           Set<Long> tableIds = getObjectStore().filterTablesForSummary(tableSummaries, recentUpdatedDays, maxNonNativeTables);
+          System.out.println("Filtered " + tableIds.size() + "/" + tableSummaries.size() + " " + tableSummaries.get(0).getTableType() + " tables "
+              + "by recentUpdatedDays " + recentUpdatedDays + " and maxNonNativeTables " + maxNonNativeTables);
+
           if (service == null) {
             int nThreads = Math.min(MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METADATA_SUMMARY_NONNATIVE_THREADS),
                 tableIds.size());
@@ -229,6 +232,8 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
           LOG.warn("Error collecting the summary from handler: " + handler.getName(), e);
         }
       }
+
+      System.out.println("Summary to be ignored: " + filteredSummary.size() +", total summary: " + allSummaries.size());
       // Filter the table summary from the output
       if (!filteredSummary.isEmpty()) {
         allSummaries = allSummaries.stream()
