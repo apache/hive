@@ -10057,9 +10057,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   void updateMetrics() throws MetaException {
     if (Metrics.getRegistry() != null) {
       LOG.info("Begin calculating metadata count metrics.");
-      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getTableCount());
-      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getPartitionCount());
-      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getDatabaseCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getTableCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getPartitionCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getDatabaseCount());
     }
   }
 
