@@ -36,4 +36,6 @@ public abstract class AbortTxnMessage extends EventMessage {
   public abstract Long getTxnId();
 
   public abstract List<String> getDbsUpdated();
+
+  public abstract List<Long> getWriteIds();
 }
