@@ -119,7 +119,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     if (resourcePlan != null) {
       Collection<String> appliedTriggers = updateTriggers(resourcePlan);
       LOG.info("Updated tez session pool manager with triggers {} from active resource plan: {}",
-          appliedTriggers, resourcePlan.getPlan().getName());
+          appliedTriggers, resourcePlan.getPlan() == null ? "null" : resourcePlan.getPlan().getName());
     }
     metrics.start(conf);
   }
