@@ -481,6 +481,10 @@
           <groupId>org.apache.calcite.avatica</groupId>
           <artifactId>avatica-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.jayway.jsonpath</groupId>
+          <artifactId>json-path</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -847,10 +851,6 @@
           <artifactId>annotations</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.jayway.jsonpath</groupId>
-      <artifactId>json-path</artifactId>
     </dependency>
     <dependency>
       <groupId>org.codehaus.janino</groupId>
