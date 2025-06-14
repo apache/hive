@@ -19,14 +19,30 @@
 
 package org.apache.iceberg.rest;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.Transaction;
@@ -36,27 +52,85 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.types.Types;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.apache.iceberg.types.Types.NestedField.required;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
-public class TestHMSCatalog extends HMSTestBase {
-  public TestHMSCatalog() {
-    super();
+public class TestHMSCatalogAuthJWT extends HMSTestBase {
+  private static final File JWT_AUTHKEY_FILE =
+      new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-authorized-key.json");
+  private static final File JWT_NOAUTHKEY_FILE =
+      new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-unauthorized-key.json");
+  private static final File JWT_JWKS_FILE =
+      new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-verification-jwks.json");
+  private static final int MOCK_JWKS_SERVER_PORT = 8089;
+
+  @ClassRule
+  public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
+
+  private String generateJWT()  throws Exception {
+    return generateJWT(JWT_AUTHKEY_FILE.toPath());
   }
-  
+
+  private String generateJWT(Path path)  throws Exception {
+    return generateJWT(USER_1, path, TimeUnit.MINUTES.toMillis(5));
+  }
+
+  private static String generateJWT(String user, Path keyFile, long lifeTimeMillis) throws Exception {
+    RSAKey rsaKeyPair = RSAKey.parse(new String(java.nio.file.Files.readAllBytes(keyFile), StandardCharsets.UTF_8));
+    // Create RSA-signer with the private key
+    JWSSigner signer = new RSASSASigner(rsaKeyPair);
+    JWSHeader header = new JWSHeader
+        .Builder(JWSAlgorithm.RS256)
+        .keyID(rsaKeyPair.getKeyID())
+        .build();
+    Date now = new Date();
+    Date expirationTime = new Date(now.getTime() + lifeTimeMillis);
+    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+        .jwtID(UUID.randomUUID().toString())
+        .issueTime(now)
+        .issuer("auth-server")
+        .subject(user)
+        .expirationTime(expirationTime)
+        .claim("custom-claim-or-payload", "custom-claim-or-payload")
+        .build();
+    SignedJWT signedJWT = new SignedJWT(header, claimsSet);
+    // Compute the RSA signature
+    signedJWT.sign(signer);
+    return signedJWT.serialize();
+  }
+
+  private static Object clientCall(String jwt, URL url, String method, Object arg) throws IOException {
+    return clientCall(jwt, url, method, true, arg);
+  }
+
+  private static Object clientCall(String jwt, URL url, String method, boolean json, Object arg) throws IOException {
+    return clientCall(url, method, json, Collections.singletonMap("Authorization", "Bearer " + jwt), arg);
+  }
+
   @Before
   @Override
   public void setUp() throws Exception {
-      super.setUp();
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "jwt");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
+        "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
+    MOCK_JWKS_SERVER.stubFor(get("/jwks")
+        .willReturn(ok()
+            .withBody(Files.readAllBytes(JWT_JWKS_FILE.toPath()))));
+    super.setUp();
   }
-  
+
   @After
   @Override
   public void tearDown() throws Exception {
-      super.tearDown();
+    super.tearDown();
   }
 
   @Test
@@ -96,14 +170,14 @@ public class TestHMSCatalog extends HMSTestBase {
     Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables");
     counters.forEach((key, value) -> Assert.assertTrue(key, value > 0));
   }
-  
+
   private Schema getTestSchema() {
     return new Schema(
         required(1, "id", Types.IntegerType.get(), "unique ID"),
         required(2, "data", Types.StringType.get()));
   }
 
-  
+
   @Test
   public void testCreateTableTxnBuilder() throws Exception {
     URI iceUri = URI.create("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/");
@@ -187,7 +261,7 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertEquals(location, eval(response, "json -> json.metadata.location"));
       Table table = catalog.loadTable(tableIdent);
       Assert.assertEquals(location, table.location());
-      
+
       // rename table
       final String rtblName = "TBL_" + Integer.toHexString(RND.nextInt(65536));
       final TableIdentifier rtableIdent = TableIdentifier.of(DB_NAME, rtblName);
@@ -201,7 +275,7 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       table = catalog.loadTable(rtableIdent);
       Assert.assertEquals(location, table.location());
-      
+
      // delete table
       url = iceUri.resolve("namespaces/" + DB_NAME + "/tables/" + rtblName).toURL();
       response = clientCall(jwt, url, "DELETE", null);
