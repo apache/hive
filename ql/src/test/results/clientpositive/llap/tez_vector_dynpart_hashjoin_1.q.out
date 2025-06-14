@@ -35,10 +35,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                    predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -57,10 +57,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -176,10 +176,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                    predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
@@ -197,10 +197,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
@@ -314,10 +314,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                    predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: csmallint (type: smallint), cint (type: int)
@@ -336,10 +336,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
@@ -477,10 +477,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((cint BETWEEN 1000000 AND 3000000 and cint is not null) or (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null)) (type: boolean)
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 or (cint BETWEEN 1000000 AND 3000000 and cbigint is not null)) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                    predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -494,7 +494,7 @@ STAGE PLANS:
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -627,10 +627,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((cint BETWEEN 1000000 AND 3000000 and cint is not null) or (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null)) (type: boolean)
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 or (cint BETWEEN 1000000 AND 3000000 and cbigint is not null)) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                    predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
@@ -643,7 +643,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
@@ -773,10 +773,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((cint BETWEEN 1000000 AND 3000000 and cint is not null) or (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null)) (type: boolean)
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 or (cint BETWEEN 1000000 AND 3000000 and cbigint is not null)) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null) (type: boolean)
+                    predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), cint (type: int)
@@ -790,7 +790,7 @@ STAGE PLANS:
                         Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: smallint)
                   Filter Operator
-                    predicate: (cint BETWEEN 1000000 AND 3000000 and cint is not null and cbigint is not null) (type: boolean)
+                    predicate: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
