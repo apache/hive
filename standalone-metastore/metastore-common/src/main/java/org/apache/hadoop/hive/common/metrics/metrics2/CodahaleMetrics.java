@@ -144,7 +144,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   public CodahaleMetrics(Configuration conf) {
-    this.conf = conf;
+    this.conf = new Configuration(conf);
     //Codahale artifacts are lazily-created.
     timers = CacheBuilder.newBuilder().build(
       new CacheLoader<String, com.codahale.metrics.Timer>() {
@@ -468,10 +468,10 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
         codahaleReporter = new ConsoleMetricsReporter(metricRegistry, conf);
         break;
       case JMX:
-        codahaleReporter = new JmxMetricsReporter(metricRegistry, conf);
+        codahaleReporter = new JmxMetricsReporter(metricRegistry);
         break;
       case JSON_FILE:
-        codahaleReporter = new JsonFileMetricsReporter(metricRegistry, conf);
+        codahaleReporter = JsonFileMetricsReporter.build(metricRegistry, conf);
         break;
       case HADOOP2:
         codahaleReporter = new Metrics2Reporter(metricRegistry, conf);

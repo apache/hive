@@ -100,7 +100,7 @@ public class TestHiveMetaStoreTimeout {
         TimeUnit.MILLISECONDS);
     MetastoreConf.setVar(conf, ConfVars.HMS_HANDLER_PROXY_CLASS, DelayedHMSHandler.class.getName());
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    warehouse = new Warehouse(conf);
+    warehouse = Warehouse.create(conf);
     port = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);

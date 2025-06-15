@@ -107,7 +107,7 @@ public class TestOldSchema {
     store = new ObjectStore();
     store.setConf(conf);
     dropAllStoreObjects(store);
-    HMSHandler.createDefaultCatalog(store, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(store, Warehouse.create(conf));
 
     HyperLogLog hll = HyperLogLog.builder().build();
     hll.addLong(1);

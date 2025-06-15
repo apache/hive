@@ -49,9 +49,13 @@ public class MetaStorePlainSaslServer implements SaslServer {
   private String user;
   private final CallbackHandler handler;
 
-  MetaStorePlainSaslServer(CallbackHandler handler, String authMethodStr) throws SaslException {
+  MetaStorePlainSaslServer(CallbackHandler handler) {
     this.handler = handler;
+  }
+
+  public static MetaStorePlainSaslServer instance(CallbackHandler handler, String authMethodStr) throws SaslException {
     AuthMethods.getValidAuthMethod(authMethodStr);
+    return new MetaStorePlainSaslServer(handler);
   }
 
   @Override
@@ -153,7 +157,7 @@ public class MetaStorePlainSaslServer implements SaslServer {
       Map<String, ?> props, CallbackHandler cbh) {
       if (PLAIN_METHOD.equals(mechanism)) {
         try {
-          return new MetaStorePlainSaslServer(cbh, protocol);
+          return MetaStorePlainSaslServer.instance(cbh, protocol);
         } catch (SaslException e) {
           /* This is to fulfill the contract of the interface which states that an exception shall
              be thrown when a SaslServer cannot be created due to an error but null should be
