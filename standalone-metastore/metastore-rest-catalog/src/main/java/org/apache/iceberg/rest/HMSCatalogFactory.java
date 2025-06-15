@@ -18,7 +18,6 @@
  */
 package org.apache.iceberg.rest;
 
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Map;
@@ -31,14 +30,11 @@ import org.apache.hadoop.hive.metastore.ServletServerBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Catalog &amp; servlet factory.
  */
 public class HMSCatalogFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
   /**
    * Convenience soft reference to last catalog.
    */
@@ -118,9 +114,8 @@ public class HMSCatalogFactory {
   /**
    * Creates the REST catalog servlet instance.
    * @return the servlet
-   * @throws IOException if creation fails
    */
-  private HttpServlet createServlet() throws IOException {
+  private HttpServlet createServlet() {
     if (port >= 0 && path != null && !path.isEmpty()) {
       HiveCatalog actualCatalog = catalog;
       if (actualCatalog == null) {
@@ -142,15 +137,11 @@ public class HMSCatalogFactory {
    */
   @SuppressWarnings("unused")
   public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
-    try {
-      HMSCatalogFactory hms = new HMSCatalogFactory(configuration);
-      HttpServlet servlet = hms.createServlet();
-      if (servlet != null) {
-        return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet);
-      }
-    } catch (IOException exception) {
-      LOG.error("failed to create servlet ", exception);
+    HMSCatalogFactory hms = new HMSCatalogFactory(configuration);
+    HttpServlet servlet = hms.createServlet();
+    if (servlet == null) {
+      return null;
     }
-    return null;
+    return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet);
   }
 }
