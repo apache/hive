@@ -46,10 +46,12 @@ import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchIcebergTableException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.exceptions.ValidationException;
+import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -86,14 +88,14 @@ public class HMSCatalogAdapter implements RESTClient {
 
   private static final Map<Class<? extends Exception>, Integer> EXCEPTION_ERROR_CODES =
       ImmutableMap.<Class<? extends Exception>, Integer>builder()
-          .put(NamespaceNotSupported.class, 400)
           .put(IllegalArgumentException.class, 400)
           .put(ValidationException.class, 400)
-          .put(NamespaceNotEmptyException.class, 400)
+          .put(NamespaceNotEmptyException.class, 409)
           .put(NotAuthorizedException.class, 401)
           .put(ForbiddenException.class, 403)
           .put(NoSuchNamespaceException.class, 404)
           .put(NoSuchTableException.class, 404)
+          .put(NoSuchViewException.class, 404)
           .put(NoSuchIcebergTableException.class, 404)
           .put(UnsupportedOperationException.class, 406)
           .put(AlreadyExistsException.class, 409)
@@ -118,11 +120,10 @@ public class HMSCatalogAdapter implements RESTClient {
   private final ViewCatalog asViewCatalog;
 
 
-  public HMSCatalogAdapter(Catalog catalog) {
+  public HMSCatalogAdapter(HiveCatalog catalog) {
     this.catalog = catalog;
-    this.asNamespaceCatalog =
-        catalog instanceof SupportsNamespaces ? (SupportsNamespaces) catalog : null;
-    this.asViewCatalog = catalog instanceof ViewCatalog ? (ViewCatalog) catalog : null;
+    this.asNamespaceCatalog = catalog;
+    this.asViewCatalog = catalog;
   }
 
   enum HTTPMethod {
@@ -326,53 +327,36 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   private ListNamespacesResponse listNamespaces(Map<String, String> vars) {
-    if (asNamespaceCatalog != null) {
-      Namespace namespace;
-      if (vars.containsKey("parent")) {
-        namespace = Namespace.of(RESTUtil.NAMESPACE_SPLITTER.splitToStream(vars.get("parent")).toArray(String[]::new));
-      } else {
-        namespace = Namespace.empty();
-      }
-      return castResponse(ListNamespacesResponse.class, CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
+    Namespace namespace;
+    if (vars.containsKey("parent")) {
+      namespace = Namespace.of(RESTUtil.NAMESPACE_SPLITTER.splitToStream(vars.get("parent")).toArray(String[]::new));
+    } else {
+      namespace = Namespace.empty();
     }
-    throw new NamespaceNotSupported(catalog.toString());
+    return castResponse(ListNamespacesResponse.class, CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
-    if (asNamespaceCatalog != null) {
-      CreateNamespaceRequest request = castRequest(CreateNamespaceRequest.class, body);
-      return castResponse(
-              CreateNamespaceResponse.class, CatalogHandlers.createNamespace(asNamespaceCatalog, request));
-    }
-    throw new NamespaceNotSupported(catalog.toString());
+    CreateNamespaceRequest request = castRequest(CreateNamespaceRequest.class, body);
+    return castResponse(
+        CreateNamespaceResponse.class, CatalogHandlers.createNamespace(asNamespaceCatalog, request));
   }
 
   private GetNamespaceResponse loadNamespace(Map<String, String> vars) {
-    if (asNamespaceCatalog != null) {
-      Namespace namespace = namespaceFromPathVars(vars);
-      return castResponse(
-              GetNamespaceResponse.class, CatalogHandlers.loadNamespace(asNamespaceCatalog, namespace));
-    }
-    throw new NamespaceNotSupported(catalog.toString());
+    Namespace namespace = namespaceFromPathVars(vars);
+    return castResponse(GetNamespaceResponse.class, CatalogHandlers.loadNamespace(asNamespaceCatalog, namespace));
   }
 
   private RESTResponse dropNamespace(Map<String, String> vars) {
-    if (asNamespaceCatalog != null) {
-      CatalogHandlers.dropNamespace(asNamespaceCatalog, namespaceFromPathVars(vars));
-    }
-    throw new NamespaceNotSupported(catalog.toString());
+    CatalogHandlers.dropNamespace(asNamespaceCatalog, namespaceFromPathVars(vars));
+    return null;
   }
 
   private UpdateNamespacePropertiesResponse updateNamespace(Map<String, String> vars, Object body) {
-    if (asNamespaceCatalog != null) {
-      Namespace namespace = namespaceFromPathVars(vars);
-      UpdateNamespacePropertiesRequest request =
-              castRequest(UpdateNamespacePropertiesRequest.class, body);
-      return castResponse(
-              UpdateNamespacePropertiesResponse.class,
-              CatalogHandlers.updateNamespaceProperties(asNamespaceCatalog, namespace, request));
-    }
-    throw new NamespaceNotSupported(catalog.toString());
+    Namespace namespace = namespaceFromPathVars(vars);
+    UpdateNamespacePropertiesRequest request = castRequest(UpdateNamespacePropertiesRequest.class, body);
+    return castResponse(UpdateNamespacePropertiesResponse.class,
+        CatalogHandlers.updateNamespaceProperties(asNamespaceCatalog, namespace, request));
   }
 
   private ListTablesResponse listTables(Map<String, String> vars) {
@@ -386,11 +370,9 @@ public class HMSCatalogAdapter implements RESTClient {
     CreateTableRequest request = castRequest(CreateTableRequest.class, body);
     request.validate();
     if (request.stageCreate()) {
-      return castResponse(
-              responseType, CatalogHandlers.stageTableCreate(catalog, namespace, request));
+      return castResponse(responseType, CatalogHandlers.stageTableCreate(catalog, namespace, request));
     } else {
-      return castResponse(
-              responseType, CatalogHandlers.createTable(catalog, namespace, request));
+      return castResponse(responseType, CatalogHandlers.createTable(catalog, namespace, request));
     }
   }
 
@@ -439,65 +421,43 @@ public class HMSCatalogAdapter implements RESTClient {
   }
 
   private ListTablesResponse listViews(Map<String, String> vars) {
-    if (null != asViewCatalog) {
-        Namespace namespace = namespaceFromPathVars(vars);
-        String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
-        String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
-        if (pageSize != null) {
-            return castResponse(
-                    ListTablesResponse.class,
-                    CatalogHandlers.listViews(asViewCatalog, namespace, pageToken, pageSize));
-        } else {
-            return castResponse(
-                    ListTablesResponse.class, CatalogHandlers.listViews(asViewCatalog, namespace));
-        }
+    Namespace namespace = namespaceFromPathVars(vars);
+    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
+    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
+    if (pageSize != null) {
+      return castResponse(ListTablesResponse.class,
+          CatalogHandlers.listViews(asViewCatalog, namespace, pageToken, pageSize));
+    } else {
+      return castResponse(ListTablesResponse.class, CatalogHandlers.listViews(asViewCatalog, namespace));
     }
-    throw new ViewNotSupported(catalog.toString());
   }
 
   private LoadViewResponse createView(Map<String, String> vars, Object body) {
-    if (null != asViewCatalog) {
-      Namespace namespace = namespaceFromPathVars(vars);
-      CreateViewRequest request = castRequest(CreateViewRequest.class, body);
-      return castResponse(
-              LoadViewResponse.class, CatalogHandlers.createView(asViewCatalog, namespace, request));
-    }
-    throw new ViewNotSupported(catalog.toString());
+    Namespace namespace = namespaceFromPathVars(vars);
+    CreateViewRequest request = castRequest(CreateViewRequest.class, body);
+    return castResponse(LoadViewResponse.class, CatalogHandlers.createView(asViewCatalog, namespace, request));
   }
 
   private LoadViewResponse loadView(Map<String, String> vars) {
-    if (null != asViewCatalog) {
-      TableIdentifier ident = identFromPathVars(vars);
-      return castResponse(LoadViewResponse.class, CatalogHandlers.loadView(asViewCatalog, ident));
-    }
-    throw new ViewNotSupported(catalog.toString());
+    TableIdentifier ident = identFromPathVars(vars);
+    return castResponse(LoadViewResponse.class, CatalogHandlers.loadView(asViewCatalog, ident));
   }
 
   private LoadViewResponse updateView(Map<String, String> vars, Object body) {
-    if (null != asViewCatalog) {
-      TableIdentifier ident = identFromPathVars(vars);
-      UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
-      return castResponse(
-              LoadViewResponse.class, CatalogHandlers.updateView(asViewCatalog, ident, request));
-    }
-    throw new ViewNotSupported(catalog.toString());
+    TableIdentifier ident = identFromPathVars(vars);
+    UpdateTableRequest request = castRequest(UpdateTableRequest.class, body);
+    return castResponse(LoadViewResponse.class, CatalogHandlers.updateView(asViewCatalog, ident, request));
   }
 
   private RESTResponse renameView(Object body) {
-    if (null != asViewCatalog) {
-      RenameTableRequest request = castRequest(RenameTableRequest.class, body);
-      CatalogHandlers.renameView(asViewCatalog, request);
+    RenameTableRequest request = castRequest(RenameTableRequest.class, body);
+    CatalogHandlers.renameView(asViewCatalog, request);
     return null;
-    }
-    throw new ViewNotSupported(catalog.toString());
   }
 
   private RESTResponse dropView(Map<String, String> vars) {
-    if (null != asViewCatalog) {
-      CatalogHandlers.dropView(asViewCatalog, identFromPathVars(vars));
-      return null;
-    }
-    throw new ViewNotSupported(catalog.toString());
+    CatalogHandlers.dropView(asViewCatalog, identFromPathVars(vars));
+    return null;
   }
 
   /**
@@ -701,18 +661,6 @@ public class HMSCatalogAdapter implements RESTClient {
   @Override
   public void close() {
     // The caller is responsible for closing the underlying catalog backing this REST catalog.
-  }
-
-  private static class NamespaceNotSupported extends RuntimeException {
-    NamespaceNotSupported(String catalog) {
-      super("catalog " + catalog + " does not support namespace");
-    }
-  }
-  
-  private static class ViewNotSupported extends RuntimeException {
-    ViewNotSupported(String catalog) {
-      super("catalog " + catalog + " does not support views");
-    }
   }
 
   private static class BadResponseType extends RuntimeException {
