@@ -207,10 +207,10 @@ public class TestHiveIcebergOutputCommitter {
     Assert.assertEquals(1, argumentCaptor.getAllValues().size());
     TaskAttemptID capturedId = TezUtil.taskAttemptWrapper(argumentCaptor.getValue().getTaskAttemptID());
     // writer is still in the map after commitTask failure
-    Assert.assertNotNull(WriterRegistry.writers(capturedId));
+    Assert.assertNotNull(WriterRegistry.writers(capturedId, null));
     failingCommitter.abortTask(new TaskAttemptContextImpl(conf, capturedId));
     // abortTask succeeds and removes writer
-    Assert.assertNull(WriterRegistry.writers(capturedId));
+    Assert.assertNull(WriterRegistry.writers(capturedId, null));
   }
 
   private Table table(String location, boolean partitioned) {
