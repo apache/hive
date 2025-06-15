@@ -20,11 +20,18 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.ReloadMessage;
 import org.apache.thrift.TException;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * JSON implementation of JSONReloadMessage
@@ -34,7 +41,10 @@ public class JSONReloadMessage extends ReloadMessage {
     private Long timestamp;
 
     @JsonProperty
-    private String server, servicePrincipal, db, table, tableObjJson, ptnObjJson, refreshEvent;
+    private String server, servicePrincipal, db, table, tableObjJson, refreshEvent;
+
+    @JsonProperty
+    List<String> partitionListJson;
 
     /**
      * Default constructor, needed for Jackson.
@@ -42,7 +52,7 @@ public class JSONReloadMessage extends ReloadMessage {
     public JSONReloadMessage() {
     }
 
-    public JSONReloadMessage(String server, String servicePrincipal, Table tableObj, Partition ptnObj,
+    public JSONReloadMessage(String server, String servicePrincipal, Table tableObj, List<Partition> ptns,
                              boolean refreshEvent, Long timestamp) {
         this.server = server;
         this.servicePrincipal = servicePrincipal;
@@ -56,10 +66,15 @@ public class JSONReloadMessage extends ReloadMessage {
 
         try {
             this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
-            if (null != ptnObj) {
-                this.ptnObjJson = MessageBuilder.createPartitionObjJson(ptnObj);
+            if (null != ptns) {
+                this.partitionListJson = new ArrayList<>();
+                Iterator<Partition> iterator = ptns.iterator();
+                while (iterator.hasNext()) {
+                    Partition partitionObj = iterator.next();
+                    partitionListJson.add(MessageBuilder.createPartitionObjJson(partitionObj));
+                }
             } else {
-                this.ptnObjJson = null;
+                this.partitionListJson = null;
             }
         } catch (TException e) {
             throw new IllegalArgumentException("Could not serialize: ", e);
@@ -105,8 +120,17 @@ public class JSONReloadMessage extends ReloadMessage {
     }
 
     @Override
-    public Partition getPtnObj() throws Exception {
-        return ((null == ptnObjJson) ? null : (Partition) MessageBuilder.getTObj(ptnObjJson, Partition.class));
+    public Iterable<Partition> getPartitionObjs() throws Exception {
+        // glorified cast from Iterable<TBase> to Iterable<Partition>
+        return Iterables.transform(
+            MessageBuilder.getTObjs(partitionListJson, Partition.class),
+            new Function<Object, Partition>() {
+                @Nullable
+                @Override
+                public Partition apply(@Nullable Object input) {
+                    return (Partition) input;
+                }
+            });
     }
 
     @Override

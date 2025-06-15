@@ -1577,6 +1577,8 @@ struct FireEventRequest {
     5: optional list<string> partitionVals,
     6: optional string catName,
     7: optional map<string, string> tblParams,
+    // To keep the backward compatibility, batch partition vals for reload event is used
+    8: optional list<list<string>> batchPartitionValsForRefresh
 }
 
 struct FireEventResponse {
