@@ -1836,12 +1836,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
           req.setDeleteManagedDir(false);
         }
-        DropTableRequest dropTableReq = new DropTableRequest(req.getName(), table.getTableName());
-        dropTableReq.setDeleteData(req.isDeleteData() && !isSoftDelete);
-        dropTableReq.setCatalogName(req.getCatalogName());
-        dropTableReq.setDropPartitions(true);
-        dropTableReq.setEnvContext(context);
-        client.drop_table_req(dropTableReq);
+        drop_table_with_environment_context(req.getCatalogName(), req.getName(), table.getTableName(),
+            req.isDeleteData() && !isSoftDelete, context);
         if (hook != null) {
           hook.commitDropTable(table, req.isDeleteData());
         }
@@ -4780,7 +4776,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     dropTableReq.setCatalogName(catName);
     dropTableReq.setDropPartitions(true);
     dropTableReq.setEnvContext(envContext);
-    client.drop_table_req(dropTableReq);
+    dropTableReq.setAsyncDrop(!isLocalMetaStore());
+    TableOpResp resp = client.drop_table_req(dropTableReq);
+    dropTableReq.setId(resp.getId());
+    try {
+      while (!resp.isFinished() && !Thread.currentThread().isInterrupted()) {
+        resp = client.drop_table_req(dropTableReq);
+        if (resp.getMessage() != null) {
+          LOG.info(resp.getMessage());
+        }
+      }
+    } finally {
+      if (!resp.isFinished()) {
+        dropTableReq.setCancel(true);
+        client.drop_table_req(dropTableReq);
+      }
+    }
   }
 
   @Override
