@@ -1103,6 +1103,7 @@
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>com.github.luben:zstd-jni</include>
                   <include>org.locationtech.jts:jts-core</include>
+                  <include>org.apache.tez:tez-protobuf-history-plugin</include>
                 </includes>
               </artifactSet>
               <filters>
@@ -1114,6 +1115,12 @@
                     <exclude>META-INF/maven/org.slf4j/**</exclude>
                     <exclude>META-INF/licenses/slf4j*/**</exclude>
                   </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.apache.tez:tez-protobuf-history-plugin</artifact>
+                  <includes>
+                    <include>org/apache/tez/dag/history/logging/proto/**</include>
+                  </includes>
                 </filter>
                 <filter>
                   <artifact>*:*</artifact>
