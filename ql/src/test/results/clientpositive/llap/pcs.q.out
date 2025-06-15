@@ -523,10 +523,10 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 OPTIMIZED SQL: SELECT `t0`.`ds`, `t2`.`key`
 FROM (SELECT `key`, `ds`
 FROM `default`.`pcs_t1`
-WHERE `key` IN (1, 2) AND `ds` IS NOT NULL AND `ds` IN ('2000-04-08', '2000-04-09')) AS `t0`
+WHERE `key` IN (1, 2) AND `ds` IN ('2000-04-08', '2000-04-09')) AS `t0`
 INNER JOIN (SELECT `key`, `ds`
 FROM `default`.`pcs_t1`
-WHERE `ds` IS NOT NULL AND `ds` IN ('2000-04-08', '2000-04-09')) AS `t2` ON (`t0`.`key`, `t0`.`ds`, `t2`.`ds`) IN ((1, '2000-04-08', '2000-04-09'), (2, '2000-04-09', '2000-04-08')) AND `t0`.`ds` = `t2`.`ds`
+WHERE `ds` IN ('2000-04-08', '2000-04-09')) AS `t2` ON (`t0`.`key`, `t0`.`ds`, `t2`.`ds`) IN ((1, '2000-04-08', '2000-04-09'), (2, '2000-04-09', '2000-04-08')) AND `t0`.`ds` = `t2`.`ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -665,7 +665,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (ds is not null and (ds) IN ('2000-04-08', '2000-04-09')) (type: boolean)
+                  filterExpr: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
                   Statistics: Num rows: 40 Data size: 7520 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
