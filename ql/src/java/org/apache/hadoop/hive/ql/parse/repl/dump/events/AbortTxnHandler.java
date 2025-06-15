@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class AbortTxnHandler extends AbstractEventHandler<AbortTxnMessage> {
 
@@ -50,8 +51,12 @@ class AbortTxnHandler extends AbstractEventHandler<AbortTxnMessage> {
 
     if (ReplUtils.filterTransactionOperations(withinContext.hiveConf)) {
       String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
-      JSONAbortTxnMessage abortMsg = (JSONAbortTxnMessage)eventMessage;
-      if ((abortMsg.getDbsUpdated() == null) || !abortMsg.getDbsUpdated().contains(contextDbName)) {
+      List<Long> writeIds = eventMessage.getWriteIds();
+      List<String> dbsUpdated = eventMessage.getDbsUpdated()
+                                              .stream()
+                                              .map(StringUtils::normalizeIdentifier)
+                                              .collect(Collectors.toList());
+      if ((writeIds == null || writeIds.isEmpty() || !dbsUpdated.contains(contextDbName))) {
         LOG.info("Filter out #{} ABORT_TXN message : {}", fromEventId(), eventMessageAsJSON);
         return;
       }
