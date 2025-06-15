@@ -64,8 +64,6 @@ import org.junit.Test;
 public class TestHMSCatalogAuthJWT extends HMSTestBase {
   private static final File JWT_AUTHKEY_FILE =
       new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-authorized-key.json");
-  private static final File JWT_NOAUTHKEY_FILE =
-      new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-unauthorized-key.json");
   private static final File JWT_JWKS_FILE =
       new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-verification-jwks.json");
   private static final int MOCK_JWKS_SERVER_PORT = 8089;

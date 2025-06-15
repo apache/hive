@@ -157,13 +157,13 @@ public class ServletSecurity {
    */
   public HttpServlet proxy(HttpServlet servlet) {
     if (authType == AuthType.NONE) {
-      LOG.warn("Servlet security is disabled for {}", servlet.toString());
+      LOG.warn("Servlet security is disabled for {}", servlet);
       return servlet;
     }
     try {
       init();
     } catch (ServletException e) {
-      LOG.error("Unable to proxy security for servlet {}", servlet.toString(), e);
+      LOG.error("Unable to proxy security for servlet {}", servlet, e);
       return null;
     }
     return new ProxyServlet(servlet);
