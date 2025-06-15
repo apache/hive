@@ -38,6 +38,6 @@
     </property>
     <property>
         <name>hive.metastore.iceberg.catalog.servlet.auth</name>
-        <value>simple</value>
+        <value>none</value>
     </property>
 </configuration>

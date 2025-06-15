@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.rest;
 
+import static org.apache.iceberg.types.Types.NestedField.required;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.Transaction;
@@ -36,27 +39,16 @@ import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.types.Types;
-import static org.apache.iceberg.types.Types.NestedField.required;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestHMSCatalog extends HMSTestBase {
-  public TestHMSCatalog() {
-    super();
-  }
-  
+public class TestHMSCatalogAuthNone extends HMSTestBase {
   @Before
-  @Override
   public void setUp() throws Exception {
-      super.setUp();
-  }
-  
-  @After
-  @Override
-  public void tearDown() throws Exception {
-      super.tearDown();
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "none");
+    super.setUp(conf);
   }
 
   @Test
@@ -64,9 +56,8 @@ public class TestHMSCatalog extends HMSTestBase {
     String ns = "nstesthttp";
     // list namespaces
     URL url = new URL("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/namespaces");
-    String jwt = generateJWT();
     // check namespaces list (ie 0)
-    Object response = clientCall(jwt, url, "GET", null);
+    Object response = clientCall(url, "GET", Collections.emptyMap(), null);
     Assert.assertTrue(response instanceof Map);
     Map<String, Object> nsrep = (Map<String, Object>) response;
     List<List<String>> nslist = (List<List<String>>) nsrep.get("namespaces");
@@ -74,7 +65,7 @@ public class TestHMSCatalog extends HMSTestBase {
     Assert.assertTrue((nslist.contains(Collections.singletonList("default"))));
     Assert.assertTrue((nslist.contains(Collections.singletonList("hivedb"))));
     // succeed
-    response = clientCall(jwt, url, "POST", false, "{ \"namespace\" : [ \""+ns+"\" ], "+
+    response = clientCall(url, "POST", false, Collections.emptyMap(), "{ \"namespace\" : [ \""+ns+"\" ], "+
             "\"properties\":{ \"owner\": \"apache\", \"group\" : \"iceberg\" }"
             +"}");
     Assert.assertNotNull(response);
@@ -89,14 +80,14 @@ public class TestHMSCatalog extends HMSTestBase {
     // list tables in hivedb
     url = new URL("http://hive@localhost:" + catalogPort + "/" + catalogPath+"/v1/namespaces/" + ns + "/tables");
     // succeed
-    response = clientCall(jwt, url, "GET", null);
+    response = clientCall(url, "GET", Collections.emptyMap(), null);
     Assert.assertNotNull(response);
 
     // quick check on metrics
     Map<String, Long> counters = reportMetricCounters("list_namespaces", "list_tables");
     counters.forEach((key, value) -> Assert.assertTrue(key, value > 0));
   }
-  
+
   private Schema getTestSchema() {
     return new Schema(
         required(1, "id", Types.IntegerType.get(), "unique ID"),
@@ -107,7 +98,6 @@ public class TestHMSCatalog extends HMSTestBase {
   @Test
   public void testCreateTableTxnBuilder() throws Exception {
     URI iceUri = URI.create("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/");
-    String jwt = generateJWT();
     Schema schema = getTestSchema();
     final String tblName = "tbl_" + Integer.toHexString(RND.nextInt(65536));
     final TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, tblName);
@@ -129,7 +119,7 @@ public class TestHMSCatalog extends HMSTestBase {
       // list namespaces
       URL url = iceUri.resolve("namespaces").toURL();
       // succeed
-      Object response = clientCall(jwt, url, "GET", null);
+      Object response = clientCall(url, "GET", Collections.emptyMap(), null);
       Assert.assertNotNull(response);
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       List<List<String>> nslist = (List<List<String>>) eval(response, "json -> json.namespaces");
@@ -140,7 +130,7 @@ public class TestHMSCatalog extends HMSTestBase {
       // list tables in hivedb
       url = iceUri.resolve("namespaces/" + DB_NAME + "/tables").toURL();
       // succeed
-      response = clientCall(jwt, url, "GET", null);
+      response = clientCall(url, "GET", Collections.emptyMap(), null);
       Assert.assertNotNull(response);
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       Assert.assertEquals(1, (int) eval(response, "json -> size(json.identifiers)"));
@@ -149,7 +139,7 @@ public class TestHMSCatalog extends HMSTestBase {
       // load table
       url = iceUri.resolve("namespaces/" + DB_NAME + "/tables/" + tblName).toURL();
       // succeed
-      response = clientCall(jwt, url, "GET", null);
+      response = clientCall(url, "GET", Collections.emptyMap(), null);
       Assert.assertNotNull(response);
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       Assert.assertEquals(location, eval(response, "json -> json.metadata.location"));
@@ -170,7 +160,6 @@ public class TestHMSCatalog extends HMSTestBase {
   @Test
   public void testTableAPI() throws Exception {
     URI iceUri = URI.create("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/");
-    String jwt = generateJWT();
     Schema schema = getTestSchema();
     final String tblName = "tbl_" + Integer.toHexString(RND.nextInt(65536));
     final TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, tblName);
@@ -181,13 +170,13 @@ public class TestHMSCatalog extends HMSTestBase {
              withLocation(location).
              withSchema(schema).build();
       URL url = iceUri.resolve("namespaces/" + DB_NAME + "/tables").toURL();
-      Object response = clientCall(jwt, url, "POST", create);
+      Object response = clientCall(url, "POST", Collections.emptyMap(), create);
       Assert.assertNotNull(response);
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       Assert.assertEquals(location, eval(response, "json -> json.metadata.location"));
       Table table = catalog.loadTable(tableIdent);
       Assert.assertEquals(location, table.location());
-      
+
       // rename table
       final String rtblName = "TBL_" + Integer.toHexString(RND.nextInt(65536));
       final TableIdentifier rtableIdent = TableIdentifier.of(DB_NAME, rtblName);
@@ -196,15 +185,15 @@ public class TestHMSCatalog extends HMSTestBase {
               withDestination(rtableIdent).
               build();
       url = iceUri.resolve("tables/rename").toURL();
-      response = clientCall(jwt, url, "POST", rename);
+      response = clientCall(url, "POST", Collections.emptyMap(), rename);
       Assert.assertNotNull(response);
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       table = catalog.loadTable(rtableIdent);
       Assert.assertEquals(location, table.location());
-      
+
      // delete table
       url = iceUri.resolve("namespaces/" + DB_NAME + "/tables/" + rtblName).toURL();
-      response = clientCall(jwt, url, "DELETE", null);
+      response = clientCall(url, "DELETE", Collections.emptyMap(), null);
       Assert.assertNotNull(response);
       Assert.assertEquals(200, (int) eval(response, "json -> json.status"));
       Assert.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(rtableIdent));

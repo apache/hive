@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -314,7 +315,7 @@ public class PropertyServlet extends HttpServlet {
       String path = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
       if (port >= 0 && path != null && !path.isEmpty()) {
         String authType = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
-        ServletSecurity security = new ServletSecurity(authType, configuration);
+        ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration);
         HttpServlet servlet = security.proxy(new PropertyServlet(configuration));
         return new ServletServerBuilder.Descriptor(port, path, servlet);
       }
