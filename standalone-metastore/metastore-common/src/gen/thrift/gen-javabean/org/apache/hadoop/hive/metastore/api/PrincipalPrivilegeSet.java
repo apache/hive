@@ -553,26 +553,26 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // USER_PRIVILEGES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map120 = iprot.readMapBegin();
-                struct.userPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map120.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key121;
-                @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val122;
-                for (int _i123 = 0; _i123 < _map120.size; ++_i123)
+                org.apache.thrift.protocol.TMap _map130 = iprot.readMapBegin();
+                struct.userPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map130.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key131;
+                @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val132;
+                for (int _i133 = 0; _i133 < _map130.size; ++_i133)
                 {
-                  _key121 = iprot.readString();
+                  _key131 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TList _list124 = iprot.readListBegin();
-                    _val122 = new java.util.ArrayList<PrivilegeGrantInfo>(_list124.size);
-                    @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem125;
-                    for (int _i126 = 0; _i126 < _list124.size; ++_i126)
+                    org.apache.thrift.protocol.TList _list134 = iprot.readListBegin();
+                    _val132 = new java.util.ArrayList<PrivilegeGrantInfo>(_list134.size);
+                    @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem135;
+                    for (int _i136 = 0; _i136 < _list134.size; ++_i136)
                     {
-                      _elem125 = new PrivilegeGrantInfo();
-                      _elem125.read(iprot);
-                      _val122.add(_elem125);
+                      _elem135 = new PrivilegeGrantInfo();
+                      _elem135.read(iprot);
+                      _val132.add(_elem135);
                     }
                     iprot.readListEnd();
                   }
-                  struct.userPrivileges.put(_key121, _val122);
+                  struct.userPrivileges.put(_key131, _val132);
                 }
                 iprot.readMapEnd();
               }
@@ -584,26 +584,26 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // GROUP_PRIVILEGES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map127 = iprot.readMapBegin();
-                struct.groupPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map127.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key128;
-                @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val129;
-                for (int _i130 = 0; _i130 < _map127.size; ++_i130)
+                org.apache.thrift.protocol.TMap _map137 = iprot.readMapBegin();
+                struct.groupPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map137.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key138;
+                @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val139;
+                for (int _i140 = 0; _i140 < _map137.size; ++_i140)
                 {
-                  _key128 = iprot.readString();
+                  _key138 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TList _list131 = iprot.readListBegin();
-                    _val129 = new java.util.ArrayList<PrivilegeGrantInfo>(_list131.size);
-                    @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem132;
-                    for (int _i133 = 0; _i133 < _list131.size; ++_i133)
+                    org.apache.thrift.protocol.TList _list141 = iprot.readListBegin();
+                    _val139 = new java.util.ArrayList<PrivilegeGrantInfo>(_list141.size);
+                    @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem142;
+                    for (int _i143 = 0; _i143 < _list141.size; ++_i143)
                     {
-                      _elem132 = new PrivilegeGrantInfo();
-                      _elem132.read(iprot);
-                      _val129.add(_elem132);
+                      _elem142 = new PrivilegeGrantInfo();
+                      _elem142.read(iprot);
+                      _val139.add(_elem142);
                     }
                     iprot.readListEnd();
                   }
-                  struct.groupPrivileges.put(_key128, _val129);
+                  struct.groupPrivileges.put(_key138, _val139);
                 }
                 iprot.readMapEnd();
               }
@@ -615,26 +615,26 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // ROLE_PRIVILEGES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map134 = iprot.readMapBegin();
-                struct.rolePrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map134.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key135;
-                @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val136;
-                for (int _i137 = 0; _i137 < _map134.size; ++_i137)
+                org.apache.thrift.protocol.TMap _map144 = iprot.readMapBegin();
+                struct.rolePrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map144.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key145;
+                @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val146;
+                for (int _i147 = 0; _i147 < _map144.size; ++_i147)
                 {
-                  _key135 = iprot.readString();
+                  _key145 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TList _list138 = iprot.readListBegin();
-                    _val136 = new java.util.ArrayList<PrivilegeGrantInfo>(_list138.size);
-                    @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem139;
-                    for (int _i140 = 0; _i140 < _list138.size; ++_i140)
+                    org.apache.thrift.protocol.TList _list148 = iprot.readListBegin();
+                    _val146 = new java.util.ArrayList<PrivilegeGrantInfo>(_list148.size);
+                    @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem149;
+                    for (int _i150 = 0; _i150 < _list148.size; ++_i150)
                     {
-                      _elem139 = new PrivilegeGrantInfo();
-                      _elem139.read(iprot);
-                      _val136.add(_elem139);
+                      _elem149 = new PrivilegeGrantInfo();
+                      _elem149.read(iprot);
+                      _val146.add(_elem149);
                     }
                     iprot.readListEnd();
                   }
-                  struct.rolePrivileges.put(_key135, _val136);
+                  struct.rolePrivileges.put(_key145, _val146);
                 }
                 iprot.readMapEnd();
               }
@@ -660,14 +660,14 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(USER_PRIVILEGES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, struct.userPrivileges.size()));
-          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter141 : struct.userPrivileges.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter151 : struct.userPrivileges.entrySet())
           {
-            oprot.writeString(_iter141.getKey());
+            oprot.writeString(_iter151.getKey());
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter141.getValue().size()));
-              for (PrivilegeGrantInfo _iter142 : _iter141.getValue())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter151.getValue().size()));
+              for (PrivilegeGrantInfo _iter152 : _iter151.getValue())
               {
-                _iter142.write(oprot);
+                _iter152.write(oprot);
               }
               oprot.writeListEnd();
             }
@@ -680,14 +680,14 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(GROUP_PRIVILEGES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, struct.groupPrivileges.size()));
-          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter143 : struct.groupPrivileges.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter153 : struct.groupPrivileges.entrySet())
           {
-            oprot.writeString(_iter143.getKey());
+            oprot.writeString(_iter153.getKey());
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter143.getValue().size()));
-              for (PrivilegeGrantInfo _iter144 : _iter143.getValue())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter153.getValue().size()));
+              for (PrivilegeGrantInfo _iter154 : _iter153.getValue())
               {
-                _iter144.write(oprot);
+                _iter154.write(oprot);
               }
               oprot.writeListEnd();
             }
@@ -700,14 +700,14 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(ROLE_PRIVILEGES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, struct.rolePrivileges.size()));
-          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter145 : struct.rolePrivileges.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter155 : struct.rolePrivileges.entrySet())
           {
-            oprot.writeString(_iter145.getKey());
+            oprot.writeString(_iter155.getKey());
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter145.getValue().size()));
-              for (PrivilegeGrantInfo _iter146 : _iter145.getValue())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, _iter155.getValue().size()));
+              for (PrivilegeGrantInfo _iter156 : _iter155.getValue())
               {
-                _iter146.write(oprot);
+                _iter156.write(oprot);
               }
               oprot.writeListEnd();
             }
@@ -747,14 +747,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetUserPrivileges()) {
         {
           oprot.writeI32(struct.userPrivileges.size());
-          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter147 : struct.userPrivileges.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter157 : struct.userPrivileges.entrySet())
           {
-            oprot.writeString(_iter147.getKey());
+            oprot.writeString(_iter157.getKey());
             {
-              oprot.writeI32(_iter147.getValue().size());
-              for (PrivilegeGrantInfo _iter148 : _iter147.getValue())
+              oprot.writeI32(_iter157.getValue().size());
+              for (PrivilegeGrantInfo _iter158 : _iter157.getValue())
               {
-                _iter148.write(oprot);
+                _iter158.write(oprot);
               }
             }
           }
@@ -763,14 +763,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetGroupPrivileges()) {
         {
           oprot.writeI32(struct.groupPrivileges.size());
-          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter149 : struct.groupPrivileges.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter159 : struct.groupPrivileges.entrySet())
           {
-            oprot.writeString(_iter149.getKey());
+            oprot.writeString(_iter159.getKey());
             {
-              oprot.writeI32(_iter149.getValue().size());
-              for (PrivilegeGrantInfo _iter150 : _iter149.getValue())
+              oprot.writeI32(_iter159.getValue().size());
+              for (PrivilegeGrantInfo _iter160 : _iter159.getValue())
               {
-                _iter150.write(oprot);
+                _iter160.write(oprot);
               }
             }
           }
@@ -779,14 +779,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetRolePrivileges()) {
         {
           oprot.writeI32(struct.rolePrivileges.size());
-          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter151 : struct.rolePrivileges.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.util.List<PrivilegeGrantInfo>> _iter161 : struct.rolePrivileges.entrySet())
           {
-            oprot.writeString(_iter151.getKey());
+            oprot.writeString(_iter161.getKey());
             {
-              oprot.writeI32(_iter151.getValue().size());
-              for (PrivilegeGrantInfo _iter152 : _iter151.getValue())
+              oprot.writeI32(_iter161.getValue().size());
+              for (PrivilegeGrantInfo _iter162 : _iter161.getValue())
               {
-                _iter152.write(oprot);
+                _iter162.write(oprot);
               }
             }
           }
@@ -800,75 +800,75 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TMap _map153 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
-          struct.userPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map153.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key154;
-          @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val155;
-          for (int _i156 = 0; _i156 < _map153.size; ++_i156)
+          org.apache.thrift.protocol.TMap _map163 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
+          struct.userPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map163.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key164;
+          @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val165;
+          for (int _i166 = 0; _i166 < _map163.size; ++_i166)
           {
-            _key154 = iprot.readString();
+            _key164 = iprot.readString();
             {
-              org.apache.thrift.protocol.TList _list157 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-              _val155 = new java.util.ArrayList<PrivilegeGrantInfo>(_list157.size);
-              @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem158;
-              for (int _i159 = 0; _i159 < _list157.size; ++_i159)
+              org.apache.thrift.protocol.TList _list167 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+              _val165 = new java.util.ArrayList<PrivilegeGrantInfo>(_list167.size);
+              @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem168;
+              for (int _i169 = 0; _i169 < _list167.size; ++_i169)
               {
-                _elem158 = new PrivilegeGrantInfo();
-                _elem158.read(iprot);
-                _val155.add(_elem158);
+                _elem168 = new PrivilegeGrantInfo();
+                _elem168.read(iprot);
+                _val165.add(_elem168);
               }
             }
-            struct.userPrivileges.put(_key154, _val155);
+            struct.userPrivileges.put(_key164, _val165);
           }
         }
         struct.setUserPrivilegesIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TMap _map160 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
-          struct.groupPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map160.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key161;
-          @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val162;
-          for (int _i163 = 0; _i163 < _map160.size; ++_i163)
+          org.apache.thrift.protocol.TMap _map170 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
+          struct.groupPrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map170.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key171;
+          @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val172;
+          for (int _i173 = 0; _i173 < _map170.size; ++_i173)
           {
-            _key161 = iprot.readString();
+            _key171 = iprot.readString();
             {
-              org.apache.thrift.protocol.TList _list164 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-              _val162 = new java.util.ArrayList<PrivilegeGrantInfo>(_list164.size);
-              @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem165;
-              for (int _i166 = 0; _i166 < _list164.size; ++_i166)
+              org.apache.thrift.protocol.TList _list174 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+              _val172 = new java.util.ArrayList<PrivilegeGrantInfo>(_list174.size);
+              @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem175;
+              for (int _i176 = 0; _i176 < _list174.size; ++_i176)
               {
-                _elem165 = new PrivilegeGrantInfo();
-                _elem165.read(iprot);
-                _val162.add(_elem165);
+                _elem175 = new PrivilegeGrantInfo();
+                _elem175.read(iprot);
+                _val172.add(_elem175);
               }
             }
-            struct.groupPrivileges.put(_key161, _val162);
+            struct.groupPrivileges.put(_key171, _val172);
           }
         }
         struct.setGroupPrivilegesIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map167 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
-          struct.rolePrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map167.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key168;
-          @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val169;
-          for (int _i170 = 0; _i170 < _map167.size; ++_i170)
+          org.apache.thrift.protocol.TMap _map177 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
+          struct.rolePrivileges = new java.util.HashMap<java.lang.String,java.util.List<PrivilegeGrantInfo>>(2*_map177.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key178;
+          @org.apache.thrift.annotation.Nullable java.util.List<PrivilegeGrantInfo> _val179;
+          for (int _i180 = 0; _i180 < _map177.size; ++_i180)
           {
-            _key168 = iprot.readString();
+            _key178 = iprot.readString();
             {
-              org.apache.thrift.protocol.TList _list171 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-              _val169 = new java.util.ArrayList<PrivilegeGrantInfo>(_list171.size);
-              @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem172;
-              for (int _i173 = 0; _i173 < _list171.size; ++_i173)
+              org.apache.thrift.protocol.TList _list181 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+              _val179 = new java.util.ArrayList<PrivilegeGrantInfo>(_list181.size);
+              @org.apache.thrift.annotation.Nullable PrivilegeGrantInfo _elem182;
+              for (int _i183 = 0; _i183 < _list181.size; ++_i183)
               {
-                _elem172 = new PrivilegeGrantInfo();
-                _elem172.read(iprot);
-                _val169.add(_elem172);
+                _elem182 = new PrivilegeGrantInfo();
+                _elem182.read(iprot);
+                _val179.add(_elem182);
               }
             }
-            struct.rolePrivileges.put(_key168, _val169);
+            struct.rolePrivileges.put(_key178, _val179);
           }
         }
         struct.setRolePrivilegesIsSet(true);
