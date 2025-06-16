@@ -64,6 +64,8 @@ final class StageType
 
     const ATLAS_LOAD = 23;
 
+    const CLEAR_DANGLING_TXNS = 24;
+
     static public $__names = array(
         0 => 'CONDITIONAL',
         1 => 'COPY',
@@ -89,6 +91,7 @@ final class StageType
         21 => 'RANGER_DENY',
         22 => 'ATLAS_DUMP',
         23 => 'ATLAS_LOAD',
+        24 => 'CLEAR_DANGLING_TXNS',
     );
 }
 

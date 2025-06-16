@@ -3130,6 +3130,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   void replRollbackTxn(long srcTxnid, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException;
 
+
+  ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) throws TException;
+
   /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.

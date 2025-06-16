@@ -3051,6 +3051,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
+  public ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) throws TException{
+    return client.get_replayed_txns_for_policy(replPolicy);
+  }
+
+  @Override
   public void commitTxnWithKeyValue(long txnid, long tableId, String key, String value)
       throws TException {
     CommitTxnRequest ctr = new CommitTxnRequest(txnid);
