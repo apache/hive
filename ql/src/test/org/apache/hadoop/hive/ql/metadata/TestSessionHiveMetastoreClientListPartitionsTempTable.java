@@ -216,13 +216,13 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     super.testListPartitionsByFilterNullDbName();
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   @Override
   public void testListPartitionValuesNullDbName() throws Exception {
     super.testListPartitionValuesNullDbName();
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   @Override
   public void testListPartitionValuesNullTblName() throws Exception {
     super.testListPartitionValuesNullTblName();
@@ -421,7 +421,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     checkExprPartitionSpec(0, e.strCol("yyyy").val("2019").pred("=", 2).build(), t);
   }
 
-  @Test(expected = AssertionError.class)
+  @Test(expected = NullPointerException.class)
   public void testListPartitionsSpecByExprNullResult() throws Exception {
     Table t = createTable4PartColsParts(getClient()).table;
 
