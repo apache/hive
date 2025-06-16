@@ -644,10 +644,10 @@ public class MetaToolObjectStore extends ObjectStore {
     StringBuilder filter = new StringBuilder();
     List<String> parameterVals = new ArrayList<>();
     if (!StringUtils.isEmpty(dbFilter)) {
-      appendIdentifierPatternCondition(filter, "database.name", dbFilter, parameterVals);
+      appendPatternCondition(filter, "database.name", dbFilter, parameterVals);
     }
     if (!StringUtils.isEmpty(tableFilter)) {
-      appendIdentifierPatternCondition(filter, "tableName", tableFilter, parameterVals);
+      appendPatternCondition(filter, "tableName", tableFilter, parameterVals);
     }
     try (QueryWrapper query = new QueryWrapper(filter.length() > 0 ?
         pm.newQuery(MTable.class, filter.toString()) : pm.newQuery(MTable.class))){
