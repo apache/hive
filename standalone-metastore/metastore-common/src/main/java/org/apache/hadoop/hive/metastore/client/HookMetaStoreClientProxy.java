@@ -357,11 +357,12 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
           req.isSoftDelete() && Boolean.parseBoolean(table.getParameters().get(SOFT_DELETE_TABLE));
       boolean deleteData = req.isDeleteData() && !isSoftDelete;
 
-      // SG:FIXME, introduce IMetaStoreClient.dropTable :: DropTableRequest -> void
-      // We need a new method that takes catName and checks tbl.isSetTxnId()
-      // Or does TxN stuff meaningful only if we are in default catalog?
-      // cf. This mark also exists under ThriftHiveMetaStoreClient#dropDatabase.
-
+      if (req.isSetTxnId()) {
+        // The correct way to propagate txnId is passing EnvironmentContext to underlying clients.
+        // However, to prevent adding one more method in IMetaStoreClient, we hack Table object here.
+        table.setTxnId(req.getTxnId());
+        req.setDeleteManagedDir(false);
+      }
       dropTable(table, deleteData, false, false);
     }
     getDelegate().dropDatabase(req);
@@ -424,35 +425,26 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
   }
 
   @Override
-  public void dropTable(String catName, String dbName, String tableName, boolean deleteData,
-      boolean ignoreUnknownTable, boolean ifPurge) throws TException {
-    Table tbl;
-    try {
-      tbl = getTable(catName, dbName, tableName);
-    } catch (NoSuchObjectException e) {
-      if (!ignoreUnknownTable) {
-        throw e;
-      }
-      return;
-    }
-    HiveMetaHook hook = getHook(tbl);
+  public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge)
+      throws TException {
+    HiveMetaHook hook = getHook(table);
     if (hook != null) {
-      hook.preDropTable(tbl, deleteData || ifPurge);
+      hook.preDropTable(table, deleteData || ifPurge);
     }
     boolean success = false;
     try {
-      getDelegate().dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, ifPurge);
+      getDelegate().dropTable(table, deleteData, ignoreUnknownTab, ifPurge);
       if (hook != null) {
-        hook.commitDropTable(tbl, deleteData || ifPurge);
+        hook.commitDropTable(table, deleteData || ifPurge);
       }
       success = true;
     } catch (NoSuchObjectException e) {
-      if (!ignoreUnknownTable) {
+      if (!ignoreUnknownTab) {
         throw e;
       }
     } finally {
       if (!success && (hook != null)) {
-        hook.rollbackDropTable(tbl);
+        hook.rollbackDropTable(table);
       }
     }
   }
@@ -575,9 +567,6 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
   @Override
   public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
       throws TException {
-    // SG:FIXME, remove assert?
-    assert result != null;
-
     // to ensure that result never contains any unfiltered partitions.
     List<PartitionSpec> tempList = new ArrayList<>();
     boolean r = getDelegate().listPartitionsSpecByExpr(req, tempList);

@@ -270,10 +270,9 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   }
 
   @Override
-  final public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge)
+  public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge)
       throws TException {
-    // SG:FIXME, should we always set TxnId?
-    dropTable(table.getCatName(), table.getDbName(), table.getTableName(), true, true, false);
+    delegate.dropTable(table, deleteData, ignoreUnknownTab, ifPurge);
   }
 
   @Override
@@ -283,9 +282,18 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   }
 
   @Override
-  public void dropTable(String catName, String dbName, String tableName, boolean deleteData,
+  final public void dropTable(String catName, String dbName, String tableName, boolean deleteData,
       boolean ignoreUnknownTable, boolean ifPurge) throws MetaException, NoSuchObjectException, TException {
-    delegate.dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, ifPurge);
+    Table table;
+    try {
+      table = getTable(catName, dbName, tableName);
+    } catch (NoSuchObjectException e) {
+      if (!ignoreUnknownTable) {
+        throw e;
+      }
+      return;
+    }
+    dropTable(table, deleteData, ignoreUnknownTable, ifPurge);
   }
 
   @Override
@@ -480,9 +488,9 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   }
 
   @Override
-  public int add_partitions(List<Partition> partitions)
+  final public int add_partitions(List<Partition> partitions)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    return delegate.add_partitions(partitions, false, true).size();
+    return add_partitions(partitions, false, true).size();
   }
 
   @Override
@@ -494,7 +502,7 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   public List<Partition> add_partitions(List<Partition> partitions, boolean ifNotExists, boolean needResults)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    return delegate.add_partitions(partitions,ifNotExists, needResults);
+    return delegate.add_partitions(partitions, ifNotExists, needResults);
   }
 
   @Override

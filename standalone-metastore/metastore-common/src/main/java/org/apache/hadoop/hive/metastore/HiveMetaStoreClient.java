@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.client.HookMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransport;
 
@@ -161,15 +160,6 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy
   @VisibleForTesting
   public TTransport getTTransport() {
     return thriftClient.getTTransport();
-  }
-
-  @VisibleForTesting
-  protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
-    return thriftClient.createHttpClientBuilder();
-  }
-
-  public static ThriftHiveMetastore.Iface callEmbeddedMetastore(Configuration conf) throws MetaException {
-    return null;
   }
 
   @VisibleForTesting

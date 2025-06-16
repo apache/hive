@@ -202,13 +202,28 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
     }
   }
 
-  // SG:FIXME, cache listPartitionsByExpr :: PartitionsByExprRequest -> List<Partition> -> Boolean
+  @Override
+  public boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result)
+      throws TException {
+    Supplier<PartitionsWrapper, TException> supplier = new Supplier<PartitionsWrapper, TException>() {
+      @Override
+      public PartitionsWrapper get() throws TException {
+        List<Partition> parts = new ArrayList<>();
+        boolean hasUnknownPart = getDelegate().listPartitionsByExpr(req, parts);
+        return new PartitionsWrapper(parts, hasUnknownPart);
+      }
+    };
+    PartitionsWrapper r = getPartitionsByExprInternal(req, supplier);
+    result.addAll(r.partitions);
+    return r.hasUnknownPartition;
+  }
+
   private PartitionsWrapper getPartitionsByExprInternal(
       PartitionsByExprRequest req, Supplier<PartitionsWrapper, TException> supplier) throws TException {
     if (isCacheEnabledAndInitialized()) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
+          req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, watermark, req);
         PartitionsWrapper r = (PartitionsWrapper) mscLocalCache.getIfPresent(cacheKey);
@@ -238,7 +253,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark =new TableWatermark(
           getValidWriteIdList(dbName, tableName),
-          getTable(dbName, tableName).getId());
+          getTable(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
             catName, dbName, tableName, maxParts);
@@ -278,13 +293,12 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
     return r.hasUnknownPartition;
   }
 
-  // SG:FIXME, should replace lambda with concrete function
   private PartitionSpecsWrapper getPartitionsSpecByExprInternal(
       PartitionsByExprRequest req, Supplier<PartitionSpecsWrapper, TException> supplier) throws TException {
     if (isCacheEnabledAndInitialized()) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
+          req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, watermark, req);
         PartitionSpecsWrapper r = (PartitionSpecsWrapper) mscLocalCache.getIfPresent(cacheKey);
@@ -314,7 +328,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(
           getValidWriteIdList(dbName, tableName),
-          getTable(dbName, tableName).getId());
+          getTable(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -356,7 +370,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
       req.setEngine(engine);
       req.setCatName(catName);
       req.setValidWriteIdList(writeIdList);
-      TableWatermark watermark = new TableWatermark(writeIdList, getTable(dbName, tblName).getId());
+      TableWatermark watermark = new TableWatermark(writeIdList, getTable(catName, dbName, tblName).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
         AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
@@ -401,7 +415,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
         // 3) If they were not, gather the remaining
         GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(req);
         newRqst.setNames(partitionsMissing);
-        GetPartitionsByNamesResult r = getDelegate().getPartitionsByNames(req);
+        GetPartitionsByNamesResult r = getDelegate().getPartitionsByNames(newRqst);
         // 4) Populate the cache
         List<Partition> newPartitions =
             MetaStoreClientCacheUtils.loadPartitionsByNamesCache(cache, r, req, watermark);
@@ -444,4 +458,3 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
     }
   }
 }
-

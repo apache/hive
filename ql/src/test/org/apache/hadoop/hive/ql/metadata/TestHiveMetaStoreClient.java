@@ -114,7 +114,7 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
     return tTable;
   }
 
-  public GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest req) {
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) {
     assertNotNull(req.getId());
     assertNotNull(req.getValidWriteIdList());
     GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
