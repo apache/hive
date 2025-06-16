@@ -101,9 +101,11 @@ import org.slf4j.LoggerFactory;
  * Currently independent of the Hive ACID transactions.
  */
 public class HiveIcebergOutputCommitter extends OutputCommitter {
-  private static final String FOR_COMMIT_EXTENSION = ".forCommit";
-
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergOutputCommitter.class);
+
+  private static final String FOR_COMMIT_EXTENSION = ".forCommit";
+  private static final String CONFLICT_DETECTION_FILTER_MSG = "Conflict detection Filter Expression: {}";
+
   private static final HiveIcebergOutputCommitter OUTPUT_COMMITTER = new HiveIcebergOutputCommitter();
 
   public static HiveIcebergOutputCommitter getInstance() {
@@ -450,7 +452,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     Table table = null;
     String branchName = null;
-
     Long snapshotId = null;
     Expression filterExpr = null;
 
@@ -461,14 +462,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
       snapshotId = getSnapshotId(outputTable.table, branchName);
 
-      filterExpr = (Expression) SessionStateUtil.getResource(conf,
-              InputFormatConfig.QUERY_FILTERS + catalogProperties.get(Catalogs.NAME))
-          .orElse(null);
+      if (filterExpr == null) {
+        filterExpr = SessionStateUtil.getConflictDetectionFilter(conf, catalogProperties.get(Catalogs.NAME))
+            .map(expr -> HiveIcebergInputFormat.getFilterExpr(conf, expr))
+            .orElse(null);
+      }
 
       LOG.info("Committing job has started for table: {}, using location: {}",
           table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
-      int numTasks = SessionStateUtil.getCommitInfo(conf, name).map(info -> info.get(jobContext.getJobID().toString()))
+      int numTasks = SessionStateUtil.getCommitInfo(conf, name)
+          .map(info -> info.get(jobContext.getJobID().toString()))
           .map(SessionStateUtil.CommitInfo::getTaskNum).orElseGet(() -> {
             // Fallback logic, if number of tasks are not available in the config
             // If there are reducers, then every reducer will generate a result file.
@@ -558,7 +562,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         write.validateFromSnapshot(snapshotId);
       }
       if (filterExpr != null) {
-        LOG.debug("Conflict detection Filter Expression :{}", filterExpr);
+        LOG.debug(CONFLICT_DETECTION_FILTER_MSG, filterExpr);
         write.conflictDetectionFilter(filterExpr);
       }
       write.validateNoConflictingData();
@@ -587,7 +591,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         write.validateFromSnapshot(snapshotId);
       }
       if (filterExpr != null) {
-        LOG.debug("Conflict detection Filter Expression :{}", filterExpr);
+        LOG.debug(CONFLICT_DETECTION_FILTER_MSG, filterExpr);
         write.conflictDetectionFilter(filterExpr);
       }
       if (!results.dataFiles().isEmpty()) {

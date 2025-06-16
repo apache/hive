@@ -418,18 +418,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
-    Expression filterExpr = HiveIcebergInputFormat.getFilterExpr(conf, predicate.pushedPredicate);
 
-    if (filterExpr != null) {
-      String filterKey = InputFormatConfig.QUERY_FILTERS + jobConf.get(Catalogs.NAME);
-      Expression prevFilterExpr = (Expression) SessionStateUtil.getResource(conf, filterKey)
-          .orElse(null);
-      if (prevFilterExpr == null) {
-        SessionStateUtil.addResource(conf, filterKey, filterExpr);
-      } else if (!prevFilterExpr.isEquivalentTo(filterExpr)) {
-        // disable the conflict detection Filter in case of multiple TableScan operators
-        SessionStateUtil.addResource(conf, filterKey, Expressions.alwaysTrue());
-      }
+    if (pushedPredicate != null) {
+      SessionStateUtil.setConflictDetectionFilter(conf, jobConf.get(Catalogs.NAME), pushedPredicate);
     }
     return predicate;
   }

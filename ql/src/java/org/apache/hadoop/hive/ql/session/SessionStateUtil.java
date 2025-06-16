@@ -25,10 +25,18 @@ import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SessionStateUtil {
+  private static final Logger LOG = LoggerFactory.getLogger(SessionStateUtil.class);
 
   private static final String COMMIT_INFO_PREFIX = "COMMIT_INFO.";
+  private static final String CONFLICT_DETECTION_FILTER = "conflictDetectionFilter.";
   public static final String DEFAULT_TABLE_LOCATION = "defaultLocation";
 
   private SessionStateUtil() {
@@ -99,12 +107,34 @@ public class SessionStateUtil {
 
     getCommitInfo(conf, tableName)
         .ifPresentOrElse(commitInfoMap -> commitInfoMap.put(jobId, commitInfo),
-              () -> {
-                Map<String, CommitInfo> newCommitInfoMap = Maps.newHashMap();
-                newCommitInfoMap.put(jobId, commitInfo);
+            () -> {
+              Map<String, CommitInfo> newCommitInfoMap = Maps.newHashMap();
+              newCommitInfoMap.put(jobId, commitInfo);
 
-                addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
-              });
+              addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
+            });
+  }
+
+  public static Optional<ExprNodeGenericFuncDesc> getConflictDetectionFilter(Configuration conf, Object tableName) {
+    return getResource(conf, CONFLICT_DETECTION_FILTER + tableName)
+        .map(obj -> (ExprNodeGenericFuncDesc) obj);
+  }
+
+  public static void setConflictDetectionFilter(Configuration conf, String tableName, ExprNodeDesc filterExpr) {
+    String key = CONFLICT_DETECTION_FILTER + tableName;
+
+    getConflictDetectionFilter(conf, tableName)
+        .ifPresentOrElse(prevFilterExpr -> {
+            if (!prevFilterExpr.isSame(filterExpr)) {
+              ExprNodeDesc disjunction = null;
+              try {
+                disjunction = ExprNodeDescUtils.disjunction(prevFilterExpr, filterExpr);
+              } catch (UDFArgumentException e) {
+                LOG.warn(e.getMessage());
+              }
+              addResource(conf, key, disjunction);
+            }
+        }, () -> addResource(conf, key, filterExpr));
   }
 
   public static Optional<QueryState> getQueryState(Configuration conf) {
