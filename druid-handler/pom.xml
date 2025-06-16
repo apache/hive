@@ -118,10 +118,6 @@
           <groupId>org.glassfish</groupId>
           <artifactId>javax.el</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>com.jayway.jsonpath</groupId>
-          <artifactId>json-path</artifactId>
-        </exclusion>
       </exclusions>
       <optional>true</optional>
     </dependency>

@@ -488,6 +488,10 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>net.minidev</groupId>
+      <artifactId>json-smart</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-druid</artifactId>
       <exclusions>
