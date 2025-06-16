@@ -18,15 +18,13 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import com.google.common.reflect.ClassPath;
-
 import javax.jdo.PersistenceManager;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -41,7 +39,6 @@ import static org.junit.Assert.assertFalse;
 
 public class TestPackageJdo {
   private static final String TMPDIR = System.getProperty("java.io.tmpdir", "target/tmp");
-  private final String packageName = "org.apache.hadoop.hive.metastore.model";
   private final Configuration conf = MetastoreConf.newMetastoreConf();
 
   private final String url1 = "jdbc:derby:;databaseName=" + TMPDIR + "/test_meta_mapping_db1;create=true";
@@ -59,15 +56,20 @@ public class TestPackageJdo {
     TestTxnDbUtil.prepDb(conf);
 
     // Init the schema from package.jdo
-    Set<String> excludeClazz = new HashSet<>();
-    excludeClazz.add("FetchGroups");
-    Set<Class> classes = ClassPath.from(ClassLoader.getSystemClassLoader()).getAllClasses().stream()
-        .filter(clazz -> clazz.getPackageName().equals(packageName))
-        .filter(clazz -> !excludeClazz.contains(clazz.getSimpleName())).map(clazz -> clazz.load())
-        .collect(Collectors.toSet());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, url2);
     PersistenceManagerProvider.updatePmfProperties(conf);
     PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager();
+    Set<Class> classes = new HashSet<>();
+    String packageName = "org/apache/hadoop/hive/metastore/model/";
+    for (File mfile :
+        new File(".", "src/main/java/" + packageName).listFiles()) {
+      String fileName = mfile.getName();
+      if (fileName.endsWith(".java") && !fileName.contains("FetchGroups")) {
+        fileName = packageName.replace("/", ".") +
+            fileName.substring(0, fileName.length() - 5);
+        classes.add(getClass().getClassLoader().loadClass(fileName));
+      }
+    }
     for (Class clazz : classes) {
       try {
         pm.makePersistent(JavaUtils.newInstance(clazz, new Class[0], new Object[0]));
@@ -117,28 +119,14 @@ public class TestPackageJdo {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, url1);
     Connection connection1 = TestTxnDbUtil.getConnection(conf);
     try (Connection conn1 = connection1; Connection conn2 = connection2) {
-      ResultSet rs = conn1.getMetaData().getSchemas();
-      while (rs.next()) {
-        System.out.println("schema: " + rs.getString("TABLE_SCHEM"));
-      }
-      String schema = "APP";
-      ResultSet rs1 = conn1.getMetaData().getTables(null, schema, null, new String[] { "TABLE" });
-      Set<String> tables1 = new HashSet<>();
-      while (rs1.next()) {
-        tables1.add(rs1.getString("TABLE_NAME"));
-      }
-      Set<String> tables2 = new HashSet<>();
-      ResultSet rs2 = conn2.getMetaData().getTables(null, schema, null, new String[] { "TABLE" });
-      while (rs2.next()) {
-        tables2.add(rs2.getString("TABLE_NAME"));
-      }
-
+      Set<String> tables1 = getTableNames(conn1);
+      Set<String> tables2 = getTableNames(conn2);
       Assert.assertFalse(tables1.isEmpty() || tables2.isEmpty());
       // We don't define the transaction table in package.jdo, iterator over table2,
       // check to see if there is any diff on the table schema
       for (String table : tables2) {
-        ResultSet colRS1 = connection1.getMetaData().getColumns(null, schema, table, null);
-        ResultSet colRS2 = connection2.getMetaData().getColumns(null, schema, table, null);
+        ResultSet colRS1 = connection1.getMetaData().getColumns(null, "APP", table, null);
+        ResultSet colRS2 = connection2.getMetaData().getColumns(null, "APP", table, null);
         Set<ColumnInfo> columnInfos1 = new HashSet<>();
         Set<ColumnInfo> columnInfos2 = new HashSet<>();
         while (colRS1.next() && colRS2.next()) {
@@ -151,5 +139,16 @@ public class TestPackageJdo {
         assertFalse(colRS1.next() || colRS2.next());
       }
     }
+  }
+
+  private Set<String> getTableNames(Connection connection) throws Exception {
+    Set<String> tables = new HashSet<>();
+    try (ResultSet rs2 = connection.getMetaData()
+        .getTables(null, "APP", null, new String[] { "TABLE" })) {
+      while (rs2.next()) {
+        tables.add(rs2.getString("TABLE_NAME"));
+      }
+    }
+    return tables;
   }
 }
