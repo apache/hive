@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // DATABASES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list216 = iprot.readListBegin();
-                struct.databases = new java.util.ArrayList<Database>(_list216.size);
-                @org.apache.thrift.annotation.Nullable Database _elem217;
-                for (int _i218 = 0; _i218 < _list216.size; ++_i218)
+                org.apache.thrift.protocol.TList _list226 = iprot.readListBegin();
+                struct.databases = new java.util.ArrayList<Database>(_list226.size);
+                @org.apache.thrift.annotation.Nullable Database _elem227;
+                for (int _i228 = 0; _i228 < _list226.size; ++_i228)
                 {
-                  _elem217 = new Database();
-                  _elem217.read(iprot);
-                  struct.databases.add(_elem217);
+                  _elem227 = new Database();
+                  _elem227.read(iprot);
+                  struct.databases.add(_elem227);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(DATABASES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.databases.size()));
-          for (Database _iter219 : struct.databases)
+          for (Database _iter229 : struct.databases)
           {
-            _iter219.write(oprot);
+            _iter229.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.databases.size());
-        for (Database _iter220 : struct.databases)
+        for (Database _iter230 : struct.databases)
         {
-          _iter220.write(oprot);
+          _iter230.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetDatabaseObjectsResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list221 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.databases = new java.util.ArrayList<Database>(_list221.size);
-        @org.apache.thrift.annotation.Nullable Database _elem222;
-        for (int _i223 = 0; _i223 < _list221.size; ++_i223)
+        org.apache.thrift.protocol.TList _list231 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.databases = new java.util.ArrayList<Database>(_list231.size);
+        @org.apache.thrift.annotation.Nullable Database _elem232;
+        for (int _i233 = 0; _i233 < _list231.size; ++_i233)
         {
-          _elem222 = new Database();
-          _elem222.read(iprot);
-          struct.databases.add(_elem222);
+          _elem232 = new Database();
+          _elem232.read(iprot);
+          struct.databases.add(_elem232);
         }
       }
       struct.setDatabasesIsSet(true);

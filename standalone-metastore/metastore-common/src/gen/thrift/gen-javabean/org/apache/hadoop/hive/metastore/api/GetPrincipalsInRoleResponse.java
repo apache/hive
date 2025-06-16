@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // PRINCIPAL_GRANTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list190 = iprot.readListBegin();
-                struct.principalGrants = new java.util.ArrayList<RolePrincipalGrant>(_list190.size);
-                @org.apache.thrift.annotation.Nullable RolePrincipalGrant _elem191;
-                for (int _i192 = 0; _i192 < _list190.size; ++_i192)
+                org.apache.thrift.protocol.TList _list200 = iprot.readListBegin();
+                struct.principalGrants = new java.util.ArrayList<RolePrincipalGrant>(_list200.size);
+                @org.apache.thrift.annotation.Nullable RolePrincipalGrant _elem201;
+                for (int _i202 = 0; _i202 < _list200.size; ++_i202)
                 {
-                  _elem191 = new RolePrincipalGrant();
-                  _elem191.read(iprot);
-                  struct.principalGrants.add(_elem191);
+                  _elem201 = new RolePrincipalGrant();
+                  _elem201.read(iprot);
+                  struct.principalGrants.add(_elem201);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PRINCIPAL_GRANTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.principalGrants.size()));
-          for (RolePrincipalGrant _iter193 : struct.principalGrants)
+          for (RolePrincipalGrant _iter203 : struct.principalGrants)
           {
-            _iter193.write(oprot);
+            _iter203.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.principalGrants.size());
-        for (RolePrincipalGrant _iter194 : struct.principalGrants)
+        for (RolePrincipalGrant _iter204 : struct.principalGrants)
         {
-          _iter194.write(oprot);
+          _iter204.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPrincipalsInRoleResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list195 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.principalGrants = new java.util.ArrayList<RolePrincipalGrant>(_list195.size);
-        @org.apache.thrift.annotation.Nullable RolePrincipalGrant _elem196;
-        for (int _i197 = 0; _i197 < _list195.size; ++_i197)
+        org.apache.thrift.protocol.TList _list205 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.principalGrants = new java.util.ArrayList<RolePrincipalGrant>(_list205.size);
+        @org.apache.thrift.annotation.Nullable RolePrincipalGrant _elem206;
+        for (int _i207 = 0; _i207 < _list205.size; ++_i207)
         {
-          _elem196 = new RolePrincipalGrant();
-          _elem196.read(iprot);
-          struct.principalGrants.add(_elem196);
+          _elem206 = new RolePrincipalGrant();
+          _elem206.read(iprot);
+          struct.principalGrants.add(_elem206);
         }
       }
       struct.setPrincipalGrantsIsSet(true);
