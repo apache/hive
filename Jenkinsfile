@@ -98,7 +98,6 @@ mkdir -p .m2/repository
 cp $SETTINGS .m2/settings.xml
 OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
 OPTS+=" -Pitests,qsplits,dist,errorProne"
-OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2/repository"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
@@ -372,7 +371,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
         }
         try {
           stage('Test') {
-            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test")
           }
         } finally {
           stage('PostProcess') {
