@@ -2982,6 +2982,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Database db = null;
     boolean isReplicated = false;
     try {
+      long startTime = System.currentTimeMillis();
       ms.openTransaction();
 
       // HIVE-25282: Drop/Alter table in REMOTE db should fail
@@ -3022,6 +3023,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           throw new MetaException(target + " metadata not deleted since " +
               tblPath.getParent() + " is not writable by " +
               SecurityUtils.getUser());
+        } else if (!wh.isWritable(tblPath)) {
+          String target = indexName == null ? "Table" : "Index table";
+          throw new MetaException(target + " metadata not deleted since " +
+              tblPath + " is not writable by " +
+              SecurityUtils.getUser());
         }
       }
 
@@ -3048,15 +3054,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         success = ms.commitTransaction();
       }
+      long endTime = System.currentTimeMillis();
+      LOG.info("It takes " + (endTime - startTime) + " ms to delete the metadata of Table" + name);
     } finally {
       if (!success) {
         ms.rollbackTransaction();
       } else if (tableDataShouldBeDeleted) {
+        long startTime = System.currentTimeMillis();
         // Data needs deletion. Check if trash may be skipped.
         // Delete the data in the partitions which have other locations
         deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
         // Delete the data in the table
         deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
+	long endTime = System.currentTimeMillis();
+        LOG.info("It takes " + (endTime - startTime) + " ms to delete the data of Table" + name);
       }
 
       if (!listeners.isEmpty()) {
