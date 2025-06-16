@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
@@ -138,6 +139,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTabl
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeSpecFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.makeValsFromName;
+import static org.apache.hadoop.hive.metastore.client.HiveMetaStoreClientUtils.deepCopyFieldSchemas;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.compareFieldColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getColumnNamesForTable;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -172,13 +174,17 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     return wh;
   }
 
+  private boolean isDefaultCatalog(String catName) {
+    return catName == null || catName.isEmpty() || getDefaultCatalog(conf).equals(catName);
+  }
+
   /**
    * Methods for supporting multiple features
    */
 
   @Override
   public Table getTable(GetTableRequest req) throws TException {
-    if (!req.isSetCatName() || getDefaultCatalog(conf).equals(req.getCatName())) {
+    if (isDefaultCatalog(req.getCatName())) {
       Table tempTable = getTempTable(req.getDbName(), req.getTblName());
       if (tempTable != null) {
         // Original method used deepCopy(), do the same here.
@@ -227,7 +233,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public List<String> getTables(String catName, String dbName, String tablePattern) throws TException {
     List<String> tableNames = getDelegate().getTables(catName, dbName, tablePattern);
 
-    if (catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf))) {
+    if (isDefaultCatalog(catName)) {
       // May need to merge with list of temp tables
       dbName = dbName.toLowerCase();
       tablePattern = tablePattern.toLowerCase();
@@ -261,7 +267,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       throws TException {
     List<String> tableNames = getDelegate().getTables(dbname, tablePattern, tableType);
 
-    if (catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf))) {
+    if (isDefaultCatalog(catName)) {
       if (tableType == TableType.MANAGED_TABLE || tableType == TableType.EXTERNAL_TABLE) {
         // May need to merge with list of temp tables
         dbname = dbname.toLowerCase();
@@ -303,8 +309,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   @Override
   public List<Table> getTables(String catName, String dbName, List<String> tableNames,
       GetProjectionsSpec projectionsSpec) throws TException {
-    if ((catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf)))
-        && projectionsSpec == null) {
+    if (isDefaultCatalog(catName) && projectionsSpec == null) {
       // TODO: What if projectionsSpec != null
       List<Table> tables = new ArrayList<>();
       for (String tableName: tableNames) {
@@ -318,7 +323,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
   @Override
   public boolean tableExists(String catName, String dbName, String tableName) throws TException {
-    if (getDefaultCatalog(conf).equals(catName)) {
+    if (isDefaultCatalog(catName)) {
       Table tempTable = getTempTable(dbName, tableName);
       if (tempTable != null) {
         return true;
@@ -329,9 +334,21 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
+  public List<FieldSchema> getSchema(String catName, String dbName, String tableName) throws TException {
+    if (isDefaultCatalog(catName)) {
+      Table tempTable = getTempTable(dbName, tableName);
+      if (tempTable != null) {
+        return deepCopyFieldSchemas(tempTable.getSd().getCols());
+      }
+    }
+
+    return getDelegate().getSchema(catName, dbName, tableName);
+  }
+
+  @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
-    if (getDefaultCatalog(conf).equals(catName) && getTempTable(dbName, tableName) != null) {
+    if (isDefaultCatalog(catName) && getTempTable(dbName, tableName) != null) {
       return getTempTableColumnStats(dbName, tableName, colNames);
     }
 
@@ -369,7 +386,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName,
       String tableName, List<String> partialPvals, int maxParts, String userName,
       List<String> groupNames) throws TException {
-    if (getDefaultCatalog(conf).equals(catName)) {
+    if (isDefaultCatalog(catName)) {
       Table tmpTable = getTempTable(dbName, tableName);
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
@@ -404,7 +421,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
       int maxParts, String userName, List<String> groupNames)
       throws TException {
-    if (getDefaultCatalog(conf).equals(catName)) {
+    if (isDefaultCatalog(catName)) {
       Table tmpTable = getTempTable(dbName, tableName);
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
@@ -436,7 +453,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   @Override
   public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(
       GetPartitionsPsWithAuthRequest req) throws TException {
-    if (!req.isSetCatName() || getDefaultCatalog(conf).equals(req.getCatName())) {
+    if (isDefaultCatalog(req.getCatName())) {
       Table tmpTable = getTempTable(req.getDbName(), req.getTblName());
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
@@ -473,7 +490,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tableName, int maxParts)
       throws TException {
-    if (getDefaultCatalog(conf).equals(catName)) {
+    if (isDefaultCatalog(catName)) {
       Table tmpTable = getTempTable(dbName, tableName);
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
@@ -509,7 +526,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   @Override
   public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
       throws TException {
-    if (!req.isSetCatName() || getDefaultCatalog(conf).equals(req.getCatName())) {
+    if (isDefaultCatalog(req.getCatName())) {
       Table tmpTable = getTempTable(req.getDbName(), req.getTblName());
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
@@ -552,7 +569,9 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
   @Override
   public boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException {
-    if (!req.isSetCatName() || getDefaultCatalog(conf).equals(req.getCatName())) {
+    assert result != null;
+
+    if (isDefaultCatalog(req.getCatName())) {
       Table tmpTable = getTempTable(req.getDbName(), req.getTblName());
       if (tmpTable != null) {
         result.addAll(getPartitionsForMaxParts(getPartitionedTempTable(tmpTable).listPartitionsByFilter(
@@ -587,7 +606,9 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   @Override
   public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
       throws TException {
-    if (!req.isSetCatName() || getDefaultCatalog(conf).equals(req.getCatName())) {
+    assert result != null;
+
+    if (isDefaultCatalog(req.getCatName())) {
       Table tmpTable = getTempTable(req.getDbName(), req.getTblName());
       if (tmpTable != null) {
         result.addAll(
@@ -626,7 +647,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
       throws TException {
     String[] parsedNames = MetaStoreUtils.parseDbName(req.getDb_name(), conf);
-    if (getDefaultCatalog(conf).equals(parsedNames[0])) {
+    if (isDefaultCatalog(parsedNames[0])) {
       Table tmpTable = getTempTable(req.getDb_name(), req.getTbl_name());
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
@@ -653,7 +674,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       // 3) If they were not, gather the remaining
       GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(req);
       newRqst.setNames(partitionsMissing);
-      GetPartitionsByNamesResult r = getDelegate().getPartitionsByNames(req);
+      GetPartitionsByNamesResult r = getDelegate().getPartitionsByNames(newRqst);
       // 4) Populate the cache
       List<Partition> newPartitions =
           MetaStoreClientCacheUtils.loadPartitionsByNamesCache(cache, r, req, null);
@@ -680,17 +701,65 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
-  public void dropTable(String catName, String dbName, String tableName, boolean deleteData,
-      boolean ignoreUnknownTable, boolean ifPurge) throws TException {
-    // First try temp table
-    // TODO CAT - I think the right thing here is to always put temp tables in the current
-    // catalog.  But we don't yet have a notion of current catalog, so we'll have to hold on
-    // until we do.
-    Table table = getTempTable(dbName, tableName);
-    if (table != null) {
+  public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
+      List<String> tableTypes) throws TException {
+    List<TableMeta> tableMetas = getDelegate().getTableMeta(dbPatterns, tablePatterns, tableTypes);
+
+    if (isDefaultCatalog(catName)) {
+      Map<String, Map<String, org.apache.hadoop.hive.ql.metadata.Table>> tmpTables =
+          getTempTables("dbPatterns='" + dbPatterns + "' tablePatterns='" + tablePatterns + "'");
+      if (tmpTables.isEmpty()) {
+        return tableMetas;
+      }
+
+      List<Matcher> dbPatternList = new ArrayList<>();
+      for (String element : dbPatterns.split("\\|")) {
+        dbPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+      }
+      List<Matcher> tblPatternList = new ArrayList<>();
+      for (String element : tablePatterns.split("\\|")) {
+        tblPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+      }
+      for (Map.Entry<String, Map<String, org.apache.hadoop.hive.ql.metadata.Table>> outer : tmpTables.entrySet()) {
+        if (!matchesAny(outer.getKey(), dbPatternList)) {
+          continue;
+        }
+        for (Map.Entry<String, org.apache.hadoop.hive.ql.metadata.Table> inner : outer.getValue().entrySet()) {
+          org.apache.hadoop.hive.ql.metadata.Table table = inner.getValue();
+          String tableName = table.getTableName();
+          String typeString = table.getTableType().name();
+          if (tableTypes != null && !tableTypes.contains(typeString)) {
+            continue;
+          }
+          if (!matchesAny(inner.getKey(), tblPatternList)) {
+            continue;
+          }
+          TableMeta tableMeta = new TableMeta(table.getDbName(), tableName, typeString);
+          tableMeta.setComments(table.getProperty("comment"));
+          tableMetas.add(tableMeta);
+        }
+      }
+    }
+
+    return tableMetas;
+  }
+
+  private boolean matchesAny(String string, List<Matcher> matchers) {
+    for (Matcher matcher : matchers) {
+      if (matcher.reset(string).matches()) {
+        return true;
+      }
+    }
+    return matchers.isEmpty();
+  }
+
+  @Override
+  public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTable, boolean ifPurge)
+      throws TException {
+    if (table.isTemporary()) {
       dropTempTable(table, deleteData, ifPurge);
     } else {
-      getDelegate().dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, ifPurge);
+      getDelegate().dropTable(table, deleteData, ignoreUnknownTable, ifPurge);
     }
   }
 
@@ -698,7 +767,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public void truncateTable(String catName, String dbName, String tableName, String ref,
       List<String> partNames, String validWriteIds, long writeId, boolean deleteData,
       EnvironmentContext context) throws TException {
-    if (catName == null || catName.trim().isEmpty() || catName.equals(getDefaultCatalog(conf))) {
+    if (isDefaultCatalog(catName)) {
       Table table = getTempTable(dbName, tableName);
       if (table != null) {
         truncateTempTable(table);
@@ -714,11 +783,13 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       Table new_tbl,
       EnvironmentContext envContext, String validWriteIds)
       throws TException {
-    Table old_tbl = getTempTable(dbName, tbl_name);
-    if (old_tbl != null) {
-      //actually temp table does not support partitions, cascade is not applicable here
-      alterTempTable(dbName, tbl_name, old_tbl, new_tbl, null);
-      return;
+    if (isDefaultCatalog(catName)) {
+      Table old_tbl = getTempTable(dbName, tbl_name);
+      if (old_tbl != null) {
+        //actually temp table does not support partitions, cascade is not applicable here
+        alterTempTable(dbName, tbl_name, old_tbl, new_tbl, null);
+        return;
+      }
     }
     getDelegate().alter_table(catName, dbName, tbl_name, new_tbl, envContext, validWriteIds);
   }
@@ -727,9 +798,8 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
       String userName, List<String> groupNames) throws TException {
     // If caller is looking for temp table, handle here. Otherwise pass on to underlying client.
-    if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
-      Table table =
-          getTempTable(hiveObject.getDbName(), hiveObject.getObjectName());
+    if (hiveObject.getObjectType() == HiveObjectType.TABLE && isDefaultCatalog(hiveObject.getCatName())) {
+      Table table = getTempTable(hiveObject.getDbName(), hiveObject.getObjectName());
       if (table != null) {
         return HiveMetaStoreClientUtils.deepCopy(table.getPrivileges());
       }
@@ -740,6 +810,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
   @Override
   public boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request) throws TException {
+    // This does not support catalog.
     if (request.getColStatsSize() == 1) {
       ColumnStatistics colStats = request.getColStatsIterator().next();
       ColumnStatisticsDesc desc = colStats.getStatsDesc();
@@ -754,23 +825,25 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
   @Override
   public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
-    String dbName = req.getDb_name();
-    String tableName = req.getTbl_name();
-    Table table;
-    if ((table = getTempTable(dbName, tableName)) != null) {
-      List<String> colNames = req.getCol_names();
-      if (table.getPartitionKeysSize() == 0) {
-        if (colNames == null || colNames.isEmpty()) {
-          colNames = table.getSd().getCols().stream().map(FieldSchema::getName)
-              .collect(Collectors.toList());
+    if (isDefaultCatalog(req.getCat_name())) {
+      String dbName = req.getDb_name();
+      String tableName = req.getTbl_name();
+      Table table;
+      if ((table = getTempTable(dbName, tableName)) != null) {
+        List<String> colNames = req.getCol_names();
+        if (table.getPartitionKeysSize() == 0) {
+          if (colNames == null || colNames.isEmpty()) {
+            colNames = table.getSd().getCols().stream().map(FieldSchema::getName)
+                .collect(Collectors.toList());
+          }
+          for (String colName : colNames) {
+            deleteTempTableColumnStats(dbName, tableName, colName);
+          }
+        } else {
+          throw new UnsupportedOperationException("Not implemented yet");
         }
-        for (String colName : colNames) {
-          deleteTempTableColumnStats(dbName, tableName, colName);
-        }
-      } else {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return true;
       }
-      return true;
     }
     return getDelegate().deleteColumnStatistics(req);
   }
@@ -840,8 +913,8 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     if (tableName == null) {
       throw new MetaException("Table name cannot be null");
     }
-    Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables = getTempTablesForDatabase(parsedDbName.toLowerCase(),
-        tableName.toLowerCase());
+    Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables =
+        getTempTablesForDatabase(parsedDbName.toLowerCase(), tableName.toLowerCase());
     if (tables != null) {
       org.apache.hadoop.hive.ql.metadata.Table table = tables.get(tableName.toLowerCase());
       if (table != null) {
@@ -1180,41 +1253,19 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     if (partition == null) {
       throw new MetaException("Partition cannot be null");
     }
-    Table table = getTempTable(partition.getDbName(), partition.getTableName());
-    if (table == null) {
-      //(assume) not a temp table - Try underlying client
-      return getDelegate().add_partition(partition);
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    checkPartitionProperties(partition);
-    Path partitionLocation = getPartitionLocation(table, partition, false);
-    Partition result = tt.addPartition(HiveMetaStoreClientUtils.deepCopy(partition));
-    createAndSetLocationForAddedPartition(result, partitionLocation);
-    return result;
-  }
 
-  /**
-   * Loading Dynamic Partitions calls this. The partitions which are loaded, must belong to the
-   * same table.
-   * @param partitions the new partitions to be added, must be not null
-   * @return number of partitions that were added
-   * @throws TException
-   */
-  @Override
-  public int add_partitions(List<Partition> partitions) throws TException {
-    if (partitions == null || partitions.contains(null)) {
-      throw new MetaException("Partitions cannot be null");
+    if (isDefaultCatalog(partition.getCatName())) {
+      Table table = getTempTable(partition.getDbName(), partition.getTableName());
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        checkPartitionProperties(partition);
+        Path partitionLocation = getPartitionLocation(table, partition, false);
+        Partition result = tt.addPartition(HiveMetaStoreClientUtils.deepCopy(partition));
+        createAndSetLocationForAddedPartition(result, partitionLocation);
+        return result;
+      }
     }
-    if (partitions.isEmpty()) {
-      return 0;
-    }
-
-    List<Partition> addedPartitions = add_partitions(partitions, false, true);
-    if (addedPartitions != null) {
-      return addedPartitions.size();
-    }
-
-    return getDelegate().add_partitions(partitions);
+    return getDelegate().add_partition(partition);
   }
 
   @Override
@@ -1226,23 +1277,23 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       return 0;
     }
 
-    Table table = getTempTable(partitionSpec.getDbName(), partitionSpec.getTableName());
-    if (table == null) {
-      return getDelegate().add_partitions_pspec(partitionSpec);
-    }
-    assertTempTablePartitioned(table);
-    PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpec.getPartitionIterator();
-    List<Partition> partitionsToAdd = new ArrayList<>(partitionSpec.size());
-    while (partitionIterator.hasNext()) {
-      partitionsToAdd.add(partitionIterator.next());
-    }
+    if (isDefaultCatalog(partitionSpec.getCatName())) {
+      Table table = getTempTable(partitionSpec.getDbName(), partitionSpec.getTableName());
+      if (table != null) {
+        assertTempTablePartitioned(table);
+        PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpec.getPartitionIterator();
+        List<Partition> partitionsToAdd = new ArrayList<>(partitionSpec.size());
+        while (partitionIterator.hasNext()) {
+          partitionsToAdd.add(partitionIterator.next());
+        }
 
-    List<Partition> addedPartitions = addPartitionsToTempTable(partitionsToAdd, partitionSpec.getDbName(),
-        partitionSpec.getTableName(), false);
-    if (addedPartitions != null) {
-      return addedPartitions.size();
+        List<Partition> addedPartitions = addPartitionsToTempTable(partitionsToAdd, partitionSpec.getDbName(),
+            partitionSpec.getTableName(), false);
+        if (addedPartitions != null) {
+          return addedPartitions.size();
+        }
+      }
     }
-
     return getDelegate().add_partitions_pspec(partitionSpec);
   }
 
@@ -1257,9 +1308,13 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       return needResults ? new ArrayList<>() : null;
     }
 
-    List<Partition> addedPartitions = addPartitionsToTempTable(partitions, null, null, ifNotExists);
-    if (addedPartitions != null) {
-      return needResults ? addedPartitions : null;
+    if (isDefaultCatalog(partitions.get(0).getCatName())) {
+      if (getTempTable(partitions.get(0).getDbName(), partitions.get(0).getTableName()) != null) {
+        List<Partition> addedPartitions = addPartitionsToTempTable(partitions, null, null, ifNotExists);
+        if (addedPartitions != null) {
+          return needResults ? addedPartitions : null;
+        }
+      }
     }
 
     return getDelegate().add_partitions(partitions, ifNotExists, needResults);
@@ -1267,76 +1322,85 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
 
   @Override
-  public Partition getPartition(String catName, String dbName, String tblName, String name) throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().getPartition(catName, dbName, tblName, name);
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    Partition partition = tt.getPartition(name);
-    if (partition == null) {
-      throw new NoSuchObjectException("Partition with name " + name + " for table " + tblName + " in database " +
-          dbName + " is not found.");
-    }
-
-    return HiveMetaStoreClientUtils.deepCopy(partition);
-  }
-
-  @Override
-  public Partition getPartition(String catName, String dbName, String tblName,
-      List<String> partVals) throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().getPartition(catName, dbName, tblName, partVals);
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    Partition partition = tt.getPartition(partVals);
-    if (partition == null) {
-      throw new NoSuchObjectException("Partition with partition values " +
-          (partVals != null ? Arrays.toString(partVals.toArray()) : "null")+
-          " for table " + tblName + " in database " + dbName + " is not found.");
-    }
-    return HiveMetaStoreClientUtils.deepCopy(partition);
-  }
-
-  @Override
-  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request)
+  public Partition getPartition(String catName, String dbName, String tblName, String name)
       throws TException {
-    Table table = getTempTable(request.getDbName(), request.getTblName());
-    if (table == null) {
-      return getDelegate().getPartitionsWithSpecs(request);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        Partition partition = tt.getPartition(name);
+        if (partition == null) {
+          throw new NoSuchObjectException("Partition with name " + name + " for table " + tblName +
+              " in database " + dbName + " is not found.");
+        }
+
+        return HiveMetaStoreClientUtils.deepCopy(partition);
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    return tt.getPartitionsWithSpecs(request);
+    return getDelegate().getPartition(catName, dbName, tblName, name);
   }
 
+  @Override
+  public Partition getPartition(String catName, String dbName, String tblName, List<String> partVals)
+      throws TException {
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        Partition partition = tt.getPartition(partVals);
+        if (partition == null) {
+          throw new NoSuchObjectException("Partition with partition values " +
+              (partVals != null ? Arrays.toString(partVals.toArray()) : "null")+
+              " for table " + tblName + " in database " + dbName + " is not found.");
+        }
+        return HiveMetaStoreClientUtils.deepCopy(partition);
+      }
+    }
+    return getDelegate().getPartition(catName, dbName, tblName, partVals);
+
+  }
+
+  @Override
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException {
+    if (isDefaultCatalog(request.getCatName())) {
+      Table table = getTempTable(request.getDbName(), request.getTblName());
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        return tt.getPartitionsWithSpecs(request);
+      }
+    }
+
+    return getDelegate().getPartitionsWithSpecs(request);
+  }
 
   @Override
   public List<String> listPartitionNames(PartitionsByExprRequest req) throws TException {
-    String dbName = req.getDbName(), tblName = req.getTblName();
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().listPartitionNames(req);
-    }
-    List<Partition> partitionList = getPartitionedTempTable(table).listPartitions();
-    if (partitionList.isEmpty()) {
-      return Collections.emptyList();
-    }
+    if (isDefaultCatalog(req.getCatName())) {
+      Table table = getTempTable(req.getDbName(), req.getTblName());
+      if (table != null) {
+        List<Partition> partitionList = getPartitionedTempTable(table).listPartitions();
+        if (partitionList.isEmpty()) {
+          return Collections.emptyList();
+        }
 
-    byte[] expr = req.getExpr();
-    boolean isEmptyFilter = (expr == null || (expr.length == 1 && expr[0] == -1));
-    if (!isEmptyFilter) {
-      partitionList = getPartitionedTempTable(table).listPartitionsByFilter(
-          generateJDOFilter(table, expr, req.getDefaultPartitionName()));
-    }
+        byte[] expr = req.getExpr();
+        boolean isEmptyFilter = (expr == null || (expr.length == 1 && expr[0] == -1));
+        if (!isEmptyFilter) {
+          partitionList = getPartitionedTempTable(table).listPartitionsByFilter(
+              generateJDOFilter(table, expr, req.getDefaultPartitionName()));
+        }
 
-    List<String> results = new ArrayList<>();
-    Collections.sort(partitionList, new PartitionNamesComparator(table, req));
-    short maxParts = req.getMaxParts();
-    for(int i = 0; i < ((maxParts < 0 || maxParts > partitionList.size()) ? partitionList.size() : maxParts); i++) {
-      results.add(Warehouse.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues()));
+        List<String> results = new ArrayList<>();
+        Collections.sort(partitionList, new PartitionNamesComparator(table, req));
+        short maxParts = req.getMaxParts();
+        int numPartitions = maxParts < 0 || maxParts > partitionList.size() ? partitionList.size() : maxParts;
+        for(int i = 0; i < numPartitions; i++) {
+          results.add(Warehouse.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues()));
+        }
+        return results;
+      }
     }
-    return results;
+    return getDelegate().listPartitionNames(req);
   }
 
   private static final class PartitionNamesComparator implements java.util.Comparator<Partition> {
@@ -1381,139 +1445,162 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   @Override
   public List<Partition> listPartitions(String catName, String dbName, String tblName, int maxParts)
       throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().listPartitions(catName, dbName, tblName, maxParts);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        return getPartitionsForMaxParts(tt.listPartitions(), maxParts);
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    return getPartitionsForMaxParts(tt.listPartitions(), maxParts);
+    return getDelegate().listPartitions(catName, dbName, tblName, maxParts);
   }
 
   @Override
-  public List<Partition> listPartitions(String catName, String dbName, String tblName,
-      List<String> partVals, int maxParts) throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().listPartitions(catName, dbName, tblName, partVals, maxParts);
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    return getPartitionsForMaxParts(tt.getPartitionsByPartitionVals(partVals), maxParts);
-  }
-
-  @Override
-  public PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName,
+  public List<Partition> listPartitions(String catName, String dbName, String tblName, List<String> partVals,
       int maxParts) throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table == null) {
-      return getDelegate().listPartitionSpecs(catName, dbName, tableName, maxParts);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        return getPartitionsForMaxParts(tt.getPartitionsByPartitionVals(partVals), maxParts);
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    return getPartitionSpecProxy(table, tt.listPartitions(), maxParts);
+    return getDelegate().listPartitions(catName, dbName, tblName, partVals, maxParts);
+  }
+
+  @Override
+  public PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName, int maxParts)
+      throws TException {
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        return getPartitionSpecProxy(table, tt.listPartitions(), maxParts);
+      }
+    }
+    return getDelegate().listPartitionSpecs(catName, dbName, tableName, maxParts);
   }
 
   @Override
   public Partition getPartitionWithAuthInfo(String catName, String dbName, String tableName,
       List<String> pvals, String userName, List<String> groupNames) throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table == null) {
-      return getDelegate().getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        Partition partition = tt.getPartitionWithAuthInfo(pvals, userName, groupNames);
+        if (partition == null) {
+          throw new NoSuchObjectException("Partition with partition values " +
+              (pvals != null ? Arrays.toString(pvals.toArray()) : "null") +
+              " for table " + tableName + " in database " + dbName + " and for user " +
+              userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
+              " is not found.");
+        }
+        return HiveMetaStoreClientUtils.deepCopy(partition);
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    Partition partition = tt.getPartitionWithAuthInfo(pvals, userName, groupNames);
-    if (partition == null) {
-      throw new NoSuchObjectException("Partition with partition values " +
-          (pvals != null ? Arrays.toString(pvals.toArray()) : "null") +
-          " for table " + tableName + " in database " + dbName + " and for user " +
-          userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
-          " is not found.");
-    }
-    return HiveMetaStoreClientUtils.deepCopy(partition);
+    return getDelegate().getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
   }
 
   @Override
   public boolean dropPartition(String catName, String dbName, String tblName, List<String> partVals,
       PartitionDropOptions options) throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().dropPartition(catName, dbName, tblName, partVals, options);
-    }
-    if (partVals == null || partVals.isEmpty() || partVals.contains(null)) {
-      throw new MetaException("Partition values cannot be null, empty or contain null values");
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    if (tt == null) {
-      throw new IllegalStateException("TempTable not found for " + getCatalogQualifiedTableName(table));
-    }
-    Partition droppedPartition = tt.dropPartition(partVals);
-    boolean result = droppedPartition != null ? true : false;
-    boolean purgeData = options != null ? options.purgeData : true;
-    boolean deleteData = options != null ? options.deleteData : true;
-    if (deleteData && !tt.isExternal()) {
-      result &= deletePartitionLocation(droppedPartition, purgeData);
-    }
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        if (partVals == null || partVals.isEmpty() || partVals.contains(null)) {
+          throw new MetaException("Partition values cannot be null, empty or contain null values");
+        }
+        TempTable tt = getPartitionedTempTable(table);
+        if (tt == null) {
+          throw new IllegalStateException("TempTable not found for " + getCatalogQualifiedTableName(table));
+        }
+        Partition droppedPartition = tt.dropPartition(partVals);
+        boolean result = droppedPartition != null ? true : false;
+        boolean purgeData = options != null ? options.purgeData : true;
+        boolean deleteData = options != null ? options.deleteData : true;
+        if (deleteData && !tt.isExternal()) {
+          result &= deletePartitionLocation(droppedPartition, purgeData);
+        }
 
-    return result;
+        return result;
+      }
+    }
+    return getDelegate().dropPartition(catName, dbName, tblName, partVals, options);
   }
 
   @Override
   public boolean dropPartition(String catName, String dbName, String tableName, String partitionName,
       boolean deleteData) throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table == null) {
-      return getDelegate().dropPartition(catName, dbName, tableName, partitionName, deleteData);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        Partition droppedPartition = tt.dropPartition(partitionName);
+        boolean result = droppedPartition != null ? true : false;
+        if (deleteData && !tt.isExternal()) {
+          result &= deletePartitionLocation(droppedPartition, true);
+        }
+        return result;
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    Partition droppedPartition = tt.dropPartition(partitionName);
-    boolean result = droppedPartition != null ? true : false;
-    if (deleteData && !tt.isExternal()) {
-      result &= deletePartitionLocation(droppedPartition, true);
-    }
-    return result;
+    return getDelegate().dropPartition(catName, dbName, tableName, partitionName, deleteData);
   }
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
       throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().dropPartitions(catName, dbName, tblName, partExprs, options, context);
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    List<Partition> result = new ArrayList<>();
-    for (Pair<Integer, byte[]> pair : partExprs) {
-      byte[] expr = pair.getRight();
-      String filter = generateJDOFilter(table, expr, conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
-      List<Partition> partitions = tt.listPartitionsByFilter(filter);
-      for (Partition p : partitions) {
-        Partition droppedPartition = tt.dropPartition(p.getValues());
-        if (droppedPartition != null) {
-          result.add(droppedPartition);
-          boolean purgeData = options != null ? options.purgeData : true;
-          boolean deleteData = options != null ? options.deleteData : true;
-          if (deleteData && !tt.isExternal()) {
-            deletePartitionLocation(droppedPartition, purgeData);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        List<Partition> result = new ArrayList<>();
+        for (Pair<Integer, byte[]> pair : partExprs) {
+          byte[] expr = pair.getRight();
+          String filter = generateJDOFilter(table, expr,
+              conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
+          List<Partition> partitions = tt.listPartitionsByFilter(filter);
+          for (Partition p : partitions) {
+            Partition droppedPartition = tt.dropPartition(p.getValues());
+            if (droppedPartition != null) {
+              result.add(droppedPartition);
+              boolean purgeData = options != null ? options.purgeData : true;
+              boolean deleteData = options != null ? options.deleteData : true;
+              if (deleteData && !tt.isExternal()) {
+                deletePartitionLocation(droppedPartition, purgeData);
+              }
+            }
           }
         }
+        return result;
       }
     }
-    return result;
+
+    return getDelegate().dropPartitions(catName, dbName, tblName, partExprs, options, context);
   }
 
   @Override
   public Partition exchange_partition(Map<String, String> partitionSpecs, String sourceCatName,
-      String sourceDbName, String sourceTableName, String destCatName, String destDbName, String destTableName)
-      throws TException {
-    Table sourceTempTable = getTempTable(sourceDbName, sourceTableName);
-    Table destTempTable = getTempTable(destDbName, destTableName);
+      String sourceDbName, String sourceTableName, String destCatName, String destDbName,
+      String destTableName) throws TException {
+    Table sourceTempTable = null;
+    Table destTempTable = null;
+    if (isDefaultCatalog(sourceCatName)) {
+      sourceTempTable = getTempTable(sourceDbName, sourceTableName);
+    }
+    if (isDefaultCatalog(destCatName)) {
+      destTempTable = getTempTable(destDbName, destTableName);
+    }
+
     if (sourceTempTable == null && destTempTable == null) {
-      return getDelegate()
-          .exchange_partition(partitionSpecs, sourceCatName, sourceDbName, sourceTableName, destCatName, destDbName,
-              destTableName);
+      return getDelegate().exchange_partition(partitionSpecs, sourceCatName, sourceDbName, sourceTableName,
+          destCatName, destDbName, destTableName);
     } else if (sourceTempTable != null && destTempTable != null) {
       TempTable sourceTT = getPartitionedTempTable(sourceTempTable);
       TempTable destTT = getPartitionedTempTable(destTempTable);
-      List<Partition> partitions = exchangePartitions(partitionSpecs, sourceTempTable, sourceTT, destTempTable, destTT);
+      List<Partition> partitions = exchangePartitions(partitionSpecs, sourceTempTable, sourceTT,
+          destTempTable, destTT);
       if (!partitions.isEmpty()) {
         return partitions.get(0);
       }
@@ -1525,8 +1612,15 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public List<Partition> exchange_partitions(Map<String, String> partitionSpecs, String sourceCatName,
       String sourceDbName, String sourceTableName, String destCatName, String destDbName, String destTableName)
       throws TException {
-    Table sourceTempTable = getTempTable(sourceDbName, sourceTableName);
-    Table destTempTable = getTempTable(destDbName, destTableName);
+    Table sourceTempTable = null;
+    Table destTempTable = null;
+    if (isDefaultCatalog(sourceCatName)) {
+      sourceTempTable = getTempTable(sourceDbName, sourceTableName);
+    }
+    if (isDefaultCatalog(destCatName)) {
+      destTempTable = getTempTable(destDbName, destTableName);
+    }
+
     if (sourceTempTable == null && destTempTable == null) {
       return getDelegate()
           .exchange_partitions(partitionSpecs, sourceCatName, sourceDbName, sourceTableName, destCatName, destDbName,
@@ -1542,112 +1636,137 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
       EnvironmentContext environmentContext, String writeIdList)
       throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      getDelegate().alter_partition(catName, dbName, tblName, newPart, environmentContext, writeIdList);
-      return;
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        tt.alterPartition(newPart);
+        return;
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    tt.alterPartition(newPart);
+
+    getDelegate().alter_partition(catName, dbName, tblName, newPart, environmentContext, writeIdList);
   }
 
   @Override
   public void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
       EnvironmentContext environmentContext, String writeIdList, long writeId) throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      getDelegate().alter_partitions(catName, dbName, tblName, newParts, environmentContext, writeIdList, writeId);
-      return;
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        tt.alterPartitions(newParts);
+        return;
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    tt.alterPartitions(newParts);
+
+    getDelegate().alter_partitions(catName, dbName, tblName, newParts, environmentContext, writeIdList,
+        writeId);
   }
 
   @Override
   public void renamePartition(String catName, String dbname, String tableName, List<String> partitionVals,
       Partition newPart, String validWriteIds, long txnId, boolean makeCopy) throws TException {
-    Table table = getTempTable(dbname, tableName);
-    if (table == null) {
-      getDelegate().renamePartition(catName, dbname, tableName, partitionVals, newPart, validWriteIds, txnId, makeCopy);
-      return;
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbname, tableName);
+      if (table == null) {
+        TempTable tt = getPartitionedTempTable(table);
+        tt.renamePartition(partitionVals, newPart);
+        return;
+      }
     }
-    TempTable tt = getPartitionedTempTable(table);
-    tt.renamePartition(partitionVals, newPart);
+
+    getDelegate().renamePartition(catName, dbname, tableName, partitionVals, newPart, validWriteIds, txnId,
+        makeCopy);
   }
 
   @Override
   public Partition appendPartition(String catName, String dbName, String tableName, List<String> partVals)
       throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table == null) {
-      return getDelegate().appendPartition(catName, dbName, tableName, partVals);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        if (partVals == null || partVals.isEmpty()) {
+          throw new MetaException("The partition values must be not null or empty.");
+        }
+        assertTempTablePartitioned(table);
+        Partition partition = new PartitionBuilder().inTable(table).setValues(partVals).build(conf);
+        return appendPartitionToTempTable(table, partition);
+      }
     }
-    if (partVals == null || partVals.isEmpty()) {
-      throw new MetaException("The partition values must be not null or empty.");
-    }
-    assertTempTablePartitioned(table);
-    Partition partition = new PartitionBuilder().inTable(table).setValues(partVals).build(conf);
-    return appendPartitionToTempTable(table, partition);
+
+    return getDelegate().appendPartition(catName, dbName, tableName, partVals);
   }
 
   @Override
   public Partition appendPartition(String catName, String dbName, String tableName, String partitionName)
       throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table == null) {
-      return getDelegate().appendPartition(catName, dbName, tableName, partitionName);
-    }
-    if (partitionName == null || partitionName.isEmpty()) {
-      throw new MetaException("The partition must be not null or empty.");
-    }
-    assertTempTablePartitioned(table);
-    Map<String, String> specFromName = makeSpecFromName(partitionName);
-    if (specFromName == null || specFromName.isEmpty()) {
-      throw new InvalidObjectException("Invalid partition name " + partitionName);
-    }
-    List<String> pVals = new ArrayList<>();
-    for (FieldSchema field : table.getPartitionKeys()) {
-      String val = specFromName.get(field.getName());
-      if (val == null) {
-        throw new InvalidObjectException("Partition name " + partitionName + " and table partition keys " + Arrays
-            .toString(table.getPartitionKeys().toArray()) + " does not match");
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        if (partitionName == null || partitionName.isEmpty()) {
+          throw new MetaException("The partition must be not null or empty.");
+        }
+        assertTempTablePartitioned(table);
+        Map<String, String> specFromName = makeSpecFromName(partitionName);
+        if (specFromName == null || specFromName.isEmpty()) {
+          throw new InvalidObjectException("Invalid partition name " + partitionName);
+        }
+        List<String> pVals = new ArrayList<>();
+        for (FieldSchema field : table.getPartitionKeys()) {
+          String val = specFromName.get(field.getName());
+          if (val == null) {
+            throw new InvalidObjectException("Partition name " + partitionName + " and table partition keys " + Arrays
+                .toString(table.getPartitionKeys().toArray()) + " does not match");
+          }
+          pVals.add(val);
+        }
+        Partition partition = new PartitionBuilder().inTable(table).setValues(pVals).build(conf);
+        return appendPartitionToTempTable(table, partition);
       }
-      pVals.add(val);
     }
-    Partition partition = new PartitionBuilder().inTable(table).setValues(pVals).build(conf);
-    return appendPartitionToTempTable(table, partition);
+
+    return getDelegate().appendPartition(catName, dbName, tableName, partitionName);
   }
 
   @Override
   public List<Partition> listPartitionsByFilter(String catName, String dbName, String tableName,
       String filter, int maxParts) throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table == null) {
-      return getDelegate().listPartitionsByFilter(catName, dbName, tableName, filter, maxParts);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        return getPartitionsForMaxParts(
+            getPartitionedTempTable(table).listPartitionsByFilter(generateJDOFilter(table, filter)),
+            maxParts);
+      }
     }
-    return getPartitionsForMaxParts(getPartitionedTempTable(table).listPartitionsByFilter(
-        generateJDOFilter(table, filter)), maxParts);
+    return getDelegate().listPartitionsByFilter(catName, dbName, tableName, filter, maxParts);
   }
 
   @Override
   public int getNumPartitionsByFilter(String catName, String dbName, String tableName, String filter)
       throws TException {
-    Table table = getTempTable(dbName, tableName);
-    if (table == null) {
-      return getDelegate().getNumPartitionsByFilter(catName, dbName, tableName, filter);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tableName);
+      if (table != null) {
+        return getPartitionedTempTable(table).getNumPartitionsByFilter(generateJDOFilter(table, filter));
+      }
     }
-    return getPartitionedTempTable(table).getNumPartitionsByFilter(generateJDOFilter(table, filter));
+    return getDelegate().getNumPartitionsByFilter(catName, dbName, tableName, filter);
   }
 
   @Override
   public PartitionSpecProxy listPartitionSpecsByFilter(String catName, String dbName, String tblName,
       String filter, int maxParts) throws TException {
-    Table table = getTempTable(dbName, tblName);
-    if (table == null) {
-      return getDelegate().listPartitionSpecsByFilter(catName, dbName, tblName, filter, maxParts);
+    if (isDefaultCatalog(catName)) {
+      Table table = getTempTable(dbName, tblName);
+      if (table != null) {
+        return getPartitionSpecProxy(table,
+            getPartitionedTempTable(table)
+                .listPartitionsByFilter(generateJDOFilter(table, filter)), maxParts);
+      }
     }
-    return getPartitionSpecProxy(table, getPartitionedTempTable(table).listPartitionsByFilter(generateJDOFilter(table,
-        filter)), maxParts);
+    return getDelegate().listPartitionSpecsByFilter(catName, dbName, tblName, filter, maxParts);
   }
 
   @Override
@@ -1655,39 +1774,43 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     if (request == null || request.getPartitionKeys() == null || request.getPartitionKeys().isEmpty()) {
       return getDelegate().listPartitionValues(request);
     }
-    Table table = getTempTable(request.getDbName(), request.getTblName());
-    if (table == null) {
-      return getDelegate().listPartitionValues(request);
-    }
-    TempTable tt = getPartitionedTempTable(table);
-    List<Partition> partitions = request.isSetFilter() ?
-        tt.listPartitionsByFilter(generateJDOFilter(table, request.getFilter())) :
-        tt.listPartitions();
-    List<String> partitionNames = new ArrayList<>();
-    for (Partition p : partitions) {
-      partitionNames.add(makePartName(table.getPartitionKeys(), p.getValues()));
-    }
-    if (partitionNames.isEmpty() && partitions.isEmpty()) {
-      throw new MetaException("Cannot obtain list of partition by filter:\"" + request.getFilter() +
-          "\" for " + getCatalogQualifiedTableName(table));
-    }
-    if (request.isSetAscending()) {
-      if (request.isAscending()) {
-        Collections.sort(partitionNames);
-      } else {
-        Collections.sort(partitionNames, Collections.reverseOrder());
+
+    if (isDefaultCatalog(request.getCatName())) {
+      Table table = getTempTable(request.getDbName(), request.getTblName());
+      if (table != null) {
+        TempTable tt = getPartitionedTempTable(table);
+        List<Partition> partitions = request.isSetFilter() ?
+            tt.listPartitionsByFilter(generateJDOFilter(table, request.getFilter())) :
+            tt.listPartitions();
+        List<String> partitionNames = new ArrayList<>();
+        for (Partition p : partitions) {
+          partitionNames.add(makePartName(table.getPartitionKeys(), p.getValues()));
+        }
+        if (partitionNames.isEmpty() && partitions.isEmpty()) {
+          throw new MetaException("Cannot obtain list of partition by filter:\"" + request.getFilter() +
+              "\" for " + getCatalogQualifiedTableName(table));
+        }
+        if (request.isSetAscending()) {
+          if (request.isAscending()) {
+            Collections.sort(partitionNames);
+          } else {
+            Collections.sort(partitionNames, Collections.reverseOrder());
+          }
+        }
+        PartitionValuesResponse response = new PartitionValuesResponse();
+        response.setPartitionValues(new ArrayList<>(partitionNames.size()));
+        for (String partName : partitionNames) {
+          ArrayList<String> vals = new ArrayList<>(Collections.nCopies(table.getPartitionKeysSize(), null));
+          PartitionValuesRow row = new PartitionValuesRow();
+          makeValsFromName(partName, vals);
+          vals.forEach(row::addToRow);
+          response.addToPartitionValues(row);
+        }
+        return response;
       }
     }
-    PartitionValuesResponse response = new PartitionValuesResponse();
-    response.setPartitionValues(new ArrayList<>(partitionNames.size()));
-    for (String partName : partitionNames) {
-      ArrayList<String> vals = new ArrayList<>(Collections.nCopies(table.getPartitionKeysSize(), null));
-      PartitionValuesRow row = new PartitionValuesRow();
-      makeValsFromName(partName, vals);
-      vals.forEach(row::addToRow);
-      response.addToPartitionValues(row);
-    }
-    return response;
+
+    return getDelegate().listPartitionValues(request);
   }
 
   private PartitionSpecProxy getPartitionSpecProxy(Table table,
@@ -2081,8 +2204,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
-  public Table getTranslateTableDryrun(
-      Table tbl) throws TException {
+  public Table getTranslateTableDryrun(Table tbl) throws TException {
     if (tbl.isTemporary()) {
       Table table = getTempTable(tbl.getDbName(), tbl.getTableName());
       return table != null ? HiveMetaStoreClientUtils.deepCopy(table) : tbl;

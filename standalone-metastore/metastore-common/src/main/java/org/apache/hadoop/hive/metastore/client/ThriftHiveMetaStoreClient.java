@@ -621,7 +621,7 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @VisibleForTesting
-  public HttpClientBuilder createHttpClientBuilder() throws MetaException {
+  protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
     String authType = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_AUTH_MODE);
     Map<String, String> additionalHeaders = getAdditionalHeaders();
@@ -1647,7 +1647,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public void dropDatabase(DropDatabaseRequest req) throws TException {
-    // SG:FIXME, txn_id?
     client.drop_database_req(req);
   }
 
@@ -1958,11 +1957,11 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       EnvironmentContext context) throws TException {
     if (context == null) {
       context = new EnvironmentContext();
+      if (ref != null) {
+        context.putToProperties(SNAPSHOT_REF, ref);
+      }
+      context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     }
-    if (ref != null) {
-      context.putToProperties(SNAPSHOT_REF, ref);
-    }
-    context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     TruncateTableRequest req =
         new TruncateTableRequest(prependCatalogToDbName(catName, dbName, conf), tableName);
     req.setPartNames(partNames);
