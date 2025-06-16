@@ -1888,16 +1888,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> ret = null;
     Exception ex = null;
     try {
-      GetDatabaseObjectsRequest req = new GetDatabaseObjectsRequest();
-      req.setCatalogName(parsedDbNamed[CAT_NAME]);
-      if (parsedDbNamed[DB_NAME] != null) {
-        req.setPattern(parsedDbNamed[DB_NAME]);
+      if (parsedDbNamed[DB_NAME] == null) {
+        ret = getMS().getAllDatabases(parsedDbNamed[CAT_NAME]);
+        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
+      } else {
+        ret = getMS().getDatabases(parsedDbNamed[CAT_NAME], parsedDbNamed[DB_NAME]);
+        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
       }
-
-      GetDatabaseObjectsResponse response = get_databases_req(req);
-      ret = response.getDatabases().stream()
-          .map(Database::getName)
-          .collect(Collectors.toList());
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
