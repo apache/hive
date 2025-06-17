@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionC
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.TableFilterContext;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
@@ -106,7 +106,7 @@ public class TestHiveMetaStoreAuthorizer {
     MetastoreConf.setVar(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, MockHiveAuthorizerFactory.class.getName());
     MetastoreConf.setVar(conf, ConfVars.PRE_EVENT_LISTENERS, HiveMetaStoreAuthorizer.class.getName());
     MetastoreConf.setVar(conf, ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER, HadoopDefaultMetastoreAuthenticator.class.getName());
-    MetastoreConf.setVar(conf, ConfVars.FILTER_HOOK, MockMetaStoreFilterHook.class.getName());
+    MetastoreConf.setVar(conf, ConfVars.FILTER_HOOK, MockMetaStoreOwnerFilterHook.class.getName());
     conf.set("hadoop.proxyuser.hive.groups", "*");
     conf.set("hadoop.proxyuser.hive.hosts", "*");
     conf.set("hadoop.proxyuser.hive.users", "*");
@@ -525,6 +525,69 @@ public class TestHiveMetaStoreAuthorizer {
   }
 
   @Test
+  public void testTableFilterContextWithOwnership() throws Exception {
+    List<TableMeta> tableMetas = new ArrayList<>();
+    TableMeta ownerTableMeta = new TableMeta();
+    ownerTableMeta.setCatName("hive");
+    ownerTableMeta.setDbName(default_db);
+    ownerTableMeta.setTableName("owner_table");
+    ownerTableMeta.setOwnerName(authorizedUser);
+    ownerTableMeta.setOwnerType(org.apache.hadoop.hive.metastore.api.PrincipalType.USER);
+    tableMetas.add(ownerTableMeta);
+
+    TableMeta otherTableMeta = new TableMeta();
+    otherTableMeta.setCatName("hive");
+    otherTableMeta.setDbName(default_db);
+    otherTableMeta.setTableName("other_table");
+    otherTableMeta.setOwnerName(unAuthorizedUser);
+    otherTableMeta.setOwnerType(org.apache.hadoop.hive.metastore.api.PrincipalType.USER);
+    tableMetas.add(otherTableMeta);
+
+    TableFilterContext filterContext = TableFilterContext.createFromTableMetas(default_db, tableMetas);
+    List<Table> tables = filterContext.getTables();
+    assertEquals("Should have two tables in context", 2, tables.size());
+
+    boolean foundOwnerTable = false;
+    boolean foundOtherTable = false;
+
+    for (Table table : tables) {
+      if (table.getTableName().equals("owner_table")) {
+        foundOwnerTable = true;
+        assertEquals("owner_table should have authorized user as owner", authorizedUser, table.getOwner());
+      } else if (table.getTableName().equals("other_table")) {
+        foundOtherTable = true;
+        assertEquals("other_table should have unauthorized user as owner", unAuthorizedUser, table.getOwner());
+      }
+    }
+
+    assertTrue("owner_table not found in tables", foundOwnerTable);
+    assertTrue("other_table not found in tables", foundOtherTable);
+
+    HiveMetaStoreAuthzInfo authzInfo = filterContext.getAuthzContext();
+    List<HivePrivilegeObject> privObjects = authzInfo.getInputHObjs();
+
+    assertEquals("Should have two privilege objects", 2, privObjects.size());
+
+    foundOwnerTable = false;
+    foundOtherTable = false;
+
+    for (HivePrivilegeObject obj : privObjects) {
+      if (obj.getObjectName().equals("owner_table")) {
+        foundOwnerTable = true;
+        assertEquals("owner_table privilege object should have authorized user as owner",
+            authorizedUser, obj.getOwnerName());
+      } else if (obj.getObjectName().equals("other_table")) {
+        foundOtherTable = true;
+        assertEquals("other_table privilege object should have unauthorized user as owner",
+            unAuthorizedUser, obj.getOwnerName());
+      }
+    }
+
+    assertTrue("owner_table not found in privilege objects", foundOwnerTable);
+    assertTrue("other_table not found in privilege objects", foundOtherTable);
+  }
+
+  @Test
   public void testGetDatabaseObjects_WithPattern() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     String testDb1 = "test_db1";
@@ -656,14 +719,9 @@ public class TestHiveMetaStoreAuthorizer {
       }
 
       if (!foundAuthzException) {
-        Throwable rootCause = ExceptionUtils.getRootCause(e);
-        if (rootCause instanceof HiveAuthzPluginException) {
-          String expectedErrMsg = "Operation type " + HiveOperationType.CREATEDATABASE + " not allowed for user:" + unAuthorizedUser;
-          assertTrue("Expected error message mismatch. Actual: '" + rootCause.getMessage() + "'", rootCause.getMessage().contains(expectedErrMsg));
-        } else {
-          String expectedErrMsg = "Operation type " + HiveOperationType.CREATEDATABASE + " not allowed for user:" + unAuthorizedUser;
-          assertTrue("Expected HiveAuthzPluginException in exception chain or main exception message to contain expected text. " + "Root cause: " + (rootCause != null ? rootCause.getClass().getName() : "null") + ", Main exception: " + e.getClass().getName() + ", Message: '" + e.getMessage() + "'", e.getMessage().contains(expectedErrMsg));
-        }
+        String expectedErrMsg = "Operation type " + HiveOperationType.CREATEDATABASE + " not allowed for user:" + unAuthorizedUser;
+        assertTrue("Expected HiveAuthzPluginException in exception chain. Message: '" + e.getMessage() + "'",
+            e.getMessage().contains(expectedErrMsg));
       }
     }
   }

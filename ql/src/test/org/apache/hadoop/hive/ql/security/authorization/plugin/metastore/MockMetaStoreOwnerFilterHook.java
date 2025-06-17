@@ -36,13 +36,13 @@ import java.util.stream.Collectors;
 /**
  * Mock implementation of MetaStoreFilterHook that filters based on ownership.
  */
-public class MockMetaStoreFilterHook implements MetaStoreFilterHook {
+public class MockMetaStoreOwnerFilterHook implements MetaStoreFilterHook {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MockMetaStoreFilterHook.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MockMetaStoreOwnerFilterHook.class);
   private static final String AUTHORIZED_OWNER = TestHiveMetaStoreAuthorizer.authorizedUser;
 
   @SuppressWarnings("unused")
-  public MockMetaStoreFilterHook(Configuration conf) {
+  public MockMetaStoreOwnerFilterHook(Configuration conf) {
     LOG.info("Initialized MockMetaStoreFilterHook with authorized owner: " + AUTHORIZED_OWNER);
   }
 
