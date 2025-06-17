@@ -44,7 +44,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -110,6 +115,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +130,7 @@ import com.google.common.collect.Maps;
  * from any point in the code to interact with the user and to retrieve
  * configuration information
  */
-public class SessionState implements ISessionAuthState{
+public class SessionState implements ISessionAuthState {
   private static final Logger LOG = LoggerFactory.getLogger(SessionState.class);
 
   public static final String TMP_PREFIX = "_tmp_space.db";
@@ -340,6 +346,14 @@ public class SessionState implements ISessionAuthState{
    * It is required to exclude compaction related queries from all Ranger policies that would otherwise apply.
    */
   private boolean compaction = false;
+
+  // A thread-safe set to hold all active session states
+  private static final Set<SessionState> sessionStates = ConcurrentHashMap.newKeySet();
+
+  // Static block to add a single shutdown hook to clean up all session states
+  static {
+    ShutdownHookManager.addShutdownHook(SessionState::cleanUpAllSessionStates);
+  }
 
   public QueryState getQueryState(String queryId) {
     return queryStateMap.get(queryId);
@@ -667,6 +681,10 @@ public class SessionState implements ISessionAuthState{
    */
   public static SessionState start(SessionState startSs) {
     start(startSs, false, null);
+
+    // Register the session state in the centralized set
+    sessionStates.add(startSs);
+
     return startSs;
   }
 
@@ -683,6 +701,10 @@ public class SessionState implements ISessionAuthState{
   }
 
   private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
+    // Starting from ORC 2.x, ZSTD is the default compression codec and is implemented using the zstd-jni library.
+    // To fallback to the pure Java implementation (Aircompressor), set the appropriate configuration property.
+    // TODO: ZSTD with zstd-jni is currently not yet supported in Hive.
+    System.setProperty("orc.compression.zstd.impl", "java");
     setCurrentSessionState(startSs);
 
     if (!startSs.isStarted.compareAndSet(false, true)) {
@@ -1605,29 +1627,16 @@ public class SessionState implements ISessionAuthState{
     return null;
   }
 
-
-
-  public String add_resource(ResourceType t, String value) throws RuntimeException {
-    return add_resource(t, value, false);
-  }
-
-  public String add_resource(ResourceType t, String value, boolean convertToUnix)
+  public String add_resource(ResourceType t, String value)
       throws RuntimeException {
-    List<String> added = add_resources(t, Arrays.asList(value), convertToUnix);
+    List<String> added = add_resources(t, Arrays.asList(value));
     if (added == null || added.isEmpty()) {
       return null;
     }
     return added.get(0);
   }
 
-  public List<String> add_resources(ResourceType t, Collection<String> values)
-      throws RuntimeException {
-    // By default don't convert to unix
-    return add_resources(t, values, false);
-  }
-
-  public List<String> add_resources(ResourceType t, Collection<String> values, boolean convertToUnix)
-      throws RuntimeException {
+  public List<String> add_resources(ResourceType t, Collection<String> values) throws RuntimeException {
     Set<String> resourceSet = resourceMaps.getResourceSet(t);
     Map<String, Set<String>> resourcePathMap = resourceMaps.getResourcePathMap(t);
     Map<String, Set<String>> reverseResourcePathMap = resourceMaps.getReverseResourcePathMap(t);
@@ -1637,7 +1646,7 @@ public class SessionState implements ISessionAuthState{
         String key;
 
         //get the local path of downloaded jars.
-        List<URI> downloadedURLs = resolveAndDownload(t, value, convertToUnix);
+        List<URI> downloadedURLs = resolveAndDownload(t, value);
 
         if (ResourceDownloader.isIvyUri(value)) {
           // get the key to store in map
@@ -1670,10 +1679,7 @@ public class SessionState implements ISessionAuthState{
     } catch (RuntimeException e) {
       getConsole().printError(e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw e;
-    } catch (URISyntaxException e) {
-      getConsole().printError(e.getMessage());
-      throw new RuntimeException(e);
-    } catch (IOException e) {
+    } catch (URISyntaxException | IOException e) {
       getConsole().printError(e.getMessage());
       throw new RuntimeException(e);
     }
@@ -1683,9 +1689,9 @@ public class SessionState implements ISessionAuthState{
   }
 
   @VisibleForTesting
-  protected List<URI> resolveAndDownload(ResourceType resourceType, String value, boolean convertToUnix)
+  protected List<URI> resolveAndDownload(ResourceType resourceType, String value)
       throws URISyntaxException, IOException {
-    List<URI> uris = resourceDownloader.resolveAndDownload(value, convertToUnix);
+    List<URI> uris = resourceDownloader.resolveAndDownload(value);
     if (ResourceDownloader.isHdfsUri(value)) {
       assert uris.size() == 1 : "There should only be one URI localized-resource.";
       resourceMaps.getLocalHdfsLocationMap(resourceType).put(uris.get(0).toString(), value);
@@ -1906,6 +1912,8 @@ public class SessionState implements ISessionAuthState{
   }
 
   public void close() throws IOException {
+    // de-register session state
+    sessionStates.remove(this);
     for (Closeable cleanupItem : cleanupItems) {
       try {
         cleanupItem.close();
@@ -1967,6 +1975,32 @@ public class SessionState implements ISessionAuthState{
       }
     }
     dynamicVars.clear();
+  }
+
+  private static void cleanUpAllSessionStates() {
+    ExecutorService cleanupExecutor = Executors.newCachedThreadPool();
+    try {
+      CompletableFuture<Void> allCleanupTasks = CompletableFuture.allOf(sessionStates.stream()
+              .map(sessionState -> CompletableFuture.runAsync(() -> {
+                  try {
+                      LOG.info("Closing session state: {}", sessionState.getSessionId());
+                      sessionState.close();
+                  } catch (IOException e) {
+                      throw new CompletionException(e);
+                  }
+              }, cleanupExecutor).exceptionally(e -> {
+                  LOG.error("Problem closing session state", e);
+                  return null;
+              })).toArray(CompletableFuture[]::new));
+      try {
+        allCleanupTasks.get(60, TimeUnit.SECONDS);
+      } catch (Exception e) {
+        LOG.error("Failed to close all session states", e);
+      }
+    } finally {
+      // shutdown cleanup executor after all tasks finished/timeout
+      cleanupExecutor.shutdownNow();
+    }
   }
 
   private void clearReflectionUtilsCache() {

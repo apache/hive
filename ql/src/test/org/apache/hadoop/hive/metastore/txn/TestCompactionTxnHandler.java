@@ -204,7 +204,9 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     
     ci.highestWriteId = 41;
-    txnHandler.updateCompactorState(ci, 0);
+    long txnid = openTxn();
+    ci.txnId = txnid;
+    txnHandler.updateCompactorState(ci, txnid);
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
 
@@ -234,7 +236,9 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     
     ci.highestWriteId = 41;
-    txnHandler.updateCompactorState(ci, 0);
+    long txnid = openTxn();
+    ci.txnId = txnid;
+    txnHandler.updateCompactorState(ci, txnid);
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
 
@@ -857,7 +861,8 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     
     ci.highestWriteId = mytableWriteId;
-    txnHandler.updateCompactorState(ci, 0);
+    ci.txnId = 1;
+    txnHandler.updateCompactorState(ci, 1);
     txnHandler.markCompacted(ci);
     
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
@@ -884,7 +889,8 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
 
     ci.highestWriteId = fooWriteId;
-    txnHandler.updateCompactorState(ci, 0);
+    txnHandler.updateCompactorState(ci, 2);
+    ci.txnId = 2;
     txnHandler.markCompacted(ci);
 
     toClean = txnHandler.findReadyToClean(0, 0);
@@ -1101,7 +1107,9 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
 
     ci.highestWriteId = 41;
-    txnHandler.updateCompactorState(ci, 0);
+    long txnId = openTxn();
+    ci.txnId = txnId;
+    txnHandler.updateCompactorState(ci, txnId);
     txnHandler.markCompacted(ci);
   }
 

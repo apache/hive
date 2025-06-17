@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
@@ -646,7 +647,7 @@ public class Utils {
           connParams.setPort(port);
         }
         // We check for invalid host, port while configuring connParams with configureConnParams()
-        authorityStr = connParams.getHost() + ":" + connParams.getPort();
+        authorityStr = IPStackUtils.concatHostPort(connParams.getHost(), connParams.getPort());
         LOG.debug("Resolved authority: " + authorityStr);
         uri = uri.replace(dummyAuthorityString, authorityStr);
       }
@@ -659,7 +660,7 @@ public class Utils {
   static void configureConnParamsFromZooKeeper(JdbcConnectionParams connParams)
       throws ZooKeeperHiveClientException, JdbcUriParseException {
     ZooKeeperHiveClientHelper.configureConnParams(connParams);
-    String authorityStr = connParams.getHost() + ":" + connParams.getPort();
+    String authorityStr = IPStackUtils.concatHostPort(connParams.getHost(), connParams.getPort());
     LOG.debug("Resolved authority: " + authorityStr);
     String jdbcUriString = connParams.getJdbcUriString();
     // Replace ZooKeeper ensemble from the authority component of the JDBC Uri provided by the

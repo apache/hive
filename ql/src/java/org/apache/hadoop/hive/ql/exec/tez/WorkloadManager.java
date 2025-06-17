@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
@@ -486,9 +487,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
               UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-              SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
-              ss.setIsHiveServerQuery(true);
-              SessionState.start(ss);
+              DriverUtils.setUpAndStartSessionState(conf, ugi.getShortUserName());
               kq.killQuery(queryId, reason, toKill.getConf());
               addKillQueryResult(toKill, true);
               killCtx.killSessionFuture.set(true);

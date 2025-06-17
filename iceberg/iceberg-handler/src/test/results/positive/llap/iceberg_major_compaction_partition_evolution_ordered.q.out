@@ -181,11 +181,11 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
-PREHOOK: query: explain alter table ice_orc COMPACT 'major' and wait order by first_name desc
+PREHOOK: query: explain alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: explain alter table ice_orc COMPACT 'major' and wait order by first_name desc
+POSTHOOK: query: explain alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -195,7 +195,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Compact
-      compaction type: major
+      compaction type: smart_optimize
       table name: default.ice_orc
       numberOfBuckets: 0
       order by: order by first_name desc
@@ -216,18 +216,17 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Compact
-      compaction type: major
+      compaction type: smart_optimize
       table name: default.ice_orc
       numberOfBuckets: 0
       order by: order by first_name desc
       table name: default.ice_orc
-      blocking: true
 
-PREHOOK: query: alter table ice_orc COMPACT 'major' and wait order by first_name desc
+PREHOOK: query: alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
-POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait order by first_name desc
+POSTHOOK: query: alter table ice_orc COMPACT 'smart_optimize' and wait order by first_name desc
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -333,5 +332,5 @@ POSTHOOK: query: show compactions order by 'partition'
 POSTHOOK: type: SHOW COMPACTIONS
 CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 #Masked#	default	ice_orc	dept_id=2	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	dept_id=3	MAJOR	refused	#Masked#	manual	default	0	0	0	 --- 
-#Masked#	default	ice_orc	 --- 	MAJOR	refused	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	dept_id=3	SMART_OPTIMIZE	refused	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	 --- 	SMART_OPTIMIZE	refused	#Masked#	manual	default	0	0	0	 --- 

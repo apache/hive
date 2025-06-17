@@ -29,8 +29,6 @@ Run Apache Hive inside docker container in pseudo-distributed mode, provide the 
 
 Here are the latest images:
 - 4.0.0
-- 4.0.0-beta-1
-- 3.1.3
 
 ```shell
 docker pull apache/hive:4.0.0

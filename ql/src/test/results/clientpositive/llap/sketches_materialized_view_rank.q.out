@@ -179,27 +179,27 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	1	1
-rewrite; mv matching	1	1
-rewrite; mv matching	2	3
-rewrite; mv matching	3	4
-rewrite; mv matching	4	5
-rewrite; mv matching	5	6
-rewrite; mv matching	6	7
-rewrite; mv matching	6	7
-rewrite; mv matching	6	7
-rewrite; mv matching	7	10
-rewrite; mv matching	7	10
-rewrite; mv matching	8	12
-rewrite; mv matching	8	12
-rewrite; mv matching	9	14
-rewrite; mv matching	9	14
-rewrite; mv matching	10	16
-rewrite; mv matching	10	16
-rewrite; mv matching	11	18
-rewrite; mv matching	12	19
-rewrite; mv matching	13	20
-rewrite; mv matching	14	21
+rewrite; mv matching	1	3
+rewrite; mv matching	1	3
+rewrite; mv matching	2	4
+rewrite; mv matching	3	5
+rewrite; mv matching	4	6
+rewrite; mv matching	5	7
+rewrite; mv matching	6	10
+rewrite; mv matching	6	10
+rewrite; mv matching	6	10
+rewrite; mv matching	7	12
+rewrite; mv matching	7	12
+rewrite; mv matching	8	14
+rewrite; mv matching	8	14
+rewrite; mv matching	9	16
+rewrite; mv matching	9	16
+rewrite; mv matching	10	18
+rewrite; mv matching	10	18
+rewrite; mv matching	11	19
+rewrite; mv matching	12	20
+rewrite; mv matching	13	21
+rewrite; mv matching	14	22
 rewrite; mv matching	15	22
 PREHOOK: query: explain
 select 'no rewrite; no mv matching', id, rank() over (order by id) from sketch_input order by id
@@ -470,50 +470,50 @@ POSTHOOK: query: select 'rewrite; no mv matching', id, rank() over (order by id)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; no mv matching	1	1
-rewrite; no mv matching	1	1
-rewrite; no mv matching	1	1
-rewrite; no mv matching	1	1
-rewrite; no mv matching	2	5
-rewrite; no mv matching	2	5
-rewrite; no mv matching	3	7
-rewrite; no mv matching	3	7
-rewrite; no mv matching	4	9
-rewrite; no mv matching	4	9
-rewrite; no mv matching	5	11
-rewrite; no mv matching	5	11
-rewrite; no mv matching	6	13
-rewrite; no mv matching	6	13
-rewrite; no mv matching	6	13
-rewrite; no mv matching	6	13
-rewrite; no mv matching	6	13
-rewrite; no mv matching	6	13
-rewrite; no mv matching	7	19
-rewrite; no mv matching	7	19
-rewrite; no mv matching	7	19
-rewrite; no mv matching	7	19
-rewrite; no mv matching	8	23
-rewrite; no mv matching	8	23
-rewrite; no mv matching	8	23
-rewrite; no mv matching	8	23
-rewrite; no mv matching	9	27
-rewrite; no mv matching	9	27
-rewrite; no mv matching	9	27
-rewrite; no mv matching	9	27
-rewrite; no mv matching	10	31
-rewrite; no mv matching	10	31
-rewrite; no mv matching	10	31
-rewrite; no mv matching	10	31
-rewrite; no mv matching	11	35
-rewrite; no mv matching	11	35
-rewrite; no mv matching	12	37
-rewrite; no mv matching	12	37
-rewrite; no mv matching	13	39
-rewrite; no mv matching	13	39
-rewrite; no mv matching	14	41
-rewrite; no mv matching	14	41
-rewrite; no mv matching	15	43
-rewrite; no mv matching	15	43
+rewrite; no mv matching	1	5
+rewrite; no mv matching	1	5
+rewrite; no mv matching	1	5
+rewrite; no mv matching	1	5
+rewrite; no mv matching	2	7
+rewrite; no mv matching	2	7
+rewrite; no mv matching	3	9
+rewrite; no mv matching	3	9
+rewrite; no mv matching	4	11
+rewrite; no mv matching	4	11
+rewrite; no mv matching	5	13
+rewrite; no mv matching	5	13
+rewrite; no mv matching	6	19
+rewrite; no mv matching	6	19
+rewrite; no mv matching	6	19
+rewrite; no mv matching	6	19
+rewrite; no mv matching	6	19
+rewrite; no mv matching	6	19
+rewrite; no mv matching	7	23
+rewrite; no mv matching	7	23
+rewrite; no mv matching	7	23
+rewrite; no mv matching	7	23
+rewrite; no mv matching	8	27
+rewrite; no mv matching	8	27
+rewrite; no mv matching	8	27
+rewrite; no mv matching	8	27
+rewrite; no mv matching	9	31
+rewrite; no mv matching	9	31
+rewrite; no mv matching	9	31
+rewrite; no mv matching	9	31
+rewrite; no mv matching	10	35
+rewrite; no mv matching	10	35
+rewrite; no mv matching	10	35
+rewrite; no mv matching	10	35
+rewrite; no mv matching	11	37
+rewrite; no mv matching	11	37
+rewrite; no mv matching	12	39
+rewrite; no mv matching	12	39
+rewrite; no mv matching	13	41
+rewrite; no mv matching	13	41
+rewrite; no mv matching	14	43
+rewrite; no mv matching	14	43
+rewrite; no mv matching	15	44
+rewrite; no mv matching	15	44
 PREHOOK: query: explain
 alter materialized view mv_1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
@@ -854,50 +854,50 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	1	1
-rewrite; mv matching	1	1
-rewrite; mv matching	1	1
-rewrite; mv matching	1	1
-rewrite; mv matching	2	5
-rewrite; mv matching	2	5
-rewrite; mv matching	3	7
-rewrite; mv matching	3	7
-rewrite; mv matching	4	9
-rewrite; mv matching	4	9
-rewrite; mv matching	5	11
-rewrite; mv matching	5	11
-rewrite; mv matching	6	13
-rewrite; mv matching	6	13
-rewrite; mv matching	6	13
-rewrite; mv matching	6	13
-rewrite; mv matching	6	13
-rewrite; mv matching	6	13
-rewrite; mv matching	7	19
-rewrite; mv matching	7	19
-rewrite; mv matching	7	19
-rewrite; mv matching	7	19
-rewrite; mv matching	8	23
-rewrite; mv matching	8	23
-rewrite; mv matching	8	23
-rewrite; mv matching	8	23
-rewrite; mv matching	9	27
-rewrite; mv matching	9	27
-rewrite; mv matching	9	27
-rewrite; mv matching	9	27
-rewrite; mv matching	10	31
-rewrite; mv matching	10	31
-rewrite; mv matching	10	31
-rewrite; mv matching	10	31
-rewrite; mv matching	11	35
-rewrite; mv matching	11	35
-rewrite; mv matching	12	37
-rewrite; mv matching	12	37
-rewrite; mv matching	13	39
-rewrite; mv matching	13	39
-rewrite; mv matching	14	41
-rewrite; mv matching	14	41
-rewrite; mv matching	15	43
-rewrite; mv matching	15	43
+rewrite; mv matching	1	5
+rewrite; mv matching	1	5
+rewrite; mv matching	1	5
+rewrite; mv matching	1	5
+rewrite; mv matching	2	7
+rewrite; mv matching	2	7
+rewrite; mv matching	3	9
+rewrite; mv matching	3	9
+rewrite; mv matching	4	11
+rewrite; mv matching	4	11
+rewrite; mv matching	5	13
+rewrite; mv matching	5	13
+rewrite; mv matching	6	19
+rewrite; mv matching	6	19
+rewrite; mv matching	6	19
+rewrite; mv matching	6	19
+rewrite; mv matching	6	19
+rewrite; mv matching	6	19
+rewrite; mv matching	7	23
+rewrite; mv matching	7	23
+rewrite; mv matching	7	23
+rewrite; mv matching	7	23
+rewrite; mv matching	8	27
+rewrite; mv matching	8	27
+rewrite; mv matching	8	27
+rewrite; mv matching	8	27
+rewrite; mv matching	9	31
+rewrite; mv matching	9	31
+rewrite; mv matching	9	31
+rewrite; mv matching	9	31
+rewrite; mv matching	10	35
+rewrite; mv matching	10	35
+rewrite; mv matching	10	35
+rewrite; mv matching	10	35
+rewrite; mv matching	11	37
+rewrite; mv matching	11	37
+rewrite; mv matching	12	39
+rewrite; mv matching	12	39
+rewrite; mv matching	13	41
+rewrite; mv matching	13	41
+rewrite; mv matching	14	43
+rewrite; mv matching	14	43
+rewrite; mv matching	15	44
+rewrite; mv matching	15	44
 WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, id, rank() over (partition by category order by id) from sketch_input order by category,id
@@ -1014,50 +1014,50 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mv_1
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-rewrite; mv matching	a	1	1
-rewrite; mv matching	a	1	1
-rewrite; mv matching	a	1	1
-rewrite; mv matching	a	1	1
-rewrite; mv matching	a	2	5
-rewrite; mv matching	a	2	5
-rewrite; mv matching	a	3	7
-rewrite; mv matching	a	3	7
-rewrite; mv matching	a	4	9
-rewrite; mv matching	a	4	9
-rewrite; mv matching	a	5	11
-rewrite; mv matching	a	5	11
-rewrite; mv matching	a	6	13
-rewrite; mv matching	a	6	13
-rewrite; mv matching	a	7	15
-rewrite; mv matching	a	7	15
-rewrite; mv matching	a	8	17
-rewrite; mv matching	a	8	17
-rewrite; mv matching	a	9	19
-rewrite; mv matching	a	9	19
-rewrite; mv matching	a	10	21
-rewrite; mv matching	a	10	21
-rewrite; mv matching	b	6	1
-rewrite; mv matching	b	6	1
-rewrite; mv matching	b	6	1
-rewrite; mv matching	b	6	1
-rewrite; mv matching	b	7	5
-rewrite; mv matching	b	7	5
-rewrite; mv matching	b	8	7
-rewrite; mv matching	b	8	7
-rewrite; mv matching	b	9	9
-rewrite; mv matching	b	9	9
-rewrite; mv matching	b	10	11
-rewrite; mv matching	b	10	11
-rewrite; mv matching	b	11	13
-rewrite; mv matching	b	11	13
-rewrite; mv matching	b	12	15
-rewrite; mv matching	b	12	15
-rewrite; mv matching	b	13	17
-rewrite; mv matching	b	13	17
-rewrite; mv matching	b	14	19
-rewrite; mv matching	b	14	19
-rewrite; mv matching	b	15	21
-rewrite; mv matching	b	15	21
+rewrite; mv matching	a	1	5
+rewrite; mv matching	a	1	5
+rewrite; mv matching	a	1	5
+rewrite; mv matching	a	1	5
+rewrite; mv matching	a	2	7
+rewrite; mv matching	a	2	7
+rewrite; mv matching	a	3	9
+rewrite; mv matching	a	3	9
+rewrite; mv matching	a	4	11
+rewrite; mv matching	a	4	11
+rewrite; mv matching	a	5	13
+rewrite; mv matching	a	5	13
+rewrite; mv matching	a	6	15
+rewrite; mv matching	a	6	15
+rewrite; mv matching	a	7	17
+rewrite; mv matching	a	7	17
+rewrite; mv matching	a	8	19
+rewrite; mv matching	a	8	19
+rewrite; mv matching	a	9	21
+rewrite; mv matching	a	9	21
+rewrite; mv matching	a	10	22
+rewrite; mv matching	a	10	22
+rewrite; mv matching	b	6	5
+rewrite; mv matching	b	6	5
+rewrite; mv matching	b	6	5
+rewrite; mv matching	b	6	5
+rewrite; mv matching	b	7	7
+rewrite; mv matching	b	7	7
+rewrite; mv matching	b	8	9
+rewrite; mv matching	b	8	9
+rewrite; mv matching	b	9	11
+rewrite; mv matching	b	9	11
+rewrite; mv matching	b	10	13
+rewrite; mv matching	b	10	13
+rewrite; mv matching	b	11	15
+rewrite; mv matching	b	11	15
+rewrite; mv matching	b	12	17
+rewrite; mv matching	b	12	17
+rewrite; mv matching	b	13	19
+rewrite; mv matching	b	13	19
+rewrite; mv matching	b	14	21
+rewrite; mv matching	b	14	21
+rewrite; mv matching	b	15	22
+rewrite; mv matching	b	15	22
 PREHOOK: query: drop materialized view mv_1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mv_1

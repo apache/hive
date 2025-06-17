@@ -231,7 +231,7 @@ public class TestOrcSerDeStats {
 
     assertEquals(3, stats[1].getNumberOfValues());
     assertEquals(15, ((BinaryColumnStatistics) stats[1]).getSum());
-    assertEquals("count: 3 hasNull: true bytesOnDisk: 28 sum: 15", stats[1].toString());
+    assertEquals("count: 3 hasNull: true bytesOnDisk: 30 sum: 15", stats[1].toString());
 
     assertEquals(3, stats[2].getNumberOfValues());
     assertEquals("bar", ((StringColumnStatistics) stats[2]).getMinimum());
@@ -472,13 +472,13 @@ public class TestOrcSerDeStats {
     assertEquals(Long.MAX_VALUE,
         ((IntegerColumnStatistics) stats[5]).getMinimum());
     assertEquals(false, ((IntegerColumnStatistics) stats[5]).isSumDefined());
-    assertEquals("count: 2 hasNull: false bytesOnDisk: 12 min: 9223372036854775807 max: 9223372036854775807",
+    assertEquals("count: 2 hasNull: false bytesOnDisk: 21 min: 9223372036854775807 max: 9223372036854775807",
         stats[5].toString());
 
     assertEquals(-15.0, ((DoubleColumnStatistics) stats[7]).getMinimum());
     assertEquals(-5.0, ((DoubleColumnStatistics) stats[7]).getMaximum());
     assertEquals(-20.0, ((DoubleColumnStatistics) stats[7]).getSum(), 0.00001);
-    assertEquals("count: 2 hasNull: false bytesOnDisk: 15 min: -15.0 max: -5.0 sum: -20.0",
+    assertEquals("count: 2 hasNull: false bytesOnDisk: 19 min: -15.0 max: -5.0 sum: -20.0",
         stats[7].toString());
 
     assertEquals("count: 2 hasNull: false bytesOnDisk: 14 min: bye max: hi sum: 5", stats[9].toString());
@@ -566,13 +566,13 @@ public class TestOrcSerDeStats {
     assertEquals(Long.MAX_VALUE,
         ((IntegerColumnStatistics) stats[5]).getMinimum());
     assertEquals(false, ((IntegerColumnStatistics) stats[5]).isSumDefined());
-    assertEquals("count: 2 hasNull: false bytesOnDisk: 12 min: 9223372036854775807 max: 9223372036854775807",
+    assertEquals("count: 2 hasNull: false bytesOnDisk: 24 min: 9223372036854775807 max: 9223372036854775807",
         stats[5].toString());
 
     assertEquals(-15.0, ((DoubleColumnStatistics) stats[7]).getMinimum());
     assertEquals(-5.0, ((DoubleColumnStatistics) stats[7]).getMaximum());
     assertEquals(-20.0, ((DoubleColumnStatistics) stats[7]).getSum(), 0.00001);
-    assertEquals("count: 2 hasNull: false bytesOnDisk: 15 min: -15.0 max: -5.0 sum: -20.0",
+    assertEquals("count: 2 hasNull: false bytesOnDisk: 19 min: -15.0 max: -5.0 sum: -20.0",
         stats[7].toString());
 
     assertEquals(5, ((BinaryColumnStatistics) stats[8]).getSum());

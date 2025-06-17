@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.mapreduce;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -63,7 +64,6 @@ import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
-import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
@@ -91,7 +91,7 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     }
   }
 
-  private Iterable<FileScanTask> tasks;
+  private Iterator<FileScanTask> tasks;
   private CloseableIterator<T> currentIterator;
   private T current;
 
@@ -99,14 +99,13 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   public void initialize(InputSplit split, TaskAttemptContext newContext) {
     // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
     super.initialize(split, newContext);
-    ScanTaskGroup<FileScanTask> task = ((IcebergSplit) split).taskGroup();
-    this.tasks = task.tasks();
+    ScanTaskGroup<FileScanTask> taskGroup = ((IcebergSplit) split).taskGroup();
+    this.tasks = taskGroup.tasks().iterator();
     this.currentIterator = nextTask();
   }
 
   private CloseableIterator<T> nextTask() {
-    CloseableIterator<T> closeableIterator = CloseableIterable.concat(
-        Iterables.transform(tasks, task -> open(task, expectedSchema))).iterator();
+    CloseableIterator<T> closeableIterator = open(tasks.next(), expectedSchema).iterator();
     if (!isFetchVirtualColumns() || Utilities.getIsVectorized(conf)) {
       return closeableIterator;
     }
@@ -116,13 +115,15 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
 
   @Override
   public boolean nextKeyValue() throws IOException {
-    if (currentIterator.hasNext()) {
-      current = currentIterator.next();
-      return true;
-    } else {
+    while (!currentIterator.hasNext()) {
       currentIterator.close();
-      return false;
+      if (!tasks.hasNext()) {
+        return false;
+      }
+      currentIterator = nextTask();
     }
+    current = currentIterator.next();
+    return true;
   }
 
   @Override
@@ -189,9 +190,6 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   @SuppressWarnings("unchecked")
   private CloseableIterable<T> open(FileScanTask currentTask, Schema readSchema) {
     switch (getInMemoryDataModel()) {
-      case PIG:
-        // TODO: Support Pig and Hive object models for IcebergInputFormat
-        throw new UnsupportedOperationException("Pig and Hive object models are not supported.");
       case HIVE:
         return openVectorized(currentTask, readSchema);
       case GENERIC:

@@ -301,11 +301,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: masking_test_n5
-          filterExpr: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
+          filterExpr: ((key > 6) and (key < 10) and ((key % 2) = 0)) (type: boolean)
           properties:
             insideView TRUE
           Filter Operator
-            predicate: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
+            predicate: ((key > 6) and (key < 10) and ((key % 2) = 0)) (type: boolean)
             Select Operator
               expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
               outputColumnNames: _col0
@@ -378,12 +378,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: masking_test_n5
-                  filterExpr: ((key < 10) and (key > 6) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
+                  filterExpr: ((key > 6) and (key < 10) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 10) and (key > 6) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
+                    predicate: ((key > 6) and (key < 10) and ((key % 2) = 0) and ((UDFToInteger((UDFToDouble(key) / 2.0D)) % 2) = 0) and (UDFToInteger((UDFToDouble(key) / 2.0D)) < 10)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)

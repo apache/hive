@@ -43,10 +43,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                  filterExpr: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                    predicate: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -72,10 +72,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                  filterExpr: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                    predicate: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -437,10 +437,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                  filterExpr: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                    predicate: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -466,10 +466,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                  filterExpr: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
+                    predicate: ((key > '15') and (key < '20') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)

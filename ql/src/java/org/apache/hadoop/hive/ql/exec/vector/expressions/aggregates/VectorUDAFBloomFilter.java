@@ -67,7 +67,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     BloomKFilter bf;
 
     public Aggregation(long expectedEntries) {
-      bf = new BloomKFilter(expectedEntries);
+      bf = BloomKFilter.build(expectedEntries);
     }
 
     @Override

@@ -28,15 +28,17 @@ env:
   DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
 jobs:
-  macos-jdk8:
-    name: 'macOS (JDK 8)'
+  macos-jdk17:
+    name: 'macOS (JDK 17)'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - name: 'Set up JDK 8'
+      - name: 'Set up JDK 17'
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 17
       - name: 'Build project'
         run: |
           mvn clean install -DskipTests -Pitests
+      - name: 'Dependency tree'
+        run: mvn dependency:tree -Pitests

@@ -456,7 +456,6 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_VALIDATE_ACLS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_LOGGER.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_AM_USE_FQDN.varname);
-    llapDaemonVarsSetLocal.add(ConfVars.LLAP_OUTPUT_FORMAT_ARROW.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_PATH_CACHE_SIZE.varname);
   }
 
@@ -723,6 +722,8 @@ public class HiveConf extends Configuration {
         "Streaming jobs that log to standard error with this prefix can log counter or status information."),
     STREAM_REPORTER_ENABLED("stream.stderr.reporter.enabled", true,
         "Enable consumption of status and counter messages for streaming jobs."),
+    ORC_COMPRESS("hive.exec.orc.default.compress", "ZLIB", "Define the default compression codec for ORC file. " +
+            "ZLIB is the default value in hive until ZSTD which is default from orc 2.x is tested"),
     COMPRESS_RESULT("hive.exec.compress.output", false,
         "This controls whether the final outputs of a query (to a local/HDFS file or a Hive table) is compressed. \n" +
         "The compression codec and other options are determined from Hadoop config variables mapred.output.compress*"),
@@ -2239,7 +2240,7 @@ public class HiveConf extends Configuration {
         "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
     HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
         "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
-            " defult DirectExecutorService"),
+            " default DirectExecutorService"),
 
     HIVE_ICEBERG_MASK_DEFAULT_LOCATION("hive.iceberg.mask.default.location", false,
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
@@ -2565,9 +2566,6 @@ public class HiveConf extends Configuration {
         "if the complete small table can fit in memory, and a map-join can be performed."),
 
     HIVE_SCRIPT_OPERATOR_TRUST("hive.exec.script.trust", false, ""),
-    HIVE_ROW_OFFSET("hive.exec.rowoffset", false,
-        "Whether to provide the row offset virtual column"),
-
     // Optimizer
     HIVE_OPT_INDEX_FILTER("hive.optimize.index.filter", true, "Whether to enable automatic use of indexes"),
 
@@ -2586,10 +2584,6 @@ public class HiveConf extends Configuration {
         "If this config is true only pushed down filters remain in the operator tree, \n" +
         "and the original filter is removed. If this config is false, the original filter \n" +
         "is also left in the operator tree at the original place."),
-    HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN("hive.optimize.join.disjunctive.transitive.predicates.pushdown",
-        false, "Whether to transitively infer disjunctive predicates across joins. \n"
-        + "Disjunctive predicates are hard to simplify and pushing them down might lead to infinite rule matching "
-        + "causing stackoverflow and OOM errors"),
     HIVE_POINT_LOOKUP_OPTIMIZER("hive.optimize.point.lookup", true,
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVE_POINT_LOOKUP_OPTIMIZER_MIN("hive.optimize.point.lookup.min", 2,
@@ -3123,7 +3117,7 @@ public class HiveConf extends Configuration {
     TXN_MERGE_INSERT_X_LOCK("hive.txn.xlock.mergeinsert", false,
         "Ensures MERGE INSERT operations acquire EXCLUSIVE / EXCL_WRITE lock for transactional tables.\n" +
         "If enabled, prevents duplicates when MERGE statements are executed in parallel transactions."),
-    TXN_WRITE_X_LOCK("hive.txn.xlock.write", true,
+    TXN_WRITE_X_LOCK("hive.txn.xlock.write", false,
         "Manages concurrency levels for ACID resources. Provides better level of query parallelism by enabling " +
         "shared writes and write-write conflict resolution at the commit step." +
         "- If true - exclusive writes are used:\n" +
@@ -3132,7 +3126,7 @@ public class HiveConf extends Configuration {
         "  - INSERT acquires SHARED_READ locks\n" +
         "- If false - shared writes, transaction is aborted in case of conflicting changes:\n" +
         "  - INSERT OVERWRITE acquires EXCL_WRITE locks\n" +
-        "  - INSERT/UPDATE/DELETE acquire SHARED_READ locks"),
+        "  - INSERT/UPDATE/DELETE acquire SHARED_WRITE locks"),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
     HIVE_TXN_ACID_DIR_CACHE_DURATION("hive.txn.acid.dir.cache.duration",
@@ -3487,13 +3481,6 @@ public class HiveConf extends Configuration {
     OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),
-
-    // For Arrow SerDe
-    HIVE_ARROW_ROOT_ALLOCATOR_LIMIT("hive.arrow.root.allocator.limit", Long.MAX_VALUE,
-        "Arrow root allocator memory size limitation in bytes."),
-    HIVE_ARROW_BATCH_ALLOCATOR_LIMIT("hive.arrow.batch.allocator.limit", 10_000_000_000L,
-        "Max bytes per arrow batch. This is a threshold, the memory is not pre-allocated."),
-    HIVE_ARROW_BATCH_SIZE("hive.arrow.batch.size", 1000, "The number of rows sent in one Arrow batch."),
 
     // For Druid storage handler
     HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY",
@@ -4105,6 +4092,10 @@ public class HiveConf extends Configuration {
         "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
         "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
         "over Tez without the pool of sessions."),
+    HIVE_SERVER2_TEZ_SESSIONS_METRICS_COLLECTION_INTERVAL(
+        "hive.server2.tez.sessions.metrics.collection.interval", "10s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Interval for collecting metrics from Tez sessions."),
     HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK("hive.server2.tez.queue.access.check", false,
         "Whether to check user access to explicitly specified YARN queues. " +
           "yarn.resourcemanager.webapp.address must be configured to use this."),
@@ -4713,9 +4704,9 @@ public class HiveConf extends Configuration {
         "The default value is true."),
 
     HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST("hive.vectorized.adaptor.custom.udf.whitelist", "",
-        "Custom UDF allowed when hive.vectorized.adaptor.usage.mode is chosen.\n" +
-        "Specify classes separated by commas:\n" +
-        "package.FooClass,package.BarClass"),
+        "A comma-separated list of custom UDFs allowed to operate in vectorized mode " +
+        "when hive.vectorized.adaptor.usage.mode is set to chosen.\n" +
+        "Only Generic UDFs are supported for whitelisting; ensure that each custom UDF class extends GenericUDF"),
 
     HIVE_VECTORIZATION_PTF_MAX_MEMORY_BUFFERING_BATCH_COUNT("hive.vectorized.ptf.max.memory.buffering.batch.count", 25,
         "Maximum number of vectorized row batches to buffer in memory for PTF\n" +
@@ -4773,11 +4764,6 @@ public class HiveConf extends Configuration {
         "internal use only. When false, don't suppress fatal exceptions like\n" +
         "NullPointerException, etc so the query will fail and assure it will be noticed",
         true),
-    HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED(
-        "hive.vectorized.execution.filesink.arrow.native.enabled", false,
-        "This flag should be set to true to enable the native vectorization\n" +
-        "of queries using the Arrow SerDe and FileSink.\n" +
-        "The default value is false."),
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
         + "partition operations including but not limited to insert, such as alter, describe etc."),
@@ -5563,8 +5549,6 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_RFA,
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
-    LLAP_OUTPUT_FORMAT_ARROW("hive.llap.output.format.arrow", true,
-      "Whether LLapOutputFormatService should output arrow batches"),
     LLAP_COLLECT_LOCK_METRICS("hive.llap.lockmetrics.collect", false,
         "Whether lock metrics (wait times, counts) are collected for LLAP "
         + "related locks"),
@@ -6797,7 +6781,6 @@ public class HiveConf extends Configuration {
       ConfVars.HIVE_MAPRED_MODE.varname,
       ConfVars.HIVE_MAPSIDE_AGGREGATE.varname,
       ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES.varname,
-      ConfVars.HIVE_ROW_OFFSET.varname,
       ConfVars.HIVE_VARIABLE_SUBSTITUTE.varname,
       ConfVars.HIVE_VARIABLE_SUBSTITUTE_DEPTH.varname,
       ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,

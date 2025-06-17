@@ -122,6 +122,11 @@ public class GenTezUtils {
     reduceWork.setMaxSrcFraction(maxSrcFraction);
     reduceWork.setUniformDistribution(reduceSink.getConf().getReducerTraits().contains(UNIFORM));
 
+    // Disabling TEZ_AUTO_REDUCER_PARALLELISM for BucketMapJoin until TEZ-4603 is fixed.
+    if (hasBucketMapJoin(reduceSink, 0)) {
+      reduceSink.getConf().getReducerTraits().remove(AUTOPARALLEL);
+    }
+
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
 
       // configured limit for reducers
@@ -180,6 +185,41 @@ public class GenTezUtils {
     context.connectedReduceSinks.add(reduceSink);
 
     return reduceWork;
+  }
+
+  /**
+   * Checks if there is a Bucket Map Join (BMJ) following a hierarchy:
+   * ReduceSinkOperator (RS) -> ReduceSinkOperator (RS) -> MapJoinOperator (MJ).
+   * Ensures at most **two** RSOs before MJ.
+   */
+  private static boolean hasBucketMapJoin(Operator<? extends OperatorDesc> operator, int rsoCount) {
+    if (operator == null) {
+      return false;
+    }
+    if (operator instanceof ReduceSinkOperator) {
+      rsoCount++;
+      if (rsoCount > 2) {
+        return false; // Stop if more than 2 RSOs
+      }
+    }
+
+    // Iterate over child operators
+    for (Operator<? extends OperatorDesc> childOp : operator.getChildOperators()) {
+      // Check if this is a MapJoinOperator and is a Bucket Map Join
+      if (childOp instanceof MapJoinOperator) {
+        MapJoinOperator mjOp = (MapJoinOperator) childOp;
+        if (mjOp.getConf().isBucketMapJoin()) {
+          return true; // Found BMJ, no need to check further
+        }
+      }
+
+      // Recursively check children
+      if (hasBucketMapJoin(childOp, rsoCount)) {
+        return true;
+      }
+    }
+
+    return false; // No Bucket Map Join found
   }
 
   private static void setupReduceSink(

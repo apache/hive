@@ -63,7 +63,7 @@ import org.apache.hive.common.util.HashCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.kryo5.Kryo;
 
 /**
  * Hash table container that can have many partitions -- each partition has its own hashmap,
@@ -179,7 +179,7 @@ public class HybridHashTableContainer
         return new BytesBytesMultiHashMap(rowCount, loadFactor, wbSize, -1);
       } else {
         InputStream inputStream = Files.newInputStream(hashMapLocalPath);
-        com.esotericsoftware.kryo.io.Input input = new com.esotericsoftware.kryo.io.Input(inputStream);
+        com.esotericsoftware.kryo.kryo5.io.Input input = new com.esotericsoftware.kryo.kryo5.io.Input(inputStream);
         Kryo kryo = SerializationUtilities.borrowKryo();
         BytesBytesMultiHashMap restoredHashMap = null;
         try {
@@ -347,7 +347,7 @@ public class HybridHashTableContainer
 
     if (useBloomFilter) {
       if (newKeyCount <= BLOOM_FILTER_MAX_SIZE) {
-        this.bloom1 = new BloomFilter(newKeyCount);
+        this.bloom1 = BloomFilter.build(newKeyCount);
       } else {
         // To avoid having a huge BloomFilter we need to scale up False Positive Probability
         double fpp = calcFPP(newKeyCount);
@@ -356,7 +356,7 @@ public class HybridHashTableContainer
           LOG.warn("BloomFilter FPP is greater than 0.5!");
         }
         LOG.info("BloomFilter is using FPP: " + fpp);
-        this.bloom1 = new BloomFilter(newKeyCount, fpp);
+        this.bloom1 = BloomFilter.build(newKeyCount, fpp);
       }
       LOG.info(String.format("Using a bloom-1 filter %d keys of size %d bytes",
         newKeyCount, bloom1.sizeInBytes()));
@@ -656,8 +656,8 @@ public class HybridHashTableContainer
         spillLocalDirs, "partition-" + partitionId + "-", null, false);
     OutputStream outputStream = new FileOutputStream(file, false);
 
-    com.esotericsoftware.kryo.io.Output output =
-        new com.esotericsoftware.kryo.io.Output(outputStream);
+    com.esotericsoftware.kryo.kryo5.io.Output output =
+        new com.esotericsoftware.kryo.kryo5.io.Output(outputStream);
     Kryo kryo = SerializationUtilities.borrowKryo();
     try {
       LOG.info("Trying to spill hash partition " + partitionId + " ...");

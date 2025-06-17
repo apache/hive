@@ -20,10 +20,8 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.FileFormat;
@@ -47,8 +45,6 @@ import org.mockito.MockedStatic;
 
 import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.types.Types.NestedField.required;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mockStatic;
 
@@ -62,12 +58,12 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
             .bucket("customer_id", 16).build();
 
-    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
-    method.setAccessible(true);
+//    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
+//    method.setAccessible(true);
 
     try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
-      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
-          .thenAnswer(invocation -> null);
+//      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
+//          .thenAnswer(invocation -> null);
       // create and insert an initial batch of records
       testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
           fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(),

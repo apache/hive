@@ -1485,7 +1485,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n7
-                  filterExpr: ((s) IN ('oscar allen', 'oscar carson') and (t = 10Y)) (type: boolean)
+                  filterExpr: ((t = 10Y) and (s) IN ('oscar allen', 'oscar carson')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1494,8 +1494,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringColumnInList(col 7, values oscar allen, oscar carson), FilterLongColEqualLongScalar(col 0:tinyint, val 10))
-                    predicate: ((s) IN ('oscar allen', 'oscar carson') and (t = 10Y)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 0:tinyint, val 10), FilterStringColumnInList(col 7, values oscar allen, oscar carson))
+                    predicate: ((t = 10Y) and (s) IN ('oscar allen', 'oscar carson')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: 10Y (type: tinyint), s (type: string)

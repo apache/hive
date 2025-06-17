@@ -29,7 +29,7 @@ public class TestCatalogOldClient extends NonCatCallsWithCatalog {
 
   @Override
   protected IMetaStoreClient getClient() throws MetaException {
-    return new HiveMetaStoreClientPreCatalog(conf);
+    return new HiveMetaStoreClient(conf);
   }
 
   @Override

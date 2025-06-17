@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.HarFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
@@ -467,6 +468,10 @@ public class Warehouse {
       }
     }
     FileSystem fs = getFs(f);
+    if (fs instanceof HarFileSystem) {
+      LOG.warn("Har path {} is not supported to delete, skipping it.", f);
+      return true;
+    }
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
@@ -680,9 +685,10 @@ public class Warehouse {
     return partSpec;
   }
 
-  public static boolean makeSpecFromName(Map<String, String> partSpec, Path currPath,
+  public static boolean makeSpecFromName(Map<String, String> partSpec, Path path,
       Set<String> requiredKeys) {
     List<String[]> kvs = new ArrayList<>();
+    Path currPath = path;
     do {
       String component = currPath.getName();
       Matcher m = pat.matcher(component);
@@ -706,7 +712,7 @@ public class Warehouse {
       partSpec.put(key, kvs.get(i - 1)[1]);
     }
     if (requiredKeys == null || requiredKeys.isEmpty()) return true;
-    LOG.warn("Cannot create partition spec from " + currPath + "; missing keys " + requiredKeys);
+    LOG.warn("Cannot create partition spec from {}; missing keys {}", path, requiredKeys);
     return false;
   }
 

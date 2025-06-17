@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
@@ -35,7 +34,6 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -57,34 +55,28 @@ import static com.google.common.collect.Iterables.concat;
 public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
 
   public static final RelOptRule PROJECT_INSTANCE =
-          RelRule.Config.EMPTY
-                  .withDescription("HivePruneEmptyProject")
-                  .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
+      new RemoveEmptySingleRuleConfig()
                   .withOperandFor(HiveProject.class, project -> true)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+                  .withDescription("HivePruneEmptyProject")
                   .toRule();
 
   public static final RelOptRule FILTER_INSTANCE =
-          RelRule.Config.EMPTY
-                  .withDescription("HivePruneEmptyFilter")
-                  .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
+      new RemoveEmptySingleRuleConfig()
                   .withOperandFor(HiveFilter.class, singleRel -> true)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+                  .withDescription("HivePruneEmptyFilter")
                   .toRule();
 
   public static final RelOptRule JOIN_LEFT_INSTANCE = getJoinLeftInstance(HiveJoin.class);
   public static final RelOptRule SEMI_JOIN_LEFT_INSTANCE = getJoinLeftInstance(HiveSemiJoin.class);
 
   private static <R extends RelNode> RelOptRule getJoinLeftInstance(Class<R> clazz) {
-    return RelRule.Config.EMPTY
+    return new JoinLeftEmptyRuleConfig()
             .withOperandSupplier(b0 ->
                     b0.operand(clazz).inputs(
                             b1 -> b1.operand(Values.class)
                                     .predicate(Values::isEmpty).noInputs(),
                             b2 -> b2.operand(RelNode.class).anyInputs()))
             .withDescription("HivePruneEmptyJoin(left)")
-            .as(JoinLeftEmptyRuleConfig.class)
-            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .toRule();
   }
 
@@ -97,8 +89,9 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
    * to
    * select null as emp.col0 ... null as emp.coln, dept.* from dept
    */
-  public interface JoinLeftEmptyRuleConfig extends PruneEmptyRule.Config {
-    @Override default PruneEmptyRule toRule() {
+  private static final class JoinLeftEmptyRuleConfig extends HiveRuleConfig implements PruneEmptyRule.Config {
+    @Override
+    public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override public void onMatch(RelOptRuleCall call) {
           if (Bug.CALCITE_5294_FIXED) {
@@ -127,15 +120,13 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
   public static final RelOptRule SEMI_JOIN_RIGHT_INSTANCE = getJoinRightInstance(HiveSemiJoin.class);
 
   private static <R extends RelNode> RelOptRule getJoinRightInstance(Class<R> clazz) {
-    return RelRule.Config.EMPTY
+    return new JoinRightEmptyRuleConfig()
             .withOperandSupplier(b0 ->
                     b0.operand(clazz).inputs(
                             b1 -> b1.operand(RelNode.class).anyInputs(),
                             b2 -> b2.operand(Values.class).predicate(Values::isEmpty)
                                     .noInputs()))
             .withDescription("HivePruneEmptyJoin(right)")
-            .as(JoinRightEmptyRuleConfig.class)
-            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
             .toRule();
   }
 
@@ -148,8 +139,10 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
    * to
    * select emp.*, null as dept.col0 ... null as dept.coln from emp
    */
-  public interface JoinRightEmptyRuleConfig extends PruneEmptyRule.Config {
-    @Override default PruneEmptyRule toRule() {
+  private static final class JoinRightEmptyRuleConfig extends HiveRuleConfig implements
+      PruneEmptyRules.JoinRightEmptyRuleConfig {
+    @Override
+    public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override public void onMatch(RelOptRuleCall call) {
           if (Bug.CALCITE_5294_FIXED) {
@@ -191,29 +184,25 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     return builder.convert(resultType, true).build();
   }
 
-  public static final RelOptRule CORRELATE_RIGHT_INSTANCE = RelRule.Config.EMPTY
+  public static final RelOptRule CORRELATE_RIGHT_INSTANCE = new CorrelateRightEmptyRuleConfig()
       .withOperandSupplier(b0 ->
           b0.operand(Correlate.class).inputs(
               b1 -> b1.operand(RelNode.class).anyInputs(),
               b2 -> b2.operand(Values.class).predicate(Values::isEmpty).noInputs()))
       .withDescription("PruneEmptyCorrelate(right)")
-      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-      .as(CorrelateRightEmptyRuleConfig.class)
       .toRule();
-  public static final RelOptRule CORRELATE_LEFT_INSTANCE = RelRule.Config.EMPTY
+  public static final RelOptRule CORRELATE_LEFT_INSTANCE = new CorrelateLeftEmptyRuleConfig()
       .withOperandSupplier(b0 ->
           b0.operand(Correlate.class).inputs(
               b1 -> b1.operand(Values.class).predicate(Values::isEmpty).noInputs(),
               b2 -> b2.operand(RelNode.class).anyInputs()))
       .withDescription("PruneEmptyCorrelate(left)")
-      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-      .as(CorrelateLeftEmptyRuleConfig.class)
       .toRule();
 
   /** Configuration for rule that prunes a correlate if left input is empty. */
-  public interface CorrelateLeftEmptyRuleConfig extends PruneEmptyRule.Config {
+  public static class CorrelateLeftEmptyRuleConfig extends HiveRuleConfig implements PruneEmptyRule.Config {
     @Override
-    default PruneEmptyRule toRule() {
+    public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override
         public void onMatch(RelOptRuleCall call) {
@@ -228,9 +217,9 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
   }
 
   /** Configuration for rule that prunes a correlate if right input is empty. */
-  public interface CorrelateRightEmptyRuleConfig extends PruneEmptyRule.Config {
+  public static class CorrelateRightEmptyRuleConfig extends HiveRuleConfig implements PruneEmptyRule.Config {
     @Override
-    default PruneEmptyRule toRule() {
+    public PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override
         public void onMatch(RelOptRuleCall call) {
@@ -262,46 +251,38 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
   }
 
   public static final RelOptRule SORT_INSTANCE =
-          RelRule.Config.EMPTY
-                  .withDescription("HivePruneEmptySort")
-                  .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
+          new RemoveEmptySingleRuleConfig()
                   .withOperandFor(HiveSortLimit.class, singleRel -> true)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+                  .withDescription("HivePruneEmptySort")
                   .toRule();
 
   public static final RelOptRule SORT_FETCH_ZERO_INSTANCE =
-          RelRule.Config.EMPTY
-                  .withOperandSupplier(b ->
-                          b.operand(HiveSortLimit.class).anyInputs())
+          new SortFetchZeroRuleConfig()
+                  .withOperandSupplier(b -> b.operand(HiveSortLimit.class).anyInputs())
                   .withDescription("HivePruneSortLimit0")
-                  .as(PruneEmptyRules.SortFetchZeroRuleConfig.class)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
 
   public static final RelOptRule AGGREGATE_INSTANCE =
-          RelRule.Config.EMPTY
-                  .withDescription("HivePruneEmptyAggregate")
-                  .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
+          new RemoveEmptySingleRuleConfig()
                   .withOperandFor(HiveAggregate.class, Aggregate::isNotGrandTotal)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+                  .withDescription("HivePruneEmptyAggregate")
                   .toRule();
 
   public static final RelOptRule UNION_INSTANCE =
-          RelRule.Config.EMPTY
+          new HiveUnionEmptyPruneRuleConfig()
                   .withOperandSupplier(b0 ->
                           b0.operand(HiveUnion.class).unorderedInputs(b1 ->
                                   b1.operand(Values.class)
                                           .predicate(Values::isEmpty).noInputs()))
                   .withDescription("HivePruneEmptyUnionBranch")
-                  .as(HiveUnionEmptyPruneRuleConfig.class)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
 
   /**
    * Copy of {@link PruneEmptyRules.UnionEmptyPruneRuleConfig} but this version expects {@link Union}.
    */
-  public interface HiveUnionEmptyPruneRuleConfig extends PruneEmptyRules.PruneEmptyRule.Config {
-    @Override default PruneEmptyRules.PruneEmptyRule toRule() {
+  private static final class HiveUnionEmptyPruneRuleConfig extends HiveRuleConfig implements PruneEmptyRules.PruneEmptyRule.Config {
+    @Override
+    public PruneEmptyRules.PruneEmptyRule toRule() {
       return new PruneEmptyRules.PruneEmptyRule(this) {
         @Override public void onMatch(RelOptRuleCall call) {
           if (Bug.CALCITE_5293_FIXED) {
@@ -360,4 +341,13 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     }
     return false;
   }
+
+  private static final class RemoveEmptySingleRuleConfig extends HiveRuleConfig
+      implements RemoveEmptySingleRule.RemoveEmptySingleRuleConfig {
+  }
+
+  private static final class SortFetchZeroRuleConfig extends HiveRuleConfig
+      implements PruneEmptyRules.SortFetchZeroRuleConfig {
+  }
+
 }

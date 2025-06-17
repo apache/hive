@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.kryo5.Kryo;
+import com.esotericsoftware.kryo.kryo5.io.Output;
 
 public class FSStatsPublisher implements StatsPublisher {
 

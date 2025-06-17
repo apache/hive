@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,7 @@ public class MaterializationSnapshot {
     this.tableSnapshots = null;
   }
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Intended")
   public MaterializationSnapshot(Map<String, SnapshotContext> tableSnapshots) {
     this.validTxnList = null;
     this.tableSnapshots = tableSnapshots;
@@ -104,6 +106,7 @@ public class MaterializationSnapshot {
    * @return {@link Map} of snapshotIds where the key is the fully qualified name of the table and the
    * values is the {@link String} representation of snapshotId or null if all tables are native ACID
    */
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "intended")
   public Map<String, SnapshotContext> getTableSnapshots() {
     return tableSnapshots;
   }

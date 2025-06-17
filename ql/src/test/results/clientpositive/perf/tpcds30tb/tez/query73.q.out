@@ -167,10 +167,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') (type: boolean)
+                  filterExpr: (s_county) IN ('Huron County', 'Kittitas County', 'Maverick County', 'Mobile County') (type: boolean)
                   Statistics: Num rows: 1704 Data size: 180624 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') (type: boolean)
+                    predicate: (s_county) IN ('Huron County', 'Kittitas County', 'Maverick County', 'Mobile County') (type: boolean)
                     Statistics: Num rows: 53 Data size: 5618 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: s_store_sk (type: bigint)

@@ -64,7 +64,7 @@ date_format(cast(null as timestamp), 'HH');
 -- wrong fmt
 select
 date_format('2015-04-08', ''),
-date_format('2015-04-08', 'B');
+date_format('2015-04-08', 'C');
 
 -- with time zone
 set hive.local.time.zone=Asia/Bangkok;

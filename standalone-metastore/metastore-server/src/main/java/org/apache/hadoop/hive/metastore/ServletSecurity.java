@@ -85,8 +85,8 @@ public class ServletSecurity {
   private final Configuration conf;
   private JWTValidator jwtValidator = null;
 
-  public ServletSecurity(Configuration conf) {
-    this(conf, isAuthJwt(conf));
+  public ServletSecurity(String authType, Configuration conf) {
+    this(conf, isAuthJwt(authType));
   }
 
   public ServletSecurity(Configuration conf, boolean jwt) {
@@ -95,9 +95,8 @@ public class ServletSecurity {
     this.jwtAuthEnabled = jwt;
   }
 
-  public static boolean isAuthJwt(Configuration configuration) {
-    String auth = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH);
-    return "jwt".equalsIgnoreCase(auth);
+  private static boolean isAuthJwt(String authType) {
+    return "jwt".equalsIgnoreCase(authType);
   }
 
   /**

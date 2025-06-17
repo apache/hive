@@ -1104,7 +1104,7 @@ public class SharedCache {
           return null;
         }
         long writeId = wrapper.getPartition().getWriteId();
-        ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(writeIdList);
+        ValidWriteIdList list4TheQuery = ValidReaderWriteIdList.fromValue(writeIdList);
         // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
         // that means it cannot possibly be a concurrent write. If it's not valid (we are not
         // allowed to see it), that means it's either concurrent or aborted, same thing for us.

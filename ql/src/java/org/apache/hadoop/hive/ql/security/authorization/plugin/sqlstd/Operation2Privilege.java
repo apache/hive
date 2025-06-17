@@ -166,6 +166,8 @@ public class Operation2Privilege {
     // to output instead of input, adding owner requirement on output will catch that as well
     op2Priv.put(HiveOperationType.ALTERTABLE_ADDCOLS,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType. ALTERTABLE_DROPCOL,
+            PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_REPLACECOLS,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_RENAMECOL,
@@ -470,6 +472,15 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERDATACONNECTOR_URL, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DESCDATACONNECTOR, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWDATACONNECTORS, PrivRequirement.newIOPrivRequirement(null, null));
+
+    op2Priv.put(HiveOperationType.CREATECATALOG, PrivRequirement.newPrivRequirementList(
+        new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),
+        new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.LOCAL_URI),
+        new PrivRequirement(ADMIN_PRIV_AR, IOType.OUTPUT)));
+    op2Priv.put(HiveOperationType.DROPCATALOG, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERCATALOG_LOCATION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.DESCCATALOG, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOWCATALOGS, PrivRequirement.newIOPrivRequirement(null, null));
   }
 
   /**

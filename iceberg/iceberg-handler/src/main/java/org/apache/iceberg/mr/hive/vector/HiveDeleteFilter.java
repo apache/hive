@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive.vector;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.NoSuchElementException;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.iceberg.FileScanTask;
@@ -85,105 +86,98 @@ public class HiveDeleteFilter extends DeleteFilter<HiveRow> {
    */
   public CloseableIterable<HiveBatchContext> filterBatch(CloseableIterable<HiveBatchContext> batches) {
 
-    // Delete filter pipeline setup logic:
-    // A HiveRow iterable (deleteInputIterable) is provided as input iterable for the DeleteFilter.
-    // The content in deleteInputIterable is provided by row iterators from the incoming VRBs i.e. on the arrival of
-    // a new batch the underlying iterator gets swapped.
-    SwappableHiveRowIterable deleteInputIterable = new SwappableHiveRowIterable();
-
-    // Output iterable of DeleteFilter, and its iterator
-    CloseableIterable<HiveRow> deleteOutputIterable = filter(deleteInputIterable);
-    CloseableIterator<HiveRow> deleteOutputIterator = deleteOutputIterable.iterator();
+    CloseableIterator<HiveBatchContext> iterator = new DeleteFilterBatchIterator(batches);
 
     return new CloseableIterable<HiveBatchContext>() {
 
       @Override
       public CloseableIterator<HiveBatchContext> iterator() {
-
-        CloseableIterator<HiveBatchContext> srcIterator = batches.iterator();
-
-        return new CloseableIterator<HiveBatchContext>() {
-
-          @Override
-          public boolean hasNext() {
-            return srcIterator.hasNext();
-          }
-
-          @Override
-          public HiveBatchContext next() {
-            try {
-              if (!hasNext()) {
-                throw new NoSuchElementException();
-              }
-              HiveBatchContext currentBatchContext = srcIterator.next();
-              deleteInputIterable.currentRowIterator = currentBatchContext.rowIterator();
-              VectorizedRowBatch batch = currentBatchContext.getBatch();
-
-              int oldSize = batch.size;
-              int newSize = 0;
-
-              // Apply delete filtering and adjust the selected array so that undeleted row indices are filled with it.
-              while (deleteOutputIterator.hasNext()) {
-                HiveRow row = deleteOutputIterator.next();
-                if (!row.isDeleted()) {
-                  batch.selected[newSize++] = row.physicalBatchIndex();
-                }
-              }
-
-              if (newSize < oldSize) {
-                batch.size = newSize;
-                batch.selectedInUse = true;
-              }
-              return currentBatchContext;
-            } catch (IOException e) {
-              throw new UncheckedIOException(e);
-            }
-          }
-
-          @Override
-          public void close() throws IOException {
-            srcIterator.close();
-          }
-        };
+        return iterator;
       }
 
       @Override
       public void close() throws IOException {
-        batches.close();
+        iterator.close();
       }
     };
   }
 
+  // VRB iterator with the delete filter
+  private class DeleteFilterBatchIterator implements CloseableIterator<HiveBatchContext> {
+
+    // Delete filter pipeline setup logic:
+    // A HiveRow iterable (deleteInputIterable) is provided as input iterable for the DeleteFilter.
+    // The content in deleteInputIterable is provided by row iterators from the incoming VRBs i.e. on the arrival of
+    // a new batch the underlying iterator gets swapped.
+    private final SwappableHiveRowIterable deleteInputIterable;
+
+    // Output iterable of DeleteFilter, and its iterator
+    private final CloseableIterable<HiveRow> deleteOutputIterable;
+
+    private final CloseableIterator<HiveBatchContext> srcIterator;
+
+    DeleteFilterBatchIterator(CloseableIterable<HiveBatchContext> batches) {
+      deleteInputIterable = new SwappableHiveRowIterable();
+      deleteOutputIterable = filter(deleteInputIterable);
+      srcIterator = batches.iterator();
+    }
+
+    @Override
+    public boolean hasNext() {
+      return srcIterator.hasNext();
+    }
+
+    @Override
+    public HiveBatchContext next() {
+      try {
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+        HiveBatchContext batchContext = srcIterator.next();
+        VectorizedRowBatch batch = batchContext.getBatch();
+
+        int oldSize = batch.size;
+        int newSize = 0;
+
+        try (CloseableIterator<HiveRow> rowIterator = batchContext.rowIterator()) {
+          deleteInputIterable.currentRowIterator = rowIterator;
+
+          // Apply delete filtering and adjust the selected array so that undeleted row indices are filled with it.
+          for (HiveRow row : deleteOutputIterable) {
+            if (!row.isDeleted()) {
+              batch.selected[newSize++] = row.physicalBatchIndex();
+            }
+          }
+        }
+        if (newSize < oldSize) {
+          batch.size = newSize;
+          batch.selectedInUse = true;
+        }
+        return batchContext;
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    @Override
+    public void close() throws IOException {
+      IOUtils.close(srcIterator, deleteOutputIterable);
+    }
+  }
+
   // HiveRow iterable that wraps an interchangeable source HiveRow iterable
-  static class SwappableHiveRowIterable implements CloseableIterable<HiveRow> {
+  private static class SwappableHiveRowIterable implements CloseableIterable<HiveRow> {
 
     private CloseableIterator<HiveRow> currentRowIterator;
 
     @Override
     public CloseableIterator<HiveRow> iterator() {
-
-      return new CloseableIterator<HiveRow>() {
-
-        @Override
-        public boolean hasNext() {
-          return currentRowIterator.hasNext();
-        }
-
-        @Override
-        public HiveRow next() {
-          return currentRowIterator.next();
-        }
-
-        @Override
-        public void close() throws IOException {
-          currentRowIterator.close();
-        }
-      };
+      return currentRowIterator;
     }
 
     @Override
     public void close() throws IOException {
-      currentRowIterator.close();
+      IOUtils.close(currentRowIterator);
     }
   }
 }

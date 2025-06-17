@@ -95,6 +95,7 @@ public class PerfLogger {
   public static final String LOAD_HASHTABLE = "LoadHashtable";
   public static final String TEZ_GET_SESSION = "TezGetSession";
   public static final String SAVE_TO_RESULTS_CACHE = "saveToResultsCache";
+  public static final String SEARCH_TRANSFORMER = "transformSearch";
 
   public static final String FILE_MOVES = "FileMoves";
   public static final String LOAD_TABLE = "LoadTable";
@@ -104,6 +105,7 @@ public class PerfLogger {
   public static final String STATS_TASK = "StatsTask";
 
   public static final String HIVE_GET_TABLE = "getTablesByType";
+  public static final String HIVE_GET_CATALOG = "getCatalog";
   public static final String HIVE_GET_DATABASE = "getDatabase";
   public static final String HIVE_GET_DATABASE_2 = "getDatabase2";
   public static final String HIVE_GET_PARTITIONS = "getPartitions";

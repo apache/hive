@@ -35,11 +35,11 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cum
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
   HiveProject(c_customer_id=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-    HiveJoin(condition=[AND(=($3, $7), >($4, $6))], joinType=[inner], algorithm=[none], cost=[{13.140073024144858 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-      HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[{8.000001214007303E7 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveJoin(condition=[AND(=($3, $7), >($4, $6))], joinType=[inner], algorithm=[none], cost=[{13.140068448808671 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[{8.000001214006844E7 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
         HiveProject(c_customer_sk=[$0], c_customer_id=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
           HiveTableScan(table=[[default, customer]], table:alias=[customer]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-        HiveJoin(condition=[=($3, $1)], joinType=[inner], algorithm=[none], cost=[{572.8904857896465 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+        HiveJoin(condition=[=($3, $1)], joinType=[inner], algorithm=[none], cost=[{572.8902844748543 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
           HiveProject(sr_customer_sk=[$0], sr_store_sk=[$1], $f2=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
             HiveFilter(condition=[IS NOT NULL($2)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
               HiveAggregate(group=[{0, 1}], agg#0=[sum($2)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###

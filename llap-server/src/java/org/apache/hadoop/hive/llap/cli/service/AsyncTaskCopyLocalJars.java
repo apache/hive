@@ -63,12 +63,8 @@ class AsyncTaskCopyLocalJars implements Callable<Void> {
         // log4j-1.2-API needed for NDC
         org.apache.log4j.config.Log4j1ConfigurationFactory.class,
         io.netty.util.NetUtil.class, // netty4
-        io.netty.handler.codec.http.HttpObjectAggregator.class, //
-        org.apache.arrow.vector.types.pojo.ArrowType.class, //arrow-vector
-        org.apache.arrow.memory.RootAllocator.class, //arrow-memory
-        org.apache.arrow.memory.netty.NettyAllocationManager.class, //arrow-memory-netty
+        io.netty.handler.codec.http.HttpObjectAggregator.class,
         io.netty.handler.codec.http.HttpObjectAggregator.class, // netty-all
-        org.apache.arrow.flatbuf.Schema.class, //arrow-format
         com.google.flatbuffers.Table.class, //flatbuffers
         com.carrotsearch.hppc.ByteArrayDeque.class, //hppc
         io.jsonwebtoken.security.Keys.class, //jjwt-api

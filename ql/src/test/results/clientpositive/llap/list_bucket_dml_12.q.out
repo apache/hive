@@ -304,7 +304,7 @@ POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `col1`, CAST('466' AS STRING) AS `col2`, `col3`, CAST('val_466' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
 FROM `default`.`list_bucketing_mul_col_n0`
-WHERE `col2` = '466' AND `col4` = 'val_466' AND (`ds` = '2008-04-08' AND `hr` = '11')
+WHERE `col2` = '466' AND `col4` = 'val_466' AND `ds` = '2008-04-08' AND `hr` = '11'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -392,7 +392,7 @@ POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `col1`, CAST('382' AS STRING) AS `col2`, `col3`, CAST('val_382' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
 FROM `default`.`list_bucketing_mul_col_n0`
-WHERE `col2` = '382' AND `col4` = 'val_382' AND (`ds` = '2008-04-08' AND `hr` = '11')
+WHERE `col2` = '382' AND `col4` = 'val_382' AND `ds` = '2008-04-08' AND `hr` = '11'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -1851,7 +1851,7 @@ STAGE PLANS:
                         1 Reducer 6
                       Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
-                        predicate: (_col4 is null or (_col4 = 0L) or (_col7 is not null or _col2 is null or (_col5 < _col4)) is not true) (type: boolean)
+                        predicate: (_col4 is null or (_col4 = 0L) or (_col2 is null or _col7 is not null or (_col5 < _col4)) is not true) (type: boolean)
                         Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
@@ -2244,7 +2244,7 @@ STAGE PLANS:
                         1 Reducer 6
                       Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
-                        predicate: (_col4 is null or (_col4 = 0L) or (_col7 is not null or _col2 is null or (_col5 < _col4)) is not true) (type: boolean)
+                        predicate: (_col4 is null or (_col4 = 0L) or (_col2 is null or _col7 is not null or (_col5 < _col4)) is not true) (type: boolean)
                         Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
