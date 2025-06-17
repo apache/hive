@@ -146,6 +146,7 @@ class MetastoreDirectSqlUtils {
           break;
         long id = entry.getKey();
         T value = entry.getValue();
+        boolean foundEntries = false;
         while (fields != null || iter.hasNext()) {
           if (fields == null) {
             fields = iter.next();
@@ -155,16 +156,17 @@ class MetastoreDirectSqlUtils {
             throw new MetaException("Found entries for unknown ID " + nestedId);
           }
           if (nestedId > id) {
-            if (!tree.containsKey(nestedId)) {
+            if (!foundEntries) {
               Throwable throwable = (new Throwable()).fillInStackTrace();
               LOG.warn("Multi-value fields are missing for the {}:{}, method: {}", value.getClass().getSimpleName(), id,
                   throwable.getStackTrace()[2]);
               if (LOG.isDebugEnabled()) {
-                LOG.debug("loopJoinOrderedResult full stack trace:", throwable);
+                LOG.debug("loopJoinOrderedResult:", throwable);
               }
             }
             break; // fields belong to one of the next entries
           }
+          foundEntries = true;
           func.apply(value, fields);
           fields = null;
         }
