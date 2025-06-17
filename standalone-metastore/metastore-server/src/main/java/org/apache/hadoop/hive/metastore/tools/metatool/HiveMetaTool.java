@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.tools.metatool;
 
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +79,7 @@ public final class HiveMetaTool {
       status = -1;
       LOGGER.error("Exception occured", e);
     } finally {
-      System.exit(status);
+      ExitUtil.terminate(status);
     }
   }
 }

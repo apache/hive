@@ -27,6 +27,7 @@ import java.sql.Statement;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.session.SessionUtils;
@@ -61,7 +62,7 @@ public class ProxyAuthTest {
   public static void main(String[] args) throws Exception {
     if (args.length < 4) {
       System.out.println("Usage ProxyAuthTest <host> <port> <server_principal> <proxy_user> [testTab]");
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
 
     File currentResultFile = null;

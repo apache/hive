@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
@@ -66,7 +67,6 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
-import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.junit.AfterClass;
@@ -92,14 +92,14 @@ public class TestHCatClient {
   private static boolean isReplicationTargetHCatRunning = false;
   private static int replicationTargetHCatPort;
   private static HiveConf replicationTargetHCatConf;
-  private static SecurityManager securityManager;
   private static boolean useExternalMS = false;
 
   @AfterClass
   public static void tearDown() throws Exception {
     if (!useExternalMS) {
       LOG.info("Shutting down metastore.");
-      System.setSecurityManager(securityManager);
+      ExitUtil.resetFirstExitException();
+      ExitUtil.resetFirstHaltException();
     }
   }
 
@@ -124,8 +124,10 @@ public class TestHCatClient {
     MetastoreConf.setClass(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class, MessageEncoder.class);
 
     msPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
+    ExitUtil.disableSystemExit();
+    ExitUtil.disableSystemHalt();
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
     Policy.setPolicy(new DerbyPolicy());
 
     hcatConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:"

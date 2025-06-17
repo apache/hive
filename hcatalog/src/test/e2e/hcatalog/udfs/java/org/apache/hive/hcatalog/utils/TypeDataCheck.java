@@ -107,7 +107,7 @@ public class TypeDataCheck implements Tool {
 
   public static void main(String[] args) throws Exception {
     TypeDataCheck self = new TypeDataCheck();
-    System.exit(ToolRunner.run(conf, self, args));
+    ExitUtil.terminate(ToolRunner.run(conf, self, args));
   }
 
   public int run(String[] args) {
@@ -131,7 +131,7 @@ public class TypeDataCheck implements Tool {
           "The <tab|ctrla> argument controls the output delimiter.\n" +
           "The hcat jar location should be specified as file://<full path to jar>\n");
         System.err.println(" The <tab|ctrla> argument controls the output delimiter.");
-        System.exit(2);
+        ExitUtil.terminate(2);
       }
       String serverUri = otherArgs[0];
       String tableName = otherArgs[1];
@@ -162,7 +162,7 @@ public class TypeDataCheck implements Tool {
       job.setOutputKeyClass(Long.class);
       job.setOutputValueClass(Text.class);
       FileOutputFormat.setOutputPath(job, new Path(outputDir));
-      System.exit(job.waitForCompletion(true) ? 0 : 1);
+      ExitUtil.terminate(job.waitForCompletion(true) ? 0 : 1);
       return 0;
     } catch (Exception e) {
       throw new RuntimeException(e);
