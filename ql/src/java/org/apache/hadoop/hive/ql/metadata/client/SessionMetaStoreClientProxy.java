@@ -1669,7 +1669,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       Partition newPart, String validWriteIds, long txnId, boolean makeCopy) throws TException {
     if (isDefaultCatalog(catName)) {
       Table table = getTempTable(dbname, tableName);
-      if (table == null) {
+      if (table != null) {
         TempTable tt = getPartitionedTempTable(table);
         tt.renamePartition(partitionVals, newPart);
         return;
