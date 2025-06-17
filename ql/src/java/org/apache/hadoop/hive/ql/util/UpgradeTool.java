@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -140,7 +141,7 @@ public class UpgradeTool {
   private static void printAndExit(UpgradeTool tool) {
     HelpFormatter formatter = new HelpFormatter();
     formatter.printHelp("upgrade-acid", tool.cmdLineOptions);
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   private void init() {

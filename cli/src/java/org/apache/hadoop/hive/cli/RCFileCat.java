@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -258,7 +259,7 @@ public class RCFileCat implements Tool{
       e.printStackTrace();
       System.err.println("\n\n\n");
       printUsage(e.getMessage());
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
   }
 

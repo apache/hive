@@ -45,6 +45,8 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.junit.Assert.assertEquals;
@@ -128,7 +130,7 @@ public class TestRCFileMapReduceInputFormat {
     String usage = "Usage: RCFile " + "[-count N]" + " file";
     if (args.length == 0) {
       LOG.error(usage);
-      System.exit(-1);
+      ExitUtil.terminate(-1);
     }
 
     try {
@@ -145,7 +147,7 @@ public class TestRCFileMapReduceInputFormat {
 
       if (file == null) {
         LOG.error(usage);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
 
       LOG.info("count = {}", count);

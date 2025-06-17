@@ -24,6 +24,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +102,7 @@ public class SchemaToolTaskMergeCatalog extends SchemaToolTask {
 
         if (!cleanMerge) {
           System.out.println("[ERROR] Please resolve the database name conflicts shown above manually and retry the mergeCatalog operation.");
-          System.exit(1);
+          ExitUtil.terminate(1);
         }
 
         conn.setAutoCommit(false);

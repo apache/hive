@@ -47,6 +47,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -139,7 +140,7 @@ public class Main {
 
   public void usage() {
     System.err.println("usage: templeton [-Dtempleton.port=N] [-D...]");
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   public void run() {
@@ -155,7 +156,7 @@ public class Main {
     } catch (Exception e) {
       System.err.println("templeton: Server failed to start: " + e.getMessage());
       LOG.error("Server failed to start: " , e);
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
   }
   void stop() {
@@ -183,7 +184,7 @@ public class Main {
       String msg = "Server failed to start: templeton: Current working directory '.' does not exist!";
       System.err.println(msg);
       LOG.error(msg);
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
   }
 

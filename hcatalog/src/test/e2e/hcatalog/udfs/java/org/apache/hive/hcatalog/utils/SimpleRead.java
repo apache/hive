@@ -102,6 +102,6 @@ public class SimpleRead extends Configured implements Tool {
 
   public static void main(String[] args) throws Exception {
     int exitCode = ToolRunner.run(new SimpleRead(), args);
-    System.exit(exitCode);
+    ExitUtil.terminate(exitCode);
   }
 }
