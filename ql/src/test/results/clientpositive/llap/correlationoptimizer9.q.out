@@ -56,10 +56,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: ((c1 < 120) and (c1 > 100)) (type: boolean)
+                  filterExpr: ((c1 > 100) and (c1 < 120)) (type: boolean)
                   Statistics: Num rows: 1028 Data size: 4112 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
+                    predicate: ((c1 > 100) and (c1 < 120)) (type: boolean)
                     Statistics: Num rows: 198 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
@@ -208,10 +208,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: ((c1 < 120) and (c1 > 100)) (type: boolean)
+                  filterExpr: ((c1 > 100) and (c1 < 120)) (type: boolean)
                   Statistics: Num rows: 1028 Data size: 4112 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
+                    predicate: ((c1 > 100) and (c1 < 120)) (type: boolean)
                     Statistics: Num rows: 198 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()

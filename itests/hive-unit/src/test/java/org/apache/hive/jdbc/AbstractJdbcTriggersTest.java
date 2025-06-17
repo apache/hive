@@ -89,7 +89,6 @@ public abstract class AbstractJdbcTriggersTest {
 
     Map<String, String> confOverlay = new HashMap<>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
   }
 
   @Before

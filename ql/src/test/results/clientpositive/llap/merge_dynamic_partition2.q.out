@@ -218,8 +218,8 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:2
-totalFileSize:17415
-maxFileSize:11603
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 

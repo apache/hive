@@ -105,14 +105,14 @@ public class LongColumnStatsAggregatorTest {
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(4)
+    expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(3)
         .low(1L).high(2L).hll(1, 2).build();
     assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(5)
+    expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(3)
         .low(1L).high(2L).hll(1, 2).build();
     assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
@@ -178,7 +178,7 @@ public class LongColumnStatsAggregatorTest {
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
-    long[] expectedDVs = new long[] { 4, 7, 8, 10 };
+    long[] expectedDVs = new long[] { 4, 7, 8, 9 };
     for (int i = 0; i < tunerValues.length; i++) {
       aggregator.ndvTuner = tunerValues[i];
       computedStatsObj = aggregator.aggregate(statsList, partitions, true);

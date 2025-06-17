@@ -99,7 +99,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   private final Map<String, FetchOperator> fetchOperators = new HashMap<String, FetchOperator>();
   protected HadoopJobExecHelper jobExecHelper;
   private JobConf job;
-  public static transient final Logger l4j = LoggerFactory.getLogger(MapredLocalTask.class);
+  public static final Logger l4j = LoggerFactory.getLogger(MapredLocalTask.class);
   static final String HIVE_LOCAL_TASK_CHILD_OPTS_KEY = "HIVE_LOCAL_TASK_CHILD_OPTS";
   public static MemoryMXBean memoryMXBean;
   private static final Logger LOG = LoggerFactory.getLogger(MapredLocalTask.class);

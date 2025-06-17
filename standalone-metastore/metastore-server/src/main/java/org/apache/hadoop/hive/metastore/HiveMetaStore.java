@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ShutdownHookManager;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.thrift.TProcessor;
@@ -168,9 +169,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *
    * <h1>IMPORTANT</h1>
    *
-   * This method is called indirectly by HiveMetastoreClient and HiveMetaStoreClientPreCatalog
-   * using reflection. It can not be removed and its arguments can't be changed without matching
-   * change in HiveMetastoreClient and HiveMetaStoreClientPreCatalog.
+   * This method is called indirectly by HiveMetastoreClient using reflection.
+   * It can not be removed and its arguments can't be changed without matching
+   * change in HiveMetastoreClient.
    *
    * @param conf configuration to use
    * @throws MetaException
@@ -394,6 +395,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE));
     httpServerConf.setResponseHeaderSize(
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE));
+    httpServerConf.setSendServerVersion(false);
+    httpServerConf.setSendXPoweredBy(false);
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
@@ -771,7 +774,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @throws Exception
    */
   private static String getServerInstanceURI(int port) throws Exception {
-    return getServerHostName() + ":" + port;
+    return IPStackUtils.concatHostPort(getServerHostName(), port);
   }
 
   static String getServerHostName() throws Exception {

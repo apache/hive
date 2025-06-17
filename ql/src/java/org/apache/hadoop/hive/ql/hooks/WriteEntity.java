@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -63,6 +64,11 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public WriteEntity() {
     super();
+  }
+
+  public WriteEntity(Catalog catalog, WriteType type) {
+    super(catalog, true);
+    setWriteTypeInternal(type);
   }
 
   public WriteEntity(Database database, WriteType type) {
@@ -249,6 +255,7 @@ public class WriteEntity extends Entity implements Serializable {
       case SET_SERDE:
         // alter table {table_name} [PARTITION ({partition_spec})] set serde '{serde_class_name}'
       case ADDCOLS:
+      case DROP_COLUMN:
       case REPLACE_COLUMNS:
         // alter table {table_name} [partition ({partition_spec})] add/replace columns ({col_name} {data_type})
       case RENAME_COLUMN:

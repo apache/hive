@@ -53,6 +53,7 @@ alterStatement
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
     | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
+    | KW_ALTER KW_CATALOG alterCatalogStatementSuffix -> alterCatalogStatementSuffix
     ;
 
 alterTableStatementSuffix
@@ -102,6 +103,7 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixUpdateStats[partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
+  | alterStatementSuffixDropCol
   | alterStatementSuffixUpdateColumns
   ;
 
@@ -115,7 +117,7 @@ optimizeTblRewriteDataSuffix
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
     : KW_REWRITE KW_DATA compactPool? whereClause? orderByClause?
-    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING compactPool? whereClause? orderByClause?)
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'SMART_OPTIMIZE'"] compactPool? whereClause? orderByClause?)
     ;
 
 alterStatementPartitionKeyType
@@ -153,6 +155,19 @@ alterMaterializedViewSuffixRebuild[CommonTree tableNameTree]
 @init { gParent.pushMsg("alter materialized view rebuild statement", state); }
 @after { gParent.popMsg(state); }
     : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD {$tableNameTree})
+    ;
+
+alterCatalogStatementSuffix
+@init { gParent.pushMsg("alter catalog statement", state); }
+@after { gParent.popMsg(state); }
+    : alterCatalogSuffixSetLocation
+    ;
+
+alterCatalogSuffixSetLocation
+@init { gParent.pushMsg("alter catalog set location", state); }
+@after { gParent.popMsg(state); }
+    : catName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERCATALOG_LOCATION $catName $newLocation)
     ;
 
 alterDatabaseStatementSuffix
@@ -207,6 +222,13 @@ alterStatementSuffixAddCol
     : (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN restrictOrCascade?
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList restrictOrCascade?)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList restrictOrCascade?)
+    ;
+
+alterStatementSuffixDropCol
+@init { gParent.pushMsg("drop column statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_COLUMN ifExists? columnName restrictOrCascade?
+    -> ^(TOK_ALTERTABLE_DROPCOL ifExists? columnName restrictOrCascade?)
     ;
 
 alterStatementSuffixAddConstraint
@@ -637,3 +659,62 @@ alterDataConnectorSuffixSetUrl
     -> ^(TOK_ALTERDATACONNECTOR_URL $dcName $newUri)
     ;
 
+alterScheduledQueryStatement
+@init { gParent.pushMsg("alter scheduled query statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_ALTER KW_SCHEDULED KW_QUERY name=identifier
+            mod=alterScheduledQueryChange
+    -> ^(TOK_ALTER_SCHEDULED_QUERY
+            $name
+            $mod
+        )
+    ;
+
+alterScheduledQueryChange
+@init { gParent.pushMsg("alter scheduled query change", state); }
+@after { gParent.popMsg(state); }
+    : scheduleSpec
+    | executedAsSpec
+    | enableSpecification
+    | definedAsSpec
+    | KW_EXECUTE -> ^(TOK_EXECUTE)
+    ;
+
+alterColumnConstraint[CommonTree fkColName]
+@init { gParent.pushMsg("alter column constraint", state); }
+@after { gParent.popMsg(state); }
+    : ( alterForeignKeyConstraint[$fkColName] )
+    | ( alterColConstraint )
+    ;
+
+alterForeignKeyConstraint[CommonTree fkColName]
+@init { gParent.pushMsg("alter column constraint", state); }
+@after { gParent.popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
+    -> ^(TOK_FOREIGN_KEY ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
+    ;
+
+alterColConstraint
+@init { gParent.pushMsg("alter column constraint", state); }
+@after { gParent.popMsg(state); }
+    : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^({$columnConstraintType.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    -> ^({$columnConstraintType.tree} constraintOptsAlter?)
+    ;
+
+alterConstraintWithName
+@init { gParent.pushMsg("pk or uk or nn constraint with name", state); }
+@after { gParent.popMsg(state); }
+    : KW_CONSTRAINT constraintName=identifier tableLevelConstraint constraintOptsAlter?
+    ->^({$tableLevelConstraint.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    ;
+
+alterForeignKeyWithName
+@init { gParent.pushMsg("foreign key with key name", state); }
+@after { gParent.popMsg(state); }
+    : KW_CONSTRAINT constraintName=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
+    -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsAlter?)
+    ;

@@ -18,7 +18,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned1@part=1
 Explain
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (1, 'original')]))
+FROM TABLE(INLINE(ARRAY[(1, 'original')]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -279,7 +279,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned1@part=1
 Explain
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (2, 'original'),  (3, 'original'),  (4, 'original')]))
+FROM TABLE(INLINE(ARRAY[(2, 'original'), (3, 'original'), (4, 'original')]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

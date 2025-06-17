@@ -470,14 +470,14 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
                 TableScan
                   alias: db1_ext_auth1
                   properties:
-                    hive.sql.query SELECT "ikey" * 2 AS "*"
+                    hive.sql.query SELECT "ikey" * 2 AS "_o__c1"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
-                    hive.sql.query.fieldNames *
+                    hive.sql.query.fieldNames _o__c1
                     hive.sql.query.fieldTypes int
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: * (type: int)
+                    expressions: _o__c1 (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -716,7 +716,7 @@ STAGE PLANS:
             hive.sql.query SELECT "ikey"
 FROM (SELECT "ikey", "bkey", "dkey"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1") AS "t"
-WHERE ("bkey" = 10 AND "dkey" = 15.15 OR "bkey" = 20 AND "dkey" = 25.25) AND "bkey" IN (10, 20) AND ("dkey" IN (15.15, 25.25) AND "ikey" IS NOT NULL)
+WHERE ("bkey" = 10 AND "dkey" = 15.15 OR "bkey" = 20 AND "dkey" = 25.25) AND "bkey" IN (10, 20) AND "dkey" IN (15.15, 25.25) AND "ikey" IS NOT NULL
             hive.sql.query.fieldNames ikey
             hive.sql.query.fieldTypes int
             hive.sql.query.split true

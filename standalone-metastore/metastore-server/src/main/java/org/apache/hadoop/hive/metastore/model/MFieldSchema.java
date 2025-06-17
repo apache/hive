@@ -76,5 +76,4 @@ public class MFieldSchema {
   public void setType(String field) {
     this.type = field;
   }
-  
 }

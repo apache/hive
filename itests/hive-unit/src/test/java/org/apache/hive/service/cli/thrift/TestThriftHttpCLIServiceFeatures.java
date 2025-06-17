@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClie
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.HttpBasicAuthInterceptor;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -67,7 +67,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.google.common.base.Joiner;
@@ -231,8 +231,7 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
   }
 
   private static String getHttpUrl() {
-    return transportMode + "://" + host + ":"
-        + port +
+    return transportMode + "://" + IPStackUtils.concatHostPort(host, port) +
         "/" + thriftHttpPath + "/";
   }
 
@@ -358,8 +357,8 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
         .forClass(HiveAuthzContext.class);
 
     verify(mockedAuthorizer).checkPrivileges(any(HiveOperationType.class),
-        Matchers.anyListOf(HivePrivilegeObject.class),
-        Matchers.anyListOf(HivePrivilegeObject.class), contextCapturer.capture());
+        ArgumentMatchers.<HivePrivilegeObject>anyList(),
+        ArgumentMatchers.<HivePrivilegeObject>anyList(), contextCapturer.capture());
 
     HiveAuthzContext context = contextCapturer.getValue();
     System.err.println("Forwarded IP Addresses " + context.getForwardedAddresses());

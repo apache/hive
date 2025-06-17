@@ -169,30 +169,27 @@ public class CompressionUtils {
             // no sub-directories
             continue;
           }
-          LOG.debug(String.format("Attempting to write output directory %s.",
-                  outputFile.getAbsolutePath()));
+          LOG.debug("Attempting to write output directory {}.", outputFile.getAbsolutePath());
           if (!outputFile.exists()) {
-            LOG.debug(String.format("Attempting to create output directory %s.",
-                    outputFile.getAbsolutePath()));
+            LOG.debug("Attempting to create output directory {}.", outputFile.getAbsolutePath());
             if (!outputFile.mkdirs()) {
-              throw new IllegalStateException(String.format("Couldn't create directory %s.",
-                      outputFile.getAbsolutePath()));
+              throw new IllegalStateException("Couldn't create directory %s.".formatted(
+                  outputFile.getAbsolutePath()));
             }
           }
         } else {
           final OutputStream outputFileStream;
           if (flatten) {
             File flatOutputFile = new File(outputDir, outputFile.getName());
-            LOG.debug(String.format("Creating flat output file %s.", flatOutputFile.getAbsolutePath()));
+            LOG.debug("Creating flat output file {}.", flatOutputFile.getAbsolutePath());
             outputFileStream = new FileOutputStream(flatOutputFile);
           } else if (!outputFile.getParentFile().exists()) {
-            LOG.debug(String.format("Attempting to create output directory %s.",
-                    outputFile.getParentFile().getAbsoluteFile()));
+            LOG.debug("Attempting to create output directory {}.", outputFile.getParentFile().getAbsoluteFile());
             if (!outputFile.getParentFile().getAbsoluteFile().mkdirs()) {
-              throw new IllegalStateException(String.format("Couldn't create directory %s.",
-                      outputFile.getParentFile().getAbsolutePath()));
+              throw new IllegalStateException("Couldn't create directory %s.".formatted(
+                  outputFile.getParentFile().getAbsolutePath()));
             }
-            LOG.debug(String.format("Creating output file %s.", outputFile.getAbsolutePath()));
+            LOG.debug("Creating output file {}.", outputFile.getAbsolutePath());
             outputFileStream = new FileOutputStream(outputFile);
           } else {
             outputFileStream = new FileOutputStream(outputFile);

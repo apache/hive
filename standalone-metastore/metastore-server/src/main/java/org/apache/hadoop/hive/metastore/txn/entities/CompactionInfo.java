@@ -149,6 +149,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return CompactionType.MINOR == type;
   }
 
+  public boolean isSmartOptimize() {
+    return CompactionType.SMART_OPTIMIZE == type;
+  }
+  
   public boolean isRebalanceCompaction() {
     return CompactionType.REBALANCE == type;
   }
@@ -207,7 +211,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     CompactionInfo info = (CompactionInfo) obj;
     return this.compareTo(info) == 0;
   }
-
   /**
    * loads object from a row in Select * from COMPACTION_QUEUE
    * @param rs ResultSet after call to rs.next()
@@ -242,6 +245,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.orderByClause = rs.getString(25);
     return fullCi;
   }
+
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
     pStmt.setLong(1, ci.id);
     pStmt.setString(2, ci.dbname);
@@ -329,6 +333,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setHasoldabort(ci.hasOldAbort);
     cr.setStart(ci.start);
     cr.setState(Character.toString(ci.state));
+    cr.setType(ci.type);
     cr.setWorkerId(ci.workerId);
     cr.setHighestWriteId(ci.highestWriteId);
     cr.setErrorMessage(ci.errorMessage);
@@ -339,7 +344,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setOrderByClause(ci.orderByClause);
     return cr;
   }
-
   public static OptionalCompactionInfoStruct compactionInfoToOptionalStruct(CompactionInfo ci) {
     CompactionInfoStruct cis = compactionInfoToStruct(ci);
     OptionalCompactionInfoStruct ocis = new OptionalCompactionInfoStruct();
@@ -348,6 +352,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     }
     return ocis;
   }
+
   public static CompactionInfo optionalCompactionInfoStructToInfo(OptionalCompactionInfoStruct ocis) {
     if (ocis.isSetCi()) {
       return compactionStructToInfo(ocis.getCi());

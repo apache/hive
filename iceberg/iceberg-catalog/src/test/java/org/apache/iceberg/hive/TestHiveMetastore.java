@@ -140,10 +140,21 @@ public class TestHiveMetastore {
    * @param poolSize The number of threads in the executor pool
    */
   public void start(HiveConf conf, int poolSize) {
+    start(conf, poolSize, false);
+  }
+
+  /**
+   * Starts a TestHiveMetastore with a provided connection pool size and HiveConf.
+   *
+   * @param conf The hive configuration to use
+   * @param poolSize The number of threads in the executor pool
+   * @param directSql Used to turn on directSql
+   */
+  public void start(HiveConf conf, int poolSize, boolean directSql) {
     try {
       TServerSocket socket = new TServerSocket(0);
       int port = socket.getServerSocket().getLocalPort();
-      initConf(conf, port);
+      initConf(conf, port, directSql);
 
       this.hiveConf = conf;
       this.server = newThriftServer(socket, poolSize, hiveConf);
@@ -243,12 +254,12 @@ public class TestHiveMetastore {
     return new TThreadPoolServer(args);
   }
 
-  private void initConf(HiveConf conf, int port) {
+  private void initConf(HiveConf conf, int port, boolean directSql) {
     conf.set(HiveConf.ConfVars.METASTORE_URIS.varname, "thrift://localhost:" + port);
     conf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, "file:" + HIVE_WAREHOUSE_DIR.getAbsolutePath());
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname,
         "file:" + HIVE_EXTERNAL_WAREHOUSE_DIR.getAbsolutePath());
-    conf.set(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL.varname, "false");
+    conf.set(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL.varname, String.valueOf(directSql));
     conf.set(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES.varname, "false");
     conf.set("iceberg.hive.client-pool-size", "2");
     // set to false so that TxnManager#checkLock does not throw exception when using UNSET data type operation

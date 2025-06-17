@@ -43,8 +43,8 @@ import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.kryo5.Kryo;
+import com.esotericsoftware.kryo.kryo5.io.Input;
 
 public class FSStatsAggregator implements StatsAggregator {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());

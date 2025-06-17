@@ -51,8 +51,13 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-4
     Create Materialized View
-      location: hdfs://### HDFS PATH ###
       columns: b string, c int
+      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+      location: hdfs://### HDFS PATH ###
+      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+      serde properties:
+        write.format.default orc
+      storage handler: org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
       table properties:
         format-version 1
         storage_handler org.apache.iceberg.mr.hive.HiveIcebergStorageHandler

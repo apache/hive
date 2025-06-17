@@ -1,7 +1,8 @@
 -- SORT_QUERY_RESULTS
 -- Mask the file size values as it can have slight variability, causing test flakiness
 --! qt:replace:/("file_size_in_bytes":)\d+/$1#Masked#/
---! qt:replace:/("total-files-size":)\d+/$1#Masked#/
+--! qt:replace:/("added-files-size":")\d+/$1#Masked#/
+--! qt:replace:/("total-files-size":")\d+/$1#Masked#/
 --! qt:replace:/((ORC|PARQUET|AVRO)\s+\d+\s+)\d+/$1#Masked#/
 -- Mask iceberg version
 --! qt:replace:/("iceberg-version":")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))/$1#Masked#/

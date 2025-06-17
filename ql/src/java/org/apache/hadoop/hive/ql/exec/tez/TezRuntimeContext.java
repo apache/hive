@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
-import org.apache.tez.client.TezClient;
 import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounters;
 

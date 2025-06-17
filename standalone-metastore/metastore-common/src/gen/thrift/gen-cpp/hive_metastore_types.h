@@ -128,7 +128,8 @@ struct CompactionType {
     MINOR = 1,
     MAJOR = 2,
     REBALANCE = 3,
-    ABORT_TXN_CLEANUP = 4
+    ABORT_TXN_CLEANUP = 4,
+    SMART_OPTIMIZE = 5
   };
 };
 
@@ -514,6 +515,10 @@ class GetCatalogsResponse;
 class DropCatalogRequest;
 
 class Database;
+
+class GetDatabaseObjectsRequest;
+
+class GetDatabaseObjectsResponse;
 
 class SerDeInfo;
 
@@ -3679,6 +3684,96 @@ class Database : public virtual ::apache::thrift::TBase {
 void swap(Database &a, Database &b);
 
 std::ostream& operator<<(std::ostream& out, const Database& obj);
+
+typedef struct _GetDatabaseObjectsRequest__isset {
+  _GetDatabaseObjectsRequest__isset() : catalogName(false), pattern(false) {}
+  bool catalogName :1;
+  bool pattern :1;
+} _GetDatabaseObjectsRequest__isset;
+
+class GetDatabaseObjectsRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetDatabaseObjectsRequest(const GetDatabaseObjectsRequest&);
+  GetDatabaseObjectsRequest& operator=(const GetDatabaseObjectsRequest&);
+  GetDatabaseObjectsRequest() noexcept
+                            : catalogName(),
+                              pattern() {
+  }
+
+  virtual ~GetDatabaseObjectsRequest() noexcept;
+  std::string catalogName;
+  std::string pattern;
+
+  _GetDatabaseObjectsRequest__isset __isset;
+
+  void __set_catalogName(const std::string& val);
+
+  void __set_pattern(const std::string& val);
+
+  bool operator == (const GetDatabaseObjectsRequest & rhs) const
+  {
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (__isset.pattern != rhs.__isset.pattern)
+      return false;
+    else if (__isset.pattern && !(pattern == rhs.pattern))
+      return false;
+    return true;
+  }
+  bool operator != (const GetDatabaseObjectsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetDatabaseObjectsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetDatabaseObjectsRequest &a, GetDatabaseObjectsRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetDatabaseObjectsRequest& obj);
+
+
+class GetDatabaseObjectsResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetDatabaseObjectsResponse(const GetDatabaseObjectsResponse&);
+  GetDatabaseObjectsResponse& operator=(const GetDatabaseObjectsResponse&);
+  GetDatabaseObjectsResponse() noexcept {
+  }
+
+  virtual ~GetDatabaseObjectsResponse() noexcept;
+  std::vector<Database>  databases;
+
+  void __set_databases(const std::vector<Database> & val);
+
+  bool operator == (const GetDatabaseObjectsResponse & rhs) const
+  {
+    if (!(databases == rhs.databases))
+      return false;
+    return true;
+  }
+  bool operator != (const GetDatabaseObjectsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetDatabaseObjectsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetDatabaseObjectsResponse &a, GetDatabaseObjectsResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const GetDatabaseObjectsResponse& obj);
 
 typedef struct _SerDeInfo__isset {
   _SerDeInfo__isset() : name(false), serializationLib(false), parameters(false), description(false), serializerClass(false), deserializerClass(false), serdeType(false) {}
@@ -12549,12 +12644,13 @@ void swap(BasicTxnInfo &a, BasicTxnInfo &b);
 std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj);
 
 typedef struct _NotificationEventRequest__isset {
-  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false), catName(false), dbName(false), tableNames(false) {}
+  _NotificationEventRequest__isset() : maxEvents(false), eventTypeSkipList(false), catName(false), dbName(false), tableNames(false), eventTypeList(false) {}
   bool maxEvents :1;
   bool eventTypeSkipList :1;
   bool catName :1;
   bool dbName :1;
   bool tableNames :1;
+  bool eventTypeList :1;
 } _NotificationEventRequest__isset;
 
 class NotificationEventRequest : public virtual ::apache::thrift::TBase {
@@ -12576,6 +12672,7 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   std::vector<std::string>  tableNames;
+  std::vector<std::string>  eventTypeList;
 
   _NotificationEventRequest__isset __isset;
 
@@ -12590,6 +12687,8 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
   void __set_dbName(const std::string& val);
 
   void __set_tableNames(const std::vector<std::string> & val);
+
+  void __set_eventTypeList(const std::vector<std::string> & val);
 
   bool operator == (const NotificationEventRequest & rhs) const
   {
@@ -12614,6 +12713,10 @@ class NotificationEventRequest : public virtual ::apache::thrift::TBase {
     if (__isset.tableNames != rhs.__isset.tableNames)
       return false;
     else if (__isset.tableNames && !(tableNames == rhs.tableNames))
+      return false;
+    if (__isset.eventTypeList != rhs.__isset.eventTypeList)
+      return false;
+    else if (__isset.eventTypeList && !(eventTypeList == rhs.eventTypeList))
       return false;
     return true;
   }

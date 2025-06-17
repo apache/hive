@@ -292,10 +292,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
-                  filterExpr: ((name) IN ('Joe                 ', 'Robert              ', 'Heisenberg          ') and address_id is not null) (type: boolean)
+                  filterExpr: ((name) IN ('Heisenberg          ', 'Joe                 ', 'Robert              ') and address_id is not null) (type: boolean)
                   Statistics: Num rows: 6 Data size: 582 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((name) IN ('Joe                 ', 'Robert              ', 'Heisenberg          ') and address_id is not null) (type: boolean)
+                    predicate: ((name) IN ('Heisenberg          ', 'Joe                 ', 'Robert              ') and address_id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: +

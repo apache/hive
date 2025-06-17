@@ -95,10 +95,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key) IN (0, 5) (type: boolean)
+                  filterExpr: ((key) IN (0, 5) and key is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key) IN (0, 5) (type: boolean)
+                    predicate: ((key) IN (0, 5) and key is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -108,10 +108,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key) IN (0, 5) (type: boolean)
+                  filterExpr: ((key) IN (0, 5) and key is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key) IN (0, 5) (type: boolean)
+                    predicate: ((key) IN (0, 5) and key is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -323,10 +323,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table2_n19
-                  filterExpr: (key) IN (0, 5) (type: boolean)
+                  filterExpr: ((key) IN (0, 5) and key is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key) IN (0, 5) (type: boolean)
+                    predicate: ((key) IN (0, 5) and key is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -336,10 +336,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table1_n20
-                  filterExpr: (key) IN (0, 5) (type: boolean)
+                  filterExpr: ((key) IN (0, 5) and key is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key) IN (0, 5) (type: boolean)
+                    predicate: ((key) IN (0, 5) and key is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -557,10 +557,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table2_n19
-                  filterExpr: ((key < 8) and (key) IN (0, 5)) (type: boolean)
+                  filterExpr: (key) IN (0, 5) (type: boolean)
                   Statistics: Num rows: 84 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 8) and (key) IN (0, 5)) (type: boolean)
+                    predicate: (key) IN (0, 5) (type: boolean)
                     Statistics: Num rows: 3 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -570,10 +570,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_table1_n20
-                  filterExpr: ((key < 8) and (key) IN (0, 5)) (type: boolean)
+                  filterExpr: (key) IN (0, 5) (type: boolean)
                   Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 8) and (key) IN (0, 5)) (type: boolean)
+                    predicate: (key) IN (0, 5) (type: boolean)
                     Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)

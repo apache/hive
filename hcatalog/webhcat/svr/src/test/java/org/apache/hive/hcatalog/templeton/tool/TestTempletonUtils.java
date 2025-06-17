@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

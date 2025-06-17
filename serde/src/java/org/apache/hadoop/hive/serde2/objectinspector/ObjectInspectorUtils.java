@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -1658,23 +1660,16 @@ public final class ObjectInspectorUtils {
   /**
    * Returns slot value used for ordering the fields to make it deterministic
    * @param field : field of a given class
-   * @return
+   * @return int slot
    */
   private static int getSlotValue(Field field) {
-    Field slotField = null;
-    boolean originalAccessible = false;
     try {
-      slotField = Field.class.getDeclaredField("slot");
-      originalAccessible = slotField.isAccessible();
-      slotField.setAccessible(true);
-      return slotField.getInt(field);
+      var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
+      VarHandle slotHandle = lookup.findVarHandle(Field.class, "slot", int.class);
+      return (int) slotHandle.get(field);
     } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
       LOG.error("Error getting a slot value:", e);
       throw new RuntimeException("Error getting a slot value");
-    } finally {
-      if (slotField != null) {
-        slotField.setAccessible(originalAccessible);
-      }
     }
   }
 }

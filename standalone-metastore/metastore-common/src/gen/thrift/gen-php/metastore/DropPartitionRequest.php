@@ -169,13 +169,13 @@ class DropPartitionRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->partVals = array();
-                        $_size609 = 0;
-                        $_etype612 = 0;
-                        $xfer += $input->readListBegin($_etype612, $_size609);
-                        for ($_i613 = 0; $_i613 < $_size609; ++$_i613) {
-                            $elem614 = null;
-                            $xfer += $input->readString($elem614);
-                            $this->partVals []= $elem614;
+                        $_size616 = 0;
+                        $_etype619 = 0;
+                        $xfer += $input->readListBegin($_etype619, $_size616);
+                        for ($_i620 = 0; $_i620 < $_size616; ++$_i620) {
+                            $elem621 = null;
+                            $xfer += $input->readString($elem621);
+                            $this->partVals []= $elem621;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -237,8 +237,8 @@ class DropPartitionRequest
             }
             $xfer += $output->writeFieldBegin('partVals', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->partVals));
-            foreach ($this->partVals as $iter615) {
-                $xfer += $output->writeString($iter615);
+            foreach ($this->partVals as $iter622) {
+                $xfer += $output->writeString($iter622);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

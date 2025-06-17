@@ -13,7 +13,7 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[su
                 HiveFilter(condition=[=($8, _UTF-16LE'NY')])
                   HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
             HiveProject(cc_call_center_sk=[$0], cc_county=[$25])
-              HiveFilter(condition=[IN($25, _UTF-16LE'Ziebach County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Levy County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Huron County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Franklin Parish':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Daviess County':VARCHAR(30) CHARACTER SET "UTF-16LE")])
+              HiveFilter(condition=[IN($25, _UTF-16LE'Daviess County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Franklin Parish':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Huron County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Levy County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Ziebach County':VARCHAR(30) CHARACTER SET "UTF-16LE")])
                 HiveTableScan(table=[[default, call_center]], table:alias=[call_center])
           HiveProject(d_date_sk=[$0], d_date=[$2])
             HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 2001-04-01 00:00:00:TIMESTAMP(9), 2001-05-31 00:00:00:TIMESTAMP(9))])

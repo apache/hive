@@ -30,7 +30,7 @@
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_assignment" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_binary_expression" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_compact_if" value="16"/>
-<setting id="org.eclipse.jdt.core.formatter.alignment_for_conditional_expression" value="100"/>
+<setting id="org.eclipse.jdt.core.formatter.alignment_for_conditional_expression" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_enum_constants" value="0"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_for_loop_header" value="0"/>
@@ -40,7 +40,7 @@
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_parameterized_type_references" value="0"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_parameters_in_constructor_declaration" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration" value="16"/>
-<setting id="org.eclipse.jdt.core.formatter.alignment_for_resources_in_try" value="100"/>
+<setting id="org.eclipse.jdt.core.formatter.alignment_for_resources_in_try" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_superclass_in_type_declaration" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_enum_declaration" value="16"/>

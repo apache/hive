@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 public class VectorCopyRow {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(VectorCopyRow.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(VectorCopyRow.class);
 
   private abstract class CopyRow {
     protected int inColumnIndex;

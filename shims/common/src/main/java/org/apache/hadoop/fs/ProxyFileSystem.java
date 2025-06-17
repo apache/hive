@@ -68,14 +68,6 @@ public class ProxyFileSystem extends FilterFileSystem {
     return ret;
   }
 
-  public ProxyFileSystem() {
-    throw new RuntimeException ("Unsupported constructor");
-  }
-
-  public ProxyFileSystem(FileSystem fs) {
-    throw new RuntimeException ("Unsupported constructor");
-  }
-
   /**
    *
    * @param p
@@ -207,9 +199,9 @@ public class ProxyFileSystem extends FilterFileSystem {
 
   @Override //ref. HADOOP-12502
   public RemoteIterator<FileStatus> listStatusIterator(Path f) throws IOException {
+    final RemoteIterator<FileStatus> remoteIterator = ProxyFileSystem.super.listStatusIterator(swizzleParamPath(f));
     return new RemoteIterator<FileStatus>() {
-      private final RemoteIterator<FileStatus> orig =
-              ProxyFileSystem.super.listStatusIterator(swizzleParamPath(f));
+      private final RemoteIterator<FileStatus> orig = remoteIterator;
 
       @Override
       public boolean hasNext() throws IOException {

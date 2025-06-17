@@ -109,10 +109,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -336,10 +336,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -480,7 +480,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
                         Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
-                        auto parallelism: true
+                        auto parallelism: false
             Execution mode: llap
             LLAP IO: may be used (ACID table)
             Path -> Alias:
@@ -586,10 +586,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -812,10 +812,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1061,10 +1061,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1288,10 +1288,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1432,7 +1432,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
                         Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
-                        auto parallelism: true
+                        auto parallelism: false
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Path -> Alias:
@@ -1538,10 +1538,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t2` ON `t0`.`date_col` = `t2`.`date_col` AND `t0`.`decimal_col` = `t2`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1764,10 +1764,10 @@ POSTHOOK: Input: default@target_table
 OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
-WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)) AS `t0`
+WHERE `string_col` = 'pipeline' AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `date_col`, `decimal_col`
 FROM `default`.`source_table`
-WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND (`date_col` IS NOT NULL AND `decimal_col` IS NOT NULL)
+WHERE CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL
 GROUP BY `date_col`, `decimal_col`) AS `t3` ON `t0`.`date_col` = `t3`.`date_col` AND `t0`.`decimal_col` = `t3`.`decimal_col`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

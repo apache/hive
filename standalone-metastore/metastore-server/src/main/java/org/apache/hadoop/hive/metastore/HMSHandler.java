@@ -854,7 +854,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (timerContext != null) {
       long timeTaken = timerContext.stop();
       LOG.debug((getThreadLocalIpAddress() == null ? "" : "source:" + getThreadLocalIpAddress() + " ") +
-          function + "time taken(ns): " + timeTaken);
+          function + " time taken(ns): " + timeTaken);
     }
     Counter counter = Metrics.getOrCreateCounter(MetricsConstants.ACTIVE_CALLS + function);
     if (counter != null) {
@@ -1888,13 +1888,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<String> ret = null;
     Exception ex = null;
     try {
-      if (parsedDbNamed[DB_NAME] == null) {
-        ret = getMS().getAllDatabases(parsedDbNamed[CAT_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
-      } else {
-        ret = getMS().getDatabases(parsedDbNamed[CAT_NAME], parsedDbNamed[DB_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
+      GetDatabaseObjectsRequest req = new GetDatabaseObjectsRequest();
+      req.setCatalogName(parsedDbNamed[CAT_NAME]);
+      if (parsedDbNamed[DB_NAME] != null) {
+        req.setPattern(parsedDbNamed[DB_NAME]);
       }
+
+      GetDatabaseObjectsResponse response = get_databases_req(req);
+      ret = response.getDatabases().stream()
+          .map(Database::getName)
+          .collect(Collectors.toList());
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
@@ -1908,6 +1911,32 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<String> get_all_databases() throws MetaException {
     // get_databases filters results already. No need to filter here
     return get_databases(MetaStoreUtils.prependCatalogToDbName(null, null, conf));
+  }
+
+  @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)
+      throws MetaException {
+    String pattern = request.isSetPattern() ? request.getPattern() : null;
+    String catName = request.isSetCatalogName() ? request.getCatalogName() : getDefaultCatalog(conf);
+
+    startFunction("get_databases_req", ": catalogName=" + catName + " pattern=" + pattern);
+
+    GetDatabaseObjectsResponse response = new GetDatabaseObjectsResponse();
+    List<Database> dbs = null;
+    Exception ex = null;
+
+    try {
+      dbs = getMS().getDatabaseObjects(catName, pattern);
+      dbs = FilterUtils.filterDatabaseObjectsIfEnabled(isServerFilterEnabled, filterHook, dbs);
+      response.setDatabases(dbs);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_databases_req", dbs != null, ex);
+    }
+
+    return response;
   }
 
   private void create_dataconnector_core(RawStore ms, final DataConnector connector)
@@ -3179,8 +3208,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      LOG.error("Failed to delete directory: " + path +
-          " " + e.getMessage());
+      LOG.error("Failed to delete directory: {}", path, e);
     }
   }
 
@@ -5134,14 +5162,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new NoSuchObjectException("Partition doesn't exist. " + part_vals);
       }
       isArchived = MetaStoreUtils.isArchived(part);
-      if (tableDataShouldBeDeleted && isArchived) {
-        archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-        verifyIsWritablePath(archiveParentDir);
-      }
-
-      if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
-        partPath = new Path(part.getSd().getLocation());
-        verifyIsWritablePath(partPath);
+      if (tableDataShouldBeDeleted) {
+        if (isArchived) {
+          // Archived partition is only able to delete original location.
+          archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+          verifyIsWritablePath(archiveParentDir);
+        } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+          partPath = new Path(part.getSd().getLocation());
+          verifyIsWritablePath(partPath);
+        }
       }
 
       String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
@@ -5381,15 +5410,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (colNames != null) {
           partNames.add(FileUtils.makePartName(colNames, part.getValues()));
         }
-        if (tableDataShouldBeDeleted && MetaStoreUtils.isArchived(part)) {
-          Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-          verifyIsWritablePath(archiveParentDir);
-          archToDelete.add(archiveParentDir);
-        }
-        if (tableDataShouldBeDeleted && (part.getSd() != null) && (part.getSd().getLocation() != null)) {
-          Path partPath = new Path(part.getSd().getLocation());
-          verifyIsWritablePath(partPath);
-          dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
+        if (tableDataShouldBeDeleted) {
+          if (MetaStoreUtils.isArchived(part)) {
+            // Archived partition is only able to delete original location.
+            Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+            verifyIsWritablePath(archiveParentDir);
+            archToDelete.add(archiveParentDir);
+          } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+            Path partPath = new Path(part.getSd().getLocation());
+            verifyIsWritablePath(partPath);
+            dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
+          }
         }
       }
 
@@ -6453,9 +6484,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (Exception e) { /* ignore */ }
 
     try {
-      ret = getMS().getAllTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      ret = FilterUtils.filterTableNamesIfEnabled(isServerFilterEnabled, filterHook,
-          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
+      if (getIfServerFilterenabled()) {
+        List<TableMeta> filteredTableMetas = get_table_meta(dbname, "*", null);
+        ret = filteredTableMetas.stream()
+            .map(TableMeta::getTableName)
+            .collect(Collectors.toList());
+      } else {
+        ret = getMS().getAllTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      }
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
@@ -10021,9 +10057,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   void updateMetrics() throws MetaException {
     if (Metrics.getRegistry() != null) {
       LOG.info("Begin calculating metadata count metrics.");
-      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getTableCount());
-      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getPartitionCount());
-      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getDatabaseCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getTableCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getPartitionCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getDatabaseCount());
     }
   }
 
