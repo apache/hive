@@ -60,8 +60,8 @@ public class SessionStateUtil {
    * resource itself could not be found, or the resource is not of type String
    */
   public static Optional<String> getProperty(Configuration conf, String key) {
-    return getResource(conf, key).filter(obj -> obj instanceof String)
-        .map(obj -> (String) obj);
+    return getResource(conf, key).filter(String.class::isInstance)
+        .map(String.class::cast);
   }
 
   /**
@@ -117,7 +117,7 @@ public class SessionStateUtil {
 
   public static Optional<ExprNodeGenericFuncDesc> getConflictDetectionFilter(Configuration conf, Object tableName) {
     return getResource(conf, CONFLICT_DETECTION_FILTER + tableName)
-        .map(obj -> (ExprNodeGenericFuncDesc) obj);
+        .map(ExprNodeGenericFuncDesc.class::cast);
   }
 
   public static void setConflictDetectionFilter(Configuration conf, String tableName, ExprNodeDesc filterExpr) {
@@ -130,7 +130,7 @@ public class SessionStateUtil {
               try {
                 disjunction = ExprNodeDescUtils.disjunction(prevFilterExpr, filterExpr);
               } catch (UDFArgumentException e) {
-                LOG.warn(e.getMessage());
+                LOG.warn("Unable to create conflict detection filter, proceeding without it: ", e);
               }
               addResource(conf, key, disjunction);
             }

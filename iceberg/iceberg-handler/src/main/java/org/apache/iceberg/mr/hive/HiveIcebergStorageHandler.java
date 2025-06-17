@@ -2246,8 +2246,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
     } catch (UnsupportedOperationException e) {
-      LOG.warn("Unable to create Iceberg filter," +
-              " continuing without metadata delete: ", e);
+      LOG.warn("Unable to create Iceberg filter, skipping metadata delete: ", e);
       return false;
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
