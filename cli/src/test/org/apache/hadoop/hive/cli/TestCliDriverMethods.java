@@ -57,6 +57,8 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -74,20 +76,22 @@ import org.junit.After;
  */
 public class TestCliDriverMethods {
 
-  SecurityManager securityManager;
 
   // Some of these tests require intercepting System.exit() using the SecurityManager.
   // It is safer to  register/unregister our SecurityManager during setup/teardown instead
   // of doing it within the individual test cases.
   @Before
   public void setUp() {
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager(securityManager));
+    ExitUtil.disableSystemExit();
+    ExitUtil.disableSystemHalt();
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
   }
 
   @After
   public void tearDown() {
-    System.setSecurityManager(securityManager);
+      ExitUtil.resetFirstExitException();
+      ExitUtil.resetFirstHaltException();
   }
 
   // If the command has an associated schema, make sure it gets printed to use
@@ -272,8 +276,8 @@ public class TestCliDriverMethods {
       CliDriver cliDriver = new CliDriver();
       cliDriver.processCmd("quit");
       fail("should be exit");
-    } catch (ExitException e) {
-      assertEquals(0, e.getStatus());
+    } catch (ExitUtil.ExitException e) {
+      assertEquals(0, e.getExitCode());
 
     } catch (Exception e) {
       throw e;
@@ -284,8 +288,8 @@ public class TestCliDriverMethods {
       CliDriver cliDriver = new CliDriver();
       cliDriver.processCmd("exit");
       fail("should be exit");
-    } catch (ExitException e) {
-      assertEquals(0, e.getStatus());
+    } catch (ExitUtil.ExitException e) {
+      assertEquals(0, e.getExitCode());
 
     }
 
@@ -303,9 +307,9 @@ public class TestCliDriverMethods {
     try {
       driver.processSelectDatabase(sessionState);
       fail("shuld be exit");
-    } catch (ExitException e) {
+    } catch (ExitUtil.ExitException e) {
       e.printStackTrace();
-      assertEquals(40000, e.getStatus());
+      assertEquals(40000, e.getExitCode());
     }
 
     assertTrue(data.toString().contains(
@@ -347,15 +351,15 @@ public class TestCliDriverMethods {
       try {
         cliDriver.processInitFiles(sessionState);
         fail("should be exit");
-      } catch (ExitException e) {
-        assertEquals(40000, e.getStatus());
+      } catch (ExitUtil.ExitException e) {
+        assertEquals(40000, e.getExitCode());
       }
       setEnv("HIVE_HOME", null);
       try {
         cliDriver.processInitFiles(sessionState);
         fail("should be exit");
-      } catch (ExitException e) {
-        assertEquals(40000, e.getStatus());
+      } catch (ExitUtil.ExitException e) {
+        assertEquals(40000, e.getExitCode());
       }
 
     } finally {
@@ -372,8 +376,8 @@ public class TestCliDriverMethods {
       CliDriver cliDriver = new CliDriver();
       cliDriver.processInitFiles(sessionState);
       fail("should be exit");
-    } catch (ExitException e) {
-      assertEquals(40000, e.getStatus());
+    } catch (ExitUtil.ExitException e) {
+      assertEquals(40000, e.getExitCode());
       assertTrue(data.toString().contains("cannot recognize input near 'bla' 'bla' 'bla'"));
 
     }
@@ -482,48 +486,6 @@ public class TestCliDriverMethods {
       default:
         return null;
       }
-    }
-  }
-
-  private static class NoExitSecurityManager extends SecurityManager {
-
-    public SecurityManager parentSecurityManager;
-
-    public NoExitSecurityManager(SecurityManager parent) {
-      super();
-      parentSecurityManager = parent;
-      System.setSecurityManager(this);
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-      if (parentSecurityManager != null) {
-        parentSecurityManager.checkPermission(perm, context);
-      }
-    }
-
-    @Override
-    public void checkPermission(Permission perm) {
-      if (parentSecurityManager != null) {
-        parentSecurityManager.checkPermission(perm);
-      }
-    }
-
-    @Override
-    public void checkExit(int status) {
-      throw new ExitException(status);
-    }
-  }
-
-  private static class ExitException extends RuntimeException {
-    int status;
-
-    public ExitException(int status) {
-      this.status = status;
-    }
-
-    public int getStatus() {
-      return status;
     }
   }
 

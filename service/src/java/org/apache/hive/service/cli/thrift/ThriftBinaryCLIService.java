@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -213,7 +214,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
         LOG.error("Exception caught by " + this.getClass().getSimpleName() +
             ". Exiting.", t);
       }
-      System.exit(-1);
+      ExitUtil.terminate(-1);
     }
   }
 

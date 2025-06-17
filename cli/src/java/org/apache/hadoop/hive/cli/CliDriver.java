@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
@@ -143,7 +144,7 @@ public class CliDriver {
       // are all successful or this is command line. in either case
       // this counts as a successful run
       ss.close();
-      System.exit(0);
+      ExitUtil.terminate(0);
 
     } else if (tokens[0].equalsIgnoreCase("source")) {
       String cmd_1 = getFirstCmd(cmd_trimmed, tokens[0].length());
@@ -385,7 +386,7 @@ public class CliDriver {
           // Kill the VM on second ctrl+c
           if (!initialRequest) {
             console.printInfo("Exiting the JVM");
-            System.exit(127);
+            ExitUtil.terminate(127);
           }
 
           // Interrupt the CLI thread to stop the current statement and return
@@ -567,7 +568,7 @@ public class CliDriver {
     try {
       processFile(fileName);
     } catch (CommandProcessorException e) {
-      System.exit(e.getResponseCode());
+      ExitUtil.terminate(e.getResponseCode());
     }
   }
 
@@ -575,7 +576,7 @@ public class CliDriver {
     try {
       processLine(command);
     } catch (CommandProcessorException e) {
-      System.exit(e.getResponseCode());
+      ExitUtil.terminate(e.getResponseCode());
     }
   }
 
@@ -719,7 +720,7 @@ public class CliDriver {
 
   public static void main(String[] args) throws Exception {
     int ret = new CliDriver().run(args);
-    System.exit(ret);
+    ExitUtil.terminate(ret);
   }
 
   public int run(String[] args) throws Exception {

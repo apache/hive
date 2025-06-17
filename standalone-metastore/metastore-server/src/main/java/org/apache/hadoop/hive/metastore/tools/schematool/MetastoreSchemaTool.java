@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -422,7 +424,7 @@ public class MetastoreSchemaTool {
 
   public static void main(String[] args) {
     MetastoreSchemaTool tool = new MetastoreSchemaTool();
-    System.exit(tool.run(args));
+    ExitUtil.terminate(tool.run(args));
   }
 
   public int run(String[] args) {

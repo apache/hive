@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -74,7 +75,7 @@ public class HCatCli {
       ss.out = new SessionStream(System.out, true, "UTF-8");
       ss.err = new SessionStream(System.err, true, "UTF-8");
     } catch (UnsupportedEncodingException e) {
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
 
     HiveConf conf = ss.getConf();
@@ -139,7 +140,7 @@ public class HCatCli {
       // Note, we print to System.err instead of ss.err, because if we can't parse our
       // commandline, we haven't even begun, and therefore cannot be expected to have
       // reasonably constructed or started the SessionState.
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
 
     // -D : process these first, so that we can instantiate SessionState appropriately.
@@ -221,7 +222,7 @@ public class HCatCli {
       System.err.println(e.getMessage());
       e.printStackTrace(System.err);
     }
-    System.exit(retCode);
+    ExitUtil.terminate(retCode);
   }
 
   private static void setConfProperties(HiveConf conf, Properties props) {
