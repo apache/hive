@@ -325,7 +325,7 @@ POSTHOOK: Input: default@alltypesorc
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
    Min Item               : -1.07327936E9
-   Max Item               : 1.07368058E9
+   Max Item               : 1.0736806E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float))) from alltypesorc
@@ -355,7 +355,7 @@ POSTHOOK: Input: default@alltypesorc
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
    Min Item               : -1.07327936E9
-   Max Item               : 1.07368058E9
+   Max Item               : 1.0736806E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float), 200)) from alltypesorc
@@ -385,7 +385,7 @@ POSTHOOK: Input: default@alltypesorc
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
    Min Item               : -1.07327936E9
-   Max Item               : 1.07368058E9
+   Max Item               : 1.0736806E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cint as float))) from alltypesorc
@@ -415,7 +415,7 @@ POSTHOOK: Input: default@alltypesorc
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
    Min Item               : -1.07327936E9
-   Max Item               : 1.07368058E9
+   Max Item               : 1.0736806E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float), 200)) from alltypesorc
@@ -444,8 +444,8 @@ POSTHOOK: Input: default@alltypesorc
    ReadOnly               : false
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
-   Min Item               : -2.14731162E9
-   Max Item               : 2.14549837E9
+   Min Item               : -2.1473116E9
+   Max Item               : 2.1454984E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float))) from alltypesorc
@@ -474,8 +474,8 @@ POSTHOOK: Input: default@alltypesorc
    ReadOnly               : false
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
-   Min Item               : -2.14731162E9
-   Max Item               : 2.14549837E9
+   Min Item               : -2.1473116E9
+   Max Item               : 2.1454984E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float), 200)) from alltypesorc
@@ -504,8 +504,8 @@ POSTHOOK: Input: default@alltypesorc
    ReadOnly               : false
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
-   Min Item               : -2.14731162E9
-   Max Item               : 2.14549837E9
+   Min Item               : -2.1473116E9
+   Max Item               : 2.1454984E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cast (cbigint as float))) from alltypesorc
@@ -534,8 +534,8 @@ POSTHOOK: Input: default@alltypesorc
    ReadOnly               : false
    Updatable Storage Bytes: 2244
    Compact Storage Bytes  : 2192
-   Min Item               : -2.14731162E9
-   Max Item               : 2.14549837E9
+   Min Item               : -2.1473116E9
+   Max Item               : 2.1454984E9
 ### End sketch summary
 
 PREHOOK: query: select ds_kll_stringify(ds_kll_sketch(cfloat, 200)) from alltypesorc
