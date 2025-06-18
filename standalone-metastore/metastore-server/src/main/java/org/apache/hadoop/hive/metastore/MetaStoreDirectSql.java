@@ -463,6 +463,7 @@ class MetaStoreDirectSql {
               .map(String::trim)
               .filter(s -> !s.isEmpty())
               .distinct()
+              .map(String::toLowerCase)
               .toList();
       if (!validPatterns.isEmpty()) {
         queryText.append(" AND (");
