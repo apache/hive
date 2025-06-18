@@ -140,7 +140,7 @@ POSTHOOK: query: SELECT * FROM hive_26658_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_26658_table
 #### A masked pattern was here ####
-1.66636785E15
+1.6663679E15
 9.0
 PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts Decimal
 PREHOOK: type: ALTERTABLE_RENAMECOL
