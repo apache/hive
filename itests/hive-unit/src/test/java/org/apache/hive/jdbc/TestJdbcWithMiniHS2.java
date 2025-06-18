@@ -88,6 +88,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import sun.misc.Unsafe;
+
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 public class TestJdbcWithMiniHS2 {
@@ -1235,11 +1237,11 @@ public class TestJdbcWithMiniHS2 {
     try {
       constructorCacheField = ReflectionUtil.class.getDeclaredField("CONSTRUCTOR_CACHE");
       if (constructorCacheField != null) {
-        ReflectionUtil.setStaticFinalFieldsModifiable(constructorCacheField);
         tmp =
             CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.SECONDS).concurrencyLevel(64)
                 .weakKeys().weakValues().build();
-        constructorCacheField.set(tmp.getClass(), tmp);
+        constructorCacheField.setAccessible(true);
+        constructorCacheField.set(null, tmp);
       }
     } catch (Exception e) {
       System.out.println("Error when setting the CONSTRUCTOR_CACHE to expire: " + e);
