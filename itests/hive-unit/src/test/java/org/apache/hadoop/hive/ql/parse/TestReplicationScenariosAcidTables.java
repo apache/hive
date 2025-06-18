@@ -3197,9 +3197,12 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t1 values (1)")
             .run("insert into t1 values (2)")
             .run("create materialized view mat_view as select * from t1")
+            .run("create materialized view mat_view_txn TBLPROPERTIES ('transactional'='true') as select * from t1")
             .run("show tables")
-            .verifyResults(new String[]{"t1", "mat_view"})
+            .verifyResults(new String[]{"t1", "mat_view", "mat_view_txn"})
             .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select * from mat_view_txn")
             .verifyResults(new String[]{"1", "2"})
             .dump(primaryDbName);
 
@@ -3217,6 +3220,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("alter materialized view mat_view rebuild")
             .run("select * from mat_view")
             .verifyResults(new String[]{"1", "2", "3"})
+            .run("alter materialized view mat_view_txn rebuild")
+            .run("select * from mat_view_txn")
+            .verifyResults(new String[]{"1", "2", "3"})
             .dump(primaryDbName);
 
     //confirm materialized-view not replicated
@@ -3231,6 +3237,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.run("use " + primaryDbName)
             .run("alter materialized view mat_view disable rewrite")
             .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("alter materialized view mat_view_txn disable rewrite")
+            .run("select * from mat_view_txn")
             .verifyResults(new String[]{"1", "2", "3"})
             .dump(primaryDbName);
 
