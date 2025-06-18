@@ -3078,17 +3078,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       TableOperationsHandler<?> tableOp = TableOperationsHandler.offer(this, dropTableReq);
       TableOpResp resp = tableOp.toTableOpResp();
-      if (resp.isFinished() && tableOp.tableDataShouldBeDeleted()) {
+      if (resp.isFinished()) {
         TableOperationsHandler.DropTableResult result = tableOp.getDropTableResult();
         // Drop the table data on success
-        if (result.success()) {
+        if (result.success() && result.tableDataShouldBeDeleted()) {
           boolean ifPurge = result.ifPurge();
           boolean shouldEnableCm = result.shouldEnableCm();
           // Data needs deletion. Check if trash may be skipped.
           // Delete the data in the partitions which have other locations
           deletePartitionData(result.getPartPaths(), ifPurge, shouldEnableCm);
           // Delete the data in the table
-          deleteTableData(tableOp.getTablePath(), ifPurge, shouldEnableCm);
+          deleteTableData(result.getTablePath(), ifPurge, shouldEnableCm);
         }
       }
       return resp;

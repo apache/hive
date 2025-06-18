@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -82,8 +83,7 @@ public class TableOperationsHandler<T extends TBase> {
   private final T request;
   private final ExecutorService executor;
   private final boolean async;
-  private Future<?> future;
-  private boolean tableDataShouldBeDeleted;
+  private Future<Void> future;
   private Path tblPath;
   private Table tbl;
   private TableName tableName;
@@ -116,8 +116,9 @@ public class TableOperationsHandler<T extends TBase> {
     this.runTableOperation();
   }
 
-  public DropTableResult dropTable() throws TException {
+  public void dropTable() throws TException {
     DropTableRequest dropReq = (DropTableRequest) request;
+    DropTableResult dropResult = (DropTableResult) result;
     boolean success = false;
     List<Path> partPaths = null;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
@@ -174,8 +175,8 @@ public class TableOperationsHandler<T extends TBase> {
         checkInterrupted();
         success = ms.commitTransaction();
       }
-      return new DropTableResult(partPaths, success,
-          isMustPurge(dropReq.getEnvContext(), tbl), ReplChangeManager.shouldEnableCm(db, tbl));
+      dropResult.fill(success, isMustPurge(dropReq.getEnvContext(), tbl),
+          ReplChangeManager.shouldEnableCm(db, tbl), partPaths);
     } finally {
       try {
         if (!success) {
@@ -197,7 +198,7 @@ public class TableOperationsHandler<T extends TBase> {
       throw new IllegalStateException(logMsgPrefix + " hasn't started yet");
     }
     try {
-      result = async ? future.get(100, TimeUnit.MILLISECONDS) : future.get();
+      Object v = async ? future.get(100, TimeUnit.MILLISECONDS) : future.get();
     } catch (TimeoutException e) {
       // No Op, return to the caller since long polling timeout has expired
       LOG.trace("{} Long polling timed out", logMsgPrefix);
@@ -284,7 +285,7 @@ public class TableOperationsHandler<T extends TBase> {
         if (tbl.getSd() == null) {
           throw new MetaException("Table metadata is corrupted");
         }
-        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, dropReq.isDeleteData());
+        boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, dropReq.isDeleteData());
         if (tbl.getSd().getLocation() != null) {
           tblPath = new Path(tbl.getSd().getLocation());
         }
@@ -294,7 +295,11 @@ public class TableOperationsHandler<T extends TBase> {
                 tableName + " not deleted since " + tblPath.getParent() + " is not writable by " + SecurityUtils.getUser());
           }
         }
-        this.future = executor.submit(this::dropTable);
+        this.result = new DropTableResult(tblPath, tableDataShouldBeDeleted);
+        this.future = executor.submit((Callable<Void>) () -> {
+          dropTable();
+          return null;
+        });
       }
     } finally {
       this.executor.shutdown();
@@ -307,7 +312,7 @@ public class TableOperationsHandler<T extends TBase> {
       future.cancel(true);
       aborted.set(true);
     }
-    executor.shutdownNow();
+    executor.shutdown();
   }
 
   public DropTableResult getDropTableResult() throws TException {
@@ -333,25 +338,31 @@ public class TableOperationsHandler<T extends TBase> {
     return OPID_TO_HANDLER.containsKey(opId);
   }
 
-  public boolean tableDataShouldBeDeleted() {
-    return tableDataShouldBeDeleted;
-  }
-
-  public Path getTablePath() {
-    return tblPath;
-  }
-
   public static class DropTableResult {
-    private final boolean success;
-    private final boolean ifPurge;
-    private final boolean shouldEnableCm;
-    private final List<Path> partPaths;
-    public DropTableResult(List<Path> partPaths, boolean success,
-        boolean ifPurge, boolean shouldEnableCm) {
-      this.partPaths = partPaths;
+    private final Path tablePath;
+    private final boolean tableDataShouldBeDeleted;
+    private boolean success = false;
+    private boolean ifPurge;
+    private boolean shouldEnableCm;
+    private List<Path> partPaths;
+
+    public DropTableResult(Path tablePath, boolean tableDataShouldBeDeleted) {
+      this.tablePath = tablePath;
+      this.tableDataShouldBeDeleted = tableDataShouldBeDeleted;
+    }
+
+    public void fill(boolean success, boolean ifPurge, boolean shouldEnableCm, List<Path> partPaths) {
       this.success = success;
       this.ifPurge = ifPurge;
       this.shouldEnableCm = shouldEnableCm;
+      this.partPaths = partPaths;
+    }
+
+    public Path getTablePath() {
+      return tablePath;
+    }
+    public boolean tableDataShouldBeDeleted() {
+      return tableDataShouldBeDeleted;
     }
     public boolean success() {
       return success;
