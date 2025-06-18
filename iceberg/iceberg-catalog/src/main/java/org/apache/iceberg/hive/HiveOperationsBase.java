@@ -112,15 +112,23 @@ interface HiveOperationsBase {
   }
 
   static void validateTableIsIceberg(Table table, String fullName) {
-    String tableType = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
+    String tableTypeProp = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     NoSuchIcebergTableException.check(
-        isValidIcebergTable(table), "Not an iceberg table: %s (type=%s)", fullName, tableType);
+            (TableType.MANAGED_TABLE.name().equalsIgnoreCase(table.getTableType()) ||
+                    TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(table.getTableType())) &&
+                    BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
+            "Not an iceberg table: %s (type=%s) (tableType=%s)",
+            fullName,
+            tableTypeProp,
+            table.getTableType());
   }
 
   static void validateTableIsIcebergView(Table table, String fullName) {
     String tableTypeProp = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     NoSuchIcebergViewException.check(
-        isValidIcebergView(table),
+            (TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(table.getTableType()) ||
+                    TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType())) &&
+                    ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
         "Not an iceberg view: %s (type=%s) (tableType=%s)",
         fullName,
         tableTypeProp,
