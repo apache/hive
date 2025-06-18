@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -60,6 +61,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergTableProperties;
@@ -130,8 +132,22 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
     // Set the table type even for non HiveCatalog based tables
-    hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-        BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+    // Set the table type even for non HiveCatalog based tables
+    switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
+      case EXTERNAL_TABLE:
+      case MANAGED_TABLE:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+        break;
+      case VIRTUAL_VIEW:
+      case MATERIALIZED_VIEW:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
+        break;
+      default:
+        throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
+                " is not supported as an Iceberg object type");
+    }
 
     if (!Catalogs.hiveCatalog(conf, tableProperties)) {
       if (Boolean.parseBoolean(this.tableProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {

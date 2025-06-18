@@ -86,7 +86,7 @@ public final class Catalogs {
           "iceberg.base.snapshot.";
   public static final String MATERIALIZED_VIEW_VERSION_PROPERTY_KEY =
           "iceberg.materialized.view.version";
-  private static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = ".storage.table";
+  private static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
 
   private Catalogs() {
   }
@@ -292,7 +292,7 @@ public final class Catalogs {
     return map;
   }
 
-  public static View createMaterializedView(Configuration conf, Properties props) {
+  public static View createMaterializedView(Configuration conf, Properties props, String viewExpandedText) {
     Schema schema = schema(props);
     PartitionSpec spec = spec(props, schema);
     String location = props.getProperty(LOCATION);
@@ -300,7 +300,7 @@ public final class Catalogs {
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
     SortOrder sortOrder = getSortOrder(props, schema);
-    if (!catalog.isPresent()) {
+    if (catalog.isEmpty()) {
       throw new IllegalStateException("Unable to load catalog: " + catalogName);
     }
     String name = props.getProperty(NAME);
@@ -318,7 +318,11 @@ public final class Catalogs {
     viewProperties.put(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY,
             storageTableIdentifier);
 
-    return viewCatalog.buildView(TableIdentifier.parse(name)).withLocation(location)
+    TableIdentifier viewIdentifier = TableIdentifier.parse(name);
+    return viewCatalog.buildView(viewIdentifier).withLocation(location)
+            .withDefaultNamespace(viewIdentifier.namespace())
+            .withQuery("hive", viewExpandedText)
+            .withSchema(schema)
             .withProperties(viewProperties).create();
   }
 }

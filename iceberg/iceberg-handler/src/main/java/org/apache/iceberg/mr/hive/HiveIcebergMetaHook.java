@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -115,6 +116,7 @@ import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveLock;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergTableProperties;
@@ -193,7 +195,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       if (metadataLocation != null) {
         table = Catalogs.registerTable(conf, catalogProperties, metadataLocation);
       } else if ("MATERIALIZED_VIEW".equals(hmsTable.getTableType())) {
-        View mv = Catalogs.createMaterializedView(conf, catalogProperties);
+        View mv = Catalogs.createMaterializedView(conf, catalogProperties, hmsTable.getViewExpandedText());
 
         String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
         SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
