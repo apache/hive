@@ -52,9 +52,10 @@ import org.apache.kudu.client.KuduPredicate;
 import org.apache.kudu.client.KuduScanner;
 import org.apache.kudu.client.KuduTable;
 import org.apache.kudu.client.PartialRow;
-import org.apache.kudu.test.KuduTestHarness;
+import org.apache.kudu.test.cluster.MiniKuduCluster;
+
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -116,20 +117,31 @@ public class TestKuduPredicateHandler {
       new GenericUDFOPNotNull()
   );
 
-  @Rule
-  public KuduTestHarness harness = new KuduTestHarness();
+  private MiniKuduCluster cluster;
+  private KuduClient client;
 
   @Before
   public void setUp() throws Exception {
+    cluster = new MiniKuduCluster.MiniKuduClusterBuilder().numMasterServers(3).numTabletServers(3).build();
+    client = new KuduClient.KuduClientBuilder(cluster.getMasterAddressesAsString()).build();
+
     // Set the base configuration values.
-    BASE_CONF.set(KUDU_MASTER_ADDRS_KEY, harness.getMasterAddressesAsString());
+    BASE_CONF.set(KUDU_MASTER_ADDRS_KEY, cluster.getMasterAddressesAsString());
     BASE_CONF.set(KUDU_TABLE_NAME_KEY, TABLE_NAME);
     BASE_CONF.set(FileInputFormat.INPUT_DIR, "dummy");
 
     // Create the test Kudu table.
     CreateTableOptions options = new CreateTableOptions()
         .setRangePartitionColumns(ImmutableList.of("key"));
-    harness.getClient().createTable(TABLE_NAME, SCHEMA, options);
+    client.createTable(TABLE_NAME, SCHEMA, options);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    if (client != null)
+      client.close();
+    if (cluster != null)
+      cluster.shutdown();
   }
 
   @Test
@@ -439,7 +451,6 @@ public class TestKuduPredicateHandler {
   private void scanWithPredicates(List<KuduPredicate> predicates)
       throws KuduException {
     // Scan the table with the predicate to be sure there are no exceptions.
-    KuduClient client = harness.getClient();
     KuduTable table = client.openTable(TABLE_NAME);
     KuduScanner.KuduScannerBuilder builder = client.newScannerBuilder(table);
     for (KuduPredicate predicate : predicates) {
