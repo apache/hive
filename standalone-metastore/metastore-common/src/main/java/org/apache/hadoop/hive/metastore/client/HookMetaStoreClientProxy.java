@@ -805,7 +805,6 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
 
   @Override
   public void insertTable(Table table, boolean overwrite) throws MetaException {
-    // SG:FIXME, do we have to call delegate.insertTable() here?
     boolean failed = true;
     HiveMetaHook hook = getHook(table);
     if (hook == null || !(hook instanceof DefaultHiveMetaHook)) {

@@ -92,9 +92,6 @@ public class MetaStoreClientCacheUtils {
     // Stored individually as:
     // ColumnStatisticsObj <-- String dbName, String tblName, List<string> colNames,
     //      String catName, String validWriteIdList, String engine, long id, (TableWatermark tw ?)
-    // SG:FIXME, understand the following code and check whether the below line correctly indicates the
-    //  member of CacheKey.
-    // SG:FIXME, Do we use id? Check git log.
     TABLE_COLUMN_STATS(ColumnStatisticsObj.class, String.class, long.class, TableWatermark.class),
     // AggrStats <-- getAggrStatsForInternal(PartitionsStatsRequest req), (TableWatermark tw ?)
     AGGR_COL_STATS(AggrStats.class, PartitionsStatsRequest.class, TableWatermark.class),
@@ -128,7 +125,6 @@ public class MetaStoreClientCacheUtils {
     // Stored individually as:
     // TableValidWriteIds <-- String fullTableName, String validTxnList, long writeId
     VALID_WRITE_IDS(TableValidWriteIds.class, String.class, long.class),
-    // SG:FIXME, I don't know what I'm doing. Should be fixed!
     // ValidWriteIdList <-- String fullTableName, (optional) long writeId
     VALID_WRITE_ID(ValidWriteIdList.class, String.class, long.class),
     // TableId <- String fullTableName
@@ -146,7 +142,7 @@ public class MetaStoreClientCacheUtils {
   /**
    * CacheKey objects are used as key for the cache.
    */
-  public static class CacheKey{
+  public static class CacheKey {
     KeyType IDENTIFIER;
     List<Object> obj;
 
@@ -208,7 +204,6 @@ public class MetaStoreClientCacheUtils {
     }
   }
 
-  // SG:FIXME, do we really need this wrapper classes? cf. LIST_PARTITIONS
   public static class PartitionsWrapper {
     public final List<Partition> partitions;
     public final boolean hasUnknownPartition;
