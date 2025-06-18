@@ -495,8 +495,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void alter_table(String catName, String dbName, String tblName, Table newTable,
       EnvironmentContext envContext) throws TException {
-    // SG:FIXME
-    // This never used to call the hook. Why? There's overload madness in metastore...
     AlterTableRequest req = new AlterTableRequest(dbName, tblName, newTable);
     req.setCatName(catName);
     req.setEnvironmentContext(envContext);
@@ -510,27 +508,21 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void alter_table(String catName, String dbName, String tbl_name, Table new_tbl,
       EnvironmentContext envContext, String validWriteIds) throws TException {
-    // SG:FIXME, skipAlter should be checked in higher level?
-    boolean skipAlter = envContext != null && envContext.getProperties() != null &&
-        Boolean.valueOf(envContext.getProperties().getOrDefault(HiveMetaHook.SKIP_METASTORE_ALTER, "false"));
-    if (!skipAlter) {
-      AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
-      req.setCatName(catName);
-      req.setValidWriteIdList(validWriteIds);
-      req.setEnvironmentContext(envContext);
-      if (processorCapabilities != null) {
-        req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-        req.setProcessorIdentifier(processorIdentifier);
-      }
-      client.alter_table_req(req);
+    AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
+    req.setCatName(catName);
+    req.setValidWriteIdList(validWriteIds);
+    req.setEnvironmentContext(envContext);
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+      req.setProcessorIdentifier(processorIdentifier);
     }
+    client.alter_table_req(req);
   }
 
   @Deprecated
   @Override
   public void renamePartition(final String dbname, final String tableName, final List<String> part_vals,
       final Partition newPart) throws TException {
-    // SG:FIXME, make default final or directly call the below overridden method
     renamePartition(getDefaultCatalog(conf), dbname, tableName, part_vals, newPart, null);
   }
 
@@ -1114,8 +1106,7 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     req.setSkipColumnSchemaForPartition(skipColumnSchemaForPartition);
     AddPartitionsResult result = client.add_partitions_req(req);
     if (needResults) {
-      // SG:FIXME, don't we need HiveMetaStoreClientUtils.deepCopy()?
-      List<Partition> new_parts = result.getPartitions();
+      List<Partition> new_parts = HiveMetaStoreClientUtils.deepCopyPartitions(result.getPartitions());
       if (skipColumnSchemaForPartition) {
         new_parts.forEach(partition -> partition.getSd().setCols(result.getPartitionColSchema()));
       }
@@ -2726,7 +2717,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     List<String> tables = new ArrayList<>();
     Database db = null;
     try {
-      // SG:FIXME, this call can be cached. See SHMSC.
       db = getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
@@ -3377,7 +3367,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     return HiveMetaStoreClientUtils.deepCopy(p);
   }
 
-  // SG:FIXME
   public Partition appendPartitionByName(String dbName, String tableName, String partName)
       throws TException {
     return appendPartitionByName(dbName, tableName, partName, null);
@@ -3977,8 +3966,7 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     cr.setType(type);
     cr.setProperties(tblproperties);
     cr.setInitiatorId(JavaUtils.hostname() + "-" + MANUALLY_INITIATED_COMPACTION);
-    // SG:FIXME, right?
-    cr.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
+    cr.setInitiatorVersion(ThriftHiveMetaStoreClient.class.getPackage().getImplementationVersion());
     return client.compact2(cr);
   }
 

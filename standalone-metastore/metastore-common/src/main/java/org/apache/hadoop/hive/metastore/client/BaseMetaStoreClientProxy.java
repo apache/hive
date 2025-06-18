@@ -1696,8 +1696,7 @@ abstract public class BaseMetaStoreClientProxy implements IMetaStoreClient {
   @Override
   final public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
       List<String> partNames) throws TException {
-    // SG:FIXME, null? DataOperationType.UNSET?
-    addDynamicPartitions(txnId, writeId, dbName, tableName, partNames, DataOperationType.UNSET);
+    addDynamicPartitions(txnId, writeId, dbName, tableName, partNames, null);
   }
 
   @Override
