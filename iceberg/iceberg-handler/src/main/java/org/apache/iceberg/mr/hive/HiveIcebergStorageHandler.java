@@ -416,9 +416,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     predicate.pushedPredicate = (ExprNodeGenericFuncDesc) pushedPredicate;
-    Expression filterExpr = HiveIcebergInputFormat.getFilterExpr(conf, predicate.pushedPredicate);
-    if (filterExpr != null) {
-      SessionStateUtil.addResource(conf, InputFormatConfig.QUERY_FILTERS, filterExpr);
+
+    if (pushedPredicate != null) {
+      SessionStateUtil.setConflictDetectionFilter(conf, jobConf.get(Catalogs.NAME), pushedPredicate);
     }
     return predicate;
   }
@@ -2240,8 +2240,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     try {
       exp = HiveIcebergFilterFactory.generateFilterExpression(sarg);
     } catch (UnsupportedOperationException e) {
-      LOG.warn("Unable to create Iceberg filter," +
-              " continuing without metadata delete: ", e);
+      LOG.warn("Unable to create Iceberg filter, skipping metadata delete: ", e);
       return false;
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
