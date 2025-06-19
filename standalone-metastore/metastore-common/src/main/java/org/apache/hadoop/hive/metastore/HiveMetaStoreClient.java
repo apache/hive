@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.client.HookMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
@@ -107,6 +106,11 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy
     createTable(request);
   }
 
+  public Table getTable(String catName, String dbName, String tableName,
+      boolean getColumnStats, String engine) throws TException {
+    return thriftClient.getTable(catName, dbName, tableName, getColumnStats, engine);
+  }
+
   public void dropTable(String catName, String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, EnvironmentContext envContext) throws TException {
     thriftClient.dropTable(catName, dbname, name, deleteData, ignoreUnknownTab, envContext);
@@ -138,7 +142,6 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy
   public boolean dropPartition(String dbName, String tableName, String partName, boolean dropData,
       EnvironmentContext ec) throws TException {
     return thriftClient.dropPartition(dbName, tableName, partName, dropData, ec);
-
   }
 
   public boolean dropPartition(String dbName, String tableName, List<String> partVals)
@@ -191,8 +194,7 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy
    * @param client unsynchronized client
    * @return synchronized client
    */
-  public static IMetaStoreClient newSynchronizedClient(
-      IMetaStoreClient client) {
+  public static IMetaStoreClient newSynchronizedClient(IMetaStoreClient client) {
     return (IMetaStoreClient) Proxy.newProxyInstance(
         ThriftHiveMetaStoreClient.class.getClassLoader(),
         new Class[]{IMetaStoreClient.class},
@@ -207,8 +209,7 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy
     }
 
     @Override
-    public synchronized Object invoke(Object proxy, Method method, Object[] args)
-        throws Throwable {
+    public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
       try {
         return method.invoke(client, args);
       } catch (InvocationTargetException e) {

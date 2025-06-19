@@ -25,12 +25,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslHelper;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -93,12 +89,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.createThriftPartitionsReq;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
-public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
+public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
 
   private final String CLASS_NAME = ThriftHiveMetaStoreClient.class.getName();
 
@@ -133,7 +128,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   private TTransport transport = null;
   private boolean isConnected = false;
   private URI metastoreUris[];
-  private final Configuration conf;  // Keep a copy of HiveConf so if Session conf changes, we may need to get a new HMS client.
   private String tokenStrForm;
   private final boolean localMetaStore;
   private final URIResolverHook uriResolverHook;
@@ -161,13 +155,7 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
 
   public ThriftHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded)
       throws MetaException {
-
-    if (conf == null) {
-      conf = MetastoreConf.newMetastoreConf();
-      this.conf = conf;
-    } else {
-      this.conf = new Configuration(conf);
-    }
+    super(conf);
     version = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST) ? TEST_VERSION : VERSION;
     uriResolverHook = loadUriResolverHook();
     fileMetadataBatchSize = MetastoreConf.getIntVar(
@@ -465,47 +453,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void alter_table(String dbname, String tbl_name, Table new_tbl) throws TException {
-    alter_table_with_environmentContext(dbname, tbl_name, new_tbl, null);
-  }
-
-  @Override
-  public void alter_table(String defaultDatabaseName, String tblName, Table table,
-      boolean cascade) throws TException {
-    EnvironmentContext environmentContext = new EnvironmentContext();
-    if (cascade) {
-      environmentContext.putToProperties(StatsSetupConst.CASCADE, StatsSetupConst.TRUE);
-    }
-    alter_table_with_environmentContext(defaultDatabaseName, tblName, table, environmentContext);
-  }
-
-  @Override
-  public void alter_table_with_environmentContext(String dbname, String tbl_name, Table new_tbl,
-      EnvironmentContext envContext) throws TException {
-    AlterTableRequest req = new AlterTableRequest(dbname, tbl_name, new_tbl);
-    req.setCatName(MetaStoreUtils.getDefaultCatalog(conf));
-    req.setEnvironmentContext(envContext);
-    if (processorCapabilities != null) {
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      req.setProcessorIdentifier(processorIdentifier);
-    }
-    client.alter_table_req(req);
-  }
-
-  @Override
-  public void alter_table(String catName, String dbName, String tblName, Table newTable,
-      EnvironmentContext envContext) throws TException {
-    AlterTableRequest req = new AlterTableRequest(dbName, tblName, newTable);
-    req.setCatName(catName);
-    req.setEnvironmentContext(envContext);
-    if (processorCapabilities != null) {
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      req.setProcessorIdentifier(processorIdentifier);
-    }
-    client.alter_table_req(req);
-  }
-
-  @Override
   public void alter_table(String catName, String dbName, String tbl_name, Table new_tbl,
       EnvironmentContext envContext, String validWriteIds) throws TException {
     AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
@@ -517,13 +464,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       req.setProcessorIdentifier(processorIdentifier);
     }
     client.alter_table_req(req);
-  }
-
-  @Deprecated
-  @Override
-  public void renamePartition(final String dbname, final String tableName, final List<String> part_vals,
-      final Partition newPart) throws TException {
-    renamePartition(getDefaultCatalog(conf), dbname, tableName, part_vals, newPart, null);
   }
 
   @Override
@@ -997,10 +937,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void dropCatalog(String catName) throws TException {
-    client.drop_catalog(new DropCatalogRequest(catName));
-  }
-
   public void dropCatalog(String catName, boolean ifExists) throws TException {
     DropCatalogRequest rqst = new DropCatalogRequest(catName);
     rqst.setIfExists(ifExists);
@@ -1035,32 +971,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     addPartitionsReq.setEnvironmentContext(envContext);
     Partition p = client.add_partitions_req(addPartitionsReq).getPartitions().get(0);
     return HiveMetaStoreClientUtils.deepCopy(p);
-  }
-
-  /**
-   * @param new_parts
-   * @throws InvalidObjectException
-   * @throws AlreadyExistsException
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#add_partitions(List)
-   */
-  @Override
-  public int add_partitions(List<Partition> new_parts) throws TException {
-    if (new_parts == null || new_parts.contains(null)) {
-      throw new MetaException("Partitions cannot be null.");
-    }
-    if (new_parts.isEmpty()) {
-      return 0;
-    }
-    if (!new_parts.get(0).isSetCatName()) {
-      final String defaultCat = getDefaultCatalog(conf);
-      new_parts.forEach(p -> p.setCatName(defaultCat));
-    }
-    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest(new_parts.get(0).getDbName(),
-        new_parts.get(0).getTableName(), new_parts, false);
-    addPartitionsReq.setCatName(new_parts.get(0).getCatName());
-    return client.add_partitions_req(addPartitionsReq).getPartitions().size();
   }
 
   @Override
@@ -1127,18 +1037,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public Partition appendPartition(String db_name, String table_name,
-      List<String> part_vals) throws TException {
-    return appendPartition(getDefaultCatalog(conf), db_name, table_name, part_vals);
-  }
-
-  @Override
-  public Partition appendPartition(String dbName, String tableName, String partName)
-      throws TException {
-    return appendPartition(getDefaultCatalog(conf), dbName, tableName, partName);
-  }
-
-  @Override
   public Partition appendPartition(String catName, String dbName, String tableName,
       String name) throws TException {
     if (dbName == null || tableName == null || name == null) {
@@ -1177,52 +1075,12 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     return HiveMetaStoreClientUtils.deepCopy(client.append_partition_req(appendPartitionsReq));
   }
 
-  /**
-   * Exchange the partition between two tables
-   *
-   * @param partitionSpecs       partitions specs of the parent partition to be exchanged
-   * @param destDb               the db of the destination table
-   * @param destinationTableName the destination table name
-   * @return new partition after exchanging
-   */
-  @Override
-  public Partition exchange_partition(Map<String, String> partitionSpecs,
-      String sourceDb, String sourceTable, String destDb,
-      String destinationTableName) throws TException {
-    return exchange_partition(partitionSpecs, getDefaultCatalog(conf), sourceDb, sourceTable,
-        getDefaultCatalog(conf), destDb, destinationTableName);
-  }
-
   @Override
   public Partition exchange_partition(Map<String, String> partitionSpecs, String sourceCat,
       String sourceDb, String sourceTable, String destCat,
       String destDb, String destTableName) throws TException {
     return client.exchange_partition(partitionSpecs, prependCatalogToDbName(sourceCat, sourceDb, conf),
         sourceTable, prependCatalogToDbName(destCat, destDb, conf), destTableName);
-  }
-
-  /**
-   * Exchange the partitions between two tables
-   *
-   * @param partitionSpecs       partitions specs of the parent partition to be exchanged
-   * @param destDb               the db of the destination table
-   * @param destinationTableName the destination table name
-   * @return new partitions after exchanging
-   */
-  @Override
-  public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
-      String sourceDb, String sourceTable, String destDb,
-      String destinationTableName) throws TException {
-    return exchange_partitions(partitionSpecs, getDefaultCatalog(conf), sourceDb, sourceTable,
-        getDefaultCatalog(conf), destDb, destinationTableName);
-  }
-
-  @Override
-  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String dbName, String tableName, List<String> partNames, List<String> colNames,
-      String engine, String validWriteIdList) throws TException {
-    return getPartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName,
-        partNames, colNames, engine, validWriteIdList);
   }
 
   @Override
@@ -1233,15 +1091,11 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
         partNames == null ? new ArrayList<String>() : partNames);
     rqst.setEngine(engine);
     rqst.setCatName(catName);
+    if (validWriteIdList == null) {
+      validWriteIdList = HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tableName, conf);
+    }
     rqst.setValidWriteIdList(validWriteIdList);
     return client.get_partitions_statistics_req(rqst).getPartStats();
-  }
-
-  @Override
-  public AggrStats getAggrColStatsFor(String dbName, String tblName, List<String> colNames,
-      List<String> partNames, String engine, String writeIdList) throws TException {
-    return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames,
-        partNames, engine, writeIdList);
   }
 
   @Override
@@ -1431,18 +1285,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     return client.translate_table_dryrun(request);
   }
 
-  /**
-   * @param tbl
-   * @throws MetaException
-   * @throws NoSuchObjectException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface #create_table(org.apache.hadoop.hive.metastore.api.CreateTableRequest)
-   */
-  @Override
-  public void createTable(Table tbl) throws MetaException, NoSuchObjectException, TException {
-    createTable(tbl, null);
-  }
-
   public void createTable(Table tbl, EnvironmentContext envContext) throws TException {
     CreateTableRequest request = new CreateTableRequest(tbl);
     if (envContext != null) {
@@ -1529,12 +1371,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void dropConstraint(String dbName, String tableName, String constraintName)
-      throws TException {
-    dropConstraint(getDefaultCatalog(conf), dbName, tableName, constraintName);
-  }
-
-  @Override
   public void dropConstraint(String catName, String dbName, String tableName, String constraintName)
       throws TException {
     DropConstraintRequest rqst = new DropConstraintRequest(dbName, tableName, constraintName);
@@ -1610,41 +1446,9 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     return client.create_type(type);
   }
 
-  /**
-   * @param name
-   * @throws NoSuchObjectException
-   * @throws InvalidOperationException
-   * @throws MetaException
-   * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_database(java.lang.String, boolean, boolean)
-   */
-  @Override
-  public void dropDatabase(String name)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-    dropDatabase(getDefaultCatalog(conf), name, true, false, false);
-  }
-
-  @Override
-  public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
-      throws TException {
-    dropDatabase(getDefaultCatalog(conf), name, deleteData, ignoreUnknownDb, false);
-  }
-
-  @Override
-  public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
-      throws TException {
-    dropDatabase(getDefaultCatalog(conf), name, deleteData, ignoreUnknownDb, cascade);
-  }
-
   @Override
   public void dropDatabase(DropDatabaseRequest req) throws TException {
     client.drop_database_req(req);
-  }
-
-  @Override
-  public boolean dropPartition(String dbName, String tableName, String partName, boolean deleteData)
-      throws TException {
-    return dropPartition(getDefaultCatalog(conf), dbName, tableName, partName, deleteData);
   }
 
   @Override
@@ -1706,26 +1510,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public boolean dropPartition(String db_name, String tbl_name,
-      List<String> part_vals, boolean deleteData) throws TException {
-    return dropPartition(getDefaultCatalog(conf), db_name, tbl_name, part_vals,
-        PartitionDropOptions.instance().deleteData(deleteData));
-  }
-
-  @Override
-  public boolean dropPartition(String catName, String db_name, String tbl_name,
-      List<String> part_vals, boolean deleteData) throws TException {
-    return dropPartition(catName, db_name, tbl_name, part_vals, PartitionDropOptions.instance()
-        .deleteData(deleteData));
-  }
-
-  @Override
-  public boolean dropPartition(String db_name, String tbl_name,
-      List<String> part_vals, PartitionDropOptions options) throws TException {
-    return dropPartition(getDefaultCatalog(conf), db_name, tbl_name, part_vals, options);
-  }
-
-  @Override
   public boolean dropPartition(String catName, String db_name, String tbl_name,
       List<String> part_vals, PartitionDropOptions options) throws TException {
     if (options == null) {
@@ -1747,45 +1531,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     dropPartitionReq.setDeleteData(options.deleteData);
     dropPartitionReq.setEnvironmentContext(options.purgeData ? getEnvironmentContextWithIfPurgeSet() : null);
     return client.drop_partition_req(dropPartitionReq);
-  }
-
-  @Override
-  public List<Partition> dropPartitions(String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs,
-      PartitionDropOptions options)
-      throws TException {
-    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options);
-  }
-
-  @Override
-  public List<Partition> dropPartitions(String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
-      boolean ifExists, boolean needResult) throws TException {
-
-    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs,
-        PartitionDropOptions.instance()
-            .deleteData(deleteData)
-            .ifExists(ifExists)
-            .returnResults(needResult));
-
-  }
-
-  @Override
-  public List<Partition> dropPartitions(String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
-      boolean ifExists) throws TException {
-    // By default, we need the results from dropPartitions();
-    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs,
-        PartitionDropOptions.instance()
-            .deleteData(deleteData)
-            .ifExists(ifExists));
-  }
-
-  @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs,
-      PartitionDropOptions options) throws TException {
-    return dropPartitions(catName, dbName, tblName, partExprs, options, null);
   }
 
   @Override
@@ -1838,18 +1583,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void dropTable(String dbname, String name, boolean deleteData,
-      boolean ignoreUnknownTab) throws TException, UnsupportedOperationException {
-    dropTable(getDefaultCatalog(conf), dbname, name, deleteData, ignoreUnknownTab, null);
-  }
-
-  @Override
-  public void dropTable(String dbname, String name, boolean deleteData,
-      boolean ignoreUnknownTab, boolean ifPurge) throws TException {
-    dropTable(getDefaultCatalog(conf), dbname, name, deleteData, ignoreUnknownTab, ifPurge);
-  }
-
-  @Override
   public void dropTable(Table tbl, boolean deleteData, boolean ignoreUnknownTbl, boolean ifPurge) throws TException {
     EnvironmentContext context = null;
     if (ifPurge) {
@@ -1863,25 +1596,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
 
     dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData,
         ignoreUnknownTbl, context);
-  }
-
-  @Override
-  public void dropTable(String dbname, String name) throws TException {
-    dropTable(getDefaultCatalog(conf), dbname, name, true, true, null);
-  }
-
-  @Override
-  public void dropTable(String catName, String dbName, String tableName, boolean deleteData,
-      boolean ignoreUnknownTable, boolean ifPurge) throws TException {
-    //build new environmentContext with ifPurge;
-    EnvironmentContext envContext = null;
-    if (ifPurge) {
-      Map<String, String> warehouseOptions;
-      warehouseOptions = new HashMap<>();
-      warehouseOptions.put("ifPurge", "TRUE");
-      envContext = new EnvironmentContext(warehouseOptions);
-    }
-    dropTable(catName, dbName, tableName, deleteData, ignoreUnknownTable, envContext);
   }
 
   /**
@@ -1910,36 +1624,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     dropTableReq.setDropPartitions(true);
     dropTableReq.setEnvContext(envContext);
     client.drop_table_req(dropTableReq);
-  }
-
-  @Override
-  public void truncateTable(String dbName, String tableName, List<String> partNames,
-      String validWriteIds, long writeId, boolean deleteData) throws TException {
-    truncateTable(getDefaultCatalog(conf), dbName, tableName, null, partNames, validWriteIds, writeId,
-        deleteData, null);
-  }
-
-  @Override
-  public void truncateTable(String dbName, String tableName, List<String> partNames,
-      String validWriteIds, long writeId) throws TException {
-    truncateTable(dbName, tableName, partNames, validWriteIds, writeId, true);
-  }
-
-  @Override
-  public void truncateTable(String dbName, String tableName, List<String> partNames) throws TException {
-    truncateTable(getDefaultCatalog(conf), dbName, tableName, partNames);
-  }
-
-  @Override
-  public void truncateTable(TableName table, List<String> partNames) throws TException {
-    truncateTable(table.getCat(), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames,
-        null, -1, true, null);
-  }
-
-  @Override
-  public void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
-      throws TException {
-    truncateTable(TableName.fromString(tableName, catName, dbName), partNames);
   }
 
   @Override
@@ -2005,18 +1689,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<String> getDatabases(String databasePattern) throws TException {
-    return getDatabases(getDefaultCatalog(conf), databasePattern);
-  }
-
-  @Override
   public List<String> getDatabases(String catName, String databasePattern) throws TException {
     return client.get_databases(prependCatalogToDbName(catName, databasePattern, conf));
-  }
-
-  @Override
-  public List<String> getAllDatabases() throws TException {
-    return getAllDatabases(getDefaultCatalog(conf));
   }
 
   @Override
@@ -2031,13 +1705,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     }
 
     return client.get_databases_req(request);
-  }
-
-  @Override
-  public List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
-      throws TException {
-    // TODO should we add capabilities here as well as it returns Partition objects
-    return listPartitions(getDefaultCatalog(conf), db_name, tbl_name, max_parts);
   }
 
   @Override
@@ -2057,23 +1724,11 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public PartitionSpecProxy listPartitionSpecs(String dbName, String tableName, int maxParts) throws TException {
-    return listPartitionSpecs(getDefaultCatalog(conf), dbName, tableName, maxParts);
-  }
-
-  @Override
   public PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName,
       int maxParts) throws TException {
     List<PartitionSpec> partitionSpecs =
         client.get_partitions_pspec(prependCatalogToDbName(catName, dbName, conf), tableName, maxParts);
     return PartitionSpecProxy.Factory.get(partitionSpecs);
-  }
-
-  @Override
-  public List<Partition> listPartitions(String db_name, String tbl_name,
-      List<String> part_vals, short max_parts) throws TException {
-    // TODO should we add capabilities here as well as it returns Partition objects
-    return listPartitions(getDefaultCatalog(conf), db_name, tbl_name, part_vals, max_parts);
   }
 
   @Override
@@ -2094,21 +1749,12 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<Partition> listPartitionsWithAuthInfo(String db_name, String tbl_name,
-      short max_parts, String user_name,
-      List<String> group_names) throws TException {
-    // TODO should we add capabilities here as well as it returns Partition objects
-    return listPartitionsWithAuthInfo(getDefaultCatalog(conf), db_name, tbl_name, max_parts, user_name,
-        group_names);
-  }
-
-  @Override
   public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
       throws TException {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(req.getDbName(), req.getTblName(), conf));
     }
-    if(req.getCatName() == null) {
+    if (req.getCatName() == null) {
       req.setCatName(getDefaultCatalog(conf));
     }
     req.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(req.getMaxParts()));
@@ -2150,16 +1796,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<Partition> listPartitionsWithAuthInfo(String db_name, String tbl_name,
-      List<String> part_vals, short max_parts,
-      String user_name, List<String> group_names)
-      throws TException {
-    // TODO should we add capabilities here as well as it returns Partition objects
-    return listPartitionsWithAuthInfo(getDefaultCatalog(conf), db_name, tbl_name, part_vals, max_parts,
-        user_name, group_names);
-  }
-
-  @Override
   public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
       List<String> partialPvals, int maxParts,
       String userName, List<String> groupNames)
@@ -2198,12 +1834,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<Partition> listPartitionsByFilter(String db_name, String tbl_name,
-      String filter, short max_parts) throws TException {
-    return listPartitionsByFilter(getDefaultCatalog(conf), db_name, tbl_name, filter, max_parts);
-  }
-
-  @Override
   public List<Partition> listPartitionsByFilter(String catName, String db_name, String tbl_name,
       String filter, int max_parts) throws TException {
     GetPartitionsByFilterRequest req = createThriftPartitionsReq(GetPartitionsByFilterRequest.class, conf);
@@ -2218,13 +1848,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public PartitionSpecProxy listPartitionSpecsByFilter(String db_name, String tbl_name,
-      String filter, int max_parts)
-      throws TException {
-    return listPartitionSpecsByFilter(getDefaultCatalog(conf), db_name, tbl_name, filter, max_parts);
-  }
-
-  @Override
   public PartitionSpecProxy listPartitionSpecsByFilter(String catName, String db_name,
       String tbl_name, String filter,
       int max_parts) throws TException {
@@ -2234,62 +1857,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     return PartitionSpecProxy.Factory.get(partitionSpecs);
   }
 
-  @Override
-  public boolean listPartitionsByExpr(String db_name, String tbl_name, byte[] expr,
-      String default_partition_name, short max_parts,
-      List<Partition> result) throws TException {
-    return listPartitionsByExpr(getDefaultCatalog(conf), db_name, tbl_name, expr,
-        default_partition_name, max_parts, result);
-  }
-
   private PartitionsByExprResult getPartitionsByExprInternal(PartitionsByExprRequest req) throws TException {
     return client.get_partitions_by_expr(createThriftPartitionsReq(PartitionsByExprRequest.class, conf, req));
-  }
-
-  @Override
-  public boolean listPartitionsByExpr(String catName, String db_name, String tbl_name, byte[] expr,
-      String default_partition_name, int max_parts, List<Partition> result)
-      throws TException {
-    long t1 = System.currentTimeMillis();
-
-    try {
-      assert result != null;
-      PartitionsByExprRequest req = new PartitionsByExprRequest(db_name, tbl_name, ByteBuffer.wrap(expr));
-
-      if (catName == null) {
-        req.setCatName(getDefaultCatalog(conf));
-      } else {
-        req.setCatName(catName);
-      }
-      if (default_partition_name != null) {
-        req.setDefaultPartitionName(default_partition_name);
-      }
-      if (max_parts >= 0) {
-        req.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(max_parts));
-      }
-      req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(db_name, tbl_name, conf));
-
-      PartitionsByExprResult r = null;
-
-      try {
-        r = getPartitionsByExprInternal(req);
-      } catch (TApplicationException te) {
-        rethrowException(te);
-      }
-
-      assert r != null;
-      // TODO: in these methods, do we really need to deepcopy?
-      //HiveMetaStoreClientUtils.deepCopyPartitions(r.getPartitions(), result);
-      result.addAll(r.getPartitions());
-
-      return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
-    } finally {
-      long diff = System.currentTimeMillis() - t1;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsByExpr",
-            diff, "HMS client");
-      }
-    }
   }
 
   @Override
@@ -2309,10 +1878,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
         "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
   }
 
-  protected PartitionsSpecByExprResult getPartitionsSpecByExprInternal(PartitionsByExprRequest req) throws TException {
-    return client.get_partitions_spec_by_expr(createThriftPartitionsReq(PartitionsByExprRequest.class, conf, req));
-  }
-
   @Override
   public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
       throws TException {
@@ -2322,7 +1887,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       assert result != null;
       PartitionsSpecByExprResult r = null;
       try {
-        r = getPartitionsSpecByExprInternal(req);
+        r = client.get_partitions_spec_by_expr(
+            createThriftPartitionsReq(PartitionsByExprRequest.class, conf, req));
       } catch (TApplicationException te) {
         rethrowException(te);
       }
@@ -2339,11 +1905,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
             diff, "HMS client");
       }
     }
-  }
-
-  @Override
-  public Database getDatabase(String name) throws TException {
-    return getDatabase(getDefaultCatalog(conf), name);
   }
 
   @Override
@@ -2377,12 +1938,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public Partition getPartition(String db_name, String tbl_name, List<String> part_vals)
-      throws TException {
-    return getPartition(getDefaultCatalog(conf), db_name, tbl_name, part_vals);
-  }
-
-  @Override
   public GetPartitionResponse getPartitionRequest(GetPartitionRequest req) throws TException {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(req.getDbName(), req.getTblName(), conf));
@@ -2405,12 +1960,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names);
-  }
-
-  @Override
   public PartitionsResponse getPartitionsRequest(PartitionsRequest req) throws TException {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(req.getDbName(), req.getTblName(), conf));
@@ -2420,18 +1969,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     List<Partition> parts = HiveMetaStoreClientUtils.deepCopyPartitions(res.getPartitions());
     res.setPartitions(parts);
     return res;
-  }
-
-  /**
-   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-      List<String> part_names) throws TException {
-    GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(
-        MetaStoreUtils.prependCatalogToDbName(catName, db_name, conf), tbl_name, part_names);
-    return getPartitionsByNames(req).getPartitions();
   }
 
   @Override
@@ -2464,73 +2001,12 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public Partition getPartitionWithAuthInfo(String db_name, String tbl_name,
-      List<String> part_vals, String user_name, List<String> group_names)
-      throws TException {
-    return getPartitionWithAuthInfo(getDefaultCatalog(conf), db_name, tbl_name, part_vals,
-        user_name, group_names);
-  }
-
-  @Override
   public Partition getPartitionWithAuthInfo(String catName, String dbName, String tableName,
       List<String> pvals, String userName,
       List<String> groupNames) throws TException {
     Partition p = client.get_partition_with_auth(prependCatalogToDbName(catName, dbName, conf), tableName,
         pvals, userName, groupNames);
     return HiveMetaStoreClientUtils.deepCopy(p);
-  }
-
-  /**
-   * @deprecated use getTable(GetTableRequest getTableRequest)
-   * @param dbname
-   * @param name
-   * @return
-   * @throws TException
-   */
-  @Override
-  @Deprecated
-  public Table getTable(String dbname, String name) throws TException {
-    GetTableRequest req = new GetTableRequest(dbname, name);
-    req.setCatName(getDefaultCatalog(conf));
-    return getTable(req);
-  }
-
-  /**
-   * @deprecated use getTable(GetTableRequest getTableRequest)
-   * @param dbname
-   * @param name
-   * @param getColumnStats
-   *          get the column stats, if available, when true
-   * @param engine engine sending the request
-   * @return
-   * @throws TException
-   */
-  @Override
-  @Deprecated
-  public Table getTable(String dbname, String name, boolean getColumnStats, String engine) throws TException {
-    GetTableRequest req = new GetTableRequest(dbname, name);
-    req.setCatName(getDefaultCatalog(conf));
-    req.setGetColumnStats(getColumnStats);
-    if (getColumnStats) {
-      req.setEngine(engine);
-    }
-    return getTable(req);
-  }
-
-  /**
-   * @deprecated use getTable(GetTableRequest getTableRequest)
-   * @param catName catalog the table is in.
-   * @param dbName database the table is in.
-   * @param tableName table name.
-   * @return
-   * @throws TException
-   */
-  @Override
-  @Deprecated
-  public Table getTable(String catName, String dbName, String tableName) throws TException {
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCatName(catName);
-    return getTable(req);
   }
 
   /**
@@ -2548,54 +2024,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       boolean getColumnStats, String engine) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
-    req.setGetColumnStats(getColumnStats);
-    if (getColumnStats) {
-      req.setEngine(engine);
-    }
-    return getTable(req);
-  }
-
-  protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
-    return client.get_table_req(req);
-  }
-
-  /**
-   * @deprecated use getTable(GetTableRequest getTableRequest)
-   * @param catName catalog the table is in.
-   * @param dbName database the table is in.
-   * @param tableName table name.
-   * @param validWriteIdList applicable snapshot
-   * @return
-   * @throws TException
-   */
-  @Override
-  @Deprecated
-  public Table getTable(String catName, String dbName, String tableName,
-      String validWriteIdList) throws TException {
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCatName(catName);
-    req.setValidWriteIdList(validWriteIdList);
-    return getTable(req);
-  }
-
-  /**
-   * @deprecated use getTable(GetTableRequest getTableRequest)
-   * @param catName catalog the table is in.
-   * @param dbName database the table is in.
-   * @param tableName table name.
-   * @param validWriteIdList applicable snapshot
-   * @param getColumnStats get the column stats, if available, when true
-   * @param engine engine sending the request
-   * @return
-   * @throws TException
-   */
-  @Override
-  @Deprecated
-  public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
-      boolean getColumnStats, String engine) throws TException {
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCatName(catName);
-    req.setValidWriteIdList(validWriteIdList);
     req.setGetColumnStats(getColumnStats);
     if (getColumnStats) {
       req.setEngine(engine);
@@ -2625,18 +2053,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
-      throws TException {
-    return getTables(getDefaultCatalog(conf), dbName, tableNames, null);
-  }
-
-  @Override
-  public List<Table> getTableObjectsByName(String catName, String dbName,
-      List<String> tableNames) throws TException {
-    return getTables(catName, dbName, tableNames, null);
-  }
-
-  @Override
   public List<Table> getTables(String catName, String dbName, List<String> tableNames,
       GetProjectionsSpec projectionsSpec) throws TException {
     GetTablesRequest req = new GetTablesRequest(dbName);
@@ -2656,25 +2072,10 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
-      throws TException {
-    client.update_creation_metadata(getDefaultCatalog(conf), dbName, tableName, cm);
-  }
-
-  @Override
   public void updateCreationMetadata(String catName, String dbName, String tableName,
       CreationMetadata cm) throws TException {
     client.update_creation_metadata(catName, dbName, tableName, cm);
 
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
-      throws TException {
-    return listTableNamesByFilter(getDefaultCatalog(conf), dbName, filter, maxTables);
   }
 
   @Override
@@ -2696,16 +2097,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
    */
   public Type getType(String name) throws NoSuchObjectException, MetaException, TException {
     return client.get_type(name);
-  }
-
-  @Override
-  public List<String> getTables(String dbname, String tablePattern) throws MetaException {
-    try {
-      return getTables(getDefaultCatalog(conf), dbname, tablePattern);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
   }
 
   @Override
@@ -2754,16 +2145,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<String> getTables(String dbname, String tablePattern, TableType tableType) throws MetaException {
-    try {
-      return getTables(getDefaultCatalog(conf), dbname, tablePattern, tableType);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
-  }
-
-  @Override
   public List<String> getTables(String catName, String dbName, String tablePattern,
       TableType tableType) throws TException {
     List<String> tables =
@@ -2800,26 +2181,10 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<String> getMaterializedViewsForRewriting(String dbName) throws TException {
-    return getMaterializedViewsForRewriting(getDefaultCatalog(conf), dbName);
-  }
-
-  @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbname)
       throws MetaException {
     try {
       return client.get_materialized_views_for_rewriting(prependCatalogToDbName(catName, dbname, conf));
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
-  }
-
-  @Override
-  public List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
-      throws MetaException {
-    try {
-      return getTableMeta(getDefaultCatalog(conf), dbPatterns, tablePatterns, tableTypes);
     } catch (Exception e) {
       MetaStoreUtils.throwMetaException(e);
     }
@@ -2834,23 +2199,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<String> getAllTables(String dbname) throws MetaException {
-    try {
-      return getAllTables(getDefaultCatalog(conf), dbname);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
-  }
-
-  @Override
   public List<String> getAllTables(String catName, String dbName) throws TException {
     return client.get_all_tables(prependCatalogToDbName(catName, dbName, conf));
-  }
-
-  @Override
-  public boolean tableExists(String databaseName, String tableName) throws TException {
-    return tableExists(getDefaultCatalog(conf), databaseName, tableName);
   }
 
   @Override
@@ -2859,17 +2209,11 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       GetTableRequest req = new GetTableRequest(dbName, tableName);
       req.setCatName(catName);
       req.setCapabilities(version);
-      Table table = getTableInternal(req).getTable();
+      Table table = client.get_table_req(req).getTable();
       return table != null;
     } catch (NoSuchObjectException e) {
       return false;
     }
-  }
-
-  @Override
-  public List<String> listPartitionNames(String dbName, String tblName, short max)
-      throws TException {
-    return listPartitionNames(getDefaultCatalog(conf), dbName, tblName, max);
   }
 
   @Override
@@ -2878,7 +2222,7 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(req.getDbName(), req.getTblName(), conf));
     }
-    if( req.getCatName() == null ) {
+    if (req.getCatName() == null ) {
       req.setCatName(getDefaultCatalog(conf));
     }
     return client.get_partition_names_ps_req(req);
@@ -2897,34 +2241,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<String> listPartitionNames(String db_name, String tbl_name,
-      List<String> part_vals, short max_parts) throws TException {
-    return listPartitionNames(getDefaultCatalog(conf), db_name, tbl_name, part_vals, max_parts);
-  }
-
-  @Override
-  public List<String> listPartitionNames(String catName, String db_name, String tbl_name,
-      List<String> part_vals, int max_parts) throws TException {
-    if (db_name == null || tbl_name == null) {
-      throw new MetaException("DbName/TableName cannot be null");
-    }
-    GetPartitionNamesPsRequest getPartitionNamesPsRequest = new GetPartitionNamesPsRequest(db_name, tbl_name);
-    getPartitionNamesPsRequest.setCatName(catName);
-    getPartitionNamesPsRequest.setPartValues(part_vals);
-    getPartitionNamesPsRequest.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(max_parts));
-    GetPartitionNamesPsResponse resp = client.get_partition_names_ps_req(getPartitionNamesPsRequest);
-    return resp.getNames();
-  }
-
-  @Override
   public List<String> listPartitionNames(PartitionsByExprRequest req) throws TException {
     return client.get_partition_names_req(req);
-  }
-
-  @Override
-  public int getNumPartitionsByFilter(String db_name, String tbl_name,
-      String filter) throws TException {
-    return getNumPartitionsByFilter(getDefaultCatalog(conf), db_name, tbl_name, filter);
   }
 
   @Override
@@ -2932,26 +2250,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       String filter) throws TException {
     return client.get_num_partitions_by_filter(prependCatalogToDbName(catName, dbName, conf), tableName,
         filter);
-  }
-
-  @Override
-  public void alter_partition(String dbName, String tblName, Partition newPart) throws TException {
-    alter_partition(getDefaultCatalog(conf), dbName, tblName, newPart, null);
-  }
-
-  @Override
-  public void alter_partition(String dbName, String tblName, Partition newPart,
-      EnvironmentContext environmentContext) throws TException {
-    alter_partition(getDefaultCatalog(conf), dbName, tblName, newPart, environmentContext);
-  }
-
-  @Override
-  public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
-      EnvironmentContext environmentContext) throws TException {
-    AlterPartitionsRequest req = new AlterPartitionsRequest(dbName, tblName, Lists.newArrayList(newPart));
-    req.setCatName(catName);
-    req.setEnvironmentContext(environmentContext);
-    client.alter_partitions_req(req);
   }
 
   @Override
@@ -2971,22 +2269,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       throws TException {
     alter_partitions(
         getDefaultCatalog(conf), dbName, tblName, newParts, new EnvironmentContext(), null, -1);
-  }
-
-  @Override
-  public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
-      EnvironmentContext environmentContext) throws TException {
-    alter_partitions(
-        getDefaultCatalog(conf), dbName, tblName, newParts, environmentContext, null, -1);
-  }
-
-  @Override
-  public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
-      EnvironmentContext environmentContext,
-      String writeIdList, long writeId) throws TException {
-    alter_partitions(getDefaultCatalog(conf),
-        dbName, tblName, newParts, environmentContext, writeIdList, writeId);
-
   }
 
   @Override
@@ -3014,19 +2296,9 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void alterDatabase(String dbName, Database db) throws TException {
-    alterDatabase(getDefaultCatalog(conf), dbName, db);
-  }
-
-  @Override
   public void alterDatabase(String catName, String dbName, Database newDb) throws TException {
     AlterDatabaseRequest alterDbReq = new AlterDatabaseRequest(prependCatalogToDbName(catName, dbName, conf), newDb);
     client.alter_database_req(alterDbReq);
-  }
-
-  @Override
-  public List<FieldSchema> getFields(String db, String tableName) throws TException {
-    return getFields(getDefaultCatalog(conf), db, tableName);
   }
 
   @Override
@@ -3210,42 +2482,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String engine) throws TException {
-    return getTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colNames, engine);
-  }
-
-  @Override
-  public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
-      String tableName, List<String> colNames, String engine) throws TException {
-    long t1 = System.currentTimeMillis();
-
-    try {
-      if (colNames.isEmpty()) {
-        return Collections.emptyList();
-      }
-      TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames);
-      rqst.setEngine(engine);
-      rqst.setCatName(catName);
-      rqst.setEngine(engine);
-      return client.get_table_statistics_req(rqst).getTableStats();
-    } finally {
-      long diff = System.currentTimeMillis() - t1;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTableColumnStatistics",
-            diff, "HMS client");
-      }
-    }
-  }
-
-  @Override
-  public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String engine, String validWriteIdList) throws TException {
-    return getTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colNames,
-        engine, validWriteIdList);
-  }
-
-  @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames, String engine, String validWriteIdList) throws TException {
     long t1 = System.currentTimeMillis();
@@ -3270,24 +2506,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String dbName, String tableName, List<String> partNames, List<String> colNames, String engine)
-      throws TException {
-    return getPartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName, partNames, colNames, engine);
-  }
-
-  @Override
-  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
-      String catName, String dbName, String tableName, List<String> partNames,
-      List<String> colNames, String engine) throws TException {
-    PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames, partNames);
-    rqst.setEngine(engine);
-    rqst.setCatName(catName);
-    rqst.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tableName, conf));
-    return client.get_partitions_statistics_req(rqst).getPartStats();
-  }
-
-  @Override
   public boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
     if (!req.isSetCat_name()) {
       req.setCat_name(getDefaultCatalog(conf));
@@ -3303,13 +2521,8 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req)  throws TException {
+  public void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException {
     client.update_transaction_statistics(req);
-  }
-
-  @Override
-  public List<FieldSchema> getSchema(String db, String tableName) throws TException {
-    return getSchema(getDefaultCatalog(conf), db, tableName);
   }
 
   @Override
@@ -3352,11 +2565,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
             diff, "HMS client");
       }
     }
-  }
-
-  @Override
-  public Partition getPartition(String db, String tableName, String partName) throws TException {
-    return getPartition(getDefaultCatalog(conf), db, tableName, partName);
   }
 
   @Override
@@ -3645,20 +2853,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public ValidTxnList getValidTxns() throws TException {
-    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
-    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
-    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), 0);
-  }
-
-  @Override
-  public ValidTxnList getValidTxns(long currentTxn) throws TException {
-    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
-    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
-    return TxnCommonUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), currentTxn);
-  }
-
-  @Override
   public ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
     GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
     getOpenTxnsRequest.setExcludeTxnTypes(excludeTxnTypes);
@@ -3696,12 +2890,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException {
     client.add_write_ids_to_min_history(txnId, writeIds);
-  }
-
-  @Override
-  public long openTxn(String user) throws TException {
-    OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null, null);
-    return txns.getTxn_ids().get(0);
   }
 
   @Override
@@ -3751,11 +2939,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void rollbackTxn(long txnid) throws TException {
-    client.abort_txn(new AbortTxnRequest(txnid));
-  }
-
-  @Override
   public void rollbackTxn(AbortTxnRequest abortTxnRequest) throws TException {
     client.abort_txn(abortTxnRequest);
   }
@@ -3766,11 +2949,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     rqst.setReplPolicy(replPolicy);
     rqst.setTxn_type(txnType);
     client.abort_txn(rqst);
-  }
-
-  @Override
-  public void commitTxn(long txnid) throws TException {
-    client.commit_txn(new CommitTxnRequest(txnid));
   }
 
   @Override
@@ -3794,11 +2972,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public GetOpenTxnsInfoResponse showTxns() throws TException {
     return client.get_open_txns_info();
-  }
-
-  @Override
-  public void abortTxns(List<Long> txnids) throws TException {
-    client.abort_txns(new AbortTxnsRequest(txnids));
   }
 
   @Override
@@ -3831,11 +3004,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       rqst.setPartNames(partNames);
     }
     client.repl_tbl_writeid_state(rqst);
-  }
-
-  @Override
-  public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
-    return allocateTableWriteId(txnId, dbName, tableName, false);
   }
 
   @Override
@@ -3901,12 +3069,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  @Deprecated
-  public ShowLocksResponse showLocks() throws TException {
-    return client.show_locks(new ShowLocksRequest());
-  }
-
-  @Override
   public ShowLocksResponse showLocks(ShowLocksRequest request) throws TException {
     return client.show_locks(request);
   }
@@ -3923,31 +3085,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   public HeartbeatTxnRangeResponse heartbeatTxnRange(long min, long max) throws TException {
     HeartbeatTxnRangeRequest rqst = new HeartbeatTxnRangeRequest(min, max);
     return client.heartbeat_txn_range(rqst);
-  }
-
-  @Override
-  @Deprecated
-  public void compact(String dbname, String tableName, String partitionName, CompactionType type)
-      throws TException {
-    CompactionRequest cr = new CompactionRequest();
-    if (dbname == null) {
-      cr.setDbname(DEFAULT_DATABASE_NAME);
-    } else {
-      cr.setDbname(dbname);
-    }
-    cr.setTablename(tableName);
-    if (partitionName != null) {
-      cr.setPartitionname(partitionName);
-    }
-    cr.setType(type);
-    client.compact(cr);
-  }
-
-  @Deprecated
-  @Override
-  public void compact(String dbname, String tableName, String partitionName, CompactionType type,
-      Map<String, String> tblproperties) throws TException {
-    compact2(dbname, tableName, partitionName, type, tblproperties);
   }
 
   @Override
@@ -3975,11 +3112,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
     return client.compact2(request);
   }
 
-  @Override
-  public ShowCompactResponse showCompactions() throws TException {
-    return client.show_compact(new ShowCompactRequest());
-  }
-
   @Override public ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
     return client.show_compact(request);
   }
@@ -3994,13 +3126,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
       GetLatestCommittedCompactionInfoRequest request) throws TException {
     return client.get_latest_committed_compaction_info(request);
-  }
-
-  @Deprecated
-  @Override
-  public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
-      List<String> partNames) throws TException {
-    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames));
   }
 
   @Override
@@ -4018,15 +3143,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public long getLatestTxnIdInConflict(long txnId) throws TException {
     return client.get_latest_txnid_in_conflict(txnId);
-  }
-
-  @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  @Override
-  public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
-      NotificationFilter filter) throws TException {
-    NotificationEventRequest rqst = new NotificationEventRequest(lastEventId);
-    rqst.setMaxEvents(maxEvents);
-    return getNextNotificationsInternal(rqst, false, filter);
   }
 
   @Override
@@ -4111,24 +3227,12 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void markPartitionForEvent(String db_name, String tbl_name, Map<String, String> partKVs, PartitionEventType eventType)
-      throws TException {
-    markPartitionForEvent(getDefaultCatalog(conf), db_name, tbl_name, partKVs, eventType);
-  }
-
-  @Override
   public void markPartitionForEvent(String catName, String db_name, String tbl_name,
       Map<String, String> partKVs,
       PartitionEventType eventType) throws TException {
     client.markPartitionForEvent(prependCatalogToDbName(catName, db_name, conf), tbl_name, partKVs,
         eventType);
 
-  }
-
-  @Override
-  public boolean isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String, String> partKVs, PartitionEventType eventType)
-      throws TException {
-    return isPartitionMarkedForEvent(getDefaultCatalog(conf), db_name, tbl_name, partKVs, eventType);
   }
 
   @Override
@@ -4151,20 +3255,9 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public void alterFunction(String dbName, String funcName, Function newFunction)
-      throws TException {
-    alterFunction(getDefaultCatalog(conf), dbName, funcName, newFunction);
-  }
-
-  @Override
   public void alterFunction(String catName, String dbName, String funcName,
       Function newFunction) throws TException {
     client.alter_function(prependCatalogToDbName(catName, dbName, conf), funcName, newFunction);
-  }
-
-  @Override
-  public void dropFunction(String dbName, String funcName) throws TException {
-    dropFunction(getDefaultCatalog(conf), dbName, funcName);
   }
 
   @Override
@@ -4173,19 +3266,9 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public Function getFunction(String dbName, String funcName) throws TException {
-    return getFunction(getDefaultCatalog(conf), dbName, funcName);
-  }
-
-  @Override
   public Function getFunction(String catName, String dbName, String funcName) throws TException {
     return HiveMetaStoreClientUtils.deepCopy(
         client.get_function(prependCatalogToDbName(catName, dbName, conf), funcName));
-  }
-
-  @Override
-  public List<String> getFunctions(String dbName, String pattern) throws TException {
-    return getFunctions(getDefaultCatalog(conf), dbName, pattern);
   }
 
   @Override
@@ -4201,37 +3284,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public GetAllFunctionsResponse getAllFunctions() throws TException {
     return client.get_all_functions();
-  }
-
-  @Override
-  public AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partNames, String engine) throws TException {
-    return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames, partNames, engine);
-  }
-
-  @Override
-  public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-      List<String> colNames, List<String> partNames, String engine) throws TException {
-    long t1 = System.currentTimeMillis();
-
-    try {
-      if (colNames.isEmpty() || partNames.isEmpty()) {
-        LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
-        return new AggrStats(new ArrayList<>(), 0); // Nothing to aggregate
-      }
-      PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
-      req.setEngine(engine);
-      req.setCatName(catName);
-      req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tblName, conf));
-
-      return client.get_aggr_stats_for(req);
-    } finally {
-      long diff = System.currentTimeMillis() - t1;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getAggrColStatsFor",
-            diff, "HMS client");
-      }
-    }
   }
 
   @Override
@@ -4649,12 +3701,6 @@ public class ThriftHiveMetaStoreClient implements IMetaStoreClient {
       }
     }
     return client.get_partitions_with_specs(request);
-  }
-
-  @Deprecated
-  @Override
-  public OptionalCompactionInfoStruct findNextCompact(String workerId) throws TException {
-    return client.find_next_compact(workerId);
   }
 
   @Override

@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
@@ -93,7 +92,6 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.client.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
@@ -201,6 +199,9 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     }
     req.setProcessorIdentifier(ThriftHiveMetaStoreClient.getProcessorIdentifier());
 
+    if (!req.isSetValidWriteIdList()) {
+      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+    }
 
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
@@ -580,7 +581,9 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       }
     }
 
-    req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+    if (!req.isSetValidWriteIdList()) {
+      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+    }
 
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
@@ -620,7 +623,9 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
       }
     }
 
-    // TODO: Should we set ValidWriteIdList just like listPartitionsByExpr()?
+    if (!req.isSetValidWriteIdList()) {
+      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+    }
 
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
@@ -691,9 +696,6 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public void createTable(CreateTableRequest request) throws TException {
     Table tbl = request.getTable();
     if (tbl.isTemporary()) {
-      if (!tbl.isSetCatName()) {
-        tbl.setCatName(getDefaultCatalog(conf));
-      }
       createTempTable(tbl);
     } else {
       getDelegate().createTable(request);
@@ -1319,7 +1321,6 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
     return getDelegate().add_partitions(partitions, ifNotExists, needResults);
   }
-
 
   @Override
   public Partition getPartition(String catName, String dbName, String tblName, String name)
@@ -2339,6 +2340,10 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList) throws TException {
+    if (writeIdList == null) {
+      writeIdList = getValidWriteIdList(dbName, tblName);
+    }
+
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
@@ -2515,7 +2520,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
    * Methods for setting ValidTxnList retrieved from the current session.
    */
 
-  // TODO: Should we consider catalog as well as db?
+  // TODO: Need to take catName once we extend TXN_TO_WRITE_ID.
   private String getValidWriteIdList(String dbName, String tblName) {
     try {
       final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);
@@ -2537,6 +2542,17 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     } catch (Exception e) {
       throw new RuntimeException("Exception getting valid write id list", e);
     }
+  }
+
+  @Override
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String catName, String dbName,
+      String tableName, List<String> partNames, List<String> colNames, String engine, String validWriteIdList)
+      throws TException {
+    if (validWriteIdList == null) {
+      validWriteIdList = getValidWriteIdList(dbName, tableName);
+    }
+    return getDelegate().getPartitionColumnStatistics(catName, dbName, tableName, partNames, colNames, engine,
+        validWriteIdList);
   }
 
   @Override

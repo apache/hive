@@ -68,7 +68,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 
 /**
@@ -163,7 +162,6 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
     return INITIALIZED.get();
   }
 
-  // SG:FIXME, capabilities in CacheKey?
   @Override
   public Table getTable(GetTableRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
@@ -251,7 +249,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
   public List<String> listPartitionNames(String catName, String dbName, String tableName, int maxParts)
       throws TException {
     if (isCacheEnabledAndInitialized()) {
-      TableWatermark watermark =new TableWatermark(
+      TableWatermark watermark = new TableWatermark(
           getValidWriteIdList(dbName, tableName),
           getTable(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
