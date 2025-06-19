@@ -122,7 +122,7 @@ public class IcebergTableUtil {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
 
   public static final String PARTITION_TRANSFORM_SPEC_NOT_FOUND =
-      "Iceberg partition transform spec is not found in QueryState.";
+          "Iceberg partition transform spec is not found in QueryState.";
 
   public static final int SPEC_IDX = 1;
   public static final int PART_IDX = 0;
@@ -133,21 +133,22 @@ public class IcebergTableUtil {
   /**
    * Constructs the table properties needed for the Iceberg table loading by retrieving the information from the
    * hmsTable. It then calls {@link IcebergTableUtil#getTable(Configuration, Properties)} with these properties.
+   *
    * @param configuration a Hadoop configuration
-   * @param hmsTable the HMS table
-   * @param skipCache if set to true there won't be an attempt to retrieve the table from SessionState
+   * @param hmsTable      the HMS table
+   * @param skipCache     if set to true there won't be an attempt to retrieve the table from SessionState
    * @return the Iceberg table
    */
   static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable,
-      boolean skipCache) {
+                        boolean skipCache) {
     Properties properties = new Properties();
     properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
     properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
     hmsTable.getParameters().computeIfPresent(InputFormatConfig.CATALOG_NAME,
-        (k, v) -> {
-          properties.setProperty(k, v);
-          return v;
-        });
+            (k, v) -> {
+              properties.setProperty(k, v);
+              return v;
+            });
     return getTable(configuration, properties, skipCache);
   }
 
@@ -159,9 +160,10 @@ public class IcebergTableUtil {
    * Load the iceberg table either from the {@link QueryState} or through the configured catalog. Look for the table
    * object stored in the query state. If it's null, it means the table was not loaded yet within the same query
    * therefore we claim it through the Catalogs API and then store it in query state.
+   *
    * @param configuration a Hadoop configuration
-   * @param properties controlling properties
-   * @param skipCache if set to true there won't be an attempt to retrieve the table from SessionState
+   * @param properties    controlling properties
+   * @param skipCache     if set to true there won't be an attempt to retrieve the table from SessionState
    * @return an Iceberg table
    */
   static Table getTable(Configuration configuration, Properties properties, boolean skipCache) {
@@ -176,21 +178,21 @@ public class IcebergTableUtil {
     }
     String tableIdentifier = props.getProperty(Catalogs.NAME);
     Function<Void, Table> tableLoadFunc =
-        unused -> {
-          Table tab = Catalogs.loadTable(configuration, props);
-          SessionStateUtil.addResource(configuration, tableIdentifier, tab);
-          return tab;
-        };
+            unused -> {
+              Table tab = Catalogs.loadTable(configuration, props);
+              SessionStateUtil.addResource(configuration, tableIdentifier, tab);
+              return tab;
+            };
 
     if (skipCache) {
       return tableLoadFunc.apply(null);
     } else {
       return SessionStateUtil.getResource(configuration, tableIdentifier).filter(o -> o instanceof Table)
-          .map(o -> (Table) o).orElseGet(() -> {
-            LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
-                tableIdentifier);
-            return tableLoadFunc.apply(null);
-          });
+              .map(o -> (Table) o).orElseGet(() -> {
+                LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
+                        tableIdentifier);
+                return tableLoadFunc.apply(null);
+              });
     }
   }
 
@@ -203,7 +205,7 @@ public class IcebergTableUtil {
 
     if (hmsTable.getAsOfTimestamp() != null) {
       ZoneId timeZone = SessionState.get() == null ?
-          new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
+              new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
       TimestampTZ time = TimestampTZUtil.parse(hmsTable.getAsOfTimestamp(), timeZone);
       snapshotId = SnapshotUtil.snapshotIdAsOfTime(table, time.toEpochMilli());
 
@@ -214,7 +216,7 @@ public class IcebergTableUtil {
         SnapshotRef ref = table.refs().get(hmsTable.getAsOfVersion());
         if (ref == null) {
           throw new RuntimeException("Cannot find matching snapshot ID or reference name for version " +
-              hmsTable.getAsOfVersion());
+                  hmsTable.getAsOfVersion());
         }
         snapshotId = ref.snapshotId();
       }
@@ -239,31 +241,32 @@ public class IcebergTableUtil {
 
   static String getColStatsPath(Table table, long snapshotId) {
     return table.statisticsFiles().stream()
-      .filter(stats -> stats.snapshotId() == snapshotId)
-      .filter(stats -> stats.blobMetadata().stream()
-        .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
-      )
-      .map(StatisticsFile::path)
-      .findAny().orElse(null);
+            .filter(stats -> stats.snapshotId() == snapshotId)
+            .filter(stats -> stats.blobMetadata().stream()
+                    .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
+            )
+            .map(StatisticsFile::path)
+            .findAny().orElse(null);
   }
 
   static PartitionStatisticsFile getPartitionStatsFile(Table table, long snapshotId) {
     return table.partitionStatisticsFiles().stream()
-      .filter(stats -> stats.snapshotId() == snapshotId)
-      .findAny().orElse(null);
+            .filter(stats -> stats.snapshotId() == snapshotId)
+            .findAny().orElse(null);
   }
 
   /**
    * Create {@link PartitionSpec} based on the partition information stored in
    * {@link TransformSpec}.
+   *
    * @param configuration a Hadoop configuration
-   * @param schema iceberg table schema
+   * @param schema        iceberg table schema
    * @return iceberg partition spec, always non-null
    */
   public static PartitionSpec spec(Configuration configuration, Schema schema) {
     List<TransformSpec> partitionBy = SessionStateUtil
-        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<TransformSpec>) o).orElse(null);
+            .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+            .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionBy == null) {
       LOG.warn(PARTITION_TRANSFORM_SPEC_NOT_FOUND);
@@ -285,8 +288,8 @@ public class IcebergTableUtil {
     table.spec().fields().forEach(field -> updatePartitionSpec.removeField(field.name()));
 
     List<TransformSpec> partitionTransformSpecList = SessionStateUtil
-        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<TransformSpec>) o).orElse(null);
+            .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+            .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionTransformSpecList == null) {
       LOG.warn(PARTITION_TRANSFORM_SPEC_NOT_FOUND);
@@ -308,8 +311,9 @@ public class IcebergTableUtil {
 
   /**
    * Roll an iceberg table's data back to a specific snapshot identified either by id or before a given timestamp.
+   *
    * @param table the iceberg table
-   * @param type the type of the rollback, can be either time based or version based
+   * @param type  the type of the rollback, can be either time based or version based
    * @param value parameter of the rollback, that can be a timestamp in millis or a snapshot id
    */
   public static void rollback(Table table, AlterTableExecuteSpec.RollbackSpec.RollbackType type, Long value) {
@@ -326,6 +330,7 @@ public class IcebergTableUtil {
 
   /**
    * Set the current snapshot for the iceberg table
+   *
    * @param table the iceberg table
    * @param value parameter of the rollback, that can be a snapshot id or a SnapshotRef name
    */
@@ -335,13 +340,13 @@ public class IcebergTableUtil {
     try {
       snapshotId = Long.parseLong(value);
       LOG.debug("Rolling the iceberg table {} from snapshot id {} to snapshot ID {}", table.name(),
-          table.currentSnapshot().snapshotId(), snapshotId);
+              table.currentSnapshot().snapshotId(), snapshotId);
     } catch (NumberFormatException e) {
       String refName = PlanUtils.stripQuotes(value);
       snapshotId = Optional.ofNullable(table.refs().get(refName)).map(SnapshotRef::snapshotId).orElseThrow(() ->
-          new IllegalArgumentException(String.format("SnapshotRef %s does not exist", refName)));
+              new IllegalArgumentException(String.format("SnapshotRef %s does not exist", refName)));
       LOG.debug("Rolling the iceberg table {} from snapshot id {} to the snapshot ID {} of SnapshotRef {}",
-          table.name(), table.currentSnapshot().snapshotId(), snapshotId, refName);
+              table.name(), table.currentSnapshot().snapshotId(), snapshotId, refName);
     }
     manageSnapshots.setCurrentSnapshot(snapshotId);
     manageSnapshots.commit();
@@ -349,7 +354,8 @@ public class IcebergTableUtil {
 
   /**
    * Fast forwards a branch to another.
-   * @param table the iceberg table
+   *
+   * @param table        the iceberg table
    * @param sourceBranch the source branch
    * @param targetBranch the target branch
    */
@@ -410,11 +416,11 @@ public class IcebergTableUtil {
   public static boolean isCopyOnWriteMode(Context.Operation operation, BinaryOperator<String> props) {
     final String mode = switch (operation) {
       case DELETE -> props.apply(
-          TableProperties.DELETE_MODE, getWriteModeDefault(props));
+              TableProperties.DELETE_MODE, getWriteModeDefault(props));
       case UPDATE -> props.apply(
-          TableProperties.UPDATE_MODE, getWriteModeDefault(props));
+              TableProperties.UPDATE_MODE, getWriteModeDefault(props));
       case MERGE -> props.apply(
-          TableProperties.MERGE_MODE, getWriteModeDefault(props));
+              TableProperties.MERGE_MODE, getWriteModeDefault(props));
       default -> null;
     };
     return COPY_ON_WRITE.modeName().equalsIgnoreCase(mode);
@@ -439,9 +445,8 @@ public class IcebergTableUtil {
   }
 
   public static PartitionData toPartitionData(StructLike sourceKey, Types.StructType sourceKeyType,
-      Types.StructType targetKeyType) {
-    StructProjection projection = StructProjection.create(sourceKeyType, targetKeyType)
-        .wrap(sourceKey);
+                                              Types.StructType targetKeyType) {
+    StructProjection projection = StructProjection.create(sourceKeyType, targetKeyType).wrap(sourceKey);
     return toPartitionData(projection, targetKeyType);
   }
 
@@ -697,7 +702,7 @@ public class IcebergTableUtil {
   }
 
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
-      throws MetaException, HiveException {
+          throws MetaException, HiveException {
     if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
       throw new HiveException("Table and partitionPath must not be null or empty.");
     }
@@ -706,19 +711,19 @@ public class IcebergTableUtil {
     List<String> fieldNames = Lists.newArrayList(Warehouse.makeSpecFromName(partitionPath).keySet());
 
     return icebergTable.specs().values().stream()
-        .filter(spec -> {
-          List<String> specFieldNames = spec.fields().stream()
-              .map(PartitionField::name)
-              .toList();
-          return specFieldNames.equals(fieldNames);
-        })
-        .findFirst() // Supposed to be only one matching spec
-        .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
+            .filter(spec -> {
+              List<String> specFieldNames = spec.fields().stream()
+                      .map(PartitionField::name)
+                      .toList();
+              return specFieldNames.equals(fieldNames);
+            })
+            .findFirst() // Supposed to be only one matching spec
+            .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
     TransformSpec spec = TransformSpec.fromString(transformName.toUpperCase(),
-        table.schema().findColumnName(sourceId));
+            table.schema().findColumnName(sourceId));
     return spec;
   }
 
@@ -734,7 +739,7 @@ public class IcebergTableUtil {
 
       if (filter != null) {
         blobMetadata = blobMetadata.stream().filter(filter)
-          .toList();
+                .toList();
       }
       Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
       LOG.info("Using column stats from: {}", statsPath);
@@ -762,13 +767,13 @@ public class IcebergTableUtil {
     // The current spec is not necessary the latest which can happen when partition spec was changed to one of
     // table's past specs.
     return table.currentSnapshot() != null &&
-        table.currentSnapshot().allManifests(table.io()).parallelStream()
-            .map(ManifestFile::partitionSpecId)
-            .anyMatch(id -> id != table.spec().specId());
+            table.currentSnapshot().allManifests(table.io()).parallelStream()
+                    .map(ManifestFile::partitionSpecId)
+                    .anyMatch(id -> id != table.spec().specId());
   }
 
   public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
-      Boolean latestSpecOnly) {
+                                                                         Boolean latestSpecOnly) {
     Set<String> partitions = Sets.newHashSet();
     int tableSpecId = icebergTable.spec().specId();
     for (T file : files) {
@@ -781,7 +786,7 @@ public class IcebergTableUtil {
   }
 
   public static List<Partition> convertNameToMetastorePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Collection<String> partNames) {
+                                                                Collection<String> partNames) {
     List<Partition> partitions = Lists.newArrayList();
     for (String partName : partNames) {
       Map<String, String> partSpecMap = Maps.newLinkedHashMap();
@@ -792,16 +797,16 @@ public class IcebergTableUtil {
   }
 
   public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern,
-      String tablePattern) {
+                                             String tablePattern) {
     return new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(
-            "EXTERNAL_TABLE")
-        .tableCondition(
-            hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "table_type like \"ICEBERG\" ")
-        .build();
+                    "EXTERNAL_TABLE")
+            .tableCondition(
+                    hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "table_type like \"ICEBERG\" ")
+            .build();
   }
 
   public static String defaultWarehouseLocation(TableIdentifier tableIdentifier,
-      Configuration conf, Properties catalogProperties) {
+                                                Configuration conf, Properties catalogProperties) {
     StringBuilder sb = new StringBuilder();
     String warehouseLocation = conf.get(String.format(
         IcebergCatalogProperties.CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
@@ -814,4 +819,48 @@ public class IcebergTableUtil {
     return sb.toString();
   }
 
+  static Catalogs.MaterializedView getMaterializedView(
+          Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable, boolean skipCache) {
+    Properties properties = new Properties();
+    properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
+    hmsTable.getParameters().computeIfPresent(InputFormatConfig.CATALOG_NAME,
+            (k, v) -> {
+              properties.setProperty(k, v);
+              return v;
+            });
+    return getMaterializedView(configuration, properties, skipCache);
+  }
+
+  static Catalogs.MaterializedView getMaterializedView(
+          Configuration configuration, Properties properties, boolean skipCache) {
+    String metaView = properties.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY);
+
+    Properties props = new Properties(properties); // use input properties as default
+    if (metaView != null) {
+      // HiveCatalog, HadoopCatalog uses NAME to identify the metadata table
+      props.put(Catalogs.NAME, properties.get(Catalogs.NAME) + "." + metaView);
+      // HadoopTable uses LOCATION to identify the metadata table
+      props.put(Catalogs.LOCATION, properties.get(Catalogs.LOCATION) + "#" + metaView);
+    }
+    String viewIdentifier = props.getProperty(Catalogs.NAME);
+    Function<Void, Catalogs.MaterializedView> mvLoadFunc =
+            unused -> {
+              Catalogs.MaterializedView mv = Catalogs.loadMaterializedView(configuration, props);
+              SessionStateUtil.addResource(configuration, viewIdentifier, mv);
+              return mv;
+            };
+
+    if (skipCache) {
+      return mvLoadFunc.apply(null);
+    } else {
+      return SessionStateUtil.getResource(configuration, viewIdentifier).filter(o -> o instanceof Table)
+              .map(o -> (Catalogs.MaterializedView) o).orElseGet(() -> {
+                LOG.debug("Iceberg table {} is not found in QueryState. " +
+                                "Loading materialized view from configured catalog",
+                        viewIdentifier);
+                return mvLoadFunc.apply(null);
+              });
+    }
+  }
 }

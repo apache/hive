@@ -112,7 +112,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       // Check if we are trying to load an Iceberg View as a Table
       HiveOperationsBase.validateIcebergViewNotLoadedAsIcebergTable(table, fullName);
       // Check if it is a valid Iceberg Table
-      HiveOperationsBase.validateTableIsIceberg(table, fullName);
+      HiveOperationsBase.validateTableOrMVIsIceberg(table, fullName);
 
       metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
 

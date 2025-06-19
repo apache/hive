@@ -292,7 +292,8 @@ public final class Catalogs {
     return map;
   }
 
-  public static View createMaterializedView(Configuration conf, Properties props, String viewExpandedText) {
+  public static MaterializedView createMaterializedView(
+          Configuration conf, Properties props, String viewExpandedText) {
     Schema schema = schema(props);
     PartitionSpec spec = spec(props, schema);
     String location = props.getProperty(LOCATION);
@@ -315,14 +316,54 @@ public final class Catalogs {
 
     Map<String, String> viewProperties = Maps.newHashMapWithExpectedSize(2);
     viewProperties.put(MATERIALIZED_VIEW_PROPERTY_KEY, "true");
-    viewProperties.put(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY,
-            storageTableIdentifier);
+    viewProperties.put(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY, storageTableIdentifier);
 
     TableIdentifier viewIdentifier = TableIdentifier.parse(name);
-    return viewCatalog.buildView(viewIdentifier).withLocation(location)
+    View mv = viewCatalog.buildView(viewIdentifier).withLocation(location)
             .withDefaultNamespace(viewIdentifier.namespace())
             .withQuery("hive", viewExpandedText)
             .withSchema(schema)
             .withProperties(viewProperties).create();
+
+    return new MaterializedView(mv, storageTable);
+  }
+
+  public static class MaterializedView {
+    private View view;
+    private Table stotageTable;
+
+    public MaterializedView(View view, Table stotageTable) {
+      this.view = view;
+      this.stotageTable = stotageTable;
+    }
+
+    public View getView() {
+      return view;
+    }
+
+    public Table getStotageTable() {
+      return stotageTable;
+    }
+  }
+
+  public static MaterializedView loadMaterializedView(Configuration conf, Properties props) {
+    return loadMaterializedView(conf, props.getProperty(NAME), props.getProperty(LOCATION),
+            props.getProperty(InputFormatConfig.CATALOG_NAME));
+  }
+
+  public static MaterializedView loadMaterializedView(
+          Configuration conf, String tableIdentifier, String tableLocation, String catalogName) {
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+
+    if (catalog.isPresent()) {
+      Preconditions.checkArgument(tableIdentifier != null, "View identifier not set");
+      ViewCatalog viewCatalog = (ViewCatalog) catalog.get();
+      View view = viewCatalog.loadView(TableIdentifier.parse(tableIdentifier));
+      String storageTableIdentifier = view.properties().get(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY);
+      Table storageTable = catalog.get().loadTable(TableIdentifier.parse(storageTableIdentifier));
+      return new MaterializedView(view, storageTable);
+    }
+
+    throw new UnsupportedOperationException("Catalog " + catalogName + " not found!");
   }
 }
