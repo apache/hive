@@ -901,4 +901,49 @@ public class IcebergTableUtil {
         properties -> IcebergTableUtil.formatVersion(tableProperties) >= 3 &&
             FileFormat.PARQUET == IcebergTableUtil.defaultFileFormat(properties::getOrDefault)).isPresent();
   }
+
+  static Catalogs.MaterializedView getMaterializedView(
+      Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable, boolean skipCache) {
+    Properties properties = new Properties();
+    properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
+    hmsTable.getParameters().computeIfPresent(InputFormatConfig.CATALOG_NAME,
+        (k, v) -> {
+          properties.setProperty(k, v);
+          return v;
+        });
+    return getMaterializedView(configuration, properties, skipCache);
+  }
+
+  static Catalogs.MaterializedView getMaterializedView(
+      Configuration configuration, Properties properties, boolean skipCache) {
+    String metaView = properties.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY);
+
+    Properties props = new Properties(properties); // use input properties as default
+    if (metaView != null) {
+      // HiveCatalog, HadoopCatalog uses NAME to identify the metadata table
+      props.put(Catalogs.NAME, properties.get(Catalogs.NAME) + "." + metaView);
+      // HadoopTable uses LOCATION to identify the metadata table
+      props.put(Catalogs.LOCATION, properties.get(Catalogs.LOCATION) + "#" + metaView);
+    }
+    String viewIdentifier = props.getProperty(Catalogs.NAME);
+    Function<Void, Catalogs.MaterializedView> mvLoadFunc =
+        unused -> {
+          Catalogs.MaterializedView mv = Catalogs.loadMaterializedView(configuration, props);
+          SessionStateUtil.addResource(configuration, viewIdentifier, mv);
+          return mv;
+        };
+
+    if (skipCache) {
+      return mvLoadFunc.apply(null);
+    } else {
+      return SessionStateUtil.getResource(configuration, viewIdentifier).filter(o -> o instanceof Table)
+          .map(o -> (Catalogs.MaterializedView) o).orElseGet(() -> {
+            LOG.debug("Iceberg table {} is not found in QueryState. " +
+                    "Loading materialized view from configured catalog",
+                viewIdentifier);
+            return mvLoadFunc.apply(null);
+          });
+    }
+  }
 }

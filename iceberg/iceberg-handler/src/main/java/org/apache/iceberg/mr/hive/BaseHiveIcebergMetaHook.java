@@ -520,8 +520,23 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
-        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
-        String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
+        Table tbl;
+        String formatVersion;
+        switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
+          case MANAGED_TABLE:
+          case EXTERNAL_TABLE:
+            tbl = IcebergTableUtil.getTable(conf, hmsTable);
+            formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+            break;
+
+          case MATERIALIZED_VIEW:
+            Catalogs.MaterializedView mv = IcebergTableUtil.getMaterializedView(conf, hmsTable, false);
+            formatVersion = String.valueOf(((BaseTable) mv.getStotageTable()).operations().current().formatVersion());
+            break;
+
+          default:
+            throw new UnsupportedOperationException("Unsupported table type " + hmsTable.getTableType());
+        }
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
