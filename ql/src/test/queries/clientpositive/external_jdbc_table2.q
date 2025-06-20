@@ -1,3 +1,4 @@
+--!qt:database:derby:qdb
 --! qt:dataset:src
 
 -- SORT_QUERY_RESULTS
@@ -6,43 +7,43 @@ CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf
 
 FROM src
 SELECT
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
 limit 1;
 
 FROM src
 SELECT
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2_1;create=true','user2','passwd2',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user2','passwd2',
 'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2_1','user2','passwd2',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user2','passwd2',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2_1','user2','passwd2',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user2','passwd2',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2_1','user2','passwd2',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user2','passwd2',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2_1','user2','passwd2',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user2','passwd2',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
 limit 1;
 
 FROM src
 SELECT
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE )' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','8','9.0','11.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','101','-16','66.0','-75.0'),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','40','50','-455.4543','330.767')
 limit 1;
 
@@ -59,7 +60,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url}",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1",
@@ -77,7 +78,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2_1;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url}",
                 "hive.sql.dbcp.username" = "user2",
                 "hive.sql.dbcp.password" = "passwd2",
                 "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2",
@@ -95,7 +96,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url}",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2",
@@ -183,10 +184,10 @@ DROP TABLE db1_ext_auth2;
 
 FROM src
 SELECT
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth1_1','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_auth2_1','user2','passwd2',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user2','passwd2',
 'DROP TABLE EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE2' )
 limit 1;

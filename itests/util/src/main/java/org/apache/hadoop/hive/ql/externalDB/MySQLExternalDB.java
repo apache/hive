@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 /**
  * Designed for MySQL external database connection
  */
-public class MySQLExternalDB extends AbstractExternalDB {
+public class MySQLExternalDB extends DockerizedDatabase {
 
     public MySQLExternalDB() {
     }

@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
-public class Oracle extends AbstractExternalDB {
+public class Oracle extends DockerizedDatabase {
   @Override
   public String getRootUser() {
     return "SYS as SYSDBA";
