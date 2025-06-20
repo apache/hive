@@ -362,6 +362,13 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
+      List<String> partNames, String engine) throws TException {
+    return getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine,
+        getValidWriteIdList(dbName, tblName));
+  }
+
+  @Override
+  public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList) throws TException {
     if (isCacheEnabledAndInitialized()) {
       PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
@@ -432,7 +439,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
     return getDelegate().getPartitionsByNames(req);
   }
 
-  // TODO: Could we merge this method with MetaStoreClientSessionProxy.getValidWriteIdList()?
+  // cf. SessionMetaStoreClientProxy.getValidWriteIdList
   private String getValidWriteIdList(String dbName, String tblName) {
     try {
       final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);

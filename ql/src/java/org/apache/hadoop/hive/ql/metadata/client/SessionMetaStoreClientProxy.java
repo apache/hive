@@ -2335,11 +2335,14 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
-      List<String> partNames, String engine, String writeIdList) throws TException {
-    if (writeIdList == null) {
-      writeIdList = getValidWriteIdList(dbName, tblName);
-    }
+      List<String> partNames, String engine) throws TException {
+    return getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine,
+        getValidWriteIdList(dbName, tblName));
+  }
 
+  @Override
+  public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
+      List<String> partNames, String engine, String writeIdList) throws TException {
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);

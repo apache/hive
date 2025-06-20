@@ -788,23 +788,16 @@ public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
   public final AggrStats getAggrColStatsFor(String dbName, String tblName, List<String> colNames,
       List<String> partName, String engine) throws NoSuchObjectException, MetaException, TException {
     // writeIdList should be set by each proxy.
-    return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames, partName, engine, null);
+    return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames, partName, engine);
   }
 
   @Override
   public final AggrStats getAggrColStatsFor(String dbName, String tblName, List<String> colNames,
       List<String> partName, String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
+    // We keep two copies of getAggrColStatsFor to adhere Hive.java's writeIdList, which can be null.
     return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames, partName, engine,
         writeIdList);
-  }
-
-  @Override
-  public final AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-      List<String> colNames, List<String> partNames, String engine)
-      throws NoSuchObjectException, MetaException, TException {
-    // writeIdList should be set by each proxy.
-    return getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, null);
   }
 
   @Override
