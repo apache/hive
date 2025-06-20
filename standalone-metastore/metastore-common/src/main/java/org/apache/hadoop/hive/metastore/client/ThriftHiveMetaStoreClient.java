@@ -1100,6 +1100,13 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
 
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
+      List<String> partNames, String engine) throws TException {
+    return getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine,
+        HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tblName, conf));
+  }
+
+  @Override
+  public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList) throws TException {
     long t1 = System.currentTimeMillis();
 
