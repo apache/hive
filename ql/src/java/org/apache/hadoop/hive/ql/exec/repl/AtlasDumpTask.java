@@ -65,7 +65,7 @@ import java.util.ArrayList;
  **/
 public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtlasDumpTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AtlasDumpTask.class);
   private static final long serialVersionUID = 1L;
   private transient AtlasRestClient atlasRestClient;
 

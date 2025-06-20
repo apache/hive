@@ -1,0 +1,72 @@
+PREHOOK: query: CREATE EXTERNAL TABLE dayOfWeek_test(
+`fund_code` string,
+`test_date` string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dayOfWeek_test
+POSTHOOK: query: CREATE EXTERNAL TABLE dayOfWeek_test(
+`fund_code` string,
+`test_date` string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dayOfWeek_test
+PREHOOK: query: INSERT INTO dayOfWeek_test(fund_code,test_date)
+values('SEC016210079','2023-04-13')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dayofweek_test
+POSTHOOK: query: INSERT INTO dayOfWeek_test(fund_code,test_date)
+values('SEC016210079','2023-04-13')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dayofweek_test
+POSTHOOK: Lineage: dayofweek_test.fund_code SCRIPT []
+POSTHOOK: Lineage: dayofweek_test.test_date SCRIPT []
+PREHOOK: query: SELECT fund_code,
+ test_date,
+ dayofweek(test_date) AS SR,
+ CASE
+     WHEN dayofweek(test_date) = 1 THEN 7
+     ELSE dayofweek(test_date) - 1
+ END AS week_day
+FROM dayOfWeek_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dayofweek_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT fund_code,
+ test_date,
+ dayofweek(test_date) AS SR,
+ CASE
+     WHEN dayofweek(test_date) = 1 THEN 7
+     ELSE dayofweek(test_date) - 1
+ END AS week_day
+FROM dayOfWeek_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dayofweek_test
+#### A masked pattern was here ####
+SEC016210079	2023-04-13	5	4
+PREHOOK: query: SELECT fund_code,
+ test_date,
+ dayofweek(test_date) AS SR,
+ CASE
+     WHEN dayofweek(test_date) = 1 THEN 7
+     ELSE dayofweek(test_date) - 1
+ END AS week_day
+FROM dayOfWeek_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dayofweek_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT fund_code,
+ test_date,
+ dayofweek(test_date) AS SR,
+ CASE
+     WHEN dayofweek(test_date) = 1 THEN 7
+     ELSE dayofweek(test_date) - 1
+ END AS week_day
+FROM dayOfWeek_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dayofweek_test
+#### A masked pattern was here ####
+SEC016210079	2023-04-13	5	4

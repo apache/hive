@@ -258,9 +258,9 @@ public class HiveCalciteUtil {
     // fields
     if (newKeyCount > 0) {
       leftRel = factory.createProject(leftRel, Collections.emptyList(), newLeftFields,
-          SqlValidatorUtil.uniquify(newLeftFieldNames));
+          SqlValidatorUtil.uniquify(newLeftFieldNames, true), Collections.emptySet());
       rightRel = factory.createProject(rightRel, Collections.emptyList(), newRightFields,
-          SqlValidatorUtil.uniquify(newRightFieldNames));
+          SqlValidatorUtil.uniquify(newRightFieldNames, true), Collections.emptySet());
     }
 
     inputRels[0] = leftRel;
@@ -1230,58 +1230,6 @@ public class HiveCalciteUtil {
       }
       throw new AssertionError("mismatched type " + ref + " " + rightType);
     }
-  }
-
-  private static class DisjunctivePredicatesFinder extends RexVisitorImpl<Void> {
-    // accounting for DeMorgan's law
-    boolean inNegation = false;
-    boolean hasDisjunction = false;
-
-    public DisjunctivePredicatesFinder() {
-      super(true);
-    }
-
-    @Override
-    public Void visitCall(RexCall call) {
-      switch (call.getKind()) {
-      case OR:
-        if (inNegation) {
-          return super.visitCall(call);
-        } else {
-          this.hasDisjunction = true;
-          return null;
-        }
-      case AND:
-        if (inNegation) {
-          this.hasDisjunction = true;
-          return null;
-        } else {
-          return super.visitCall(call);
-        }
-      case NOT:
-        inNegation = !inNegation;
-        return super.visitCall(call);
-      default:
-        return super.visitCall(call);
-      }
-    }
-  }
-
-  /**
-   * Returns whether the expression has disjunctions (OR) at any level of nesting.
-   * <ul>
-   * <li> Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression) </li>
-   * <li> Example 2: NOT(AND(=($0, $1), IS NOT NULL($2))
-   *   this is equivalent to OR((&lt;&gt;($0, $1), IS NULL($2)) </li>
-   * <li> Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression) </li>
-   * </ul>
-   * @param node the expression where to look for disjunctions.
-   * @return true if the given expressions contains a disjunction, false otherwise.
-   */
-  public static boolean hasDisjuction(RexNode node) {
-    DisjunctivePredicatesFinder finder = new DisjunctivePredicatesFinder();
-    node.accept(finder);
-    return finder.hasDisjunction;
   }
 
   /**

@@ -54,26 +54,18 @@ public class MetadataTableSummary {
   public MetadataTableSummary() {
   }
 
-  public MetadataTableSummary columnSummary(int columnCount,
+  public void columnSummary(int columnCount,
       int arrayColCount, int structColCount, int mapColCount) {
     this.colCount = columnCount;
     this.arrayColumnCount = arrayColCount;
     this.structColumnCount = structColCount;
     this.mapColumnCount = mapColCount;
-    return this;
   }
 
-  public MetadataTableSummary partitionSummary(int partColCount, int partCount) {
-    this.partitionCount = partCount;
-    this.partitionColumnCount = partColCount;
-    return this;
-  }
-
-  public MetadataTableSummary tableFormatSummary(String tblType, String compression, String fileFormat) {
+  public void tableFormatSummary(String tblType, String compression, String fileFormat) {
     this.tableType = tblType;
     this.compressionType = compression;
     this.fileFormat = fileFormat;
-    return this;
   }
 
   public String getOwner() {

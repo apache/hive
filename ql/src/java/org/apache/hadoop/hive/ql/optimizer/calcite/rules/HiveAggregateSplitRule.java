@@ -30,7 +30,6 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -73,8 +72,7 @@ public class HiveAggregateSplitRule extends RelOptRule {
       if (aggregateCall.filterArg >= 0) {
         return;
       }
-      SqlAggFunction aggFunction =
-          HiveRelBuilder.getRollup(aggregateCall.getAggregation());
+      SqlAggFunction aggFunction = aggregateCall.getAggregation().getRollup();
       if (aggFunction == null) {
         return;
       }

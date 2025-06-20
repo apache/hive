@@ -1368,7 +1368,7 @@ public final class GenMapRedUtils {
     // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
     // know if merge MR2 will be triggered at execution time
     MoveWork dummyMv = null;
-    if (srcMmWriteId == null) {
+    if (srcMmWriteId == null && !fsInputDesc.isIcebergTable()) {
       // Only create the movework for non-MM table. No action needed for a MM table.
       dummyMv = new MoveWork(null, null, null,
           new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);

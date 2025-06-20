@@ -42,8 +42,8 @@ import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.Endpoint;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.AuthType;
 import org.slf4j.Logger;
@@ -173,9 +173,9 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
 
   private void updateEndpoint(final ServiceRecord srv, final String endpointName) {
     final String instanceUri = srv.get(INSTANCE_URI_CONFIG);
-    final String[] tokens = instanceUri.split(":");
-    final String hostname = tokens[0];
-    final int port = Integer.parseInt(tokens[1]);
+    IPStackUtils.HostPort hostPort = IPStackUtils.getHostAndPort(instanceUri);
+    final String hostname = hostPort.getHostname();
+    final int port = hostPort.getPort();
     Endpoint urlEndpoint = RegistryTypeUtils.ipcEndpoint(endpointName, new InetSocketAddress(hostname, port));
     srv.addInternalEndpoint(urlEndpoint);
     LOG.info("Added {} endpoint to service record", urlEndpoint);

@@ -14,6 +14,6 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
               HiveFilter(condition=[BETWEEN(false, $3, 100, 500)])
                 HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
             HiveProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5])
-              HiveFilter(condition=[AND(IN($13, 678, 964, 918, 849), BETWEEN(false, $5, 22:DECIMAL(12, 2), 52:DECIMAL(12, 2)))])
+              HiveFilter(condition=[AND(IN($13, 678, 849, 918, 964), BETWEEN(false, $5, 22:DECIMAL(12, 2), 52:DECIMAL(12, 2)))])
                 HiveTableScan(table=[[default, item]], table:alias=[item])
 

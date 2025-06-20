@@ -228,6 +228,32 @@ public class HiveIcebergFilterFactory {
     }
   }
 
+  public static Object convertPartitionLiteral(Object literal, TransformSpec transform) {
+    if (transform == null) {
+      return literal;
+    }
+    try {
+      switch (transform.getTransformType()) {
+        case YEAR:
+          return parseYearToTransformYear(literal.toString());
+        case MONTH:
+          return parseMonthToTransformMonth(literal.toString());
+        case HOUR:
+          return parseHourToTransformHour(literal.toString());
+        case DAY:
+        case TRUNCATE:
+        case BUCKET:
+        case IDENTITY:
+          return literal;
+        default:
+          throw new UnsupportedOperationException("Unknown transform: " + transform.getTransformType());
+      }
+    } catch (NumberFormatException | DateTimeException | IllegalStateException e) {
+      throw new RuntimeException(
+          String.format("Unable to parse value '%s' as '%s' transform value", literal.toString(), transform));
+    }
+  }
+
   private static final int ICEBERG_EPOCH_YEAR = 1970;
   private static final int ICEBERG_EPOCH_MONTH = 1;
 

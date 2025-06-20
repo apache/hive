@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 public class ExprDynamicParamDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  final protected transient static char[] hexArray = "0123456789ABCDEF".toCharArray();
+  final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
   private int index;
   private Object value;

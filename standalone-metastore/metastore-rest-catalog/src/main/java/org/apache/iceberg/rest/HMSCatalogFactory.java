@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.ServletServerBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.slf4j.Logger;
@@ -117,7 +118,8 @@ public class HMSCatalogFactory {
    * @return the servlet
    */
   protected HttpServlet createServlet(Catalog catalog) {
-    ServletSecurity security = new ServletSecurity(configuration);
+    String authType = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
+    ServletSecurity security = new ServletSecurity(authType, configuration);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
 

@@ -25,8 +25,9 @@ metastore() {
   JAR=${HIVE_LIB}/hive-metastore-*.jar
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
+  # Append --add-opens args that is required for JDK-17
+  export HADOOP_CLIENT_OPTS=" -Dproc_metastore --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED  --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED $HADOOP_CLIENT_OPTS "
 
-  export HADOOP_CLIENT_OPTS=" -Dproc_metastore $HADOOP_CLIENT_OPTS "
   export HADOOP_OPTS="$HIVE_METASTORE_HADOOP_OPTS $HADOOP_OPTS"
   exec $HADOOP jar $JAR $CLASS "$@"
 }

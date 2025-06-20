@@ -96,7 +96,7 @@ FROM `default`.`user_small`
 WHERE `userid` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `dealid`, `date`, `cityid`, `userid`
 FROM `default`.`orderpayment_small`
-WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND (`cityid` IS NOT NULL AND `userid` IS NOT NULL)) AS `t2` INNER JOIN (SELECT `date`
+WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND `cityid` IS NOT NULL AND `userid` IS NOT NULL) AS `t2` INNER JOIN (SELECT `date`
 FROM `default`.`orderpayment_small`
 WHERE `date` IS NOT NULL) AS `t4` ON `t2`.`date` = `t4`.`date` INNER JOIN (SELECT `dealid`
 FROM `default`.`orderpayment_small`

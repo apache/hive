@@ -51,7 +51,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private final static int MIN_BUFFER_SIZE = 16;
+      private final static int MIN_BUFFER_SIZE = 16;
       transient private byte[] bytes = new byte[MIN_BUFFER_SIZE];
       transient private int length;
 

@@ -79,9 +79,9 @@ columns:struct columns { i32 dep_id}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####

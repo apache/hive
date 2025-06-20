@@ -20,24 +20,17 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.nio.charset.CharacterCodingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * Expression to get day of week.
  * Extends {@link VectorUDFTimestampFieldString}
  */
 public final class VectorUDFDayOfWeekString extends VectorUDFTimestampFieldString {
-
   private static final long serialVersionUID = 1L;
-
-  private transient final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-  private transient final Calendar calendar = Calendar.getInstance(
-      TimeZone.getTimeZone("UTC"));
 
   public VectorUDFDayOfWeekString(int colNum, int outputColumnNum) {
     super(colNum, outputColumnNum, -1, -1);
@@ -49,15 +42,16 @@ public final class VectorUDFDayOfWeekString extends VectorUDFTimestampFieldStrin
 
   @Override
   protected long getField(byte[] bytes, int start, int length) throws ParseException {
-    Date date = null;
     try {
       String decoded = Text.decode(bytes, start, length);
-      date = format.parse(decoded);
+      Date date = DateParser.parseDate(decoded);
+      if (date == null) {
+        throw new ParseException("Unable to parse date string", 0);
+      }
+      return date.getDayOfWeek();
     } catch (CharacterCodingException e) {
       throw new ParseException(e.getMessage(), 0);
     }
-    calendar.setTime(date);
-    return calendar.get(Calendar.DAY_OF_WEEK);
   }
 
 }

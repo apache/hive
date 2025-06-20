@@ -25,6 +25,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -1233,11 +1235,7 @@ public class TestJdbcWithMiniHS2 {
     try {
       constructorCacheField = ReflectionUtil.class.getDeclaredField("CONSTRUCTOR_CACHE");
       if (constructorCacheField != null) {
-        constructorCacheField.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(constructorCacheField, constructorCacheField.getModifiers()
-            & ~Modifier.FINAL);
+        ReflectionUtil.setStaticFinalFieldsModifiable(constructorCacheField);
         tmp =
             CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.SECONDS).concurrencyLevel(64)
                 .weakKeys().weakValues().build();

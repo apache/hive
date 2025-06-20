@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * Call getMapping to collects the results into convenient arrays.
  */
 public class VectorColumnOrderedMap {
-  protected static transient final Logger LOG = LoggerFactory.getLogger(VectorColumnOrderedMap.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(VectorColumnOrderedMap.class);
 
   protected String name;
 

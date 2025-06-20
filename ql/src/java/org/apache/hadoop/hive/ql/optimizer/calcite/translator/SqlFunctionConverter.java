@@ -241,7 +241,6 @@ public class SqlFunctionConverter {
     ASTNode node;
     if (hToken != null) {
       switch (op.kind) {
-        case IN:
         case BETWEEN:
         case ROW:
         case ARRAY_VALUE_CONSTRUCTOR:

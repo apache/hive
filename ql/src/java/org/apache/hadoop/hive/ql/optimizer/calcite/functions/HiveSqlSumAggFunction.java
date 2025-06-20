@@ -124,4 +124,9 @@ public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregat
           false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
     }
   }
+
+  @Override
+  public SqlAggFunction getRollup() {
+    return this;
+  }
 }

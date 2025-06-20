@@ -230,9 +230,9 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         }
         tableNames.add(tableMeta.getTableName());
       });
-      TableFilterContext     tableFilterContext     = new TableFilterContext(dbName, tableNames);
+      TableFilterContext tableFilterContext = TableFilterContext.createFromTableMetas(dbName, tableMetas);
       HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = tableFilterContext.getAuthzContext();
-      final List<String>  filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, dbName, tableNames);
+      final List<String> filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, dbName, tableNames);
       if (!CollectionUtils.isEmpty(filteredTableNames)) {
         Set<String> filteredTabs = new HashSet<>(filteredTableNames);
         LOG.debug("<== HiveMetaStoreAuthorizer.filterTableMetas() : {}", filteredTabs);
@@ -331,6 +331,46 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     LOG.debug("<== HiveMetaStoreAuthorizer.filterDatabaseObjects() :" + ret );
 
     return ret;
+  }
+
+  @Override
+  public final List<Database> filterDatabaseObjects(List<Database> databases) throws MetaException {
+    LOG.debug("==> HiveMetaStoreAuthorizer.filterDatabaseObjects()");
+    if (CollectionUtils.isEmpty(databases)) {
+      return Collections.emptyList();
+    }
+
+    try {
+      DatabaseFilterContext databaseFilterContext = DatabaseFilterContext.createFromDatabases(databases);
+      HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = databaseFilterContext.getAuthzContext();
+
+      HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
+      List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
+      HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+
+      List<HivePrivilegeObject> filteredHivePrivilegeObjects =
+          hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
+
+      if (CollectionUtils.isEmpty(filteredHivePrivilegeObjects)) {
+        return Collections.emptyList();
+      }
+
+      Set<String> filteredDbNames = filteredHivePrivilegeObjects.stream()
+          .map(HivePrivilegeObject::getDbname)
+          .collect(Collectors.toSet());
+
+      List<Database> result = databases.stream()
+          .filter(db -> filteredDbNames.contains(db.getName()))
+          .collect(Collectors.toList());
+
+      LOG.info(String.format("Filtered %d database objects out of %d", result.size(), databases.size()));
+      return result;
+    } catch (Exception e) {
+      LOG.error("Error in HiveMetaStoreAuthorizer.filterDatabaseObjects(): " + e.getMessage(), e);
+      throw new MetaException("Error in HiveMetaStoreAuthorizer.filterDatabaseObjects(): " + e.getMessage());
+    } finally {
+      LOG.debug("<== HiveMetaStoreAuthorizer.filterDatabaseObjects()");
+    }
   }
 
   private List<String> filterDataConnectorObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {

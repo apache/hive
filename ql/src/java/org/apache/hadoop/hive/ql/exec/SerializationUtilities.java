@@ -58,18 +58,19 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Serializer;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
-import com.esotericsoftware.kryo.Registration;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.Pool;
+import com.esotericsoftware.kryo.kryo5.Kryo;
+import com.esotericsoftware.kryo.kryo5.util.DefaultInstantiatorStrategy;
+import com.esotericsoftware.kryo.kryo5.objenesis.strategy.StdInstantiatorStrategy;
+import com.esotericsoftware.kryo.kryo5.Registration;
+import com.esotericsoftware.kryo.kryo5.io.Input;
+import com.esotericsoftware.kryo.kryo5.io.Output;
+import com.esotericsoftware.kryo.kryo5.util.Pool;
+import com.esotericsoftware.kryo.kryo5.serializers.FieldSerializer;
+
 import com.google.common.annotations.VisibleForTesting;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 /**
  * Utilities related to serialization and deserialization.
@@ -130,11 +131,11 @@ public class SerializationUtilities {
     private long classCounter = 0;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static final class SerializerWithHook extends com.esotericsoftware.kryo.Serializer {
-      private final com.esotericsoftware.kryo.Serializer old;
+    private static final class SerializerWithHook extends com.esotericsoftware.kryo.kryo5.Serializer {
+      private final com.esotericsoftware.kryo.kryo5.Serializer old;
       private final Hook hook;
 
-      private SerializerWithHook(com.esotericsoftware.kryo.Serializer old, Hook hook) {
+      private SerializerWithHook(com.esotericsoftware.kryo.kryo5.Serializer old, Hook hook) {
         this.old = old;
         this.hook = hook;
       }
@@ -201,7 +202,7 @@ public class SerializationUtilities {
 
     @Override
     public <T> T readObjectOrNull(Input input, Class<T> type,
-        @SuppressWarnings("rawtypes") com.esotericsoftware.kryo.Serializer serializer) {
+        @SuppressWarnings("rawtypes") com.esotericsoftware.kryo.kryo5.Serializer serializer) {
       Hook hook = ponderGlobalPreReadHook(type);
       T result = super.readObjectOrNull(input, type, serializer);
       return ponderGlobalPostReadHook(hook, result);
@@ -216,7 +217,7 @@ public class SerializationUtilities {
 
     @Override
     public <T> T readObject(Input input, Class<T> type,
-        @SuppressWarnings("rawtypes") com.esotericsoftware.kryo.Serializer serializer) {
+        @SuppressWarnings("rawtypes") com.esotericsoftware.kryo.kryo5.Serializer serializer) {
       Hook hook = ponderGlobalPreReadHook(type);
       T result = super.readObject(input, type, serializer);
       return ponderGlobalPostReadHook(hook, result);
@@ -234,7 +235,7 @@ public class SerializationUtilities {
     }
 
     @Override
-    public com.esotericsoftware.kryo.Registration getRegistration(Class type) {
+    public com.esotericsoftware.kryo.kryo5.Registration getRegistration(Class type) {
       // If PartitionExpressionForMetastore performs deserialization at remote HMS,
       // the first class encountered during deserialization must be an ExprNodeDesc,
       // throw exception to avoid potential security problem if it is not.
@@ -339,7 +340,7 @@ public class SerializationUtilities {
    * Kryo serializer for timestamp.
    */
   private static class TimestampSerializer extends
-      com.esotericsoftware.kryo.Serializer<Timestamp> {
+      com.esotericsoftware.kryo.kryo5.Serializer<Timestamp> {
 
     @Override
     public Timestamp read(Kryo kryo, Input input, Class<? extends Timestamp> clazz) {
@@ -355,7 +356,7 @@ public class SerializationUtilities {
     }
   }
 
-  private static class TimestampTZSerializer extends com.esotericsoftware.kryo.Serializer<TimestampTZ> {
+  private static class TimestampTZSerializer extends com.esotericsoftware.kryo.kryo5.Serializer<TimestampTZ> {
 
     @Override
     public void write(Kryo kryo, Output output, TimestampTZ object) {
@@ -378,7 +379,7 @@ public class SerializationUtilities {
    * java.sql.Date and java.util.Date while deserializing
    */
   private static class SqlDateSerializer extends
-      com.esotericsoftware.kryo.Serializer<java.sql.Date> {
+      com.esotericsoftware.kryo.kryo5.Serializer<java.sql.Date> {
 
     @Override
     public java.sql.Date read(Kryo kryo, Input input, Class<? extends java.sql.Date> clazz) {
@@ -391,7 +392,7 @@ public class SerializationUtilities {
     }
   }
 
-  private static class PathSerializer extends com.esotericsoftware.kryo.Serializer<Path> {
+  private static class PathSerializer extends com.esotericsoftware.kryo.kryo5.Serializer<Path> {
 
     @Override
     public void write(Kryo kryo, Output output, Path path) {
@@ -408,7 +409,7 @@ public class SerializationUtilities {
    * Supports sublists created via {@link ArrayList#subList(int, int)} since java7 and {@link LinkedList#subList(int, int)} since java9 (openjdk).
    * This is from kryo-serializers package.
    */
-  private static class ArrayListSubListSerializer extends com.esotericsoftware.kryo.Serializer<List<?>> {
+  private static class ArrayListSubListSerializer extends com.esotericsoftware.kryo.kryo5.Serializer<List<?>> {
 
     private Field _parentField;
     private Field _parentOffsetField;
@@ -499,7 +500,7 @@ public class SerializationUtilities {
    * This is from kryo-serializers package. Added explicitly to avoid classpath issues.
    */
   private static class ArraysAsListSerializer
-      extends com.esotericsoftware.kryo.Serializer<List<?>> {
+      extends com.esotericsoftware.kryo.kryo5.Serializer<List<?>> {
 
     private Field _arrayField;
 
@@ -583,7 +584,7 @@ public class SerializationUtilities {
    * superclass declares most of its fields transient.
    */
   private static class CopyOnFirstWritePropertiesSerializer extends
-      com.esotericsoftware.kryo.serializers.MapSerializer<Map> {
+      com.esotericsoftware.kryo.kryo5.serializers.MapSerializer<Map> {
 
     @Override
     public void write(Kryo kryo, Output output, Map map) {

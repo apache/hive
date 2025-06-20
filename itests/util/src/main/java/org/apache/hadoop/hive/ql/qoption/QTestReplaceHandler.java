@@ -55,8 +55,8 @@ public class QTestReplaceHandler implements QTestOptionHandler {
       throw new RuntimeException("illegal replacement expr: " + arguments + " ; expected something like /this/that/");
     }
     String sep = arguments.substring(0, 1);
-    String[] parts = arguments.split(Pattern.quote(sep));
-    if (parts.length != 3) {
+    String[] parts = arguments.split(Pattern.quote(sep), -1);
+    if (parts.length != 4) {
       throw new RuntimeException(
           "unexpected replacement expr: " + arguments + " ; expected something like /this/that/");
     }

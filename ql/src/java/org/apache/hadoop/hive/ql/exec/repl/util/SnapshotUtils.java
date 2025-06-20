@@ -45,7 +45,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternal
  */
 public class SnapshotUtils {
 
-  private static final transient Logger LOG = LoggerFactory.getLogger(SnapshotUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SnapshotUtils.class);
 
   public static final String OLD_SNAPSHOT = "replOld";
   public static final String NEW_SNAPSHOT = "replNew";

@@ -37,13 +37,14 @@ public class AbortTxnEvent extends ListenerEvent {
   private final Long txnId;
   private final TxnType txnType;
   private final List<String> dbsUpdated;
+  private final List<Long> writeId;
 
   public AbortTxnEvent(Long transactionId, IHMSHandler handler) {
-    this(transactionId, null, handler, null);
+    this(transactionId, null, handler, null, null);
   }
 
   public AbortTxnEvent(Long transactionId, TxnType txnType) {
-    this(transactionId, txnType, null, null);
+    this(transactionId, txnType, null, null, null);
   }
 
   /**
@@ -51,15 +52,17 @@ public class AbortTxnEvent extends ListenerEvent {
    * @param txnType type of transaction
    * @param handler handler that is firing the event
    * @param dbsUpdated list of databases that had update events
+   * @param writeId write id for transaction
    */
-  public AbortTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler, List<String> dbsUpdated) {
+  public AbortTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler, List<String> dbsUpdated, List<Long> writeId) {
     super(true, handler);
     this.txnId = transactionId;
     this.txnType = txnType;
     this.dbsUpdated = new ArrayList<String>();
     if (dbsUpdated != null) {
-      this.dbsUpdated.addAll(dbsUpdated);;
+      this.dbsUpdated.addAll(dbsUpdated);
     }
+    this.writeId = writeId == null ? new ArrayList<>() : writeId;
   }
 
   /**
@@ -82,5 +85,12 @@ public class AbortTxnEvent extends ListenerEvent {
    */
   public List<String> getDbsUpdated() {
     return dbsUpdated;
+  }
+
+  /**
+   * @return List of write ids which are associated with abort txn
+   */
+  public List<Long> getWriteId() {
+    return writeId;
   }
 }

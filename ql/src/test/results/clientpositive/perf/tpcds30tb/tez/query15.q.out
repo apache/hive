@@ -42,7 +42,7 @@ STAGE PLANS:
                   alias: customer_address
                   Statistics: Num rows: 40000000 Data size: 7320000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: ca_address_sk (type: bigint), ca_zip (type: char(10)), (substr(ca_zip, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') (type: boolean), (ca_state) IN ('CA', 'WA', 'GA') (type: boolean)
+                    expressions: ca_address_sk (type: bigint), ca_zip (type: char(10)), (ca_state) IN ('CA', 'GA', 'WA') (type: boolean), (substr(ca_zip, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 40000000 Data size: 4200000000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -159,7 +159,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2146106610 Data size: 445233418138 Basic stats: COMPLETE Column stats: COMPLETE
                 DynamicPartitionHashJoin: true
                 Filter Operator
-                  predicate: (_col9 or _col4 or _col5) (type: boolean)
+                  predicate: (_col4 or _col9 or _col5) (type: boolean)
                   Statistics: Num rows: 2146106610 Data size: 445233418138 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +

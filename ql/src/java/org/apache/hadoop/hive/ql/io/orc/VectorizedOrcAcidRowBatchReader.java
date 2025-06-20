@@ -261,7 +261,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-    this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+    this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
     LOG.info("Read ValidWriteIdList: " + this.validWriteIdList.toString()
             + ":" + orcSplit);
 
@@ -788,7 +788,7 @@ public class VectorizedOrcAcidRowBatchReader
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() :
-        new ValidReaderWriteIdList(txnString);
+        ValidReaderWriteIdList.fromValue(txnString);
 
     long rowIdOffset = 0;
     OrcRawRecordMerger.TransactionMetaData syntheticTxnInfo =
@@ -1243,7 +1243,7 @@ public class VectorizedOrcAcidRowBatchReader
         int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
         String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
         this.validWriteIdList
-                = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+                = (txnString == null) ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
         LOG.debug("Using SortMergedDeleteEventRegistry");
         Map<String, Integer> deltaToAttemptId = AcidUtils.getDeltaToAttemptIdMap(pathToDeltaMetaData, deleteDeltas, bucket);
         OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isDeleteReader(true);
@@ -1926,7 +1926,8 @@ public class VectorizedOrcAcidRowBatchReader
       this.testMode = conf.getBoolean(ConfVars.HIVE_IN_TEST.varname, false);
       int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
       String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList()
+              : ValidReaderWriteIdList.fromValue(txnString);
       LOG.debug("Using ColumnizedDeleteEventRegistry");
       this.sortMerger = new TreeMap<>();
       this.rowIds = null;

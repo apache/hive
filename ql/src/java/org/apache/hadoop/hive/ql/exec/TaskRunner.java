@@ -46,7 +46,7 @@ public class TaskRunner extends Thread {
 
   protected Thread runner;
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);
 
   private final TaskQueue taskQueue;
 

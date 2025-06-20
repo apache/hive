@@ -18,9 +18,9 @@ partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:4
 totalNumberErasureCodedFiles:4
-totalFileSize:23248
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc formatted srcpart
@@ -301,9 +301,9 @@ partitioned:false
 partitionColumns:
 totalNumberFiles:1
 totalNumberErasureCodedFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc formatted src

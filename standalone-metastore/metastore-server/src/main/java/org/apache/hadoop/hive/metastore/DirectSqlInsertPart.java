@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jdo.PersistenceManager;
+import javax.jdo.identity.LongIdentity;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -42,8 +43,8 @@ import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
-import org.datanucleus.identity.DatastoreId;
 import org.datanucleus.metadata.AbstractClassMetaData;
+import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.datanucleus.metadata.IdentityType;
 
 /**
@@ -71,7 +72,7 @@ class DirectSqlInsertPart {
     ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
     AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
     if (cmd.getIdentityType() == IdentityType.DATASTORE) {
-      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, -1);
+      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, null);
     } else {
       throw new MetaException("Identity type is not datastore.");
     }
@@ -754,7 +755,7 @@ class DirectSqlInsertPart {
       serdeIdToSerDeInfo.put(serDeId, sd.getSerDeInfo());
 
       Long cdId;
-      DatastoreId storeId = (DatastoreId) pm.getObjectId(sd.getCD());
+      LongIdentity storeId = (LongIdentity) pm.getObjectId(sd.getCD());
       if (storeId == null) {
         cdId = getDataStoreId(MColumnDescriptor.class);
         cdIdToColumnDescriptor.put(cdId, sd.getCD());

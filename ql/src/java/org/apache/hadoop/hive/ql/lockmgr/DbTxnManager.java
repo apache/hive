@@ -1024,6 +1024,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
     if (lockResponse.getState() == LockState.ACQUIRED) {
+      init();
       // If lock response is ACQUIRED, we can create the heartbeater
       long initialDelay = 0L;
       long heartbeatInterval = getHeartbeatInterval(conf);

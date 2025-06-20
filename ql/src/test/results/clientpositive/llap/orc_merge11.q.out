@@ -161,6 +161,7 @@ Stripes:
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
 File length: 6692 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -253,6 +254,7 @@ Stripes:
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
 File length: 6692 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -431,6 +433,7 @@ Stripes:
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
 File length: 13001 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

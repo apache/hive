@@ -25,7 +25,7 @@ import kafka.utils.TestUtils;
 import kafka.zk.AdminZkClient;
 import kafka.zk.EmbeddedZookeeper;
 import org.apache.commons.io.FileUtils;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.kafka.common.network.Mode;
 import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.test.TestSslUtils;

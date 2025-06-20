@@ -72,6 +72,12 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
     this.files = null;
   }
 
+  public JSONCommitTxnMessage(String server, String servicePrincipal, Long txnid, Long timestamp, List<String> databases, List<Long> writeIds) {
+    this(server, servicePrincipal, txnid, timestamp);
+    this.databases = databases;
+    this.writeIds = writeIds;
+  }
+
   @Override
   public Long getTxnId() {
     return txnid;

@@ -71,7 +71,6 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.ql.exec.vector.filesink.VectorFileSinkArrowOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinInnerBigOnlyStringOperator;
@@ -179,6 +178,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
@@ -551,6 +551,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
+
+    // Add user custom UDFs
+    addCustomUDFs(SessionState.getSessionConf());
   }
 
   private class VectorTaskColumnInfo {
@@ -2409,6 +2412,40 @@ public class Vectorizer implements PhysicalPlanResolver {
       vectorTaskColumnInfo.setReduceColumnNullOrder(columnNullOrder);
 
       return true;
+    }
+  }
+
+  private void addCustomUDFs(HiveConf hiveConf) {
+    if (hiveConf == null) {
+      return;
+    }
+
+    if (HiveVectorAdaptorUsageMode.CHOSEN !=
+        HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf)) {
+      return;
+    }
+
+    String[] udfs =
+        HiveConf.getTrimmedStringsVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
+    if (udfs == null) {
+      return;
+    }
+
+    ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
+
+    for (String udf : udfs) {
+      try {
+        Class<?> cls = Class.forName(udf, true, loader);
+        if (GenericUDF.class.isAssignableFrom(cls)) {
+          supportedGenericUDFs.add(cls);
+          LOG.info("Registered custom UDF: {}", udf);
+        } else {
+          LOG.warn("{} must inherit from the GenericUDF", udf);
+        }
+      } catch (ClassNotFoundException e) {
+        LOG.warn("Failed to register custom UDF: {}", udf, e);
+      }
     }
   }
 
@@ -4319,48 +4356,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean checkForArrowFileSink(FileSinkDesc fileSinkDesc,
-      boolean isTez, VectorizationContext vContext,
-      VectorFileSinkDesc vectorDesc) throws HiveException {
-
-    // Various restrictions.
-
-    boolean isVectorizationFileSinkArrowNativeEnabled =
-        HiveConf.getBoolVar(hiveConf,
-            HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED);
-
-    String engine = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
-
-    String serdeClassName = fileSinkDesc.getTableInfo().getSerdeClassName();
-
-    boolean isOkArrowFileSink =
-        serdeClassName.equals("org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe") &&
-        isVectorizationFileSinkArrowNativeEnabled &&
-        engine.equalsIgnoreCase("tez");
-
-    return isOkArrowFileSink;
-  }
-
-  private Operator<? extends OperatorDesc> specializeArrowFileSinkOperator(
-      Operator<? extends OperatorDesc> op, VectorizationContext vContext, FileSinkDesc desc,
-      VectorFileSinkDesc vectorDesc) throws HiveException {
-
-    Class<? extends Operator<?>> opClass = VectorFileSinkArrowOperator.class;
-
-    Operator<? extends OperatorDesc> vectorOp = null;
-    try {
-      vectorOp = OperatorFactory.getVectorOperator(
-          opClass, op.getCompilationOpContext(), op.getConf(),
-          vContext, vectorDesc);
-    } catch (Exception e) {
-      LOG.info("Vectorizer vectorizeOperator file sink class exception " + opClass.getSimpleName() +
-          " exception " + e);
-      throw new HiveException(e);
-    }
-
-    return vectorOp;
-  }
-
   private boolean usesVectorUDFAdaptor(VectorExpression vecExpr) {
     if (vecExpr == null) {
       return false;
@@ -5278,7 +5273,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     // This "global" allows various validation methods to set the "not vectorized" reason.
     currentOperator = op;
 
-    boolean isNative;
+    boolean isNative = false;
     try {
       switch (op.getType()) {
         case MAPJOIN:
@@ -5326,7 +5321,6 @@ public class Vectorizer implements PhysicalPlanResolver {
                 vectorOp = OperatorFactory.getVectorOperator(
                     opClass, op.getCompilationOpContext(), desc,
                     vContext, vectorMapJoinDesc);
-                isNative = false;
               } else {
 
                 // TEMPORARY Until Native Vector Map Join with Hybrid passes tests...
@@ -5490,20 +5484,11 @@ public class Vectorizer implements PhysicalPlanResolver {
             FileSinkDesc fileSinkDesc = (FileSinkDesc) op.getConf();
 
             VectorFileSinkDesc vectorFileSinkDesc = new VectorFileSinkDesc();
-            boolean isArrowSpecialization =
-                checkForArrowFileSink(fileSinkDesc, isTez, vContext, vectorFileSinkDesc);
 
-            if (isArrowSpecialization) {
-              vectorOp =
-                  specializeArrowFileSinkOperator(
-                      op, vContext, fileSinkDesc, vectorFileSinkDesc);
-              isNative = true;
-            } else {
-              vectorOp =
-                  OperatorFactory.getVectorOperator(
-                      op.getCompilationOpContext(), fileSinkDesc, vContext, vectorFileSinkDesc);
-              isNative = false;
-            }
+            vectorOp =
+                OperatorFactory.getVectorOperator(
+                    op.getCompilationOpContext(), fileSinkDesc, vContext, vectorFileSinkDesc);
+            isNative = false;
           }
           break;
         case LIMIT:

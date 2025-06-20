@@ -50,4 +50,4 @@ favnumber int
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@myparquettable_parted
 PREHOOK: Output: default@myparquettable_parted
-FAILED: Execution Error, return code 10313 from org.apache.hadoop.hive.ql.ddl.DDLTask. Replacing columns cannot drop columns for table default.myparquettable_parted. SerDe may be incompatible
+FAILED: Execution Error, return code 10266 from org.apache.hadoop.hive.ql.ddl.DDLTask. Drop column is not supported without cascade for partitioned table. SerDe may be incompatible.

@@ -54,7 +54,7 @@ public class LoadDatabase {
   private final DatabaseEvent event;
   private final String dbNameToLoadIn;
   transient ReplicationMetricCollector metricCollector;
-  protected static transient Logger LOG = LoggerFactory.getLogger(LoadDatabase.class);
+  protected static Logger LOG = LoggerFactory.getLogger(LoadDatabase.class);
 
   public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn, TaskTracker loadTaskTracker) {
     this.context = context;

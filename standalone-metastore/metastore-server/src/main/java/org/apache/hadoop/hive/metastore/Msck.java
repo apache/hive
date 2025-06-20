@@ -399,7 +399,7 @@ public class Msck {
     long maxAllocatedWriteId = getMsc().getMaxAllocatedWriteId(dbName, tableName);
     if (maxAllocatedWriteId > 0 && maxWriteIdOnFilesystem > maxAllocatedWriteId) {
       throw new MetaException(MessageFormat
-          .format("The maximum writeId {} in table {} is greater than the maximum allocated in the metastore {}",
+          .format("The highest writeId [{0}] in the table ''{1}'' is greater than the maximum writeId allocated in the metastore [{2}]",
               maxWriteIdOnFilesystem, tableName, maxAllocatedWriteId));
     }
     if (maxAllocatedWriteId == 0 && maxWriteIdOnFilesystem > 0) {

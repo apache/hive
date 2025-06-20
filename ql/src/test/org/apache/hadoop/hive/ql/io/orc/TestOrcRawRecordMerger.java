@@ -713,7 +713,7 @@ public class TestOrcRawRecordMerger {
     of.getRecordUpdater(root, options).close(false);
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
-    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
+    ValidWriteIdList writeIdList = ValidReaderWriteIdList.fromValue("testEmpty:200:" + Long.MAX_VALUE);
     AcidDirectory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
@@ -784,7 +784,7 @@ public class TestOrcRawRecordMerger {
 
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
-    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
+    ValidWriteIdList writeIdList = ValidReaderWriteIdList.fromValue("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
     AcidDirectory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
@@ -1022,7 +1022,7 @@ public class TestOrcRawRecordMerger {
     merger.close();
 
     // try ignoring the 200 transaction and make sure it works still
-    ValidWriteIdList writeIds = new ValidReaderWriteIdList("testNewBaseAndDelta:2000:200:200");
+    ValidWriteIdList writeIds = ValidReaderWriteIdList.fromValue("testNewBaseAndDelta:2000:200:200");
     //again 1st split is for base/
     baseReader = OrcFile.createReader(basePath,
       OrcFile.readerOptions(conf));

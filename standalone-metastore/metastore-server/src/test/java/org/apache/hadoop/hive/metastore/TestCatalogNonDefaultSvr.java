@@ -53,7 +53,7 @@ public class TestCatalogNonDefaultSvr extends NonCatCallsWithCatalog {
     catalogCapableClient.close();
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, catName);
-    return new HiveMetaStoreClientPreCatalog(conf);
+    return new HiveMetaStoreClient(conf);
   }
 
   @Override

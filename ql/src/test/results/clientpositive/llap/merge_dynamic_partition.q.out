@@ -704,9 +704,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: explain
@@ -1352,9 +1352,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: explain
@@ -2016,8 +2016,8 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 

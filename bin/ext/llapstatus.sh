@@ -29,7 +29,7 @@ llapstatus () {
 
   set -e;
 
-  export HADOOP_CLIENT_OPTS=" -Dproc_llapstatuscli $HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=llap-cli-log4j2.properties "
+  export HADOOP_CLIENT_OPTS=" -Dproc_llapstatuscli $HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=llap-cli-log4j2.properties --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED  --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.util.regex=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED "
   # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
   $HADOOP $CLASS $HIVE_OPTS "$@"
   

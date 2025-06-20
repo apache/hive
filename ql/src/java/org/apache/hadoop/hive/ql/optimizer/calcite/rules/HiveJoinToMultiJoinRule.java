@@ -60,7 +60,7 @@ public class HiveJoinToMultiJoinRule extends RelOptRule {
 
   private final ProjectFactory projectFactory;
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(HiveJoinToMultiJoinRule.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveJoinToMultiJoinRule.class);
 
   //~ Constructors -----------------------------------------------------------
 

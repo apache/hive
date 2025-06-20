@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
@@ -42,7 +44,10 @@ import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
@@ -128,6 +133,20 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
               })));
   }
 
+  private List<WriteEventInfo> getAllWriteEventInfoExceptMV(List<WriteEventInfo> writeEventInfoList) {
+    return writeEventInfoList.stream().filter(writeEventInfo -> {
+      try {
+        if (writeEventInfo.getTableObj() != null) {
+          Table table = new Table((org.apache.hadoop.hive.metastore.api.Table) MessageBuilder.getTObj(writeEventInfo.getTableObj(), org.apache.hadoop.hive.metastore.api.Table.class));
+          return !table.isMaterializedView();
+        }
+        return true;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }).collect(Collectors.toList());
+  }
+
   @Override
   public void handle(Context withinContext) throws Exception {
     if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
@@ -157,17 +176,49 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
       }
 
       List<WriteEventInfo> writeEventInfoList = null;
+      List<WriteEventInfo> allWriteEventInfoExceptMV = null;
       if (replicatingAcidEvents) {
         writeEventInfoList = getAllWriteEventInfo(withinContext);
 
-        if (ReplUtils.filterTransactionOperations(withinContext.hiveConf)
-           && (writeEventInfoList == null || writeEventInfoList.size() == 0)) {
-          // If optimizing transactions, no need to dump this one
-          // if there were no write events.
-          return;
+        if (writeEventInfoList != null) {
+          allWriteEventInfoExceptMV = getAllWriteEventInfoExceptMV(writeEventInfoList);
+        }
+        String dbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
+
+        if (ReplUtils.filterTransactionOperations(withinContext.hiveConf)) {
+          List<Long> writeIds = eventMessage.getWriteIds();
+          List<String> databases = Optional.ofNullable(eventMessage.getDatabases())
+                  .orElse(Collections.emptyList())
+                  .stream()
+                  .map(StringUtils::normalizeIdentifier)
+                  .collect(Collectors.toList());
+
+//                                        Truth Table
+//     Operation                | writeIds | writeEventInfoList | databases | allWriteEventInfoExceptMV  | Output
+//       Read                   |  null    | null               | null      | same as writeEventInfoList | Skip
+//      Insert                  | not null | not null           | not null  | same                       | Dump
+//      Truncate                | not null | null               | not null  | same                       | Dump
+//    Materialized view         | not null | not null           | not null  | different                  | Skip
+
+          boolean shouldSkip = (writeIds == null || writeIds.isEmpty() || !databases.contains(dbName));
+          if (writeEventInfoList != null && !writeEventInfoList.isEmpty()) {
+            shouldSkip = writeEventInfoList.size() != allWriteEventInfoExceptMV.size();
+          }
+
+          if (shouldSkip) {
+            // If optimizing transactions, no need to dump this one
+            // if there were no write events.
+            LOG.debug("skipping commit txn event for db: {}, writeIds: {}, writeEventInfoList: {}, databases: {}",
+                dbName, writeIds, writeEventInfoList, databases);
+            return;
+          }
         }
       }
 
+      // Filtering out all write event info related to materialized view
+      if (writeEventInfoList != null) {
+        writeEventInfoList = allWriteEventInfoExceptMV;
+      }
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         eventMessage.addWriteEventInfo(writeEventInfoList);

@@ -77,7 +77,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.esotericsoftware.kryo.KryoException;
+import com.esotericsoftware.kryo.kryo5.KryoException;
 import com.google.common.base.Preconditions;
 
 /**

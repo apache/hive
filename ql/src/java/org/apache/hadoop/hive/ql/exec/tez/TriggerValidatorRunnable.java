@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TriggerValidatorRunnable implements Runnable {
-  protected static transient Logger LOG = LoggerFactory.getLogger(TriggerValidatorRunnable.class);
+  protected static Logger LOG = LoggerFactory.getLogger(TriggerValidatorRunnable.class);
   private final SessionTriggerProvider sessionTriggerProvider;
   private final TriggerActionHandler triggerActionHandler;
 

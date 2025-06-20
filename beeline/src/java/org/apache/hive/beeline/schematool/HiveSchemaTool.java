@@ -135,11 +135,11 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
     Map<String, String> replacements = new HashMap<>();
 
     if (isEmpty(hiveProtoBaseDir)) {
-      LOG.error("Hive conf variable hive.hook.proto.base-directory is not set for creating protologging tables");
+      LOG.warn("Hive conf variable hive.hook.proto.base-directory is not set for creating protologging tables");
       hiveProtoLoggingEnabled = false;
     }
     if (isEmpty(tezProtoBaseDir)) {
-      LOG.error("Tez conf variable tez.history.logging.proto-base-dir is not set for creating protologging tables");
+      LOG.warn("Tez conf variable tez.history.logging.proto-base-dir is not set for creating protologging tables");
       tezProtoLoggingEnabled = false;
     }
 

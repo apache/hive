@@ -62,7 +62,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test_n1
-                  filterExpr: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null and (cdecimal2 <> 0)) (type: boolean)
+                  filterExpr: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 2708832 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -71,8 +71,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 0), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val 12345.5678), FilterDecimalColGreaterDecimalScalar(col 2:decimal(23,14), val 1000), SelectColumnIsNotNull(col 0:double), FilterDecimalColNotEqualDecimalScalar(col 2:decimal(23,14), val 0))
-                    predicate: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null and (cdecimal2 <> 0)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 0), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val 12345.5678), FilterDecimalColGreaterDecimalScalar(col 2:decimal(23,14), val 1000), SelectColumnIsNotNull(col 0:double))
+                    predicate: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
                       sort order: ++++++++++++++
@@ -249,7 +249,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test_small_n0
-                  filterExpr: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null and (cdecimal2 <> 0)) (type: boolean)
+                  filterExpr: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2708600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -258,8 +258,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDecimal64ColGreaterDecimal64Scalar(col 1:decimal(10,3)/DECIMAL_64, val 0), FilterDecimalColLessDecimalScalar(col 5:decimal(10,3), val 12345.5678)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 5:decimal(10,3)), FilterDecimal64ColGreaterDecimal64Scalar(col 2:decimal(7,2)/DECIMAL_64, val 100000), SelectColumnIsNotNull(col 0:double), FilterDecimal64ColNotEqualDecimal64Scalar(col 2:decimal(7,2)/DECIMAL_64, val 0))
-                    predicate: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null and (cdecimal2 <> 0)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterDecimal64ColGreaterDecimal64Scalar(col 1:decimal(10,3)/DECIMAL_64, val 0), FilterDecimalColLessDecimalScalar(col 5:decimal(10,3), val 12345.5678)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,3)/DECIMAL_64) -> 5:decimal(10,3)), FilterDecimal64ColGreaterDecimal64Scalar(col 2:decimal(7,2)/DECIMAL_64, val 100000), SelectColumnIsNotNull(col 0:double))
+                    predicate: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
                       sort order: ++++++++++++++

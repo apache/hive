@@ -144,10 +144,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acid
-                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
+                  filterExpr: ((UDFToInteger(key)) IN (43, 413) and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
+                    predicate: (UDFToInteger(key)) IN (43, 413) (type: boolean)
                     Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ds (type: string), key (type: string), concat(value, 'updated') (type: string)
@@ -852,10 +852,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acidb
-                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
+                  filterExpr: ((UDFToInteger(key)) IN (43, 413) and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
+                    predicate: (UDFToInteger(key)) IN (43, 413) (type: boolean)
                     Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ds (type: string), key (type: string), concat(value, 'updated') (type: string)
@@ -1461,7 +1461,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 6:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 6:int)
+                        predicateExpression: FilterLongColumnInList(col 6:int, values [43, 413])(children: CastStringToLong(col 0:string) -> 6:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
@@ -2336,7 +2336,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 6:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 6:int)
+                        predicateExpression: FilterLongColumnInList(col 6:int, values [43, 413])(children: CastStringToLong(col 0:string) -> 6:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
