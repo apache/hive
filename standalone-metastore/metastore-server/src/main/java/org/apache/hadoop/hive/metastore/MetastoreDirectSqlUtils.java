@@ -32,6 +32,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.datanucleus.ExecutionContext;
+import org.datanucleus.api.jdo.JDOPersistenceManager;
+import org.datanucleus.metadata.AbstractClassMetaData;
+import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -605,6 +609,26 @@ class MetastoreDirectSqlUtils {
       // org.apache.hadoop.hive.metastore.MetaStoreDirectSql.getStatsList(enableBitVector,enableKll)
       // We get here when enableBitvector or enableKll is false
       return null;
+    }
+  }
+
+  static Long getModelIdentity(PersistenceManager pm, Class<?> modelClass)
+      throws MetaException {
+    ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
+    AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
+    switch (cmd.getIdentityType()) {
+      case DATASTORE :
+        return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, null);
+      case APPLICATION :
+        if (cmd.usesSingleFieldIdentityClass()) {
+          int[] valueGenMemberPositions = cmd.getValueGenerationMemberPositions();
+          AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(valueGenMemberPositions[0]);
+          return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, mmd);
+        }
+        throw new MetaException("Multiple key fields found in class: " + modelClass.getSimpleName());
+    default:
+      throw new MetaException(
+          "Identity type is not datastore or application, model: " + modelClass.getSimpleName());
     }
   }
 

@@ -3294,13 +3294,7 @@ class MetaStoreDirectSql {
                                                       List<TransactionalMetaStoreEventListener> listeners,
                                                       String validWriteIds, long writeId)
           throws MetaException {
-    long numStats = 0;
-    for (Map.Entry entry : partColStatsMap.entrySet()) {
-      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
-      numStats += colStats.getStatsObjSize();
-    }
-    long csId = directSqlUpdatePart.getNextCSIdForMPartitionColumnStatistics(numStats);
-    return directSqlUpdatePart.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
+    return directSqlUpdatePart.updatePartitionColumnStatistics(partColStatsMap, tbl, validWriteIds, writeId, listeners);
   }
 
   public List<Function> getFunctions(String catName) throws MetaException {

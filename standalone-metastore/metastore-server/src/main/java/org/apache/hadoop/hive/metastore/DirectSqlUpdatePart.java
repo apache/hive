@@ -42,10 +42,6 @@ import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.datanucleus.ExecutionContext;
-import org.datanucleus.api.jdo.JDOPersistenceManager;
-import org.datanucleus.metadata.AbstractClassMetaData;
-import org.datanucleus.metadata.IdentityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -76,6 +72,7 @@ import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.executeWi
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlClob;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlInt;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.extractSqlLong;
+import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getModelIdentity;
 
 /**
  * This class contains the optimizations for MetaStore that rely on direct SQL access to
@@ -213,7 +210,6 @@ class DirectSqlUpdatePart {
   }
 
   private void insertIntoPartColStatTable(Map<PartColNameInfo, MPartitionColumnStatistics> insertMap,
-                                          long maxCsId,
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
     int numRows = 0;
     String insert = "INSERT INTO \"PART_COL_STATS\" (\"CS_ID\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
@@ -228,7 +224,7 @@ class DirectSqlUpdatePart {
         Long partId = partColNameInfo.partitionId;
         MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) entry.getValue();
 
-        preparedStatement.setLong(1, maxCsId);
+        preparedStatement.setLong(1, getModelIdentity(pm, MPartitionColumnStatistics.class));
         preparedStatement.setString(2, mPartitionColumnStatistics.getColName());
         preparedStatement.setString(3, mPartitionColumnStatistics.getColType());
         preparedStatement.setLong(4, partId);
@@ -249,7 +245,6 @@ class DirectSqlUpdatePart {
         preparedStatement.setLong(19, mPartitionColumnStatistics.getLastAnalyzed());
         preparedStatement.setString(20, mPartitionColumnStatistics.getEngine());
 
-        maxCsId++;
         numRows++;
         preparedStatement.addBatch();
         if (numRows == maxBatchSize) {
@@ -473,7 +468,7 @@ class DirectSqlUpdatePart {
    * @return map of partition key to column stats if successful, null otherwise.
    */
   public Map<String, Map<String, String>> updatePartitionColumnStatistics(Map<String, ColumnStatistics> partColStatsMap,
-                                                      Table tbl, long csId,
+                                                      Table tbl,
                                                       String validWriteIds, long writeId,
                                                       List<TransactionalMetaStoreEventListener> transactionalListeners)
           throws MetaException {
@@ -500,11 +495,11 @@ class DirectSqlUpdatePart {
 
         LOG.info("Number of stats to insert  " + insertMap.size() + " update " + updateMap.size());
 
-        if (insertMap.size() != 0) {
-          insertIntoPartColStatTable(insertMap, csId, dbConn);
+        if (!insertMap.isEmpty()) {
+          insertIntoPartColStatTable(insertMap, dbConn);
         }
 
-        if (updateMap.size() != 0) {
+        if (!updateMap.isEmpty()) {
           updatePartColStatTable(updateMap, dbConn);
         }
 
@@ -530,79 +525,6 @@ class DirectSqlUpdatePart {
       LOG.error("Unable to update Column stats for  " + tbl.getTableName(), e);
       throw new MetaException("Unable to update Column stats for  " + tbl.getTableName()
               + " due to: "  + e.getMessage());
-    } finally {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
-      dbType.unlockInternal();
-    }
-  }
-
-  /**
-   * Gets the next CS id from sequence MPartitionColumnStatistics and increment the CS id by numStats.
-   * @return The CD id before update.
-   */
-  public long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException {
-    long maxCsId = 0;
-    Transaction tx = pm.currentTransaction();
-    try {
-      dbType.lockInternal();
-      tx.begin();
-      JDOConnection jdoConn = null;
-      try {
-        jdoConn = pm.getDataStoreConnection();
-        Connection dbConn = (Connection) jdoConn.getNativeConnection();
-
-        setAnsiQuotes(dbConn);
-
-        // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
-        // We are not using any upsert operations as select for update and then update is required to make sure that
-        // the caller gets a reserved range for CSId not used by any other thread.
-        boolean insertDone = false;
-        while (maxCsId == 0) {
-          String query = sqlGenerator.addForUpdateClause(
-              "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" " + "WHERE \"SEQUENCE_NAME\"= " + quoteString(
-                  "org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics"));
-          LOG.debug("Execute query: " + query);
-          try (Statement statement = dbConn.createStatement(); ResultSet rs = statement.executeQuery(query)) {
-            if (rs.next()) {
-              maxCsId = rs.getLong(1);
-            } else if (insertDone) {
-              throw new MetaException("Invalid state of SEQUENCE_TABLE for MPartitionColumnStatistics");
-            } else {
-              insertDone = true;
-              query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( " + quoteString(
-                  "org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1 + ")";
-              try {
-                statement.executeUpdate(query);
-              } catch (SQLException e) {
-                // If the record is already inserted by some other thread continue to select.
-                if (dbType.isDuplicateKeyError(e)) {
-                  continue;
-                }
-                LOG.error("Unable to insert into SEQUENCE_TABLE for MPartitionColumnStatistics.", e);
-                throw e;
-              }
-            }
-          }
-        }
-
-        long nextMaxCsId = maxCsId + numStats + 1;
-        String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = " + nextMaxCsId + " WHERE \"SEQUENCE_NAME\" = " + quoteString(
-            "org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
-
-        try (Statement statement = dbConn.createStatement()) {
-          statement.executeUpdate(query);
-        }
-      } finally {
-        closeDbConn(jdoConn);
-      }
-      tx.commit();
-      return maxCsId;
-    } catch (Exception e) {
-      LOG.error("Unable to getNextCSIdForMPartitionColumnStatistics", e);
-      throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
-              + " due to: " + e.getMessage());
     } finally {
       if (tx.isActive()) {
         tx.rollback();
@@ -1058,7 +980,7 @@ class DirectSqlUpdatePart {
       List<List<String>> skewedColValues = skewedInfo.getSkewedColValues();
       if (skewedColValues != null) {
         for (List<String> colValues : skewedColValues) {
-          Long nextStringListId = getDataStoreId(MStringList.class);
+          Long nextStringListId = getModelIdentity(pm, MStringList.class);
           newStringListId.add(nextStringListId);
           sdIdToNewStringListId.computeIfAbsent(sdId, k -> new ArrayList<>()).add(nextStringListId);
           stringListIdToValues.put(nextStringListId, colValues);
@@ -1069,7 +991,7 @@ class DirectSqlUpdatePart {
         for (Map.Entry<List<String>, String> entry : skewedColValueLocationMaps.entrySet()) {
           List<String> colValues = entry.getKey();
           String location = entry.getValue();
-          Long nextStringListId = getDataStoreId(MStringList.class);
+          Long nextStringListId = getModelIdentity(pm, MStringList.class);
           newStringListId.add(nextStringListId);
           stringListIdToValues.put(nextStringListId, colValues);
           sdIdToValueLoc.computeIfAbsent(sdId, k -> new ArrayList<>()).add(Pair.of(nextStringListId, location));
@@ -1082,16 +1004,6 @@ class DirectSqlUpdatePart {
     insertStringListValuesInBatch(stringListIdToValues, newStringListId);
     insertSkewedValuesInBatch(sdIdToNewStringListId, sdIds);
     insertSkewColValueLocInBatch(sdIdToValueLoc, sdIds);
-  }
-
-  private Long getDataStoreId(Class<?> modelClass) throws MetaException {
-    ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
-    AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
-    if (cmd.getIdentityType() == IdentityType.DATASTORE) {
-      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, null);
-    } else {
-      throw new MetaException("Identity type is not datastore.");
-    }
   }
 
   private void insertSkewedColNamesInBatch(Map<Long, List<String>> sdIdToSkewedColNames,
@@ -1254,19 +1166,17 @@ class DirectSqlUpdatePart {
 
       List<FieldSchema> newCols = sdIdToNewColumns.get(sdId);
       // Use the new column descriptor only if the old column descriptor differs from the new one.
-      if (oldCols == null || !oldCols.equals(newCols)) {
-        if (oldCols != null && newCols != null) {
-          Long newCdId = getDataStoreId(MColumnDescriptor.class);
-          newCdIds.add(newCdId);
-          newCdIdToCols.put(newCdId, newCols);
-          oldCdIdToNewCdId.put(cdId, newCdId);
-          sdIdToNewCdId.put(sdId, newCdId);
-          for (int i = 0; i < oldCols.size(); i++) {
-            FieldSchema oldCol = oldCols.get(i);
-            int newIdx = newCols.indexOf(oldCol);
-            if (newIdx != -1) {
-              oldCdIdToColIdxPairs.computeIfAbsent(cdId, k -> new ArrayList<>()).add(Pair.of(i, newIdx));
-            }
+      if (!oldCols.equals(newCols) && newCols != null) {
+        Long newCdId = getModelIdentity(pm, MColumnDescriptor.class);
+        newCdIds.add(newCdId);
+        newCdIdToCols.put(newCdId, newCols);
+        oldCdIdToNewCdId.put(cdId, newCdId);
+        sdIdToNewCdId.put(sdId, newCdId);
+        for (int i = 0; i < oldCols.size(); i++) {
+          FieldSchema oldCol = oldCols.get(i);
+          int newIdx = newCols.indexOf(oldCol);
+          if (newIdx != -1) {
+            oldCdIdToColIdxPairs.computeIfAbsent(cdId, k -> new ArrayList<>()).add(Pair.of(i, newIdx));
           }
         }
       }

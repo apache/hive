@@ -2384,7 +2384,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mkeys;
   }
 
-  private List<FieldSchema> convertToFieldSchemas(List<MFieldSchema> mkeys) {
+  protected List<FieldSchema> convertToFieldSchemas(List<MFieldSchema> mkeys) {
     List<FieldSchema> keys = null;
     if (mkeys != null) {
       keys = new ArrayList<>();
@@ -4454,9 +4454,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     private void handleDirectSqlError(Exception ex, String savePoint) throws MetaException, NoSuchObjectException {
-      if (!allowJdo || !DatabaseProduct.isRecoverableException(ex)) {
-        throw ExceptionHandler.newMetaException(ex);
-      }
       String message = null;
       try {
         message = generateShorterMessage(ex);
@@ -4465,6 +4462,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       LOG.warn(message); // Don't log the exception, people just get confused.
       LOG.debug("Full DirectSQL callstack for debugging (not an error)", ex);
+
+      if (!allowJdo || !DatabaseProduct.isRecoverableException(ex)) {
+        throw ExceptionHandler.newMetaException(ex);
+      }
+      
       if (!isInTxn) {
         JDOException rollbackEx = null;
         try {
@@ -5270,9 +5272,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> alterPartitions(String catName, String dbName, String tblName,
-                              List<List<String>> part_vals, List<Partition> newParts,
-                              long writeId, String queryWriteIdList)
-                                  throws InvalidObjectException, MetaException {
+      List<List<String>> part_vals, List<Partition> newParts,
+      long writeId, String queryWriteIdList)
+      throws InvalidObjectException, MetaException {
     List<Partition> results = new ArrayList<>(newParts.size());
     if (newParts.isEmpty()) {
       return results;
@@ -5284,50 +5286,16 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     try {
       openTransaction();
-
       MTable table = ensureGetMTable(catName, dbName, tblName);
-      // Validate new parts: StorageDescriptor and SerDeInfo must be set in Partition.
-      if (!TableType.VIRTUAL_VIEW.name().equals(table.getTableType())) {
-        for (Partition newPart : newParts) {
-          if (!newPart.isSetSd() || !newPart.getSd().isSetSerdeInfo()) {
-            throw new InvalidObjectException("Partition does not set storageDescriptor or serdeInfo.");
-          }
-        }
-      }
       if (writeId > 0) {
         newParts.forEach(newPart -> newPart.setWriteId(writeId));
       }
-
       List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
         partNames.add(Warehouse.makePartName(partCols, partVal));
       }
-
-      for (Partition tmpPart : newParts) {
-        if (!tmpPart.getDbName().equalsIgnoreCase(table.getDatabase().getName())) {
-          throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
-        }
-
-        if (!tmpPart.getTableName().equalsIgnoreCase(table.getTableName())) {
-          throw new MetaException("Invalid table name : " + tmpPart.getDbName());
-        }
-      }
-
-      results = new GetListHelper<Partition>(catName, dbName, tblName, true, true) {
-        @Override
-        protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx)
-            throws MetaException {
-          return directSql.alterPartitions(table, partNames, newParts, queryWriteIdList);
-        }
-
-        @Override
-        protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
-            throws MetaException, InvalidObjectException {
-          return alterPartitionsViaJdo(table, partNames, newParts, queryWriteIdList);
-        }
-      }.run(false);
-
+      results = alterPartitionsInternal(table, partNames, newParts, queryWriteIdList, true, true);
       // commit the changes
       success = commitTransaction();
     } catch (Exception exception) {
@@ -5337,6 +5305,44 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(success, null);
     }
     return results;
+  }
+
+  protected List<Partition> alterPartitionsInternal(MTable table,
+      List<String> partNames, List<Partition> newParts, String queryWriteIdList,
+      boolean allowSql, boolean allowJdo)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    // Validate new parts: StorageDescriptor and SerDeInfo must be set in Partition.
+    if (!TableType.VIRTUAL_VIEW.name().equals(table.getTableType())) {
+      for (Partition newPart : newParts) {
+        if (!newPart.isSetSd() || !newPart.getSd().isSetSerdeInfo()) {
+          throw new InvalidObjectException("Partition does not set storageDescriptor or serdeInfo.");
+        }
+      }
+    }
+    String catName = table.getDatabase().getCatalogName();
+    String dbName = table.getDatabase().getName();
+    String tblName = table.getTableName();
+    for (Partition tmpPart : newParts) {
+      if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
+        throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
+      }
+      if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
+        throw new MetaException("Invalid table name : " + tmpPart.getDbName());
+      }
+    }
+    return new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
+      @Override
+      protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx)
+          throws MetaException {
+        return directSql.alterPartitions(table, partNames, newParts, queryWriteIdList);
+      }
+
+      @Override
+      protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
+          throws MetaException, InvalidObjectException {
+        return alterPartitionsViaJdo(table, partNames, newParts, queryWriteIdList);
+      }
+    }.run(false);
   }
 
   private List<Partition> alterPartitionsViaJdo(MTable table, List<String> partNames,
