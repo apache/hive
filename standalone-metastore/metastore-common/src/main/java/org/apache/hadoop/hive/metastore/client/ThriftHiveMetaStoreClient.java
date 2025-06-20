@@ -1103,6 +1103,10 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
       List<String> partNames, String engine, String writeIdList) throws TException {
     long t1 = System.currentTimeMillis();
 
+    if (writeIdList == null) {
+      writeIdList = HiveMetaStoreClientUtils.getValidWriteIdList(dbName, tblName, conf);
+    }
+
     try {
       if (colNames.isEmpty() || partNames.isEmpty()) {
         LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
