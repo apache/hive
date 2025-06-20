@@ -47,8 +47,19 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   private final HiveCatalog hiveCatalog;
   
   public HMSCachingCatalog(HiveCatalog catalog, long expiration) {
-    super(catalog, true, expiration, Ticker.systemTicker());
+    super(catalog, false, expiration, Ticker.systemTicker());
     this.hiveCatalog = catalog;
+  }
+
+  public void invalidateTable(String dbName, String tableName) {
+    super.invalidateTable(TableIdentifier.of(dbName, tableName));
+  }
+
+  @Override
+  public void invalidateTable(TableIdentifier tableIdentifier) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Avoid invalidating table: {}", tableIdentifier);
+    }
   }
 
   @Override
@@ -73,11 +84,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
 
   @Override
   public boolean dropNamespace(Namespace nmspc) throws NamespaceNotEmptyException {
-    List<TableIdentifier> tables = listTables(nmspc);
-    for (TableIdentifier ident : tables) {
-      invalidateTable(ident);
-    }
-    return hiveCatalog.dropNamespace(nmspc);
+    return nsCatalog.dropNamespace(nmspc);
   }
 
   @Override
