@@ -35,17 +35,32 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * Class that wraps an Iceberg Catalog to cache tables.
  */
 public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
-  private final HiveCatalog hiveCatalog;
+    private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
+
+    private final HiveCatalog hiveCatalog;
   
   public HMSCachingCatalog(HiveCatalog catalog, long expiration) {
-    super(catalog, true, expiration, Ticker.systemTicker());
+    super(catalog, false, expiration, Ticker.systemTicker());
     this.hiveCatalog = catalog;
+  }
+
+  public void invalidateTable(String dbName, String tableName) {
+    super.invalidateTable(TableIdentifier.of(dbName, tableName));
+  }
+
+  @Override
+  public void invalidateTable(TableIdentifier tableIdentifier) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Avoid invalidating table: {}", tableIdentifier);
+    }
   }
 
   @Override
@@ -70,11 +85,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
 
   @Override
   public boolean dropNamespace(Namespace nmspc) throws NamespaceNotEmptyException {
-    List<TableIdentifier> tables = listTables(nmspc);
-    for (TableIdentifier ident : tables) {
-      invalidateTable(ident);
-    }
-    return hiveCatalog.dropNamespace(nmspc);
+    return nsCatalog.dropNamespace(nmspc);
   }
 
   @Override
@@ -92,6 +103,17 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     return hiveCatalog.namespaceExists(namespace);
   }
 
+  @Override
+  public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
+    return nsCatalog.buildTable(identifier, schema);
+  }
+
+  public void invalidateNamespace(String namespace) {
+    Namespace ns = Namespace.of(namespace);
+    for (TableIdentifier table : listTables(ns)) {
+      invalidateTable(table);
+    }
+  }
   @Override
   public List<TableIdentifier> listViews(Namespace namespace) {
     return hiveCatalog.listViews(namespace);
