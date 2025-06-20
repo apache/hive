@@ -1038,6 +1038,13 @@ public abstract class BaseMetaStoreClientProxy extends NormalizedMetaStoreClient
 
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
+      List<String> partNames, String engine)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine);
+  }
+
+  @Override
+  public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
       List<String> partNames, String engine, String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
     return delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
