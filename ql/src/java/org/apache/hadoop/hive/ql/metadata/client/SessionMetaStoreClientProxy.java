@@ -199,10 +199,6 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     }
     req.setProcessorIdentifier(ThriftHiveMetaStoreClient.getProcessorIdentifier());
 
-    if (!req.isSetValidWriteIdList()) {
-      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
-    }
-
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       CacheKey cacheKeyTableId =
