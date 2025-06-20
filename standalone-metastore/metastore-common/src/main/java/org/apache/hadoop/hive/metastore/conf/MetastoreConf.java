@@ -653,6 +653,11 @@ public class MetastoreConf {
     COMPACTOR_INITIATOR_TABLECACHE_ON("metastore.compactor.initiator.tablecache.on",
       "hive.compactor.initiator.tablecache.on", true,
       "Enable table caching in the initiator. Currently the cache is cleaned after each cycle."),
+    COMPACTOR_INITIATOR_TABLE_OPTIMIZERS("compactor.table.optimizers",
+        "hive.compactor.table.optimizers",
+        "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer," +
+            "org.apache.iceberg.mr.hive.compaction.IcebergTableOptimizer",
+        "Comma separated list of table optimizers executed by compaction Initiator."),
     COMPACTOR_WORKER_THREADS("metastore.compactor.worker.threads",
         "hive.compactor.worker.threads", 0,
         "How many compactor worker threads to run on this metastore instance. Set this to a\n" +

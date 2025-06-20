@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
+import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
@@ -561,5 +562,14 @@ public class IcebergTableUtil {
       thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
       return thread;
     });
+  }
+
+  public static boolean hasUndergonePartitionEvolution(Table table) {
+    // The current spec is not necessary the latest which can happen when partition spec was changed to one of
+    // table's past specs.
+    return table.currentSnapshot() != null &&
+        table.currentSnapshot().allManifests(table.io()).parallelStream()
+            .map(ManifestFile::partitionSpecId)
+            .anyMatch(id -> id != table.spec().specId());
   }
 }

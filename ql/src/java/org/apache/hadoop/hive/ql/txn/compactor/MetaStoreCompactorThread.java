@@ -20,19 +20,13 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.thrift.TException;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * Compactor threads that runs in the metastore. It uses a {@link TxnStore}
@@ -67,30 +60,6 @@ public abstract class MetaStoreCompactorThread extends CompactorThread implement
 
   @Override Table resolveTable(CompactionInfo ci) throws MetaException {
     return CompactorUtil.resolveTable(conf, ci.dbname, ci.tableName);
-  }
-
-  @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
-    try {
-      Database database = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), dbName);
-      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
-      boolean isReplCompactDisabled = ReplUtils.isFirstIncPending(database.getParameters());
-      if (isReplCompactDisabled) {
-        LOG.info("Compaction is disabled for database " + dbName);
-      }
-      return isReplCompactDisabled;
-    } catch (NoSuchObjectException e) {
-      LOG.info("Unable to find database " + dbName);
-      return true;
-    }
-  }
-
-  @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
-    return CompactorUtil.getPartitionsByNames(conf, ci.dbname, ci.tableName, ci.partName);
-  }
-
-  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
-    return CompactorUtil.resolvePartition(conf, null, ci.dbname, ci.tableName, ci.partName, 
-        CompactorUtil.METADATA_FETCH_MODE.LOCAL);
   }
 
   protected abstract boolean isCacheEnabled();

@@ -140,7 +140,6 @@ import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.FindFiles;
 import org.apache.iceberg.GenericBlobMetadata;
 import org.apache.iceberg.GenericStatisticsFile;
-import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
@@ -459,7 +458,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return true;
     }
     // If it is a table which has undergone partition evolution, return false;
-    if (hasUndergonePartitionEvolution(icebergTbl)) {
+    if (IcebergTableUtil.hasUndergonePartitionEvolution(icebergTbl)) {
       if (withPartClause) {
         throw new SemanticException("Can not Load into an iceberg table, which has undergone partition evolution " +
             "using the PARTITION clause");
@@ -1405,7 +1404,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (IcebergTableUtil.isBucketed(table)) {
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
-      if (hasUndergonePartitionEvolution(table)) {
+      if (IcebergTableUtil.hasUndergonePartitionEvolution(table)) {
         throw new SemanticException(
             "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
             "to successfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
@@ -2061,7 +2060,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private void validatePartSpecImpl(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec, List<PartitionField> partitionFields) throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    if (hmsTable.getSnapshotRef() != null && hasUndergonePartitionEvolution(table)) {
+    if (hmsTable.getSnapshotRef() != null && IcebergTableUtil.hasUndergonePartitionEvolution(table)) {
       // for this case we rewrite the query as delete query, so validations would be done as part of delete.
       return;
     }
@@ -2108,7 +2107,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public boolean canUseTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    if (MapUtils.isEmpty(partitionSpec) || !hasUndergonePartitionEvolution(table)) {
+    if (MapUtils.isEmpty(partitionSpec) || !IcebergTableUtil.hasUndergonePartitionEvolution(table)) {
       return true;
     } else if (hmsTable.getSnapshotRef() != null) {
       return false;
@@ -2128,15 +2127,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     return result;
-  }
-
-  private boolean hasUndergonePartitionEvolution(Table table) {
-    // The current spec is not necessary the latest which can happen when partition spec was changed to one of
-    // table's past specs.
-    return table.currentSnapshot() != null &&
-        table.currentSnapshot().allManifests(table.io()).parallelStream()
-        .map(ManifestFile::partitionSpecId)
-        .anyMatch(id -> id != table.spec().specId());
   }
 
   @Override
@@ -2159,7 +2149,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
 
     boolean readsNonCurrentSnapshot = snapshot != null && !snapshot.equals(table.currentSnapshot());
-    if (readsNonCurrentSnapshot && hasUndergonePartitionEvolution(table)) {
+    if (readsNonCurrentSnapshot && IcebergTableUtil.hasUndergonePartitionEvolution(table)) {
       return false;
     }
     return table.spec().isPartitioned();
@@ -2369,7 +2359,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return hasUndergonePartitionEvolution(table);
+    return IcebergTableUtil.hasUndergonePartitionEvolution(table);
   }
 
   private static List<FieldSchema> schema(List<VirtualColumn> exprs) {

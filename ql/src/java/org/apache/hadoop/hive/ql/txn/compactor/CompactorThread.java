@@ -25,17 +25,13 @@ import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -89,25 +85,6 @@ public abstract class CompactorThread extends Thread implements Configurable {
    */
   abstract Table resolveTable(CompactionInfo ci) throws MetaException;
 
-  abstract boolean replIsCompactionDisabledForDatabase(String dbName) throws TException;
-
-  /**
-   * Get list of partitions by name.
-   * @param ci compaction info.
-   * @return list of partitions
-   * @throws MetaException if an error occurs.
-   */
-  abstract List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException;
-
-  /**
-   * Get the partition being compacted.
-   * @param ci compaction info returned from the compaction queue
-   * @return metastore partition, or null if there is not partition in this compaction info
-   * @throws MetaException if underlying calls throw, or if the partition name resolves to more than
-   * one partition.
-   */
-  abstract protected Partition resolvePartition(CompactionInfo ci) throws MetaException;
-
   protected String tableName(Table t) {
     return Warehouse.getQualifiedName(t);
   }
@@ -121,15 +98,6 @@ public abstract class CompactorThread extends Thread implements Configurable {
       throw new CompactionException(e, ErrorMsg.COMPACTION_THREAD_INITIALIZATION);
     }
     thread.start();
-  }
-
-  protected boolean replIsCompactionDisabledForTable(Table tbl) {
-    // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
-    boolean isCompactDisabled = ReplUtils.isFirstIncPending(tbl.getParameters());
-    if (isCompactDisabled) {
-      LOG.info("Compaction is disabled for table " + tbl.getTableName());
-    }
-    return isCompactDisabled;
   }
 
   @VisibleForTesting
