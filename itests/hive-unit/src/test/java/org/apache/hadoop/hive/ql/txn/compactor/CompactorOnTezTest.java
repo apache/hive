@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,6 +70,7 @@ public abstract class CompactorOnTezTest {
   protected IMetaStoreClient msClient;
   protected IDriver driver;
   protected boolean mmCompaction = false;
+  private final AtomicBoolean stop = new AtomicBoolean();
 
   @ClassRule
   public static TemporaryFolder folder = new TemporaryFolder();
@@ -540,5 +542,28 @@ public abstract class CompactorOnTezTest {
     protected void dropTable(String tblName) throws Exception {
       executeStatementOnDriver("drop table " + tblName, driver);
     }
+  }
+
+  protected void startInitiator() throws Exception {
+    runOneLoopOfCompactorThread(CompactorTestUtilities.CompactorThreadType.INITIATOR);
+  }
+  
+  protected InitiatorBase getInitiator() {
+    return new Initiator();
+  }
+
+  private void runOneLoopOfCompactorThread(CompactorTestUtilities.CompactorThreadType type) throws Exception {
+    TestTxnDbUtil.setConfValues(conf);
+    CompactorThread t;
+    switch (type) {
+      case INITIATOR: t = getInitiator(); break;
+      case WORKER: t = new Worker(); break;
+      case CLEANER: t = new Cleaner(); break;
+      default: throw new RuntimeException("Huh? Unknown thread type.");
+    }
+    t.setConf(conf);
+    stop.set(true);
+    t.init(stop);
+    t.run();
   }
 }

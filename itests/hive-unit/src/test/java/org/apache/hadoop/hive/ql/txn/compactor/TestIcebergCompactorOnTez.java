@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionState;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -82,5 +83,47 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     return res;
+  }
+
+  @Test
+  public void testIcebergAutoCompaction() throws Exception {
+
+    String dbName = "default";
+    String tableName = "ice_orc";
+    String qualifiedTableName = dbName + "." + tableName;
+
+    executeStatementOnDriver("drop table if exists " + qualifiedTableName, driver);
+    executeStatementOnDriver(String.format("create table %s " +
+        "(id int, a string) " +
+        "partitioned by spec(truncate(3, a)) stored by iceberg stored as orc " +
+        "tblproperties ('compactor.threshold.min.input.files'='1')", qualifiedTableName), driver);
+
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (1, 'aaa111')", qualifiedTableName), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (2, 'aaa111')", qualifiedTableName), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (3, 'bbb222')", qualifiedTableName), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (4, 'bbb222')", qualifiedTableName), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (5, null)", qualifiedTableName), driver);
+    executeStatementOnDriver(String.format("INSERT INTO %s VALUES (6, null)", qualifiedTableName), driver);
+
+    startInitiator();
+    ShowCompactResponse rsp = msClient.showCompactions();
+    Assert.assertEquals(3, rsp.getCompactsSize());
+
+    Assert.assertTrue(isCompactExist(rsp, dbName, tableName, "a_trunc=aaa", CompactionType.MINOR, CompactionState.INITIATED));
+    Assert.assertTrue(isCompactExist(rsp, dbName, tableName, "a_trunc=bbb", CompactionType.MINOR, CompactionState.INITIATED));
+    Assert.assertTrue(isCompactExist(rsp, dbName, tableName, "a_trunc=null", CompactionType.MINOR, CompactionState.INITIATED));
+  }
+  
+  private boolean isCompactExist(ShowCompactResponse rsp, String dbName, String tableName, String partName,
+      CompactionType type, CompactionState state) {
+    return rsp.getCompacts().stream().anyMatch(c ->
+        c.getDbname().equals(dbName) && c.getTablename().equals(tableName) &&
+            c.getPartitionname().equals(partName) && c.getType().equals(type) &&
+            c.getState().equals(state.name().toLowerCase()));
+  }
+
+  @Override
+  protected InitiatorBase getInitiator() {
+    return new IcebergInitiator();
   }
 }

@@ -37,11 +37,13 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -76,7 +78,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.mapred.TaskAttemptContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -979,5 +980,9 @@ public interface HiveStorageHandler extends Configurable {
 
   default void setMergeTaskDeleteProperties(TableDesc tableDesc) {
     throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
+  }
+
+  default CompactionType getEligibleCompactionType(Table table, CompactionInfo ci) throws IOException {
+    throw new UnsupportedOperationException("Storage handler does not support getting compaction type");
   }
 }
