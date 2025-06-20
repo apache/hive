@@ -25,14 +25,18 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.types.Types;
@@ -83,6 +87,7 @@ public class TestHMSCatalog extends HMSTestBase {
     Assert.assertEquals("apache", database1.getParameters().get("owner"));
     Assert.assertEquals("iceberg", database1.getParameters().get("group"));
 
+    Assert.assertSame(HMSCachingCatalog.class, catalog.getClass());
     List<TableIdentifier> tis = catalog.listTables(Namespace.of(ns));
     Assert.assertTrue(tis.isEmpty());
 
@@ -102,7 +107,6 @@ public class TestHMSCatalog extends HMSTestBase {
         required(1, "id", Types.IntegerType.get(), "unique ID"),
         required(2, "data", Types.StringType.get()));
   }
-
   
   @Test
   public void testCreateTableTxnBuilder() throws Exception {
@@ -166,9 +170,9 @@ public class TestHMSCatalog extends HMSTestBase {
     }
   }
 
-
   @Test
   public void testTableAPI() throws Exception {
+    Assert.assertSame(HMSCachingCatalog.class, catalog.getClass());
     URI iceUri = URI.create("http://hive@localhost:" + catalogPort + "/"+catalogPath+"/v1/");
     String jwt = generateJWT();
     Schema schema = getTestSchema();
@@ -210,4 +214,52 @@ public class TestHMSCatalog extends HMSTestBase {
       Assert.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(rtableIdent));
   }
 
+  public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
+  public static final String CATALOG_NAME = "iceberg.catalog";
+
+  private static Map<String, String> getCatalogPropertiesFromConf(Configuration conf, String catalogName) {
+    Map<String, String> catalogProperties = Maps.newHashMap();
+    String keyPrefix = CATALOG_CONFIG_PREFIX + catalogName;
+    conf.forEach(config -> {
+      if (config.getKey().startsWith(keyPrefix)) {
+        catalogProperties.put(
+                config.getKey().substring(keyPrefix.length() + 1),
+                config.getValue());
+      }
+    });
+    return catalogProperties;
+  }
+
+  @Test
+  public void testBuildTable() throws Exception {
+    String cname = catalog.name();
+    URI iceUri = URI.create("http://localhost:" + catalogPort + "/"+catalogPath);
+    String jwt = generateJWT();
+    Schema schema = getTestSchema();
+    final String tblName = "tbl_" + Integer.toHexString(RND.nextInt(65536));
+    final TableIdentifier TBL = TableIdentifier.of(DB_NAME, tblName);
+    String location = temp.newFolder(TBL.toString()).toString();
+
+    Configuration configuration = new Configuration();
+    configuration.set("iceberg.catalog", cname);
+    configuration.set("iceberg.catalog."+cname+".type", "rest");
+    configuration.set("iceberg.catalog."+cname+".uri", iceUri.toString());
+    configuration.set("iceberg.catalog."+cname+".token", jwt);
+
+    String catalogName = configuration.get(CATALOG_NAME);
+    Assert.assertEquals(cname, catalogName);
+    Map<String, String> properties = getCatalogPropertiesFromConf(configuration, catalogName);
+    Assert.assertFalse(properties.isEmpty());
+    RESTCatalog restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catalogName, properties, configuration);
+    restCatalog.initialize(catalogName, properties);
+
+    restCatalog.buildTable(TBL, schema)
+            .withLocation(location)
+            .createTransaction()
+            .commitTransaction();
+    Table table = catalog.loadTable(TBL);
+    Assert.assertEquals(location, table.location());
+    Table restTable = restCatalog.loadTable(TBL);
+    Assert.assertEquals(location, restTable.location());
+  }
 }
