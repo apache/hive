@@ -2222,7 +2222,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(req.getDbName(), req.getTblName(), conf));
     }
-    if (req.getCatName() == null ) {
+    if (req.getCatName() == null) {
       req.setCatName(getDefaultCatalog(conf));
     }
     return client.get_partition_names_ps_req(req);
