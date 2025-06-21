@@ -109,10 +109,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_dom is not null) (type: boolean)
+                  filterExpr: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28)) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 1168784 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28) and d_dom is not null) (type: boolean)
+                    predicate: ((d_year) IN (2000, 2001, 2002) and (d_dom BETWEEN 1 AND 3 or d_dom BETWEEN 25 AND 28)) (type: boolean)
                     Statistics: Num rows: 249 Data size: 3984 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_date_sk (type: bigint)
