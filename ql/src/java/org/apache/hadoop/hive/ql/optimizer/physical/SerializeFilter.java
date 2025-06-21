@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SerializeFilter implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(SerializeFilter.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(SerializeFilter.class);
 
   public class Serializer implements SemanticDispatcher {
 

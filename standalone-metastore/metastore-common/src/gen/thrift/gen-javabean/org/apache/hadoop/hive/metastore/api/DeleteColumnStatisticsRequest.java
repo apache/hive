@@ -862,13 +862,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // PART_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1568 = iprot.readListBegin();
-                struct.part_names = new java.util.ArrayList<java.lang.String>(_list1568.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1569;
-                for (int _i1570 = 0; _i1570 < _list1568.size; ++_i1570)
+                org.apache.thrift.protocol.TList _list1584 = iprot.readListBegin();
+                struct.part_names = new java.util.ArrayList<java.lang.String>(_list1584.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1585;
+                for (int _i1586 = 0; _i1586 < _list1584.size; ++_i1586)
                 {
-                  _elem1569 = iprot.readString();
-                  struct.part_names.add(_elem1569);
+                  _elem1585 = iprot.readString();
+                  struct.part_names.add(_elem1585);
                 }
                 iprot.readListEnd();
               }
@@ -880,13 +880,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 5: // COL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1571 = iprot.readListBegin();
-                struct.col_names = new java.util.ArrayList<java.lang.String>(_list1571.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1572;
-                for (int _i1573 = 0; _i1573 < _list1571.size; ++_i1573)
+                org.apache.thrift.protocol.TList _list1587 = iprot.readListBegin();
+                struct.col_names = new java.util.ArrayList<java.lang.String>(_list1587.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1588;
+                for (int _i1589 = 0; _i1589 < _list1587.size; ++_i1589)
                 {
-                  _elem1572 = iprot.readString();
-                  struct.col_names.add(_elem1572);
+                  _elem1588 = iprot.readString();
+                  struct.col_names.add(_elem1588);
                 }
                 iprot.readListEnd();
               }
@@ -946,9 +946,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PART_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.part_names.size()));
-            for (java.lang.String _iter1574 : struct.part_names)
+            for (java.lang.String _iter1590 : struct.part_names)
             {
-              oprot.writeString(_iter1574);
+              oprot.writeString(_iter1590);
             }
             oprot.writeListEnd();
           }
@@ -960,9 +960,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(COL_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.col_names.size()));
-            for (java.lang.String _iter1575 : struct.col_names)
+            for (java.lang.String _iter1591 : struct.col_names)
             {
-              oprot.writeString(_iter1575);
+              oprot.writeString(_iter1591);
             }
             oprot.writeListEnd();
           }
@@ -1023,18 +1023,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPart_names()) {
         {
           oprot.writeI32(struct.part_names.size());
-          for (java.lang.String _iter1576 : struct.part_names)
+          for (java.lang.String _iter1592 : struct.part_names)
           {
-            oprot.writeString(_iter1576);
+            oprot.writeString(_iter1592);
           }
         }
       }
       if (struct.isSetCol_names()) {
         {
           oprot.writeI32(struct.col_names.size());
-          for (java.lang.String _iter1577 : struct.col_names)
+          for (java.lang.String _iter1593 : struct.col_names)
           {
-            oprot.writeString(_iter1577);
+            oprot.writeString(_iter1593);
           }
         }
       }
@@ -1060,26 +1060,26 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list1578 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.part_names = new java.util.ArrayList<java.lang.String>(_list1578.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1579;
-          for (int _i1580 = 0; _i1580 < _list1578.size; ++_i1580)
+          org.apache.thrift.protocol.TList _list1594 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.part_names = new java.util.ArrayList<java.lang.String>(_list1594.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1595;
+          for (int _i1596 = 0; _i1596 < _list1594.size; ++_i1596)
           {
-            _elem1579 = iprot.readString();
-            struct.part_names.add(_elem1579);
+            _elem1595 = iprot.readString();
+            struct.part_names.add(_elem1595);
           }
         }
         struct.setPart_namesIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list1581 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.col_names = new java.util.ArrayList<java.lang.String>(_list1581.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1582;
-          for (int _i1583 = 0; _i1583 < _list1581.size; ++_i1583)
+          org.apache.thrift.protocol.TList _list1597 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.col_names = new java.util.ArrayList<java.lang.String>(_list1597.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1598;
+          for (int _i1599 = 0; _i1599 < _list1597.size; ++_i1599)
           {
-            _elem1582 = iprot.readString();
-            struct.col_names.add(_elem1582);
+            _elem1598 = iprot.readString();
+            struct.col_names.add(_elem1598);
           }
         }
         struct.setCol_namesIsSet(true);

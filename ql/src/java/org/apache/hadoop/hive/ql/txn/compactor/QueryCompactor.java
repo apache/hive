@@ -46,13 +46,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.overrideConfProps;
+
 /**
  * Common interface for query based compactions.
  */
 public abstract class QueryCompactor implements Compactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
-  private static final String COMPACTOR_PREFIX = "compactor.";
 
   /**
    * This is the final step of the compaction, which can vary based on compaction type. Usually this involves some file
@@ -74,7 +75,7 @@ public abstract class QueryCompactor implements Compactor {
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
-    Util.overrideConfProps(conf, compactionInfo, tblProperties);
+    overrideConfProps(conf, compactionInfo, tblProperties);
     
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpAndStartSessionState(conf, user);
@@ -289,17 +290,6 @@ public abstract class QueryCompactor implements Compactor {
         LOG.debug("Going to delete path " + dead.toString());
         fs.delete(dead, true);
       }
-    }
-
-    static void overrideConfProps(HiveConf conf, CompactionInfo ci, Map<String, String> properties) {
-      Stream.of(properties, new StringableMap(ci.properties))
-              .filter(Objects::nonNull)
-              .flatMap(map -> map.entrySet().stream())
-              .filter(entry -> entry.getKey().startsWith(COMPACTOR_PREFIX))
-              .forEach(entry -> {
-                String property = entry.getKey().substring(COMPACTOR_PREFIX.length());
-                conf.set(property, entry.getValue());
-              });
     }
   }
 }

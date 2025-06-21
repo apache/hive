@@ -30,6 +30,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
@@ -37,22 +38,21 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.quantilescommon.QuantileSearchCriteria;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.calcite.sql.fun.SqlStdOperatorTable.NOT_BETWEEN;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
@@ -61,12 +61,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
   private final double  childCardinality;
   private final RelMetadataQuery mq;
+  private final RexBuilder rexBuilder;
 
   public FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
     this.mq = mq;
     this.childRel = childRel;
     this.childCardinality = mq.getRowCount(childRel);
+    this.rexBuilder = childRel.getCluster().getRexBuilder();
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -98,20 +100,24 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     Double selectivity;
-    SqlKind op = getOp(call);
 
-    switch (op) {
+    switch (call.getKind()) {
     case AND: {
       selectivity = computeConjunctionSelectivity(call);
       break;
     }
-
+    case SEARCH:
+      return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
     case OR: {
       selectivity = computeDisjunctionSelectivity(call);
       break;
     }
 
-    case NOT:
+    case NOT: {
+      Double opSelectivity = call.getOperands().get(0).accept(this);
+      assert (opSelectivity >= 0 && opSelectivity <= 1);
+      return 1.0 - opSelectivity;
+    }
     case NOT_EQUALS: {
       selectivity = computeNotEqualitySelectivity(call);
       break;
@@ -146,7 +152,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case GREATER_THAN_OR_EQUAL:
     case LESS_THAN:
     case GREATER_THAN: {
-      selectivity = computeRangePredicateSelectivity(call, op);
+      selectivity = computeRangePredicateSelectivity(call, call.getKind());
       break;
     }
 
@@ -154,24 +160,23 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       selectivity = computeBetweenPredicateSelectivity(call);
       break;
 
-    case IN: {
-      // TODO: 1) check for duplicates 2) We assume in clause values to be
-      // present in NDV which may not be correct (Range check can find it) 3) We
-      // assume values in NDV set is uniformly distributed over col values
-      // (account for skewness - histogram).
-      selectivity = computeFunctionSelectivity(call);
-      if (selectivity != null) {
-        selectivity = selectivity * (call.operands.size() - 1);
-        if (selectivity <= 0.0) {
-          selectivity = 0.10;
-        } else if (selectivity >= 1.0) {
-          selectivity = 1.0;
-        }
-      }
-      break;
-    }
-
     default:
+      if (HiveIn.INSTANCE.equals(call.op)) {
+        // TODO: 1) check for duplicates 2) We assume in clause values to be
+        // present in NDV which may not be correct (Range check can find it) 3) We
+        // assume values in NDV set is uniformly distributed over col values
+        // (account for skewness - histogram).
+        selectivity = computeFunctionSelectivity(call);
+        if (selectivity != null) {
+          selectivity = selectivity * (call.operands.size() - 1);
+          if (selectivity <= 0.0) {
+            selectivity = 0.10;
+          } else if (selectivity >= 1.0) {
+            selectivity = 1.0;
+          }
+        }
+        break;
+      }
       selectivity = computeFunctionSelectivity(call);
     }
 
@@ -471,21 +476,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return false;
   }
 
-  private SqlKind getOp(RexCall call) {
-    SqlKind op = call.getKind();
-
-    if (call.getKind().equals(SqlKind.OTHER_FUNCTION)
-        && SqlTypeUtil.inBooleanFamily(call.getType())) {
-      SqlOperator sqlOp = call.getOperator();
-      String opName = (sqlOp != null) ? sqlOp.getName() : "";
-      if (opName.equalsIgnoreCase("in")) {
-        op = SqlKind.IN;
-      }
-    }
-
-    return op;
-  }
-
   @Override
   public Double visitLiteral(RexLiteral literal) {
     if (literal.isAlwaysFalse() || RexUtil.isNull(literal)) {
@@ -500,7 +490,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
   private static double rangedSelectivity(KllFloatsSketch kll, float val1, float val2) {
     float[] splitPoints = new float[] { val1, val2 };
-    double[] boundaries = kll.getCDF(splitPoints);
+    double[] boundaries = kll.getCDF(splitPoints, QuantileSearchCriteria.EXCLUSIVE);
     return boundaries[1] - boundaries[0];
   }
 
@@ -511,7 +501,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &gt; value" in the range [0, 1]
    */
   public static double greaterThanSelectivity(KllFloatsSketch kll, float value) {
-    float max = kll.getMaxValue();
+    float max = kll.getMaxItem();
     if (value > max) {
       return 0;
     }
@@ -529,10 +519,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &gt;= value" in the range [0, 1]
    */
   public static double greaterThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
-    if (value > kll.getMaxValue()) {
+    if (value > kll.getMaxItem()) {
       return 0;
     }
-    return rangedSelectivity(kll, value, Math.nextUp(kll.getMaxValue()));
+    return rangedSelectivity(kll, value, Math.nextUp(kll.getMaxItem()));
   }
 
   /**
@@ -542,10 +532,10 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &lt;= value" in the range [0, 1]
    */
   public static double lessThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
-    if (value < kll.getMinValue()) {
+    if (value < kll.getMinItem()) {
       return 0;
     }
-    return kll.getCDF(new float[] { Math.nextUp(value) })[0];
+    return kll.getCDF(new float[] { Math.nextUp(value) }, QuantileSearchCriteria.EXCLUSIVE)[0];
   }
 
   /**
@@ -555,14 +545,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of a predicate "column &lt; value" in the range [0, 1]
    */
   public static double lessThanSelectivity(KllFloatsSketch kll, float value) {
-    float min = kll.getMinValue();
+    float min = kll.getMinItem();
     if (value < min) {
       return 0;
     }
     if (Double.compare(value, min) == 0 || Double.compare(Math.nextUp(value), min) == 0) {
       return 0;
     }
-    return kll.getCDF(new float[] { value })[0];
+    return kll.getCDF(new float[] { value }, QuantileSearchCriteria.EXCLUSIVE)[0];
   }
 
   /**

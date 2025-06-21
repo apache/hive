@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.PostExecHook;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.PreExecHook;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.SemanticAnalysisHook;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.AfterClass;

@@ -29,6 +29,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlBinaryOperator;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
@@ -256,7 +258,7 @@ public class RexNodeConverter {
       } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst, rexBuilder);
-      } else if (calciteOp.getKind() == SqlKind.IN && isAllPrimitive) {
+      } else if (HiveIn.INSTANCE.equals(calciteOp) && isAllPrimitive) {
         if (childRexNodeLst.size() == 2) {
           // if it is a single item in an IN clause, transform A IN (B) to A = B
           // from IN [A,B] => EQUALS [A,B]
@@ -544,16 +546,24 @@ public class RexNodeConverter {
       }
       for (int i = 1; i < operands.size(); i++) {
         List<RexNode> conjuncts = new ArrayList<>(columnExpressions.getOperands().size() - 1);
-        RexCall valueExpressions = (RexCall) operands.get(i);
-        if (!HiveCalciteUtil.isDeterministic(valueExpressions)) {
-          // Bail out
+        List<?> valueExpressions = null;
+        if (operands.get(i) instanceof RexLiteral) {
+          RexLiteral literal = (RexLiteral) operands.get(i);
+          valueExpressions = literal.getValueAs(List.class);
+        } else if (operands.get(i) instanceof RexCall) {
+          RexCall call = (RexCall) operands.get(i);
+          if (HiveCalciteUtil.isDeterministic(call)) {
+            valueExpressions = call.getOperands();
+          }
+        }
+        if (valueExpressions == null) {
           return null;
         }
         for (int j = 0; j < columnExpressions.getOperands().size(); j++) {
           conjuncts.add(rexBuilder.makeCall(
               SqlStdOperatorTable.EQUALS,
               columnExpressions.getOperands().get(j),
-              valueExpressions.getOperands().get(j)));
+              (RexNode) valueExpressions.get(j)));
         }
         if (conjuncts.size() > 1) {
           disjuncts.add(rexBuilder.makeCall(
@@ -569,7 +579,7 @@ public class RexNodeConverter {
 
   public static List<RexNode> rewriteInClauseChildren(SqlOperator op, List<RexNode> childRexNodeLst,
       RexBuilder rexBuilder) throws SemanticException {
-    assert op.getKind() == SqlKind.IN;
+    assert op == HiveIn.INSTANCE;
     RexNode firstPred = childRexNodeLst.get(0);
     List<RexNode> newChildRexNodeLst = new ArrayList<RexNode>();
     for (int i = 1; i < childRexNodeLst.size(); i++) {

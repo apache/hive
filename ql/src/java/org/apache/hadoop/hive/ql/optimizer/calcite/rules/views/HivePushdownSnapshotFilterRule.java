@@ -32,11 +32,11 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.type.SqlTypeFamily;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRuleConfig;
 
 import java.util.Objects;
 import java.util.Set;
@@ -60,15 +60,13 @@ import java.util.Set;
 public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshotFilterRule.Config> {
 
   public static final RelOptRule INSTANCE =
-          RelRule.Config.EMPTY.as(HivePushdownSnapshotFilterRule.Config.class)
-            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-            .withOperandSupplier(operandBuilder -> operandBuilder.operand(HiveFilter.class).anyInputs())
-            .withDescription("HivePushdownSnapshotFilterRule")
-            .toRule();
+      new Config().withOperandSupplier(operandBuilder -> operandBuilder.operand(HiveFilter.class).anyInputs())
+          .withDescription("HivePushdownSnapshotFilterRule")
+          .toRule();
 
-  public interface Config extends RelRule.Config {
+  public static class Config extends HiveRuleConfig {
     @Override
-    default HivePushdownSnapshotFilterRule toRule() {
+    public HivePushdownSnapshotFilterRule toRule() {
       return new HivePushdownSnapshotFilterRule(this);
     }
   }
@@ -113,7 +111,7 @@ public class HivePushdownSnapshotFilterRule extends RelRule<HivePushdownSnapshot
       }
 
       RexLiteral literal = (RexLiteral) op1;
-      if (literal.getType().getSqlTypeName().getFamily() != SqlTypeFamily.NUMERIC) {
+      if (literal.getTypeName() != SqlTypeName.DECIMAL) {
         return false;
       }
 

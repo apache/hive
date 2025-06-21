@@ -31,10 +31,8 @@ import org.apache.iceberg.BaseMetastoreOperations;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.SchemaParser;
-import org.apache.iceberg.TableMetadata;
-import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.exceptions.NoSuchIcebergTableException;
+import org.apache.iceberg.exceptions.NoSuchIcebergViewException;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -56,6 +54,7 @@ public interface HiveOperationsBase {
   long HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT = 32672;
   String NO_LOCK_EXPECTED_KEY = "expected_parameter_key";
   String NO_LOCK_EXPECTED_VALUE = "expected_parameter_value";
+  String ICEBERG_VIEW_TYPE_VALUE = "iceberg-view";
 
   TableType tableType();
 
@@ -100,32 +99,22 @@ public interface HiveOperationsBase {
         metadataLocation);
   }
 
-  default boolean exposeInHmsProperties() {
-    return maxHiveTablePropertySize() > 0;
-  }
-
-  default void setSchema(Schema schema, Map<String, String> parameters) {
-    parameters.remove(TableProperties.CURRENT_SCHEMA);
-    if (exposeInHmsProperties() && schema != null) {
-      String jsonSchema = SchemaParser.toJson(schema);
-      setField(parameters, TableProperties.CURRENT_SCHEMA, jsonSchema);
-    }
-  }
-
-  default void setField(Map<String, String> parameters, String key, String value) {
-    if (value.length() <= maxHiveTablePropertySize()) {
-      parameters.put(key, value);
-    } else {
-      LOG.warn(
-          "Not exposing {} in HMS since it exceeds {} characters", key, maxHiveTablePropertySize());
-    }
-  }
-
   static void validateTableIsIceberg(Table table, String fullName) {
     String tableType = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     NoSuchIcebergTableException.check(
         tableType != null && tableType.equalsIgnoreCase(BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE),
         "Not an iceberg table: %s (type=%s)", fullName, tableType);
+  }
+
+  static void validateTableIsIcebergView(Table table, String fullName) {
+    String tableTypeProp = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
+    NoSuchIcebergViewException.check(
+            TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(table.getTableType()) &&
+                    ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
+            "Not an iceberg view: %s (type=%s) (tableType=%s)",
+            fullName,
+            tableTypeProp,
+            table.getTableType());
   }
 
   default void persistTable(Table hmsTable, boolean updateHiveTable, String metadataLocation)
@@ -144,15 +133,6 @@ public interface HiveOperationsBase {
             return null;
           });
     }
-  }
-
-  /**
-   * @deprecated since 1.6.0, will be removed in 1.7.0; Use {@link #storageDescriptor(Schema,
-   *     String, boolean)} instead
-   */
-  @Deprecated
-  static StorageDescriptor storageDescriptor(TableMetadata metadata, boolean hiveEngineEnabled) {
-    return storageDescriptor(metadata.schema(), metadata.location(), hiveEngineEnabled);
   }
 
   static StorageDescriptor storageDescriptor(

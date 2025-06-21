@@ -43,9 +43,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
@@ -77,9 +77,9 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:2
-totalFileSize:11624
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
@@ -111,8 +111,8 @@ columns:struct columns { string key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:17436
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 

@@ -52,7 +52,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(ReplCopyTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReplCopyTask.class);
 
   public ReplCopyTask() {
     super();

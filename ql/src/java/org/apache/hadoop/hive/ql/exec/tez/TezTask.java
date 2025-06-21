@@ -109,7 +109,7 @@ public class TezTask extends Task<TezWork> {
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
   private static final String ICEBERG_PROPERTY_PREFIX = "iceberg.mr.";
   private static final String ICEBERG_SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
-  private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private static Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
 
@@ -277,7 +277,7 @@ public class TezTask extends Task<TezWork> {
         runtimeContext.setApplicationId(appId);
 
         // finally monitor will print progress until the job is done
-        monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
+        monitor = new TezJobMonitor(session, work.getAllWork(), dagClient, conf, dag, ctx, runtimeContext.counters,
             perfLogger);
         runtimeContext.setMonitor(monitor);
         rc = monitor.monitorExecution();

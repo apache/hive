@@ -103,8 +103,8 @@ public class TestMetastoreTransformer {
     client.dropTable(dbName, tblName);
     silentDropDatabase(dbName);
 
-    String dbLocation = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/_testDB_table_create_";
-    String mgdLocation = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_table_create_";
+    String dbLocation = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testAlterTableIsCaseInSensitive";
+    String mgdLocation = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testAlterTableIsCaseInSensitive";
     new DatabaseBuilder().setName(dbName).setLocation(dbLocation).setManagedLocation(mgdLocation).create(client, conf);
 
     ArrayList<FieldSchema> invCols = new ArrayList<>(2);

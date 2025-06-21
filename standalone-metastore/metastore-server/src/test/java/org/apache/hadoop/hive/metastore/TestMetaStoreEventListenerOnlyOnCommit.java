@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -49,6 +48,22 @@ public class TestMetaStoreEventListenerOnlyOnCommit {
 
   private Configuration conf;
   private HiveMetaStoreClient msc;
+
+  public static class DummyRawStoreControlledCommit extends ObjectStore {
+    private static boolean shouldCommitSucceed = true;
+    public static void setCommitSucceed(boolean flag) {
+      shouldCommitSucceed = flag;
+    }
+
+    @Override
+    public boolean commitTransaction() {
+      if (shouldCommitSucceed) {
+        return super.commitTransaction();
+      } else {
+        return false;
+      }
+    }
+  }
 
   @Before
   public void setUp() throws Exception {

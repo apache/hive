@@ -852,7 +852,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
                                 testTables.propertiesForCreateTableSQL(ImmutableMap.of())))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageContaining("Unsupported Hive type");
+          .hasMessageContaining("Unsupported Hive type " + notSupportedType.replaceAll("\\(.*\\)", ""));
     }
   }
 

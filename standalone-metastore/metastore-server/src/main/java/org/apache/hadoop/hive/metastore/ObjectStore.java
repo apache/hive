@@ -1053,6 +1053,57 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<Database> getDatabaseObjects(String catName, String pattern) throws MetaException {
+    boolean commited = false;
+    List<Database> databases = new ArrayList<>();
+    Query query = null;
+    catName = normalizeIdentifier(catName);
+    try {
+      openTransaction();
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> parameterVals = new ArrayList<>();
+      appendSimpleCondition(filterBuilder, "catalogName", new String[]{catName}, parameterVals);
+      if (!(pattern == null || pattern.equals("*"))) {
+        String[] subpatterns = pattern.trim().split("\\|");
+        appendPatternCondition(filterBuilder, "name", subpatterns, parameterVals);
+      }
+      query = pm.newQuery(MDatabase.class, filterBuilder.toString());
+      query.setOrdering("name ascending");
+      Collection<MDatabase> mDBs = (Collection<MDatabase>) query.executeWithArray(parameterVals.toArray(new String[0]));
+      for (MDatabase mdb : mDBs) {
+        databases.add(convertToDatabase(mdb));
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return databases;
+  }
+
+  private Database convertToDatabase(MDatabase mdb) {
+    Database db = new Database();
+    db.setName(mdb.getName());
+    db.setDescription(mdb.getDescription());
+    db.setParameters(convertMap(mdb.getParameters()));
+    db.setOwnerName(mdb.getOwnerName());
+    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
+    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
+    db.setOwnerType(principalType);
+    if (mdb.getType().equalsIgnoreCase(DatabaseType.NATIVE.name())) {
+      db.setType(DatabaseType.NATIVE);
+      db.setLocationUri(mdb.getLocationUri());
+      db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
+    } else {
+      db.setType(DatabaseType.REMOTE);
+      db.setConnector_name(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getDataConnectorName(), null));
+      db.setRemote_dbname(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getRemoteDatabaseName(), null));
+    }
+    db.setCatalogName(mdb.getCatalogName());
+    db.setCreateTime(mdb.getCreateTime());
+    return db;
+  }
+
+  @Override
   public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
     boolean commited = false;
     MDataConnector mDataConnector = new MDataConnector();
@@ -2664,7 +2715,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("Partition does not belong to target table "
             + dbName + "." + tblName + ": " + part);
       }
-      MPartition mpart = convertToMPart(part, table, true);
+      MPartition mpart = convertToMPart(part, table);
       mParts.add(mpart);
       int now = (int) (System.currentTimeMillis() / 1000);
       List<MPartitionPrivilege> mPartPrivileges = new ArrayList<>();
@@ -2766,7 +2817,7 @@ public class ObjectStore implements RawStore, Configurable {
         Partition part = iterator.next();
 
         if (isValidPartition(part, partitionKeys, ifNotExists)) {
-          MPartition mpart = convertToMPart(part, table, true);
+          MPartition mpart = convertToMPart(part, table);
           pm.makePersistent(mpart);
           if (tabGrants != null) {
             for (MTablePrivilege tab : tabGrants) {
@@ -2962,10 +3013,9 @@ public class ObjectStore implements RawStore, Configurable {
    * to the same one as the table's storage descriptor.
    * @param part the partition to convert
    * @param mt the parent table object
-   * @param useTableCD whether to try to use the parent table's column descriptor.
    * @return the model partition object, and null if the input partition is null.
    */
-  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
+  private MPartition convertToMPart(Partition part, MTable mt)
       throws InvalidObjectException, MetaException {
     // NOTE: we don't set writeId in this method. Write ID is only set after validating the
     //       existing write ID against the caller's valid list.
@@ -2981,8 +3031,7 @@ public class ObjectStore implements RawStore, Configurable {
     // use the parent table's, so we do not create a duplicate column descriptor,
     // thereby saving space
     MStorageDescriptor msd;
-    if (useTableCD &&
-        mt.getSd() != null && mt.getSd().getCD() != null &&
+    if (mt.getSd() != null && mt.getSd().getCD() != null &&
         mt.getSd().getCD().getCols() != null &&
         part.getSd() != null &&
         convertToFieldSchemas(mt.getSd().getCD().getCols()).
@@ -5137,7 +5186,7 @@ public class ObjectStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
-    MPartition newp = convertToMPart(newPart, table, false);
+    MPartition newp = convertToMPart(newPart, table);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {
@@ -5197,9 +5246,6 @@ public class ObjectStore implements RawStore, Configurable {
     Partition result = null;
     try {
       openTransaction();
-      if (newPart.isSetWriteId()) {
-        LOG.warn("Alter partitions with write ID called without transaction information");
-      }
       Ref<MColumnDescriptor> oldCd = new Ref<>();
       result = alterPartitionNoTxn(catName, dbname, name, part_vals, newPart, validWriteIds, oldCd);
       removeUnusedColumnDescriptor(oldCd.t);
@@ -11297,6 +11343,16 @@ public class ObjectStore implements RawStore, Configurable {
         filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
         filterBuilder.append(") ");
       }
+      if (rqst.isSetEventTypeList()) {
+        filterBuilder.append(" && (");
+        for (String eventType : rqst.getEventTypeList()) {
+          parameterVals.add(eventType);
+          parameterBuilder.append(", java.lang.String para" + parameterVals.size());
+          filterBuilder.append("eventType == para" + parameterVals.size() + " || ");
+        }
+        filterBuilder.setLength(filterBuilder.length() - 4); // remove the last " || "
+        filterBuilder.append(") ");
+      }
       if (rqst.isSetEventTypeSkipList()) {
         for (String eventType : rqst.getEventTypeSkipList()) {
           parameterVals.add(eventType);
@@ -14041,7 +14097,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     if (queryValidWriteIdList != null) { // Can be null when stats are being reset to invalid.
-      ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(queryValidWriteIdList);
+      ValidWriteIdList list4TheQuery = ValidReaderWriteIdList.fromValue(queryValidWriteIdList);
       // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
       // that means it cannot possibly be a concurrent write. If it's not valid (we are not
       // allowed to see it), that means it's either concurrent or aborted, same thing for us.

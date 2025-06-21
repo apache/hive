@@ -33,7 +33,7 @@
     <druid.avatica.version>1.15.0</druid.avatica.version>
     <druid.curator.version>4.0.0</druid.curator.version>
     <druid.jersey.version>1.19.3</druid.jersey.version>
-    <druid.jetty.version>9.4.45.v20220203</druid.jetty.version>
+    <druid.jetty.version>9.4.57.v20241219</druid.jetty.version>
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>

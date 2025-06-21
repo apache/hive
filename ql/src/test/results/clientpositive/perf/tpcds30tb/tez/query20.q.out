@@ -63,10 +63,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
-                  filterExpr: (i_category) IN ('Jewelry                                           ', 'Sports                                            ', 'Books                                             ') (type: boolean)
+                  filterExpr: (i_category) IN ('Books                                             ', 'Jewelry                                           ', 'Sports                                            ') (type: boolean)
                   Statistics: Num rows: 462000 Data size: 270601408 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (i_category) IN ('Jewelry                                           ', 'Sports                                            ', 'Books                                             ') (type: boolean)
+                    predicate: (i_category) IN ('Books                                             ', 'Jewelry                                           ', 'Sports                                            ') (type: boolean)
                     Statistics: Num rows: 126000 Data size: 73800496 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i_item_sk (type: bigint), i_item_id (type: string), i_item_desc (type: varchar(200)), i_current_price (type: decimal(7,2)), i_class (type: char(50)), i_category (type: char(50))

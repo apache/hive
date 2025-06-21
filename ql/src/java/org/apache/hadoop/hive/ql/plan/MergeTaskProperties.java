@@ -21,12 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 
 public interface MergeTaskProperties {
-  public Path getTmpLocation();
+  Path getTmpLocation();
 
   default Properties getSplitProperties() throws IOException {
     return null;

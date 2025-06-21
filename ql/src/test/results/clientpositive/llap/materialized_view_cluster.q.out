@@ -120,8 +120,11 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
-      distribute columns: key string
       columns: value string, key string
+      distribute columns: key string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       sort columns: key string
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
       name: default.cluster_mv_1

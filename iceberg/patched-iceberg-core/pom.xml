@@ -96,12 +96,8 @@
                       **/HadoopTableOperations.class
                       **/StructLikeMap.class
                       **/StructLikeWrapper.class
-                      org.apache.iceberg.avro.ValueReaders.class
-                      org.apache.iceberg.avro.ValueWriters.class
-                      org.apache.iceberg.BaseScan.class
                       org.apache.iceberg.PartitionsTable.class
-                      org.apache.iceberg.Partitioning.class
-                      org.apache.iceberg.SnapshotProducer.class
+                      org.apache.iceberg.ManifestFilterManager.class
                   </excludes>
                 </artifactItem>
               </artifactItems>

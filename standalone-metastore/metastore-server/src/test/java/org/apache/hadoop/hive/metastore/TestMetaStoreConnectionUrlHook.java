@@ -20,8 +20,16 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,6 +40,61 @@ import org.junit.experimental.categories.Category;
  */
 @Category(MetastoreUnitTest.class)
 public class TestMetaStoreConnectionUrlHook {
+
+  public static class DummyRawStoreForJdoConnection extends ObjectStore {
+    @Override
+    public Configuration getConf() {
+      return null;
+    }
+
+    @Override
+    public void setConf(Configuration arg0) {
+      String expected = DummyJdoConnectionUrlHook.newUrl;
+      String actual = MetastoreConf.getVar(arg0, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+
+      Assert.assertEquals("The expected URL used by JDO to connect to the metastore: " + expected +
+              " did not match the actual value when the Raw Store was initialized: " + actual,
+          expected, actual);
+    }
+
+    @Override
+    public void verifySchema() throws MetaException {
+    }
+
+    public void createCatalog(Catalog cat) throws MetaException {
+    }
+
+    @Override
+    public Catalog getCatalog(String catalogName) throws NoSuchObjectException, MetaException {
+      return null;
+    }
+
+    @Override
+    public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+    }
+
+    @Override
+    public Database getDatabase(String catName, String name) throws NoSuchObjectException {
+      return null;
+    }
+
+    @Override
+    public Role getRole(String roleName) throws NoSuchObjectException {
+      return null;
+    }
+
+    @Override
+    public boolean addRole(String roleName, String ownerName)
+        throws InvalidObjectException, MetaException, NoSuchObjectException {
+      return false;
+    }
+
+    @Override
+    public boolean grantPrivileges(PrivilegeBag privileges)
+        throws InvalidObjectException, MetaException, NoSuchObjectException {
+      return false;
+    }
+  }
 
   @Test
   public void testUrlHook() throws Exception {

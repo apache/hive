@@ -122,7 +122,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
       try {
         return HiveIcebergFilterFactory.generateFilterExpression(sarg);
       } catch (UnsupportedOperationException e) {
-        LOG.warn("Unable to create Iceberg filter, continuing without filter (will be applied by Hive later): ", e);
+        LOG.warn("Unable to create Iceberg filter, proceeding without it (will be applied by Hive later): ", e);
       }
     }
     return null;

@@ -640,10 +640,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  filterExpr: (b NOT BETWEEN 2 AND 6 and a is not null) (type: boolean)
+                  filterExpr: (((b < 2) or (b > 6)) and a is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 1756 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (b NOT BETWEEN 2 AND 6 and a is not null) (type: boolean)
+                    predicate: (((b < 2) or (b > 6)) and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: string)

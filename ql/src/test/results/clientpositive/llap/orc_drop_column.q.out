@@ -1,0 +1,489 @@
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: desc formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: desc formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_orc partition (d='one') values (1, "ab", 1), (2, "bc", 3), (3, "cd", 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@d=one
+POSTHOOK: query: insert into table tbl_orc partition (d='one') values (1, "ab", 1), (2, "bc", 3), (3, "cd", 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@d=one
+POSTHOOK: Lineage: tbl_orc PARTITION(d=one).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=one).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=one).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: insert into table tbl_orc partition (d='two') values (4, "bc", 6), (5, "cd", 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@d=two
+POSTHOOK: query: insert into table tbl_orc partition (d='two') values (4, "bc", 6), (5, "cd", 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@d=two
+POSTHOOK: Lineage: tbl_orc PARTITION(d=two).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=two).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=two).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: insert into table tbl_orc partition (d='three') values (6, "ab", 7), (7, "bc", 8), (8, "cd", 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@d=three
+POSTHOOK: query: insert into table tbl_orc partition (d='three') values (6, "ab", 7), (7, "bc", 8), (8, "cd", 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@d=three
+POSTHOOK: Lineage: tbl_orc PARTITION(d=three).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=three).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=three).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: insert into table tbl_orc partition (d='four') values (9, "ab", 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@d=four
+POSTHOOK: query: insert into table tbl_orc partition (d='four') values (9, "ab", 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@d=four
+POSTHOOK: Lineage: tbl_orc PARTITION(d=four).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=four).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=four).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: show partitions tbl_orc
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show partitions tbl_orc
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc
+partition
+d=four
+d=one
+d=three
+d=two
+PREHOOK: query: show columns in tbl_orc
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show columns in tbl_orc
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_orc
+field
+a                   
+b                   
+c                   
+d                   
+PREHOOK: query: select * from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=four
+PREHOOK: Input: default@tbl_orc@d=one
+PREHOOK: Input: default@tbl_orc@d=three
+PREHOOK: Input: default@tbl_orc@d=two
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=four
+POSTHOOK: Input: default@tbl_orc@d=one
+POSTHOOK: Input: default@tbl_orc@d=three
+POSTHOOK: Input: default@tbl_orc@d=two
+#### A masked pattern was here ####
+tbl_orc.a	tbl_orc.b	tbl_orc.c	tbl_orc.d
+1	ab	1	one
+2	bc	3	one
+3	cd	4	one
+4	bc	6	two
+5	cd	5	two
+6	ab	7	three
+7	bc	8	three
+8	cd	9	three
+9	ab	10	four
+PREHOOK: query: explain alter table tbl_orc drop column if exists c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+PREHOOK: Output: default@tbl_orc@d=four
+PREHOOK: Output: default@tbl_orc@d=one
+PREHOOK: Output: default@tbl_orc@d=three
+PREHOOK: Output: default@tbl_orc@d=two
+POSTHOOK: query: explain alter table tbl_orc drop column if exists c cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=four
+POSTHOOK: Output: default@tbl_orc@d=one
+POSTHOOK: Output: default@tbl_orc@d=three
+POSTHOOK: Output: default@tbl_orc@d=two
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Column
+      column name: c
+      table name: default.tbl_orc
+      cascade: true
+
+PREHOOK: query: alter table tbl_orc drop column if exists c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+PREHOOK: Output: default@tbl_orc@d=four
+PREHOOK: Output: default@tbl_orc@d=one
+PREHOOK: Output: default@tbl_orc@d=three
+PREHOOK: Output: default@tbl_orc@d=two
+POSTHOOK: query: alter table tbl_orc drop column if exists c cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=four
+POSTHOOK: Output: default@tbl_orc@d=one
+POSTHOOK: Output: default@tbl_orc@d=three
+POSTHOOK: Output: default@tbl_orc@d=two
+PREHOOK: query: alter table tbl_orc drop column if exists c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+PREHOOK: Output: default@tbl_orc@d=four
+PREHOOK: Output: default@tbl_orc@d=one
+PREHOOK: Output: default@tbl_orc@d=three
+PREHOOK: Output: default@tbl_orc@d=two
+POSTHOOK: query: alter table tbl_orc drop column if exists c cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=four
+POSTHOOK: Output: default@tbl_orc@d=one
+POSTHOOK: Output: default@tbl_orc@d=three
+POSTHOOK: Output: default@tbl_orc@d=two
+PREHOOK: query: desc formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: desc formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	4                   
+	numPartitions       	4                   
+	numRows             	9                   
+	rawDataSize         	846                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted tbl_orc partition (d='one')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: desc formatted tbl_orc partition (d='one')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[one]               	 
+Database:           	default             	 
+Table:              	tbl_orc             	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	282                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: show columns in tbl_orc
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show columns in tbl_orc
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_orc
+field
+a                   
+b                   
+d                   
+PREHOOK: query: select * from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=four
+PREHOOK: Input: default@tbl_orc@d=one
+PREHOOK: Input: default@tbl_orc@d=three
+PREHOOK: Input: default@tbl_orc@d=two
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=four
+POSTHOOK: Input: default@tbl_orc@d=one
+POSTHOOK: Input: default@tbl_orc@d=three
+POSTHOOK: Input: default@tbl_orc@d=two
+#### A masked pattern was here ####
+tbl_orc.a	tbl_orc.b	tbl_orc.d
+1	ab	one
+2	bc	one
+3	cd	one
+4	bc	two
+5	cd	two
+6	ab	three
+7	bc	three
+8	cd	three
+9	ab	four
+PREHOOK: query: create external table tbl_orc2(a int, b string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc2
+POSTHOOK: query: create external table tbl_orc2(a int, b string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc2
+PREHOOK: query: desc formatted tbl_orc2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc2
+POSTHOOK: query: desc formatted tbl_orc2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc2
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_orc2 values (1, "ab"), (2, "bc"), (3, "cd")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc2
+POSTHOOK: query: insert into table tbl_orc2 values (1, "ab"), (2, "bc"), (3, "cd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc2
+POSTHOOK: Lineage: tbl_orc2.a SCRIPT []
+POSTHOOK: Lineage: tbl_orc2.b SCRIPT []
+col1	col2
+PREHOOK: query: show columns in tbl_orc2
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_orc2
+POSTHOOK: query: show columns in tbl_orc2
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_orc2
+field
+a                   
+b                   
+PREHOOK: query: select * from tbl_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc2
+#### A masked pattern was here ####
+tbl_orc2.a	tbl_orc2.b
+1	ab
+2	bc
+3	cd
+PREHOOK: query: explain alter table tbl_orc2 drop column b
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_orc2
+PREHOOK: Output: default@tbl_orc2
+POSTHOOK: query: explain alter table tbl_orc2 drop column b
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_orc2
+POSTHOOK: Output: default@tbl_orc2
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Column
+      column name: b
+      table name: default.tbl_orc2
+
+PREHOOK: query: alter table tbl_orc2 drop column b
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_orc2
+PREHOOK: Output: default@tbl_orc2
+POSTHOOK: query: alter table tbl_orc2 drop column b
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_orc2
+POSTHOOK: Output: default@tbl_orc2
+PREHOOK: query: desc formatted tbl_orc2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc2
+POSTHOOK: query: desc formatted tbl_orc2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc2
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	270                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: show columns in tbl_orc2
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_orc2
+POSTHOOK: query: show columns in tbl_orc2
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_orc2
+field
+a                   
+PREHOOK: query: select * from tbl_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc2
+#### A masked pattern was here ####
+tbl_orc2.a
+1
+2
+3

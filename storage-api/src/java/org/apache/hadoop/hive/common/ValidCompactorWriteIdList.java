@@ -74,8 +74,11 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
      */
     this.exceptions = Arrays.copyOf(this.exceptions, lastElementPos + 1);
   }
-  public ValidCompactorWriteIdList(String value) {
-    super(value);
+
+  public static ValidCompactorWriteIdList fromValue(String value) {
+    ValidCompactorWriteIdList cmpWrtList = new ValidCompactorWriteIdList();
+    cmpWrtList.readFromString(value);
+    return cmpWrtList;
   }
   /**
    * Returns org.apache.hadoop.hive.common.ValidWriteIdList.RangeResponse.ALL if all write ids in

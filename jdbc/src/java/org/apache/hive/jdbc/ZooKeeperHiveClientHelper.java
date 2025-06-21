@@ -34,6 +34,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
@@ -178,12 +179,13 @@ class ZooKeeperHiveClientHelper {
     // it must be the server uri added by an older version HS2
     Matcher matcher = kvPattern.matcher(dataStr);
     if ((dataStr != null) && (!matcher.find())) {
-      String[] split = dataStr.split(":");
-      if (split.length != 2) {
+      try {
+        IPStackUtils.HostPort hostPort = IPStackUtils.getHostAndPort(dataStr);
+        connParams.setHost(hostPort.getHostname());
+        connParams.setPort(hostPort.getPort());
+      } catch (Exception e) {
         throw new ZooKeeperHiveClientException("Unable to parse HiveServer2 URI from ZooKeeper data: " + dataStr);
       }
-      connParams.setHost(split[0]);
-      connParams.setPort(Integer.parseInt(split[1]));
     } else {
       applyConfs(dataStr, connParams);
     }

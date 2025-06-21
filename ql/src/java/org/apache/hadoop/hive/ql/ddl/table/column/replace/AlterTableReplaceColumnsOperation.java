@@ -78,7 +78,7 @@ public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperati
     if (ParquetHiveSerDe.isParquetTable(table) && AlterTableUtils.isSchemaEvolutionEnabled(table, context.getConf()) &&
         !desc.isCascade() && droppingColumns && table.isPartitioned()) {
       LOG.warn("Cannot drop columns from a partitioned parquet table without the CASCADE option");
-      throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, desc.getDbTableName());
+      throw new HiveException(ErrorMsg.DROP_COLUMN_UNCASCADED, desc.getDbTableName());
     }
 
     sd.setCols(desc.getNewColumns());

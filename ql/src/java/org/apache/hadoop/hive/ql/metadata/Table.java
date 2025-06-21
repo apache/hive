@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -84,6 +85,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -1363,5 +1366,21 @@ public class Table implements Serializable {
     sourceTable.setUpdatedCount(0L);
     sourceTable.setDeletedCount(0L);
     return sourceTable;
+  }
+
+  public List<VirtualColumn> getVirtualColumns() {
+    List<VirtualColumn> virtualColumns = new ArrayList<>();
+    if (!isNonNative()) {
+      virtualColumns.addAll(VirtualColumn.getRegistry());
+    }
+    if (isNonNative() && AcidUtils.isNonNativeAcidTable(this)) {
+      virtualColumns.addAll(getStorageHandler().acidVirtualColumns());
+    }
+    if (isNonNative() && getStorageHandler().areSnapshotsSupported() &&
+        isBlank(getMetaTable())) {
+      virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
+    }
+    
+    return virtualColumns;
   }
 }

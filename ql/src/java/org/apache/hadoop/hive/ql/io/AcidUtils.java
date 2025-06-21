@@ -2287,7 +2287,7 @@ public class AcidUtils {
    */
   public static ValidTxnWriteIdList getValidTxnWriteIdList(Configuration conf) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    return new ValidTxnWriteIdList(txnString);
+    return ValidTxnWriteIdList.fromValue(txnString);
   }
 
   /**
@@ -2684,7 +2684,7 @@ public class AcidUtils {
     }
 
     // If ACID/MM tables, then need to find the valid state wrt to given ValidWriteIdList.
-    ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(validWriteIdStr);
+    ValidWriteIdList validWriteIdList = ValidReaderWriteIdList.fromValue(validWriteIdStr);
     AcidDirectory acidInfo = AcidUtils.getAcidState(dataPath.getFileSystem(conf), dataPath, conf, validWriteIdList, null,
         false);
 

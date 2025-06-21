@@ -99,6 +99,15 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-1.2-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.kudu</groupId>
       <artifactId>kudu-test-utils</artifactId>
       <version>${kudu.version}</version>
@@ -124,6 +133,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <argLine>${maven.test.jvm.args}</argLine>
           <excludes>
             <exclude>${exclude.tests}</exclude>
           </excludes>

@@ -36,6 +36,13 @@
         <property name="header" value="^/\*$\n^ \* Licensed to the Apache Software Foundation \(ASF\) under one$"/>
         <property name="fileExtensions" value=".java,.ts"/>
     </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="AssertThatExceptionOfTypeWithMessageCheck"/>
+        <property name="fileExtensions" value="java"/>
+        <property name="matchAcrossLines" value="true"/>
+        <property name="format" value="assertThatExceptionOfType\((?:(?!\.withMessage\w*\().)*?isThrownBy\((?:(?!\.withMessage\w*\().)*?;"/>
+        <property name="message" value="assertThatExceptionOfType must include a message check like .withMessage(...)"/>
+    </module>
     <module name="RegexpMultiline"> <!-- Development Practices: Writing good unit tests -->
         <property name="fileExtensions" value="java"/>
         <property name="format" value="@VisibleForTesting\s+(protected|public)"/>

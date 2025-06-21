@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.conf;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +52,8 @@ public class HiveConfForTest extends HiveConf {
     initDataDir(cls);
     LOG.info("Using test data dir (class: {}): {}", cls.getName(), testDataDir);
     // HIVE_USER_INSTALL_DIR is required in DagUtils, let's set one
-    setValue(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR.varname, testDataDir);
+    Path installDir = Paths.get(System.getProperty("test.tmp.dir"), "user_install_dir");
+    setValue(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR.varname, installDir.toString());
     // to avoid the overhead of starting a tez session when creating a new SessionState
     // many unit tests don't need actual tez execution, and this can save a lot of time
     setValue(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, "false");

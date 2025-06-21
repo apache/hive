@@ -19,12 +19,24 @@ insert into source values (1, 'one', 3);
 insert into source values (1, 'two', 4);
 
 explain extended
-create external table tbl_ice partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2') as
-select a, b, c from source;
+create external table tbl_ice partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc 
+as select a, b, c from source;
 
-create external table tbl_ice partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2') as
-select a, b, c from source;
+create external table tbl_ice partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc
+as select a, b, c from source;
 
 describe formatted tbl_ice;
 
 select * from tbl_ice;
+
+set hive.stats.autogather=false;
+set hive.optimize.sort.dynamic.partition.threshold=-1;
+
+explain 
+create external table tbl_ice partitioned by (c) stored by iceberg
+as select * from source;
+
+explain 
+create external table tbl_ice partitioned by (c) stored by iceberg 
+  tblproperties ('write.fanout.enabled'='false')
+as select * from source;

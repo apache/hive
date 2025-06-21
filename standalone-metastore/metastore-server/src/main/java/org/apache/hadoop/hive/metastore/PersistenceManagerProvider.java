@@ -314,10 +314,12 @@ public class PersistenceManagerProvider {
         ds = (maxPoolSize > 0) ? dsp.create(conf, maxPoolSize) : dsp.create(conf);
         databaseProduct = DatabaseProduct.determineDatabaseProduct(ds, conf);
         // The secondary connection factory is used for schema generation, and for value generation operations.
-        // We should use a different pool for the secondary connection factory to avoid resource starvation.
-        // Since DataNucleus uses locks for schema generation and value generation, 2 connections should be sufficient.
+        // We use a different pool for the secondary connection factory to avoid resource starvation.
+        // DataNucleus uses locks for schema generation and value generation, under normal circumstances 2 connections
+        // should be sufficient.
         configurator.resetName(sourceName + "-secondary");
-        ds2 = dsp.create(conf, /* maxPoolSize */ 2);
+        int maxSecondaryPoolSize = Math.max(2, MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_SECONDARY_CONNECTIONS));
+        ds2 = dsp.create(conf, maxSecondaryPoolSize);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY, ds);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds2);
         dsProp.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),

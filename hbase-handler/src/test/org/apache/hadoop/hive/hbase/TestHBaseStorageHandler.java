@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

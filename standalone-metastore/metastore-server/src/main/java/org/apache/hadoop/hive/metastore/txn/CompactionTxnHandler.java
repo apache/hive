@@ -317,15 +317,21 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   public void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException {
+    boolean runInTxn = compactionTxnId > 0;
     jdbcResource.execute(
         "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = :highestWriteId, " +
-            "\"CQ_RUN_AS\" = :runAs, \"CQ_TXN_ID\" = :txnId WHERE \"CQ_ID\" = :id",
+            "\"CQ_RUN_AS\" = :runAs, \"CQ_TXN_ID\" = :txnId, \"CQ_TYPE\" = :type WHERE \"CQ_ID\" = :id",
         new MapSqlParameterSource()
-            .addValue("highestWriteId", ci.highestWriteId)
+            .addValue("highestWriteId", runInTxn ? ci.highestWriteId : null, Types.BIGINT)
             .addValue("runAs", ci.runAs)
-            .addValue("txnId", compactionTxnId)
+            .addValue("txnId", runInTxn ? compactionTxnId : null, Types.BIGINT)
+            .addValue("type", Character.toString(thriftCompactionType2DbType(ci.type)))
             .addValue("id", ci.id),
         ParameterizedCommand.EXACTLY_ONE_ROW);
+
+    if (!runInTxn) {
+      return;
+    }
 
     MapSqlParameterSource parameterSource = new MapSqlParameterSource()
         .addValue("txnId", compactionTxnId)

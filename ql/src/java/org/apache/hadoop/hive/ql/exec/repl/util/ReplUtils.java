@@ -180,7 +180,7 @@ public class ReplUtils {
   public static final String DISTCP_JOB_ID_CONF = "distcp.job.id";
   public static final String DISTCP_JOB_ID_CONF_DEFAULT = "UNAVAILABLE";
 
-  private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
+  private static Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
           Table table, List<Map<String, String>> partitions) throws SemanticException {

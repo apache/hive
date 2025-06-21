@@ -22,7 +22,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@dest1_n45
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('12' AS STRING) AS `hr`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcpart`
-WHERE `key` < 100 AND (`ds` = '2008-04-08' AND `hr` = '12')
+WHERE `key` < 100 AND `ds` = '2008-04-08' AND `hr` = '12'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

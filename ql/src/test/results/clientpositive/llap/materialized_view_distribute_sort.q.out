@@ -120,8 +120,11 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
-      distribute columns: key string
       columns: value string, key string
+      distribute columns: key string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       sort columns: value string
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
       name: default.distribute_mv_1
@@ -408,8 +411,11 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
-      distribute columns: value string
       columns: key string, value string
+      distribute columns: value string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       sort columns: value string, key string
       expanded text: SELECT `src_txn`.`key`, `src_txn`.`value` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
       name: default.distribute_mv_2
@@ -948,8 +954,11 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
-      distribute columns: key string
       columns: value string, key string
+      distribute columns: key string
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       sort columns: value string, key string
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn`, `default`.`src_txn_2`
 WHERE `src_txn`.`key` = `src_txn_2`.`key`

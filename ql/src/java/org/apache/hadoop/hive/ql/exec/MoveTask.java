@@ -104,7 +104,7 @@ import static org.apache.hadoop.hive.ql.exec.Utilities.BLOB_MANIFEST_FILE;
 public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static transient final Logger LOG = LoggerFactory.getLogger(MoveTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MoveTask.class);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   public MoveTask() {

@@ -103,8 +103,8 @@ public class TestHiveVectorizedReader {
           r.nextKeyValue();
         }
       }
-      mockedParquetFileReader.verify(times(1), () ->
-          ParquetFileReader.readFooter(any(InputFile.class), any(ParquetMetadataConverter.MetadataFilter.class))
+      mockedParquetFileReader.verify(() -> ParquetFileReader.readFooter(any(InputFile.class),
+              any(ParquetMetadataConverter.MetadataFilter.class)), times(1)
       );
     }
   }

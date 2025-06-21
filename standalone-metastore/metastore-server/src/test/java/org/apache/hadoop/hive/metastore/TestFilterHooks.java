@@ -20,11 +20,16 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsRequest;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -47,7 +52,9 @@ import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.junit.experimental.categories.Category;
 
@@ -77,6 +84,14 @@ public class TestFilterHooks {
         throw new NoSuchObjectException("Blocked access");
       }
       return dataBase;
+    }
+
+    @Override
+    public List<Database> filterDatabaseObjects(List<Database> databaseList) throws MetaException {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
+      return databaseList;
     }
 
     @Override
@@ -113,6 +128,9 @@ public class TestFilterHooks {
 
     @Override
     public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
       return tableMetas;
     }
 
@@ -388,6 +406,38 @@ public class TestFilterHooks {
     assertEquals(0, client.getDatabases("*").size());
     assertEquals(0, client.getAllDatabases().size());
     assertEquals(0, client.getDatabases(DBNAME1).size());
+
+    GetDatabaseObjectsRequest request = new GetDatabaseObjectsRequest();
+    request.setCatalogName(Warehouse.DEFAULT_CATALOG_NAME);
+    String testPrefix = DBNAME1.substring(0, DBNAME1.lastIndexOf("_"));
+    request.setPattern(testPrefix + "_*");
+
+    // Call the method with filtering enabled
+    GetDatabaseObjectsResponse response = client.get_databases_req(request);
+    assertEquals("With filtering enabled, should return empty list", 0, response.getDatabasesSize());
+
+    // Temporarily disable blocking to test without filtering
+    boolean originalBlockResults = DummyMetaStoreFilterHookImpl.blockResults;
+    DummyMetaStoreFilterHookImpl.blockResults = false;
+
+    try {
+      response = client.get_databases_req(request);
+      System.out.println("Returned databases:");
+      for (Database db : response.getDatabases()) {
+        System.out.println("DB name: " + db.getName());
+      }
+      assertEquals("With filtering disabled, should return all databases", 2, response.getDatabasesSize());
+
+      // Verify the returned database objects have the correct names
+      Set<String> returnedDbNames = new HashSet<>();
+      for (Database db : response.getDatabases()) {
+        returnedDbNames.add(db.getName());
+      }
+      assertTrue("Should contain first database", returnedDbNames.contains(DBNAME1.toLowerCase()));
+      assertTrue("Should contain second database", returnedDbNames.contains(DBNAME2.toLowerCase()));
+    } finally {
+      DummyMetaStoreFilterHookImpl.blockResults = originalBlockResults;
+    }
   }
 
   protected void testFilterForTables(boolean filterAtServer) throws Exception {

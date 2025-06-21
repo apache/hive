@@ -40,7 +40,7 @@ import org.apache.hadoop.io.BytesWritable;
  */
 public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  final protected transient static char[] hexArray = "0123456789ABCDEF".toCharArray();
+  final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
   private Object value;
   // If this constant was created while doing constant folding, foldedFromCol holds the name of
   // original column from which it was folded.

@@ -100,6 +100,18 @@ public class TestDataSourceProviderFactory {
   }
 
   @Test
+  public void testHikariCpMaxPoolSize() {
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    PersistenceManagerProvider.updatePmfProperties(conf);
+    PersistenceManagerFactory pmf =
+            PersistenceManagerProvider.getPersistenceManager().getPersistenceManagerFactory();
+    HikariDataSource hikariDs = (HikariDataSource) pmf.getConnectionFactory();
+    HikariDataSource hikariDs2 = (HikariDataSource) pmf.getConnectionFactory2();
+    Assert.assertEquals(hikariDs.getMaximumPoolSize(), MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS));
+    Assert.assertEquals(hikariDs2.getMaximumPoolSize(), MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_SECONDARY_CONNECTIONS));
+  }
+
+  @Test
   public void testCreateHikariCpDataSource() throws SQLException {
 
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);

@@ -243,41 +243,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throw new MetaException("MetaStoreURIs not found in conf file");
     }
 
-    //If HADOOP_PROXY_USER is set in env or property,
-    //then need to create metastore client that proxies as that user.
-    String HADOOP_PROXY_USER = "HADOOP_PROXY_USER";
-    String proxyUser = System.getenv(HADOOP_PROXY_USER);
-    if (proxyUser == null) {
-      proxyUser = System.getProperty(HADOOP_PROXY_USER);
-    }
-    //if HADOOP_PROXY_USER is set, create DelegationToken using real user
-    if (proxyUser != null) {
-      LOG.info(HADOOP_PROXY_USER + " is set. Using delegation "
-          + "token for HiveMetaStore connection.");
-      try {
-        UserGroupInformation.getRealUserOrSelf(UserGroupInformation.getLoginUser()).doAs(
-            new PrivilegedExceptionAction<Void>() {
-              @Override
-              public Void run() throws Exception {
-                open();
-                return null;
-              }
-            });
-        String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
-        String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
-        SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
-            delegationTokenPropString);
-        MetastoreConf.setVar(this.conf, ConfVars.TOKEN_SIGNATURE, delegationTokenPropString);
-        close();
-      } catch (Exception e) {
-        LOG.error("Error while setting delegation token for " + proxyUser, e);
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else {
-          throw new MetaException(e.getMessage());
-        }
-      }
-    }
+    generateProxyUserDelegationToken();
+
     // finally open the store
     open();
   }
@@ -389,6 +356,44 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
   }
 
+  private void generateProxyUserDelegationToken() throws MetaException {
+    //If HADOOP_PROXY_USER is set in env or property,
+    //then need to create metastore client that proxies as that user.
+    String HADOOP_PROXY_USER = "HADOOP_PROXY_USER";
+    String proxyUser = System.getenv(HADOOP_PROXY_USER);
+    if (proxyUser == null) {
+      proxyUser = System.getProperty(HADOOP_PROXY_USER);
+    }
+    //if HADOOP_PROXY_USER is set, create DelegationToken using real user
+    if (proxyUser != null) {
+      LOG.info(HADOOP_PROXY_USER + " is set. Using delegation "
+          + "token for HiveMetaStore connection.");
+      try {
+        UserGroupInformation.getRealUserOrSelf(UserGroupInformation.getLoginUser()).doAs(
+            new PrivilegedExceptionAction<Void>() {
+              @Override
+              public Void run() throws Exception {
+                open();
+                return null;
+              }
+            });
+        String delegationTokenPropString = "DelegationTokenForHiveMetaStoreServer";
+        String delegationTokenStr = getDelegationToken(proxyUser, proxyUser);
+        SecurityUtils.setTokenStr(UserGroupInformation.getCurrentUser(), delegationTokenStr,
+            delegationTokenPropString);
+        MetastoreConf.setVar(this.conf, ConfVars.TOKEN_SIGNATURE, delegationTokenPropString);
+      } catch (Exception e) {
+        LOG.error("Error while setting delegation token for " + proxyUser, e);
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw new MetaException(e.getMessage());
+        }
+      } finally {
+        close();
+      }
+    }
+  }
 
   private MetaStoreFilterHook loadFilterHooks() throws IllegalStateException {
     Class<? extends MetaStoreFilterHook> authProviderClass = MetastoreConf.
@@ -502,6 +507,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         // connection has died and the default connection is likely to be the first array element.
         promoteRandomMetaStoreURI();
       }
+
+      generateProxyUserDelegationToken();
+
       open();
     }
   }
@@ -2290,6 +2298,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<String> getAllDatabases(String catName) throws TException {
     List<String> databases = client.get_databases(prependCatalogToDbName(catName, null, conf));
     return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, databases);
+  }
+
+  @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException {
+    if (!request.isSetCatalogName()) {
+      request.setCatalogName(getDefaultCatalog(conf));
+    }
+
+    GetDatabaseObjectsResponse response = client.get_databases_req(request);
+
+    response.setDatabases(FilterUtils.filterDatabaseObjectsIfEnabled(
+        isClientFilterEnabled, filterHook, response.getDatabases()));
+    return response;
   }
 
   @Override
@@ -5186,7 +5207,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return null;
     }
 
-    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(
+    ValidTxnWriteIdList validTxnWriteIdList = ValidTxnWriteIdList.fromValue(
         conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(
         TableName.getDbTable(dbName, tblName));

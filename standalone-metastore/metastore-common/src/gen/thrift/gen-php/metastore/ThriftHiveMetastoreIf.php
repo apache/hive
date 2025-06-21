@@ -127,6 +127,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_all_databases();
     /**
+     * @param \metastore\GetDatabaseObjectsRequest $request
+     * @return \metastore\GetDatabaseObjectsResponse
+     * @throws \metastore\MetaException
+     */
+    public function get_databases_req(\metastore\GetDatabaseObjectsRequest $request);
+    /**
      * @param string $dbname
      * @param \metastore\Database $db
      * @throws \metastore\MetaException

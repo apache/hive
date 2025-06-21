@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
@@ -182,7 +182,7 @@ public class TestHiveMetaStoreTimeout {
       try(HiveMetaStoreClient c = new HiveMetaStoreClient(newConf)) {
         Assert.fail("should throw connection timeout exception.");
       } catch (MetaException e) {
-        Assert.assertTrue("unexpected Exception", e.getMessage().contains("connect timed out"));
+        Assert.assertTrue("unexpected Exception", e.getMessage().contains("Connect timed out"));
       }
       return null;
     });

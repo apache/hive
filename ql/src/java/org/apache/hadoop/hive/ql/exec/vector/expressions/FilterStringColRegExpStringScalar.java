@@ -35,7 +35,7 @@ public class FilterStringColRegExpStringScalar extends AbstractFilterStringColLi
   private static final String LITERAL_CHAR = "[^\\[\\]\\\\(){}*?+|$^.]";
   private static final String LITERAL_CHAR_GROUP = "(" + LITERAL_CHAR + "+)";
 
-  private transient static List<CheckerFactory> checkerFactories = Arrays.asList(
+  private static List<CheckerFactory> checkerFactories = Arrays.asList(
       new CheckerFactory [] { new ComplexCheckerFactory() });
 
   public FilterStringColRegExpStringScalar() {

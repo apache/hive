@@ -87,10 +87,8 @@ public class InputFormatConfig {
   public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
   public static final String CATALOG_CLASS_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
   public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
-  public static final String QUERY_FILTERS = "iceberg.query.filters";
 
   public enum InMemoryDataModel {
-    PIG,
     HIVE,
     GENERIC // Default data model is of Iceberg Generics
   }
@@ -181,11 +179,6 @@ public class InputFormatConfig {
 
     public ConfigBuilder useHiveRows() {
       conf.set(IN_MEMORY_DATA_MODEL, InMemoryDataModel.HIVE.name());
-      return this;
-    }
-
-    public ConfigBuilder usePigTuples() {
-      conf.set(IN_MEMORY_DATA_MODEL, InMemoryDataModel.PIG.name());
       return this;
     }
 

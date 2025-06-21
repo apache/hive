@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MemoryDecider implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(MemoryDecider.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(MemoryDecider.class);
 
   public class MemoryCalculator implements SemanticDispatcher {
 

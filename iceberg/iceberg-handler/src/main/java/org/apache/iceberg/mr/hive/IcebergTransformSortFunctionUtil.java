@@ -50,7 +50,7 @@ public final class IcebergTransformSortFunctionUtil {
    * Takes the source column index and the bucket count to create a function where Iceberg transform UDF is used to
    * build the sort expression, e.g. iceberg_bucket(_col2, 5)
    */
-  private static final transient BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+  private static final BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
       BUCKET_SORT_EXPR =
           (idx, bucket) -> cols -> {
             try {
@@ -65,7 +65,7 @@ public final class IcebergTransformSortFunctionUtil {
             }
           };
 
-  private static final transient BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+  private static final BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
       TRUNCATE_SORT_EXPR =
           (idx, truncateLength) -> cols -> {
             try {
@@ -80,7 +80,7 @@ public final class IcebergTransformSortFunctionUtil {
             }
           };
 
-  private static final transient Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+  private static final Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
       YEAR_SORT_EXPR =
           idx -> cols -> {
             try {
@@ -94,7 +94,7 @@ public final class IcebergTransformSortFunctionUtil {
             }
           };
 
-  private static final transient Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+  private static final Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
       MONTH_SORT_EXPR =
           idx -> cols -> {
             try {
@@ -108,7 +108,7 @@ public final class IcebergTransformSortFunctionUtil {
             }
           };
 
-  private static final transient Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+  private static final Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
       DAY_SORT_EXPR =
           idx -> cols -> {
             try {
@@ -122,7 +122,7 @@ public final class IcebergTransformSortFunctionUtil {
             }
           };
 
-  private static final transient Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+  private static final Function<Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
       HOUR_SORT_EXPR =
           idx -> cols -> {
             try {

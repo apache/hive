@@ -272,10 +272,10 @@ public class TestReplicationFilterTransactions {
     PrimaryEventListenerTestImpl.reset();
     ReplicaEventListenerTestImpl.reset();
 
-    // Each test always has 8 openTxns, 6 commitTxn, and 2 abortTxns.
+    // Each test always has 9 openTxns, 7 commitTxn, and 2 abortTxns.
     // Note that this is the number that was done on the primary,
     // and some are done on non-replicated database.
-    expected = new EventCount(8, 6, 2);
+    expected = new EventCount(9, 7, 2);
   }
 
   static void updateTxnMapping(Map<Long, Long> map) throws Exception {
@@ -323,8 +323,11 @@ public class TestReplicationFilterTransactions {
             .run("insert into t999 values (99908)")
             .run("insert into t999 values (99909)")
             .run("insert into t999 values (99910)")
-            .run("drop table t999");
-    txnOffset = 10;
+            .run("drop table t999")
+            .run("create table t10 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t10 values (10)");
+    txnOffset = 11;
 
     // primaryDbName is replicated, t2 and t2 are ACID tables with initial data.
     // t3 is an ACID table with 2 initial rows, later t3 will be locked to force aborted transaction.
@@ -400,7 +403,8 @@ public class TestReplicationFilterTransactions {
     primary.run("use " + primaryDbName)
             .run("insert into t1 values (2), (3)")
             .run("insert into t2 partition(country='india') values ('chennai')")
-            .run("insert into t2 partition(country='india') values ('pune')");
+            .run("insert into t2 partition(country='india') values ('pune')")
+            .run("truncate table t10");
     prepareAbortTxn(primaryDbName, 222);
     primary.run("use " + otherDbName)
             .run("insert into t1 values (200), (300)")
@@ -481,14 +485,14 @@ public class TestReplicationFilterTransactions {
 
     // Assert the number of Txn events that occurred on the replica.
     // When optimization is on, filtered has the number of Txn events that are expected to have been filtered.
-    // When optimization is off, filtered should be all all 0s.
+    // When optimization is off, filtered should be all 0s.
     Assert.assertEquals(expected.getCountOpenTxn() - filtered.getCountOpenTxn(), ReplicaEventListenerTestImpl.getCountOpenTxn());
     Assert.assertEquals(expected.getCountCommitTxn() - filtered.getCountCommitTxn(), ReplicaEventListenerTestImpl.getCountCommitTxn());
     Assert.assertEquals(expected.getCountAbortTxn() - filtered.getCountAbortTxn(), ReplicaEventListenerTestImpl.getCountAbortTxn());
 
     // Assert the number of Txn event files found.
     // When optimization is on, filtered has the number of Txn events that are expected to have been filtered.
-    // When optimization is off, filtered should be all all 0s.
+    // When optimization is off, filtered should be all 0s.
     // Note that when optimization is on, there should never be optnTxn events.
     Assert.assertEquals(optimizationOn ? 0 : expected.getCountOpenTxn(), openTxns.size());
     Assert.assertEquals(expected.getCountCommitTxn() - filtered.getCountCommitTxn(), commitTxns.size());
@@ -501,5 +505,9 @@ public class TestReplicationFilterTransactions {
     for (Map.Entry<Long, Long> mapping : replicaTxnMapping.entrySet()) {
       Assert.assertEquals(mapping.getKey().longValue()  - txnOffset, mapping.getValue().longValue());
     }
+      Map<Long, Long> postReplicationReplTxnMap = new HashMap<>();
+      // In both the cases, the post replication REPL_TXN_MAP should be empty.
+      TestReplicationFilterTransactions.updateTxnMapping(postReplicationReplTxnMap);
+      Assert.assertEquals(0, postReplicationReplTxnMap.size());
   }
 }

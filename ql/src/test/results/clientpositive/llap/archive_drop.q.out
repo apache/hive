@@ -1,0 +1,122 @@
+PREHOOK: query: create database test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: create database test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: create table test_db.test_tbl (id int, name string) partitioned by (dt date, hr string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_tbl
+POSTHOOK: query: create table test_db.test_tbl (id int, name string) partitioned by (dt date, hr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@test_tbl
+PREHOOK: query: insert overwrite table test_db.test_tbl partition (dt='2025-04-01', hr='11') select 1, 'tom'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=11
+POSTHOOK: query: insert overwrite table test_db.test_tbl partition (dt='2025-04-01', hr='11') select 1, 'tom'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=11
+POSTHOOK: Lineage: test_tbl PARTITION(dt=2025-04-01,hr=11).id SIMPLE []
+POSTHOOK: Lineage: test_tbl PARTITION(dt=2025-04-01,hr=11).name SIMPLE []
+PREHOOK: query: insert overwrite table test_db.test_tbl partition (dt='2025-04-01', hr='12') select 2, 'jerry'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
+POSTHOOK: query: insert overwrite table test_db.test_tbl partition (dt='2025-04-01', hr='12') select 2, 'jerry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
+POSTHOOK: Lineage: test_tbl PARTITION(dt=2025-04-01,hr=12).id SIMPLE []
+POSTHOOK: Lineage: test_tbl PARTITION(dt=2025-04-01,hr=12).name SIMPLE []
+PREHOOK: query: insert overwrite table test_db.test_tbl partition (dt='2025-04-01', hr='13') select 3, 'spike'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=13
+POSTHOOK: query: insert overwrite table test_db.test_tbl partition (dt='2025-04-01', hr='13') select 3, 'spike'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=13
+POSTHOOK: Lineage: test_tbl PARTITION(dt=2025-04-01,hr=13).id SIMPLE []
+POSTHOOK: Lineage: test_tbl PARTITION(dt=2025-04-01,hr=13).name SIMPLE []
+PREHOOK: query: show partitions test_db.test_tbl
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: test_db@test_tbl
+POSTHOOK: query: show partitions test_db.test_tbl
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: test_db@test_tbl
+dt=2025-04-01/hr=11
+dt=2025-04-01/hr=12
+dt=2025-04-01/hr=13
+PREHOOK: query: alter table test_db.test_tbl archive partition (dt='2025-04-01')
+PREHOOK: type: ALTERTABLE_ARCHIVE
+PREHOOK: Input: test_db@test_tbl
+PREHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=11
+PREHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
+PREHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=13
+POSTHOOK: query: alter table test_db.test_tbl archive partition (dt='2025-04-01')
+POSTHOOK: type: ALTERTABLE_ARCHIVE
+POSTHOOK: Input: test_db@test_tbl
+POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=11
+POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
+POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=13
+Found 1 items
+#### A masked pattern was here ####
+Found 4 items
+#### A masked pattern was here ####
+PREHOOK: query: show partitions test_db.test_tbl
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: test_db@test_tbl
+POSTHOOK: query: show partitions test_db.test_tbl
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: test_db@test_tbl
+dt=2025-04-01/hr=11
+dt=2025-04-01/hr=12
+dt=2025-04-01/hr=13
+PREHOOK: query: alter table test_db.test_tbl drop partition (dt='2025-04-01',hr='12')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: test_db@test_tbl
+PREHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
+POSTHOOK: query: alter table test_db.test_tbl drop partition (dt='2025-04-01',hr='12')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: test_db@test_tbl
+POSTHOOK: Output: test_db@test_tbl@dt=2025-04-01/hr=12
+Found 1 items
+#### A masked pattern was here ####
+Found 4 items
+#### A masked pattern was here ####
+PREHOOK: query: show partitions test_db.test_tbl
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: test_db@test_tbl
+POSTHOOK: query: show partitions test_db.test_tbl
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: test_db@test_tbl
+dt=2025-04-01/hr=11
+dt=2025-04-01/hr=13
+PREHOOK: query: select * from test_db.test_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: test_db@test_tbl
+PREHOOK: Input: test_db@test_tbl@dt=2025-04-01/hr=11
+PREHOOK: Input: test_db@test_tbl@dt=2025-04-01/hr=13
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_db.test_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test_db@test_tbl
+POSTHOOK: Input: test_db@test_tbl@dt=2025-04-01/hr=11
+POSTHOOK: Input: test_db@test_tbl@dt=2025-04-01/hr=13
+#### A masked pattern was here ####
+1	tom	2025-04-01	11
+3	spike	2025-04-01	13
+PREHOOK: query: drop table test_db.test_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db@test_tbl
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@test_tbl
+POSTHOOK: query: drop table test_db.test_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db@test_tbl
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@test_tbl

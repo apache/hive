@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.io.HivePartitioner;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
-import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
@@ -637,7 +636,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       jc = new JobConf(hconf);
       setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
       setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
-              dpCtx != null && dpCtx.hasCustomSortExprs());
+              dpCtx != null && dpCtx.hasCustomSortExpression());
       setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),
           Boolean.parseBoolean((String) getConf().getTableInfo().getProperties().get(
               MERGE_TASK_ENABLED + getConf().getTableInfo().getTableName())));
@@ -1500,15 +1499,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           if (null != fpaths) {
             rowOutWriters = fpaths.outWriters;
             rowOutWriters[0].write(recordValue);
-          } else if(recordValue instanceof ArrowWrapperWritable) {
-            //Because LLAP arrow output depends on the ThriftJDBCBinarySerDe code path
-            //this is required for 0 row outputs
-            //i.e. we need to write a 0 size batch to signal EOS to the consumer
-            for (FSPaths fsPaths : valToPaths.values()) {
-              for(RecordWriter writer : fsPaths.outWriters) {
-                writer.write(recordValue);
-              }
-            }
           }
         } catch (SerDeException | IOException e) {
           throw new HiveException(e);
