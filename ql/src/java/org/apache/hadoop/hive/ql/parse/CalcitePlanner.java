@@ -420,7 +420,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   /**
    * This is the list of operators that are specifically used in Hive.
    */
-  private static final List<Class<? extends RelNode>> HIVE_REL_NODE_CLASSES =
+  public static final List<Class<? extends RelNode>> HIVE_REL_NODE_CLASSES =
       ImmutableList.of(
           RelNode.class,
           AbstractRelNode.class,
