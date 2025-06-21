@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
@@ -28,11 +29,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.graalvm.polyglot.Context;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +39,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.LOG;
 import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.makePartNameMatcher;
 
@@ -50,7 +47,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.makePartName
  * via references.
  */
 final class PartitionTree {
-  private static final Logger LOG = LoggerFactory.getLogger(PartitionTree.class);
   private Map<String, org.apache.hadoop.hive.metastore.api.Partition> parts = new LinkedHashMap<>();
   private final org.apache.hadoop.hive.metastore.api.Table tTable;
 
@@ -258,21 +254,20 @@ final class PartitionTree {
       return new ArrayList<>(parts.values());
     }
     List<Partition> result = new ArrayList<>();
-    ScriptEngine se = new ScriptEngineManager().getEngineByName("JavaScript");
-    if (se == null) {
-      LOG.error("JavaScript script engine is not found, therefore partition filtering "
-          + "for temporary tables is disabled.");
-      return result;
-    }
-    for (Map.Entry<String, Partition> entry : parts.entrySet()) {
-      se.put("partitionName", entry.getKey());
-      se.put("values", entry.getValue().getValues());
-      try {
-        if ((Boolean)se.eval(filter)) {
-          result.add(entry.getValue());
+    try (GraalJSScriptEngine se = GraalJSScriptEngine.create(null,
+            Context.newBuilder().allowExperimentalOptions(true)
+                    .option("js.nashorn-compat", "true")
+                    .allowAllAccess(true))) {
+      for (Map.Entry<String, Partition> entry : parts.entrySet()) {
+        se.put("partitionName", entry.getKey());
+        se.put("values", entry.getValue().getValues());
+        try {
+          if ((Boolean) se.eval(filter)) {
+            result.add(entry.getValue());
+          }
+        } catch (ScriptException e) {
+          throw new MetaException("Incorrect partition filter");
         }
-      } catch (ScriptException e) {
-        throw new MetaException("Incorrect partition filter");
       }
     }
     return result;
@@ -311,19 +306,17 @@ final class PartitionTree {
           matches = filterSpec.getFilters().stream().anyMatch(str -> entry.getValue().getValues().contains(str));
           break;
         case BY_EXPR:
-          ScriptEngine se = new ScriptEngineManager().getEngineByName("JavaScript");
-          if (se == null) {
-            LOG.error("JavaScript script engine is not found, therefore partition filtering "
-                    + "for temporary tables is disabled.");
-            break;
-          }
-
-          for (String filter : filterSpec.getFilters()) {
-            try {
-              se.put("partition", partition);
-              matches = (Boolean) se.eval(filter);
-            } catch (ScriptException e) {
-              throw new MetaException("Error evaluating filter expression: " + e.getMessage());
+          try (GraalJSScriptEngine se = GraalJSScriptEngine.create(null,
+                  Context.newBuilder().allowExperimentalOptions(true)
+                          .option("js.nashorn-compat", "true")
+                          .allowAllAccess(true))) {
+            for (String filter : filterSpec.getFilters()) {
+              try {
+                se.put("partition", partition);
+                matches = (Boolean) se.eval(filter);
+              } catch (ScriptException e) {
+                throw new MetaException("Error evaluating filter expression: " + e.getMessage());
+              }
             }
           }
           break;
