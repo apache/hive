@@ -92,6 +92,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
 import org.apache.hive.beeline.hs2connection.BeelineConfFileParseException;
 import org.apache.hive.beeline.hs2connection.BeelineSiteParseException;
@@ -555,7 +556,7 @@ public class BeeLine implements Closeable {
       int status = beeLine.begin(args, inputStream);
 
       if (!Boolean.getBoolean(BeeLineOpts.PROPERTY_NAME_EXIT)) {
-          System.exit(status);
+          ExitUtil.terminate(status);
       }
     } finally {
       beeLine.close();

@@ -117,7 +117,7 @@ public class StoreComplex {
     job.setMapperClass(ComplexMapper.class);
     job.setOutputKeyClass(IntWritable.class);
     job.setOutputValueClass(DefaultHCatRecord.class);
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
+    ExitUtil.terminate(job.waitForCompletion(true) ? 0 : 1);
   }
 
 
@@ -127,7 +127,7 @@ public class StoreComplex {
   private static void usage() {
     System.err.println("Usage: hadoop jar testudf.jar storecomplex <serveruri> <-libjars hive-hcat jar>\n" +
       "The hcat jar location should be specified as file://<full path to jar>\n");
-    System.exit(2);
+    ExitUtil.terminate(2);
 
   }
 

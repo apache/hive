@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.benchmark.vectorization.ColumnVectorGenUtil;
 import org.apache.orc.TypeDescription;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -143,7 +144,7 @@ public class VectorGroupByOperatorBench extends AbstractOperatorBench {
       // likely unsupported combination of params
       // https://bugs.openjdk.java.net/browse/CODETOOLS-7901296 is not available yet to skip benchmark cleanly
       System.out.println("Skipping.. Exception: " + e.getMessage());
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
   }
 

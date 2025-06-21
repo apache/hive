@@ -58,7 +58,7 @@ public class DataWriterMaster {
       ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(args[1])));
       WriterContext cntxt = (WriterContext) ois.readObject();
       commit(config, true, cntxt);
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
     // This piece of code runs in master node and gets necessary context.
     WriterContext cntxt = runsInMaster(config);
