@@ -1846,7 +1846,7 @@ public class MetastoreConf {
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",
-        "hive.metastore.catalog.cache.expiry", 300_000L,
+        "hive.metastore.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
     ICEBERG_CATALOG_EVENT_LISTENER_CLASS("hive.metastore.catalog.event.listener.class",
