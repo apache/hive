@@ -2466,7 +2466,7 @@ public class MetastoreConf {
   public static double getDoubleVar(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == Double.class;
     String val = conf.get(var.varname);
-    return val == null ? conf.getDouble(var.hiveName, (Double)var.defaultVal) : Double.valueOf(val);
+    return val == null ? conf.getDouble(var.hiveName, (Double)var.defaultVal) : Double.parseDouble(val);
   }
 
   /**

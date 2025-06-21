@@ -91,7 +91,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
         // chicken-and-egg problem. So, we now track whether or not we're running from client-side
         // in the SBAP itself.
         hive_db = new HiveProxy(Hive.get(getConf(), StorageBasedAuthorizationProvider.class));
-        this.wh = new Warehouse(getConf());
+        this.wh = Warehouse.create(getConf());
         if (this.wh == null){
           // If wh is still null after just having initialized it, bail out - something's very wrong.
           throw new IllegalStateException("Unable to initialize Warehouse from clientside.");

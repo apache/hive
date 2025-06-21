@@ -48,22 +48,22 @@ public class TestHiveMetaStoreClient extends MetaStoreClientTest {
 
   @After
   public void cleanUp() throws Exception {
-    HiveMetaStoreClient.getConnCount().set(0);
+    HiveMetaStoreClient.setConnCount(0);
   }
 
   @Test
   public void testTTransport() throws MetaException {
     HiveMetaStoreClient client = metaStore.getClient();
-    assertTrue(isRemote ? client.getTTransport().isOpen() : client.getTTransport() == null);
+    assertTrue(isRemote ? client.isTTransportOpen() : client.isTTransportNull());
 
     client.close();
-    assertTrue(isRemote ? !client.getTTransport().isOpen() : client.getTTransport() == null);
+    assertTrue(isRemote ? !client.isTTransportOpen() : client.isTTransportNull());
   }
 
   @Test
   public void testReconnect() throws MetaException {
     HiveMetaStoreClient client = metaStore.getClient();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount());
 
     try {
       client.reconnect();
@@ -71,27 +71,27 @@ public class TestHiveMetaStoreClient extends MetaStoreClientTest {
       // expected in local metastore
       assertFalse(isRemote);
     }
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount());
 
     client.close();
-    assertEquals(0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(0, HiveMetaStoreClient.getConnCount());
   }
 
   @Test
   public void testCloseClient() throws MetaException {
     HiveMetaStoreClient client1 = metaStore.getClient();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount());
 
     HiveMetaStoreClient client2 = metaStore.getClient();
-    assertEquals(isRemote ? 2 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 2 : 0, HiveMetaStoreClient.getConnCount());
 
     client1.close();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount());
 
     client1.close();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount());
 
     client2.close();
-    assertEquals(0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(0, HiveMetaStoreClient.getConnCount());
   }
 }

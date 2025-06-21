@@ -65,7 +65,7 @@ class MetastoreHousekeepingLeaderTestBase {
 
     addHouseKeepingThreadConfigs();
 
-    warehouse = new Warehouse(conf);
+    warehouse = Warehouse.create(conf);
 
     if (isServerStarted) {
       Assert.assertNotNull("Unable to connect to the MetaStore server", client);

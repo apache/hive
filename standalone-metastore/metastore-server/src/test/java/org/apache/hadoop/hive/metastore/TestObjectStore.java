@@ -177,7 +177,7 @@ public class TestObjectStore {
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
 
-    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, Warehouse.create(conf));
   }
 
   private void setupRandomObjectStoreUrl(){

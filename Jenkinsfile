@@ -254,7 +254,8 @@ git merge origin/target
         def spotbugsProjects = [
             ":hive-shims",
             ":hive-storage-api",
-            ":hive-service-rpc"
+            ":hive-service-rpc",
+            ":hive-standalone-metastore-common"
         ]
         sh '''#!/bin/bash
 set -e
