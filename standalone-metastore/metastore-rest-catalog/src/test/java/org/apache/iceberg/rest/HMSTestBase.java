@@ -21,16 +21,6 @@ package org.apache.iceberg.rest;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -41,17 +31,12 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
@@ -84,8 +69,6 @@ import org.apache.iceberg.hive.IcebergTestHelper;
 import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
@@ -111,25 +94,13 @@ public abstract class HMSTestBase {
         .create();
   }
 
-  protected static final long EVICTION_INTERVAL = TimeUnit.SECONDS.toMillis(10);
-  private static final File JWT_AUTHKEY_FILE =
-      new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-authorized-key.json");
-  protected static final File JWT_NOAUTHKEY_FILE =
-      new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-unauthorized-key.json");
-  protected static final File JWT_JWKS_FILE =
-      new File(BASE_DIR,"src/test/resources/auth/jwt/jwt-verification-jwks.json");
-  protected static final int MOCK_JWKS_SERVER_PORT = 8089;
-  @ClassRule
-  public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
-
-
   public static class TestSchemaInfo extends MetaStoreSchemaInfo {
     public TestSchemaInfo(String metastoreHome, String dbType) throws HiveMetaException {
       super(metastoreHome, dbType);
     }
     @Override
     public String getMetaStoreScriptDir() {
-      return new File(BASE_DIR, "../metastore-server/src/main/sql/derby").getAbsolutePath();      
+      return new File(BASE_DIR, "../metastore-server/src/main/sql/derby").getAbsolutePath();
     }
   }
 
@@ -155,10 +126,8 @@ public abstract class HMSTestBase {
     MetaStoreTestUtils.close(port);
   }
 
-  @Before
-  public void setUp() throws Exception {
+  protected void setUp(Configuration conf) throws Exception {
     NS = "hms" + RND.nextInt(100);
-    conf = MetastoreConf.newMetastoreConf();
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.CAPABILITY_CHECK, false);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
@@ -179,13 +148,7 @@ public abstract class HMSTestBase {
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT, 0);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "jwt");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH, catalogPath);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
-        "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
-    MOCK_JWKS_SERVER.stubFor(get("/jwks")
-        .willReturn(ok()
-            .withBody(Files.readAllBytes(JWT_JWKS_FILE.toPath()))));
     Metrics.initialize(conf);
     // The server
     port = createMetastoreServer(conf);
@@ -201,10 +164,9 @@ public abstract class HMSTestBase {
     Database db = new Database(DB_NAME, "catalog test", location, Collections.emptyMap());
     client.createDatabase(db);
 
-    Catalog ice = acquireServer();
-      catalog =  ice;
-      nsCatalog = catalog instanceof SupportsNamespaces? (SupportsNamespaces) catalog : null;
-      catalogPort = HiveMetaStore.getCatalogServletPort();
+    catalog = acquireServer();
+    nsCatalog = catalog instanceof SupportsNamespaces? (SupportsNamespaces) catalog : null;
+    catalogPort = HiveMetaStore.getCatalogServletPort();
   }
   
   private static String format(String format, Object... params) {
@@ -284,48 +246,18 @@ public abstract class HMSTestBase {
     }
   }
 
-  protected String generateJWT()  throws Exception {
-    return generateJWT(JWT_AUTHKEY_FILE.toPath());
-  }
-  protected String generateJWT(Path path)  throws Exception {
-    return generateJWT(USER_1, path, TimeUnit.MINUTES.toMillis(5));
-  }
-
-  private static String generateJWT(String user, Path keyFile, long lifeTimeMillis) throws Exception {
-    RSAKey rsaKeyPair = RSAKey.parse(new String(java.nio.file.Files.readAllBytes(keyFile), StandardCharsets.UTF_8));
-    // Create RSA-signer with the private key
-    JWSSigner signer = new RSASSASigner(rsaKeyPair);
-    JWSHeader header = new JWSHeader
-        .Builder(JWSAlgorithm.RS256)
-        .keyID(rsaKeyPair.getKeyID())
-        .build();
-    Date now = new Date();
-    Date expirationTime = new Date(now.getTime() + lifeTimeMillis);
-    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-        .jwtID(UUID.randomUUID().toString())
-        .issueTime(now)
-        .issuer("auth-server")
-        .subject(user)
-        .expirationTime(expirationTime)
-        .claim("custom-claim-or-payload", "custom-claim-or-payload")
-        .build();
-    SignedJWT signedJWT = new SignedJWT(header, claimsSet);
-    // Compute the RSA signature
-    signedJWT.sign(signer);
-    return signedJWT.serialize();
-  }
-
   /**
    * Performs a Json client call.
-   * @param jwt the jwt token
    * @param url the url
    * @param method the http method
+   * @param additionalHeaders the additional headers
    * @param arg the argument that will be transported as JSon
    * @return the result the was returned through Json
    * @throws IOException if marshalling the request/response fail
    */
-  public static Object clientCall(String jwt, URL url, String method, Object arg) throws IOException {
-    return clientCall(jwt, url, method, true, arg);
+  protected static Object clientCall(URL url, String method, Map<String, String> additionalHeaders, Object arg)
+      throws IOException {
+    return clientCall(url, method, true, additionalHeaders, arg);
   }
 
   public static class ServerResponse {
@@ -339,15 +271,16 @@ public abstract class HMSTestBase {
 
   /**
    * Performs an http client call.
-   * @param jwt a JWT bearer token (can be null)
    * @param url the url to call
    * @param method the http method to use
    * @param json whether the call is application/json (true) or application/x-www-form-urlencoded (false)
+   * @param additionalHeaders the additional headers
    * @param arg the query argument
    * @return the (JSON) response
    * @throws IOException
    */
-  public static Object clientCall(String jwt, URL url, String method, boolean json, Object arg) throws IOException {
+  protected static Object clientCall(URL url, String method, boolean json, Map<String, String> additionalHeaders,
+      Object arg) throws IOException {
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
     try {
       if ("PATCH".equals(method)) {
@@ -363,9 +296,7 @@ public abstract class HMSTestBase {
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
       }
       con.setRequestProperty("Accept", "application/json");
-      if (jwt != null) {
-        con.setRequestProperty("Authorization", "Bearer " + jwt);
-      }
+      additionalHeaders.forEach(con::setRequestProperty);
       con.setDoInput(true);
       if (arg != null) {
         con.setDoOutput(true);
