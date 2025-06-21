@@ -900,6 +900,8 @@ public class BeeLine implements Closeable {
     getOpts().setScriptFile(cl.getOptionValue("f"));
 
     if (url != null) {
+      //remove white spaces in the URL in case there is any, like in "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS_LIST=..."
+      url = url.replaceAll("\\s+","");
       String hplSqlMode = Utils.parsePropertyFromUrl(url, Constants.MODE);
       if ("HPLSQL".equalsIgnoreCase(hplSqlMode)) {
         getOpts().setDelimiter("/");
