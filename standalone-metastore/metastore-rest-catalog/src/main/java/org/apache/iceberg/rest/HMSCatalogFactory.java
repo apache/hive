@@ -19,17 +19,16 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.UUID;
 import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
 import org.apache.hadoop.hive.metastore.ServletServerBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.slf4j.Logger;
@@ -40,37 +39,21 @@ import org.slf4j.LoggerFactory;
  */
 public class HMSCatalogFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
-  /**
-   * Convenience soft reference to last catalog.
-   */
-  protected static final AtomicReference<Reference<Catalog>> catalogRef = new AtomicReference<>();
 
-  public static Catalog getLastCatalog() {
-    Reference<Catalog> soft = catalogRef.get();
-    return soft != null ? soft.get() : null;
-  }
-
-  protected static void setLastCatalog(Catalog catalog) {
-    catalogRef.set(new SoftReference<>(catalog));
-  }
-
-  protected final Configuration configuration;
-  protected final int port;
-  protected final String path;
-  protected Catalog catalog;
+  private final Configuration configuration;
+  private final int port;
+  private final String path;
 
   /**
    * Factory constructor.
    * <p>Called by the static method {@link HMSCatalogFactory#createServlet(Configuration)} that is
    * declared in configuration and found through introspection.</p>
    * @param conf the configuration
-   * @param catalog the catalog
    */
-  protected HMSCatalogFactory(Configuration conf, Catalog catalog) {
+  private HMSCatalogFactory(Configuration conf) {
     port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT);
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
     this.configuration = conf;
-    this.catalog = catalog;
   }
   
   public int getPort() {
@@ -79,10 +62,6 @@ public class HMSCatalogFactory {
   
   public String getPath() {
     return path;
-  }
-  
-  public Catalog getCatalog() {
-    return catalog;
   }
 
   /**
@@ -104,6 +83,11 @@ public class HMSCatalogFactory {
     if (configExtWarehouse != null) {
       properties.put("external-warehouse", configExtWarehouse);
     }
+    // For the testing purpose. HiveCatalog caches a metastore client in a static field. As our tests can spin up
+    // multiple HMS instances, we need a unique cache key.
+    final String servletIdKey = "metastore.iceberg.catalog.servlet.id";
+    configuration.set(servletIdKey, UUID.randomUUID().toString());
+    properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, String.format("conf:%s", servletIdKey));
     final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
     hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
@@ -130,12 +114,7 @@ public class HMSCatalogFactory {
    */
   protected HttpServlet createServlet() throws IOException {
     if (port >= 0 && path != null && !path.isEmpty()) {
-      Catalog actualCatalog = catalog;
-      if (actualCatalog == null) {
-        actualCatalog = catalog = createCatalog();
-      }
-      setLastCatalog(actualCatalog);
-      return createServlet(actualCatalog);
+      return createServlet(createCatalog());
     }
     return null;
   }
@@ -151,7 +130,7 @@ public class HMSCatalogFactory {
   @SuppressWarnings("unused")
   public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
     try {
-      HMSCatalogFactory hms = new HMSCatalogFactory(configuration, null);
+      HMSCatalogFactory hms = new HMSCatalogFactory(configuration);
       HttpServlet servlet = hms.createServlet();
       if (servlet != null) {
         return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet);

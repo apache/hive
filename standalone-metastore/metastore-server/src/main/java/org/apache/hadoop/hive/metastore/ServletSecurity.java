@@ -108,8 +108,7 @@ public class ServletSecurity {
       try {
         jwtValidator = new JWTValidator(this.conf);
       } catch (Exception e) {
-        throw new ServletException("Failed to initialize ServletSecurity."
-            + " Error: " + e);
+        throw new ServletException("Failed to initialize ServletSecurity.", e);
       }
     }
   }
@@ -216,7 +215,7 @@ public class ServletSecurity {
       }
     } catch (HttpAuthenticationException e) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.getWriter().println("Authentication error: " + e.getMessage());
+      response.getWriter().printf("Authentication error: %s", e.getMessage());
       // Also log the error message on server side
       LOG.error("Authentication error: ", e);
       // no need to go further
