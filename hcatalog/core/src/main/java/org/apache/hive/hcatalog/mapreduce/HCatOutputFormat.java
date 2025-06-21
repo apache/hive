@@ -117,7 +117,8 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
       if ((idHash = conf.get(HCatConstants.HCAT_OUTPUT_ID_HASH)) == null) {
         idHash = String.valueOf(df.format(Math.random()));
       }
-      conf.set(HCatConstants.HCAT_OUTPUT_ID_HASH,idHash);
+      conf.set(HCatConstants.HCAT_OUTPUT_ID_HASH, idHash);
+      conf.set(HCatConstants.ICEBERG_OUTPUT_ID, idHash);
 
       if (table.getTTable().getPartitionKeysSize() == 0) {
         if ((outputJobInfo.getPartitionValues() != null) && (!outputJobInfo.getPartitionValues().isEmpty())) {
