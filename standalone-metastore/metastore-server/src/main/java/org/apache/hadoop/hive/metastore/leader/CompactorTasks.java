@@ -66,6 +66,9 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
       if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)) {
         MetaStoreThread initiator = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Initiator");
         compactors.add(initiator);
+        MetaStoreThread icebergInitiator = 
+            instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.IcebergInitiator");
+        compactors.add(icebergInitiator);
       }
       if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)) {
         MetaStoreThread cleaner = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");

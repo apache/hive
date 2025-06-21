@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -69,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context.Operation;
@@ -180,6 +182,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
+import org.apache.iceberg.mr.hive.compaction.evaluator.CompactionEvaluator;
 import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
 import org.apache.iceberg.puffin.Blob;
 import org.apache.iceberg.puffin.BlobMetadata;
@@ -2059,24 +2062,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private void validatePartSpecImpl(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Map<String, String> partitionSpec, List<PartitionField> partitionFields) throws SemanticException {
+      Map<String, String> partSpecMap, List<PartitionField> partitionFields) throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (hmsTable.getSnapshotRef() != null && hasUndergonePartitionEvolution(table)) {
       // for this case we rewrite the query as delete query, so validations would be done as part of delete.
       return;
     }
 
-    if (table.spec().isUnpartitioned() && MapUtils.isNotEmpty(partitionSpec)) {
+    if (table.spec().isUnpartitioned() && MapUtils.isNotEmpty(partSpecMap)) {
       throw new SemanticException("Writing data into a partition fails when the Iceberg table is unpartitioned.");
     }
 
+    Types.StructType partitionType = table.spec().partitionType();
     Map<String, Types.NestedField> mapOfPartColNamesWithTypes = Maps.newHashMap();
     for (PartitionField partField : partitionFields) {
-      Types.NestedField field = table.schema().findField(partField.sourceId());
+      Types.NestedField field = partitionType.fields().stream().filter(f -> f.name().equals(partField.name()))
+          .findFirst()
+          .orElseThrow(() -> new SemanticException(
+              String.format("Partition field %s is not present in the partition spec", partField.name())));
       mapOfPartColNamesWithTypes.put(field.name(), field);
     }
 
-    for (Map.Entry<String, String> spec : partitionSpec.entrySet()) {
+    for (Map.Entry<String, String> spec : partSpecMap.entrySet()) {
       Types.NestedField field = mapOfPartColNamesWithTypes.get(spec.getKey());
       Objects.requireNonNull(field, String.format("%s is not a partition column", spec.getKey()));
       // If the partition spec value is null, it's a dynamic partition column.
@@ -2379,5 +2386,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   private static List<FieldSchema> orderBy(VirtualColumn... exprs) {
     return schema(Arrays.asList(exprs));
+  }
+
+  @Override
+  public CompactionType getEligibleCompactionType(org.apache.hadoop.hive.metastore.api.Table table, CompactionInfo ci)
+      throws IOException {
+    org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, table);
+    CompactionEvaluator compactionEvaluator = new CompactionEvaluator(icebergTable, ci, table.getParameters());
+    if (compactionEvaluator.isEligibleForCompaction()) {
+      return compactionEvaluator.determineCompactionType();
+    }
+    return null;
   }
 }
