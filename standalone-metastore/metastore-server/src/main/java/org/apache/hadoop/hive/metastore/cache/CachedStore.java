@@ -1297,6 +1297,22 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
+  @Override
+  public List<String> dropAllPartitionsAndGetLocations(TableName table, String baseLocationToNotShow, StringBuffer message)
+      throws MetaException, InvalidInputException, NoSuchObjectException, InvalidObjectException {
+    List<String> locations = rawStore.dropAllPartitionsAndGetLocations(table, baseLocationToNotShow, message);
+    String catName = table.getCat();
+    String dbName = table.getDb();
+    String tabName = table.getTable();
+    if (!canUseEvents && shouldCacheTable(catName, dbName, tabName)) {
+      sharedCache.removeAllPartitionColStatsFromCache(catName, dbName, tabName);
+      List<Partition> cachedParts = sharedCache.listCachedPartitions(catName, dbName, tabName, -1);
+      List<List<String>> partVals = cachedParts.stream().map(Partition::getValues).collect(Collectors.toList());
+      sharedCache.removePartitionsFromCache(table.getCat(), table.getDb(), table.getTable(), partVals);
+    }
+    return locations;
+  }
+
   @Override public Table getTable(String catName, String dbName, String tblName) throws MetaException {
     return getTable(catName, dbName, tblName, null);
   }

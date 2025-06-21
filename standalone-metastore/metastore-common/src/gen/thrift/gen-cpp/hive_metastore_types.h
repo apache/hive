@@ -846,6 +846,8 @@ class ExtendedTableInfo;
 
 class DropTableRequest;
 
+class TableOpResp;
+
 class GetDatabaseRequest;
 
 class AlterDatabaseRequest;
@@ -14578,11 +14580,14 @@ void swap(ExtendedTableInfo &a, ExtendedTableInfo &b);
 std::ostream& operator<<(std::ostream& out, const ExtendedTableInfo& obj);
 
 typedef struct _DropTableRequest__isset {
-  _DropTableRequest__isset() : catalogName(false), deleteData(false), envContext(false), dropPartitions(false) {}
+  _DropTableRequest__isset() : catalogName(false), deleteData(false), envContext(false), dropPartitions(false), id(false), asyncDrop(false), cancel(false) {}
   bool catalogName :1;
   bool deleteData :1;
   bool envContext :1;
   bool dropPartitions :1;
+  bool id :1;
+  bool asyncDrop :1;
+  bool cancel :1;
 } _DropTableRequest__isset;
 
 class DropTableRequest : public virtual ::apache::thrift::TBase {
@@ -14595,7 +14600,10 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
                      dbName(),
                      tableName(),
                      deleteData(0),
-                     dropPartitions(0) {
+                     dropPartitions(0),
+                     id(),
+                     asyncDrop(0),
+                     cancel(0) {
   }
 
   virtual ~DropTableRequest() noexcept;
@@ -14605,6 +14613,9 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
   bool deleteData;
   EnvironmentContext envContext;
   bool dropPartitions;
+  std::string id;
+  bool asyncDrop;
+  bool cancel;
 
   _DropTableRequest__isset __isset;
 
@@ -14619,6 +14630,12 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
   void __set_envContext(const EnvironmentContext& val);
 
   void __set_dropPartitions(const bool val);
+
+  void __set_id(const std::string& val);
+
+  void __set_asyncDrop(const bool val);
+
+  void __set_cancel(const bool val);
 
   bool operator == (const DropTableRequest & rhs) const
   {
@@ -14642,6 +14659,18 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.dropPartitions && !(dropPartitions == rhs.dropPartitions))
       return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.asyncDrop != rhs.__isset.asyncDrop)
+      return false;
+    else if (__isset.asyncDrop && !(asyncDrop == rhs.asyncDrop))
+      return false;
+    if (__isset.cancel != rhs.__isset.cancel)
+      return false;
+    else if (__isset.cancel && !(cancel == rhs.cancel))
+      return false;
     return true;
   }
   bool operator != (const DropTableRequest &rhs) const {
@@ -14659,6 +14688,66 @@ class DropTableRequest : public virtual ::apache::thrift::TBase {
 void swap(DropTableRequest &a, DropTableRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const DropTableRequest& obj);
+
+typedef struct _TableOpResp__isset {
+  _TableOpResp__isset() : message(false), finished(false) {}
+  bool message :1;
+  bool finished :1;
+} _TableOpResp__isset;
+
+class TableOpResp : public virtual ::apache::thrift::TBase {
+ public:
+
+  TableOpResp(const TableOpResp&);
+  TableOpResp& operator=(const TableOpResp&);
+  TableOpResp() noexcept
+              : id(),
+                message(),
+                finished(0) {
+  }
+
+  virtual ~TableOpResp() noexcept;
+  std::string id;
+  std::string message;
+  bool finished;
+
+  _TableOpResp__isset __isset;
+
+  void __set_id(const std::string& val);
+
+  void __set_message(const std::string& val);
+
+  void __set_finished(const bool val);
+
+  bool operator == (const TableOpResp & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (__isset.message != rhs.__isset.message)
+      return false;
+    else if (__isset.message && !(message == rhs.message))
+      return false;
+    if (__isset.finished != rhs.__isset.finished)
+      return false;
+    else if (__isset.finished && !(finished == rhs.finished))
+      return false;
+    return true;
+  }
+  bool operator != (const TableOpResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableOpResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TableOpResp &a, TableOpResp &b);
+
+std::ostream& operator<<(std::ostream& out, const TableOpResp& obj);
 
 typedef struct _GetDatabaseRequest__isset {
   _GetDatabaseRequest__isset() : name(false), catalogName(false), processorCapabilities(false), processorIdentifier(false) {}
