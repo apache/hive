@@ -892,18 +892,25 @@ class DirectSqlUpdatePart {
         sdIdToNewCdId.containsKey(sdId) ? sdIdToNewCdId.get(sdId) : cdId);
     updateSDInBatch(validSdIds, idToSd, sdIdToCdId);
 
-    List<Long> usedIds = Batchable.runBatched(maxBatchSize, cdIdsMayDelete,
+    Set<Long> usedIds = new HashSet<>(Batchable.runBatched(maxBatchSize, cdIdsMayDelete,
         new Batchable<Long, Long>() {
           @Override
           public List<Long> run(List<Long> input) throws Exception {
             String idLists = MetaStoreDirectSql.getIdListForIn(input);
-            String queryText = "select \"CD_ID\" from \"SDS\" where \"CD_ID\" in ( " + idLists + ")";
+            String queryText = "select \"CD_ID\" from \"SDS\" where \"CD_ID\" in ( "
+                + idLists + ") group by \"CD_ID\"";
+            List<Long> cdIds = new ArrayList<>();
             try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-              List<Long> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
-              return new ArrayList<>(sqlResult);
+              List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+              if (sqlResult != null) {
+                for (Object cdId : sqlResult) {
+                  cdIds.add(MetastoreDirectSqlUtils.extractSqlLong(cdId));
+                }
+              }
+              return cdIds;
             }
           }
-    });
+    }));
     List<Long> unusedCdIds = cdIdsMayDelete.stream().filter(id -> !usedIds.contains(id)).collect(Collectors.toList());
 
     deleteCDInBatch(unusedCdIds);
