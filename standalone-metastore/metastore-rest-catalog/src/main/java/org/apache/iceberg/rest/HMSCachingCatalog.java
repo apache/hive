@@ -24,12 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.iceberg.CachingCatalog;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -37,15 +40,27 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
  * @param <CATALOG> the catalog class
  */
 public class HMSCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> extends CachingCatalog implements SupportsNamespaces {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
   protected final CATALOG nsCatalog;
   
   public HMSCachingCatalog(CATALOG catalog, long expiration) {
-    super(catalog, true, expiration, Ticker.systemTicker());
+    super(catalog, false, expiration, Ticker.systemTicker());
     nsCatalog = catalog;
   }
 
   public CATALOG hmsUnwrap() {
     return nsCatalog;
+  }
+
+  public void invalidateTable(String dbName, String tableName) {
+    super.invalidateTable(TableIdentifier.of(dbName, tableName));
+  }
+
+  @Override
+  public void invalidateTable(TableIdentifier tableIdentifier) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Avoid invalidating table: {}", tableIdentifier);
+    }
   }
 
   @Override
@@ -65,10 +80,6 @@ public class HMSCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> ext
 
   @Override
   public boolean dropNamespace(Namespace nmspc) throws NamespaceNotEmptyException {
-    List<TableIdentifier> tables = listTables(nmspc);
-    for (TableIdentifier ident : tables) {
-      invalidateTable(ident);
-    }
     return nsCatalog.dropNamespace(nmspc);
   }
 
@@ -81,5 +92,16 @@ public class HMSCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> ext
   public boolean removeProperties(Namespace nmspc, Set<String> set) throws NoSuchNamespaceException {
     return nsCatalog.removeProperties(nmspc, set);
   }
-  
+
+  @Override
+  public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
+    return nsCatalog.buildTable(identifier, schema);
+  }
+
+  public void invalidateNamespace(String namespace) {
+    Namespace ns = Namespace.of(namespace);
+    for (TableIdentifier table : listTables(ns)) {
+      invalidateTable(table);
+    }
+  }
 }
