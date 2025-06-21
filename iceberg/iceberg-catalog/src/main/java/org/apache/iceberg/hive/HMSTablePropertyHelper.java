@@ -19,29 +19,40 @@
 
 package org.apache.iceberg.hive;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.collect.BiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.JsonUtil;
+import org.apache.parquet.Strings;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +68,15 @@ public class HMSTablePropertyHelper {
       // but with different names
       GC_ENABLED, "external.table.purge", TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION,
       TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, ParquetOutputFormat.BLOCK_SIZE);
+
+  public static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet
+      // We don't want to push down the metadata location props to Iceberg from HMS,
+      // since the snapshot pointer in HMS would always be one step ahead
+      .of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+          BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
+
+  public static final String NAME = "name";
+  public static final String LOCATION = "location";
 
   private HMSTablePropertyHelper() {
   }
@@ -131,6 +151,103 @@ public class HMSTablePropertyHelper {
     tbl.setParameters(parameters);
   }
 
+  /**
+   * Create {@link PartitionSpec} based on the partition information stored in
+   * {@link TransformSpec}.
+   * @param configuration a Hadoop configuration
+   * @param schema iceberg table schema
+   * @return iceberg partition spec, always non-null
+   */
+  public static PartitionSpec createPartitionSpec(Configuration configuration, Schema schema) {
+    List<TransformSpec> partitionTransformSpecList = SessionStateUtil
+        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+        .map(o -> (List<TransformSpec>) o)
+        .orElse(null);
+
+    if (partitionTransformSpecList == null) {
+      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
+      return null;
+    }
+    PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
+    partitionTransformSpecList.forEach(spec -> {
+      switch (spec.getTransformType()) {
+        case IDENTITY:
+          builder.identity(spec.getColumnName().toLowerCase());
+          break;
+        case YEAR:
+          builder.year(spec.getColumnName());
+          break;
+        case MONTH:
+          builder.month(spec.getColumnName());
+          break;
+        case DAY:
+          builder.day(spec.getColumnName());
+          break;
+        case HOUR:
+          builder.hour(spec.getColumnName());
+          break;
+        case TRUNCATE:
+          builder.truncate(spec.getColumnName(), spec.getTransformParam().get());
+          break;
+        case BUCKET:
+          builder.bucket(spec.getColumnName(), spec.getTransformParam().get());
+          break;
+      }
+    });
+    return builder.build();
+  }
+
+  public static SortOrder getSortOrder(Properties props, Schema schema) {
+    String sortOrderJsonString = props.getProperty(TableProperties.DEFAULT_SORT_ORDER);
+    return Strings.isNullOrEmpty(sortOrderJsonString) ? SortOrder.unsorted() : SortOrderParser.fromJson(schema,
+        sortOrderJsonString);
+  }
+
+  /**
+   * Calculates the properties we would like to send to the catalog.
+   * <ul>
+   * <li>The base of the properties is the properties stored at the Hive Metastore for the given table
+   * <li>We add the {@link HiveIcebergRESTCatalogClientAdapter#LOCATION} as the table location
+   * <li>We add the {@link HiveIcebergRESTCatalogClientAdapter#NAME} as
+   * TableIdentifier defined by the database name and table name
+   * <li>We add the serdeProperties of the HMS table
+   * <li>We remove some parameters that we don't want to push down to the Iceberg table props
+   * </ul>
+   * @param hmsTable Table for which we are calculating the properties
+   * @return The properties we can provide for Iceberg functions
+   */
+  public static Properties getCatalogProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    Properties properties = new Properties();
+
+    hmsTable.getParameters().entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
+      // translate key names between HMS and Iceberg where needed
+      String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
+      properties.put(icebergKey, e.getValue());
+    });
+
+    if (properties.get(LOCATION) == null &&
+        hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null) {
+      properties.put(LOCATION, hmsTable.getSd().getLocation());
+    }
+
+    if (properties.get(NAME) == null) {
+      properties.put(NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    }
+
+    SerDeInfo serdeInfo = hmsTable.getSd().getSerdeInfo();
+    if (serdeInfo != null) {
+      serdeInfo.getParameters().entrySet().stream()
+          .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
+            String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
+            properties.put(icebergKey, e.getValue());
+          });
+    }
+
+    // Remove HMS table parameters we don't want to propagate to Iceberg
+    PROPERTIES_TO_REMOVE.forEach(properties::remove);
+
+    return properties;
+  }
   private static void setCommonParameters(
       String newMetadataLocation,
       String uuid,
@@ -143,8 +260,9 @@ public class HMSTablePropertyHelper {
     if (uuid != null) {
       parameters.put(TableProperties.UUID, uuid);
     }
-
-    obsoleteProps.forEach(parameters::remove);
+    if (obsoleteProps != null) {
+      obsoleteProps.forEach(parameters::remove);
+    }
 
     parameters.put(BaseMetastoreTableOperations.TABLE_TYPE_PROP, tableType);
     parameters.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, newMetadataLocation);
