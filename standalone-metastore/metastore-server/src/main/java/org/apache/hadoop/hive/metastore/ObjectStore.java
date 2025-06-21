@@ -2042,7 +2042,7 @@ public class ObjectStore implements RawStore, Configurable {
     int length = builder.length();
     for (String element : elements) {
       if (pattern) {
-        element = "(?i)" + element.replaceAll("\\*", ".*");
+        element = element.replaceAll("\\*", ".*");
       }
       parameters.add(element);
       if (builder.length() > length) {
