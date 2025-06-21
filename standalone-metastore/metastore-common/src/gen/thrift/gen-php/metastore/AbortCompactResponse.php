@@ -73,17 +73,17 @@ class AbortCompactResponse
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->abortedcompacts = array();
-                        $_size839 = 0;
-                        $_ktype840 = 0;
-                        $_vtype841 = 0;
-                        $xfer += $input->readMapBegin($_ktype840, $_vtype841, $_size839);
-                        for ($_i843 = 0; $_i843 < $_size839; ++$_i843) {
-                            $key844 = 0;
-                            $val845 = new \metastore\AbortCompactionResponseElement();
-                            $xfer += $input->readI64($key844);
-                            $val845 = new \metastore\AbortCompactionResponseElement();
-                            $xfer += $val845->read($input);
-                            $this->abortedcompacts[$key844] = $val845;
+                        $_size848 = 0;
+                        $_ktype849 = 0;
+                        $_vtype850 = 0;
+                        $xfer += $input->readMapBegin($_ktype849, $_vtype850, $_size848);
+                        for ($_i852 = 0; $_i852 < $_size848; ++$_i852) {
+                            $key853 = 0;
+                            $val854 = new \metastore\AbortCompactionResponseElement();
+                            $xfer += $input->readI64($key853);
+                            $val854 = new \metastore\AbortCompactionResponseElement();
+                            $xfer += $val854->read($input);
+                            $this->abortedcompacts[$key853] = $val854;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -110,9 +110,9 @@ class AbortCompactResponse
             }
             $xfer += $output->writeFieldBegin('abortedcompacts', TType::MAP, 1);
             $output->writeMapBegin(TType::I64, TType::STRUCT, count($this->abortedcompacts));
-            foreach ($this->abortedcompacts as $kiter846 => $viter847) {
-                $xfer += $output->writeI64($kiter846);
-                $xfer += $viter847->write($output);
+            foreach ($this->abortedcompacts as $kiter855 => $viter856) {
+                $xfer += $output->writeI64($kiter855);
+                $xfer += $viter856->write($output);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
