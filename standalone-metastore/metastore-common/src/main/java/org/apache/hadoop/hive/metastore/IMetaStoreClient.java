@@ -591,6 +591,9 @@ public interface IMetaStoreClient extends AutoCloseable {
   void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws MetaException, TException;
 
+  void truncateTable(String catName, String dbName, String tableName, String ref, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData, EnvironmentContext context) throws TException;
+
   /**
    * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
    *
@@ -1464,6 +1467,14 @@ public interface IMetaStoreClient extends AutoCloseable {
       throws TException;
 
   /**
+   * Get list of partitions matching specified serialized expression
+   * @param req PartitionsByExprRequest object
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException;
+
+  /**
    * List partitions, fetching the authorization information along with the partitions.
    * @param dbName database name
    * @param tableName table name
@@ -2185,6 +2196,10 @@ public interface IMetaStoreClient extends AutoCloseable {
   List<Partition> dropPartitions(String catName, String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -3777,7 +3792,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
-    IncompatibleMetastoreException(String message) {
+    public IncompatibleMetastoreException(String message) {
       super(message);
     }
   }
@@ -4501,5 +4516,5 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
     throw new UnsupportedOperationException();
-  };
+  }
 }

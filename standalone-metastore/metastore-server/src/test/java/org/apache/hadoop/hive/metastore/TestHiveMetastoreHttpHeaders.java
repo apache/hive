@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
@@ -42,16 +43,16 @@ import org.junit.Assert;
 @Category(MetastoreCheckinTest.class)
 public class TestHiveMetastoreHttpHeaders {
   private static Configuration conf;
-  private static HiveMetaStoreClient msc;
+  private static IMetaStoreClient msc;
   private static int port;
   private static final String testHeaderKey1 = "X-XXXX";
   private static final String testHeaderVal1 = "yyyy";
   private static final String testHeaderKey2 = "X-ZZZZ";
   private static final String testHeaderVal2 = "aaaa";
 
-  static class TestHiveMetaStoreClient extends HiveMetaStoreClient {
+  static class TestHiveMetaStoreClient extends ThriftHiveMetaStoreClient {
     public TestHiveMetaStoreClient(Configuration conf) throws MetaException {
-      super(conf);
+      super(conf, true);
     }
 
     @Override
