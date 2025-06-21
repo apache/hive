@@ -1206,7 +1206,8 @@ public class HiveServer2 extends CompositeService {
   private static void startHiveServer2() throws Throwable {
     long attempts = 0, maxAttempts = 1;
     while (true) {
-      LOG.info("Starting HiveServer2");
+      long pid = ProcessHandle.current().pid();
+      LOG.info("Starting HiveServer2. PID is: {}", pid);
       HiveConf hiveConf = new HiveConf();
       maxAttempts = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS);
       long retrySleepIntervalMs = hiveConf
