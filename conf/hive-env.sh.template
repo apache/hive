@@ -30,7 +30,7 @@
 # Folder containing extra libraries required for hive compilation/execution can be controlled by:
 # export HIVE_AUX_JARS_PATH=
 
-# HIVE Log Directory can be controlled by and ensure it exists on the filesystem:
+# HIVE Log Directory can be controlled by the following and ensure it exists on the filesystem:
 # export HIVE_LOG_DIR=
 
 # The hive service being invoked (beeline etc.) is available via the environment
@@ -42,9 +42,9 @@
 
 # if [ "$SERVICE" = "beeline" ]; then
 #   if [ -z "$DEBUG" ]; then
-#     export HADOOP_OPTS="$HADOOP_OPTS -XX:NewRatio=12 -Xms10m -XX:MaxHeapFreeRatio=40 -XX:MinHeapFreeRatio=15 -XX:+G1GC -XX:-UseGCOverheadLimit"
+#     export HADOOP_OPTS="$HADOOP_OPTS -Xms10m -XX:MaxHeapFreeRatio=40 -XX:MinHeapFreeRatio=15 -XX:+UseG1GC -XX:-UseGCOverheadLimit"
 #   else
-#     export HADOOP_OPTS="$HADOOP_OPTS -XX:NewRatio=12 -Xms10m -XX:MaxHeapFreeRatio=40 -XX:MinHeapFreeRatio=15 -XX:-UseGCOverheadLimit"
+#     export HADOOP_OPTS="$HADOOP_OPTS -Xms10m -XX:MaxHeapFreeRatio=40 -XX:MinHeapFreeRatio=15 -XX:-UseGCOverheadLimit"
 #   fi
 # fi
 
