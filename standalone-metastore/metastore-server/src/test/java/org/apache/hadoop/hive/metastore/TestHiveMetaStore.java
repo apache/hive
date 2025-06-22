@@ -3780,7 +3780,7 @@ public abstract class TestHiveMetaStore {
     silentDropDatabase(dbName);
   }
 
-  @Test(expected = InvalidOperationException.class)
+  @Test(expected = MetaException.class)
   public void testAlterTableCascadeExceedsPartitionLimits() throws Throwable {
     String dbName = "alterTblDb";
     String tblName = "altertbl";

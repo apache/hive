@@ -365,6 +365,7 @@ public class HiveAlterHandler implements AlterHandler {
             req.setCatName(catName);
             req.setMaxParts((short) -1);
             parts = handler.get_partitions_req(req).getPartitions();
+
             for (Partition part : parts) {
               String oldPartLoc = part.getSd().getLocation();
               if (oldPartLoc.contains(oldTblLocPath)) {
@@ -462,7 +463,7 @@ public class HiveAlterHandler implements AlterHandler {
       }
       // commit the changes
       success = msdb.commitTransaction();
-    } catch (MetaException e) {
+    } catch (InvalidOperationException | MetaException e) {
       throw e;
     } catch (TException e) {
       LOG.debug("Failed to get object from Metastore ", e);
