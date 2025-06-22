@@ -33,8 +33,12 @@
     <!-- intra-project -->
     <!-- used for vector code-gen -->
     <dependency>
-      <groupId>org.openjdk.nashorn</groupId>
-      <artifactId>nashorn-core</artifactId>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.atlas</groupId>
