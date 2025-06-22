@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.rest;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -55,9 +54,8 @@ class TestRESTCatalogTestsAuthJwt extends BaseRESTCatalogTests {
   }
 
   @BeforeEach
-  void before() throws IOException {
+  void before() {
     RCKUtils.purgeCatalogTestEntries(catalog);
-    REST_CATALOG_EXTENSION.reset();
   }
 
   @AfterAll

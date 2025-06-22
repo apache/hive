@@ -29,11 +29,12 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveRESTCatalogServerExtension implements BeforeAllCallback, AfterAllCallback {
+public class HiveRESTCatalogServerExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
   private static final Logger LOG = LoggerFactory.getLogger(HiveRESTCatalogServerExtension.class);
 
   private final Configuration conf;
@@ -63,18 +64,7 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, AfterA
   }
 
   @Override
-  public void afterAll(ExtensionContext context) {
-    if (jwksServer != null) {
-      jwksServer.stop();
-    }
-    restCatalogServer.stop();
-  }
-
-  public String getRestEndpoint() {
-    return restCatalogServer.getRestEndpoint();
-  }
-
-  public void reset() throws IOException {
+  public void beforeEach(ExtensionContext context) throws IOException {
     try (Stream<Path> children = Files.list(restCatalogServer.getWarehouseDir())) {
       children
           .filter(path -> !path.getFileName().toString().equals("derby.log"))
@@ -91,6 +81,18 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, AfterA
             }
           });
     }
+  }
+
+  @Override
+  public void afterAll(ExtensionContext context) {
+    if (jwksServer != null) {
+      jwksServer.stop();
+    }
+    restCatalogServer.stop();
+  }
+
+  public String getRestEndpoint() {
+    return restCatalogServer.getRestEndpoint();
   }
 
   public static class Builder {
