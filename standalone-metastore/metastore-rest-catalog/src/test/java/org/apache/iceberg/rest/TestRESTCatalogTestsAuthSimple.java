@@ -19,17 +19,12 @@
 
 package org.apache.iceberg.rest;
 
-import java.util.Collections;
 import java.util.Map;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.junit.experimental.categories.Category;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -39,31 +34,12 @@ class TestRESTCatalogTestsAuthSimple extends BaseRESTCatalogTests {
   private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION = HiveRESTCatalogServerExtension.builder()
       .build();
 
-  private static RESTCatalog catalog;
-  private static Map<String, String> baseProperties;
-
-  @BeforeAll
-  static void beforeClass() {
-    baseProperties = Map.of(
+  @Override
+  protected Map<String, String> getDefaultClientConfiguration() {
+    return Map.of(
         "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
         "header.x-actor-username", "USER_1"
     );
-    catalog = RCKUtils.initCatalogClient(baseProperties);
-    Assertions.assertEquals(Collections.singletonList(Namespace.of("default")), catalog.listNamespaces());
-  }
-
-  @BeforeEach
-  void before() {
-    RCKUtils.purgeCatalogTestEntries(catalog);
-  }
-
-  @AfterAll
-  static void afterClass() throws Exception {
-    catalog.close();
-  }
-
-  TestRESTCatalogTestsAuthSimple() {
-    super(catalog, baseProperties);
   }
 
   @Test

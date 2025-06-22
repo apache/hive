@@ -19,17 +19,37 @@
 
 package org.apache.iceberg.rest;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.iceberg.catalog.CatalogTests;
+import org.apache.iceberg.catalog.Namespace;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
-  private final Map<String, String> baseProperties;
-  private final RESTCatalog catalog;
+  private RESTCatalog catalog;
 
-  protected BaseRESTCatalogTests(RESTCatalog catalog, Map<String, String> baseProperties) {
-    this.catalog = catalog;
-    this.baseProperties = baseProperties;
+  protected abstract Map<String, String> getDefaultClientConfiguration() throws Exception;
+
+  @BeforeAll
+  void setupAll() throws Exception {
+    catalog = RCKUtils.initCatalogClient(getDefaultClientConfiguration());
+    Assertions.assertEquals(Collections.singletonList(Namespace.of("default")), catalog.listNamespaces());
+  }
+
+  @BeforeEach
+  void before() {
+    RCKUtils.purgeCatalogTestEntries(catalog);
+  }
+
+  @AfterAll
+  void afterClass() throws Exception {
+    catalog.close();
   }
 
   @Override
@@ -39,9 +59,13 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
 
   @Override
   protected RESTCatalog initCatalog(String catalogName, Map<String, String> additionalProperties) {
-    Map<String, String> properties = new HashMap<>(baseProperties);
-    properties.putAll(additionalProperties);
-    return RCKUtils.initCatalogClient(properties);
+    try {
+      Map<String, String> properties = new HashMap<>(getDefaultClientConfiguration());
+      properties.putAll(additionalProperties);
+      return RCKUtils.initCatalogClient(properties);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
