@@ -23,49 +23,33 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
-import org.apache.iceberg.rest.extension.JwksServer;
 import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Category(MetastoreCheckinTest.class)
-class TestRESTCatalogTestsAuthJwt extends BaseRESTCatalogTests {
+class TestRESTCatalogTestsSimpleAuth extends BaseRESTCatalogTests {
   @RegisterExtension
   private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION = HiveRESTCatalogServerExtension.builder()
-      .jwt().build();
+      .build();
 
   @Override
-  protected Map<String, String> getDefaultClientConfiguration() throws Exception {
+  protected Map<String, String> getDefaultClientConfiguration() {
     return Map.of(
         "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
-        "token", JwksServer.generateValidJWT("USER_1")
+        "header.x-actor-username", "USER_1"
     );
   }
 
   @Test
-  void testWithUnauthorizedKey() throws Exception {
-    // "token" is a parameter for OAuth 2.0 Bearer token authentication. We use it to pass a JWT token
-    Map<String, String> properties = Map.of(
-        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
-        "token", JwksServer.generateInvalidJWT("USER_1")
-    );
-    NotAuthorizedException error = Assertions.assertThrows(NotAuthorizedException.class,
-        () -> RCKUtils.initCatalogClient(properties));
-    Assertions.assertEquals(
-        "Not authorized: Authentication error: Failed to validate JWT from Bearer token in Authentication header",
-        error.getMessage());
-  }
-
-  @Test
-  void testWithoutToken() {
+  void testWithoutUserName() {
     Map<String, String> properties = Map.of(
         "uri", REST_CATALOG_EXTENSION.getRestEndpoint()
     );
     NotAuthorizedException error = Assertions.assertThrows(NotAuthorizedException.class,
         () -> RCKUtils.initCatalogClient(properties));
-    Assertions.assertEquals(
-        "Not authorized: Authentication error: Couldn't find bearer token in the auth header in the request",
+    Assertions.assertEquals("Not authorized: Authentication error: User header x-actor-username missing in request",
         error.getMessage());
   }
 }
