@@ -46,6 +46,9 @@ public class RESTCatalogServer {
   void start(Configuration conf) throws Exception {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
+    // Avoid reusing the JVM-level caching across Hive Metastore servers
+    conf.set("metastore.in.test.iceberg.catalog.servlet.id", UUID.randomUUID().toString());
+
     String uniqueTestKey = String.format("RESTCatalogServer_%s", UUID.randomUUID());
     warehouseDir = Path.of(MetaStoreTestUtils.getTestWarehouseDir(uniqueTestKey));
     String jdbcUrl = String.format("jdbc:derby:memory:%s;create=true",

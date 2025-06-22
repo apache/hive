@@ -21,7 +21,6 @@ package org.apache.iceberg.rest;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
@@ -39,6 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HMSCatalogFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
+  private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
 
   private final Configuration configuration;
   private final int port;
@@ -83,11 +83,11 @@ public class HMSCatalogFactory {
     if (configExtWarehouse != null) {
       properties.put("external-warehouse", configExtWarehouse);
     }
-    // For the testing purpose. HiveCatalog caches a metastore client in a static field. As our tests can spin up
-    // multiple HMS instances, we need a unique cache key.
-    final String servletIdKey = "metastore.iceberg.catalog.servlet.id";
-    configuration.set(servletIdKey, UUID.randomUUID().toString());
-    properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, String.format("conf:%s", servletIdKey));
+    if (configuration.get(SERVLET_ID_KEY) != null) {
+      // For the testing purpose. HiveCatalog caches a metastore client in a static field. As our tests can spin up
+      // multiple HMS instances, we need a unique cache key.
+      properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, String.format("conf:%s", SERVLET_ID_KEY));
+    }
     final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
     hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
