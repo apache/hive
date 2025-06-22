@@ -68,7 +68,7 @@ public class HMSCatalogFactory {
    * Creates the catalog instance.
    * @return the catalog
    */
-  protected Catalog createCatalog() {
+  private Catalog createCatalog() {
     final Map<String, String> properties = new TreeMap<>();
     MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
@@ -101,7 +101,7 @@ public class HMSCatalogFactory {
    * @param catalog the Iceberg catalog
    * @return the servlet
    */
-  protected HttpServlet createServlet(Catalog catalog) {
+  private HttpServlet createServlet(Catalog catalog) {
     String authType = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
     ServletSecurity security = new ServletSecurity(authType, configuration);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
@@ -112,7 +112,7 @@ public class HMSCatalogFactory {
    * @return the servlet
    * @throws IOException if creation fails
    */
-  protected HttpServlet createServlet() throws IOException {
+  private HttpServlet createServlet() throws IOException {
     if (port >= 0 && path != null && !path.isEmpty()) {
       return createServlet(createCatalog());
     }
