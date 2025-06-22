@@ -49,9 +49,10 @@ public class TestAbortTxnEventDbsUpdated {
   @Test
   public void testSerializeDeserialize() {
     List dbsUpdated = Arrays.asList("db1", "db22");
-    AbortTxnEvent event = new AbortTxnEvent(999L, TxnType.DEFAULT, null, dbsUpdated);
+    List writeIds = Arrays.asList(1L, 2L);
+    AbortTxnEvent event = new AbortTxnEvent(999L, TxnType.DEFAULT, null, dbsUpdated, writeIds);
     AbortTxnMessage msg =
-            MessageBuilder.getInstance().buildAbortTxnMessage(event.getTxnId(), event.getDbsUpdated());
+            MessageBuilder.getInstance().buildAbortTxnMessage(event.getTxnId(), event.getDbsUpdated(), event.getWriteId());
     JSONMessageEncoder msgEncoder = new JSONMessageEncoder();
     String json = msgEncoder.getSerializer().serialize(msg);
 
@@ -63,6 +64,12 @@ public class TestAbortTxnEventDbsUpdated {
     Assert.assertTrue(actual.remove("db1"));
     Assert.assertTrue(actual.remove("db22"));
     Assert.assertTrue(actual.isEmpty());
+
+    List actualWriteIds = abortTxnMsg.getWriteIds();
+    Assert.assertTrue(actualWriteIds.remove(1L));
+    Assert.assertTrue(actualWriteIds.remove(2L));
+    Assert.assertTrue(actualWriteIds.isEmpty());
+
     Assert.assertEquals(999L, abortTxnMsg.getTxnId().longValue());
   }
 }

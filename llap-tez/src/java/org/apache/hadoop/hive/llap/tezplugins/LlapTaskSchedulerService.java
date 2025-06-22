@@ -372,7 +372,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         Token<JobTokenIdentifier> token = createAmsToken(id);
         serializedToken = serializeToken(token);
         jobIdForToken = token.getService().toString();
-        sm = new JobTokenSecretManager();
+        sm = new JobTokenSecretManager(conf);
         sm.addTokenForJob(jobIdForToken, token);
       } else {
         serializedToken = jobIdForToken = null;
@@ -565,7 +565,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private static Token<JobTokenIdentifier> createAmsToken(ApplicationId id) {
     if (!UserGroupInformation.isSecurityEnabled()) return null;
     JobTokenIdentifier identifier = new JobTokenIdentifier(new Text(id.toString()));
-    JobTokenSecretManager jobTokenManager = new JobTokenSecretManager();
+    JobTokenSecretManager jobTokenManager = new JobTokenSecretManager(new Configuration());
     Token<JobTokenIdentifier> sessionToken = new Token<>(identifier, jobTokenManager);
     sessionToken.setService(identifier.getJobId());
     return sessionToken;

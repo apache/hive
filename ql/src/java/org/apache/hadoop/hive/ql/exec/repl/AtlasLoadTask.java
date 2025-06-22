@@ -57,7 +57,7 @@ import java.util.concurrent.Callable;
  **/
 public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private static final transient Logger LOG = LoggerFactory.getLogger(AtlasLoadTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AtlasLoadTask.class);
 
   public AtlasLoadTask() {
     super();

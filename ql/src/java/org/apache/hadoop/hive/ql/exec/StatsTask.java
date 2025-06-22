@@ -56,7 +56,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class StatsTask extends Task<StatsWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-  private static transient final Logger LOG = LoggerFactory.getLogger(StatsTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StatsTask.class);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
 
   public StatsTask() {

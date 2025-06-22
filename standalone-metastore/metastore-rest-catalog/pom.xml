@@ -21,18 +21,17 @@
   <name>Hive Metastore REST Catalog</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
     <hive.version>${project.parent.version}</hive.version>
-    <iceberg.version>1.6.1</iceberg.version>
+    <iceberg.version>1.9.1</iceberg.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${hive.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>

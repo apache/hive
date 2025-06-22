@@ -54,9 +54,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:2
-totalFileSize:342
-maxFileSize:171
-minFileSize:171
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from tgt_rc_merge_test_n1
@@ -97,9 +97,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:243
-maxFileSize:243
-minFileSize:243
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from tgt_rc_merge_test_n1

@@ -105,7 +105,9 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService";
-
+  @VisibleForTesting
+  static final String ICEBERG_TABLE_SNAPSHOT_EXPIRY_SERVICE_CLASS =
+      "org.apache.iceberg.mr.hive.metastore.task.IcebergHouseKeeperService";
   public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
           "metastore.authentication.ldap.userMembershipKey";
   public static final String METASTORE_RETRYING_HANDLER_CLASS =
@@ -739,9 +741,10 @@ public class MetastoreConf {
     DATANUCLEUS_INIT_COL_INFO("datanucleus.rdbms.initializeColumnInfo",
         "datanucleus.rdbms.initializeColumnInfo", "NONE",
         "initializeColumnInfo setting for DataNucleus; set to NONE at least on Postgres."),
-    DATANUCLEUS_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck",
-        "datanucleus.plugin.pluginRegistryBundleCheck", "LOG",
-        "Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]"),
+    DATANUCLEUS_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck".toLowerCase(),
+        "datanucleus.plugin.pluginRegistryBundleCheck", "LOG", true,
+        "Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]",
+        "datanucleus.plugin.pluginRegistryBundleCheck", null),
     DATANUCLEUS_TRANSACTION_ISOLATION("datanucleus.transactionIsolation",
         "datanucleus.transactionIsolation", "read-committed",
         "Default transaction isolation level for identity generation."),
@@ -875,7 +878,7 @@ public class MetastoreConf {
     EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL("metastore.event.db.listener.clean.startup.wait.interval",
         "hive.metastore.event.db.listener.clean.startup.wait.interval", 1, TimeUnit.DAYS,
         "Wait interval post start of metastore after which the cleaner thread starts to work"),
-    EVENT_DB_NOTIFICATION_API_AUTH("metastore.metastore.event.db.notification.api.auth",
+    EVENT_DB_NOTIFICATION_API_AUTH("metastore.event.db.notification.api.auth",
         "hive.metastore.event.db.notification.api.auth", true,
         "Should metastore do authorization against database notification related APIs such as get_next_notification.\n" +
             "If set to true, then only the superusers in proxy settings have the permission"),
@@ -916,6 +919,23 @@ public class MetastoreConf {
     HMS_HANDLER_PROXY_CLASS("metastore.hmshandler.proxy", "hive.metastore.hmshandler.proxy",
         METASTORE_RETRYING_HANDLER_CLASS,
         "The proxy class name of HMSHandler, default is RetryingHMSHandler."),
+    ICEBERG_TABLE_EXPIRY_INTERVAL("metastore.iceberg.table.expiry.interval",
+        "hive.metastore.iceberg.table.expiry.interval", 3600, TimeUnit.SECONDS,
+        "Time interval describing how often the iceberg table expiry service runs."),
+    // TODO: HIVE-28974: Implement pattern-based catalog retrieval in metastore client
+    ICEBERG_TABLE_EXPIRY_CATALOG_NAME("metastore.iceberg.table.expiry.catalog.name",
+        "hive.metastore.iceberg.table.expiry.catalog.name", "hive",
+        "Iceberg table expiry service looks for tables under the specified catalog name"),
+    ICEBERG_TABLE_EXPIRY_DATABASE_PATTERN("metastore.iceberg.table.expiry.database.pattern",
+        "hive.metastore.iceberg.table.expiry.database.pattern", "",
+        "Iceberg table expiry service searches for tables using the specified database pattern. " +
+            "By default, the pattern is set to empty string, which results in no matches (this is intentional" +
+            "to avoid expensive metastore calls unless explicitly configured by the user)."),
+    ICEBERG_TABLE_EXPIRY_TABLE_PATTERN("metastore.iceberg.table.expiry.table.pattern",
+        "hive.metastore.iceberg.table.expiry.table.pattern", "",
+        "Iceberg table expiry service tables for tables using the specified table pattern. " +
+            "By default, the pattern is set to empty string, which results in no matches (this is intentional" +
+            "to avoid expensive metastore calls unless explicitly configured by the user)."),
     IDENTIFIER_FACTORY("datanucleus.identifierFactory",
         "datanucleus.identifierFactory", "datanucleus1",
         "Name of the identifier factory to use when generating table/column names etc. \n" +
@@ -1493,7 +1513,8 @@ public class MetastoreConf {
             ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
             MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
-            PARTITION_MANAGEMENT_TASK_CLASS,
+            PARTITION_MANAGEMENT_TASK_CLASS + "," +
+            ICEBERG_TABLE_SNAPSHOT_EXPIRY_SERVICE_CLASS,
         "Comma-separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
@@ -1829,29 +1850,29 @@ public class MetastoreConf {
             new StringSetValidator("simple", "jwt"),
         "Property-maps servlet authentication method (simple or jwt)."
     ),
-    ICEBERG_CATALOG_SERVLET_FACTORY("hive.metastore.catalog.servlet.factory",
-            "hive.metastore.catalog.servlet.factory",
+    ICEBERG_CATALOG_SERVLET_FACTORY("metastore.iceberg.catalog.servlet.factory",
+            "hive.metastore.iceberg.catalog.servlet.factory",
             "org.apache.iceberg.rest.HMSCatalogFactory",
             "HMS Iceberg Catalog servlet factory class name."
             + "The factory needs to expose a method: "
             + "public static HttpServlet createServlet(Configuration configuration);"
     ),
-    ICEBERG_CATALOG_SERVLET_PATH("hive.metastore.catalog.servlet.path",
-        "hive.metastore.catalog.servlet.path", "iceberg",
+    ICEBERG_CATALOG_SERVLET_PATH("metastore.iceberg.catalog.servlet.path",
+        "hive.metastore.iceberg.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
     ),
-    ICEBERG_CATALOG_SERVLET_PORT("hive.metastore.catalog.servlet.port",
-        "hive.metastore.catalog.servlet.port", -1,
+    ICEBERG_CATALOG_SERVLET_PORT("metastore.iceberg.catalog.servlet.port",
+        "hive.metastore.iceberg.catalog.servlet.port", -1,
         "HMS Iceberg Catalog servlet server port. Negative value disables the servlet," +
             " 0 will let the system determine the catalog server port," +
             " positive value will be used as-is."
     ),
-    ICEBERG_CATALOG_SERVLET_AUTH("hive.metastore.catalog.servlet.auth",
-        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
+    ICEBERG_CATALOG_SERVLET_AUTH("metastore.iceberg.catalog.servlet.auth",
+        "hive.metastore.iceberg.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
         "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
-    ICEBERG_CATALOG_CACHE_EXPIRY("hive.metastore.catalog.cache.expiry",
-        "hive.metastore.catalog.cache.expiry", 60_000L,
+    ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
+        "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
@@ -1905,6 +1926,8 @@ public class MetastoreConf {
         "Only collect the non-native table's summary that has been updated/changed in configured recent days."),
     METADATA_SUMMARY_MAX_NONNATIVE_TABLES("hive.metatool.summary.maxNonNativeTables", "hive.metatool.summary.maxNonNativeTables", "",
         "The maximum non-native tables allowed per table type during collecting the summary."),
+    METADATA_SUMMARY_NONNATIVE_THREADS("hive.metatool.summary.nonnative.threads", "hive.metatool.summary.nonnative.threads", 20,
+        "Number of threads to be allocated for MetaToolTaskMetadataSummary for collecting the non-native table's summary."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
@@ -1961,6 +1984,18 @@ public class MetastoreConf {
       validator = null;
       this.caseSensitive = caseSensitive;
       this.description = description;
+    }
+
+    ConfVars(String varname, String hiveName, String defaultVal, boolean caseSensitive,
+        String description, String deprecatedName, String hiveDeprecatedName) {
+      this.varname = varname;
+      this.hiveName = hiveName;
+      this.defaultVal = defaultVal;
+      validator = null;
+      this.caseSensitive = caseSensitive;
+      this.description = description;
+      this.deprecatedName = deprecatedName;
+      this.hiveDeprecatedName = hiveDeprecatedName;
     }
 
     ConfVars(String varname, String hiveName, long defaultVal, String description) {

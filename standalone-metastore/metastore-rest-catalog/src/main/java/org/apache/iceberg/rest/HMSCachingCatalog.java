@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.iceberg.CachingCatalog;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -46,6 +47,11 @@ public class HMSCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> ext
 
   public CATALOG hmsUnwrap() {
     return nsCatalog;
+  }
+
+  @Override
+  public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
+    return nsCatalog.buildTable(identifier, schema);
   }
 
   @Override

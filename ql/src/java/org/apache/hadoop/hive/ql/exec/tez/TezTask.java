@@ -109,7 +109,7 @@ public class TezTask extends Task<TezWork> {
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
   private static final String ICEBERG_PROPERTY_PREFIX = "iceberg.mr.";
   private static final String ICEBERG_SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
-  private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private static Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
 

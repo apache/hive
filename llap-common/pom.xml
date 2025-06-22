@@ -219,57 +219,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-      <id>protobuf</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>generate-protobuf-sources</id>
-                <phase>generate-sources</phase>
-                <configuration>
-                  <target>
-                    <property name="protobuf.src.dir" location="${basedir}/src/protobuf"/>
-                    <property name="protobuf.build.dir" location="${basedir}/src/gen/protobuf/gen-java"/>
-                    <echo>Building LLAP Protobuf</echo>
-                    <mkdir dir="${protobuf.build.dir}"/>
-                    <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobuf.build.dir}"/>
-                      <arg value="-I=${protobuf.src.dir}"/>
-                      <arg value="${protobuf.src.dir}/LlapDaemonProtocol.proto"/>
-                    </exec>
-                    <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobuf.build.dir}"/>
-                      <arg value="-I=${protobuf.src.dir}"/>
-                      <arg value="${protobuf.src.dir}/LlapPluginProtocol.proto"/>
-                    </exec>
-                  </target>
-                </configuration>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>test-jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
@@ -285,6 +234,31 @@
     </resources>
     <plugins>
       <plugin>
+        <groupId>com.github.os72</groupId>
+        <artifactId>protoc-jar-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <protocArtifact>com.google.protobuf:protoc:${protobuf.version}</protocArtifact>
+              <protocCommand>${protoc.path}</protocCommand>
+              <addSources>none</addSources>
+              <inputDirectories>
+                <include>${basedir}/src/protobuf</include>
+              </inputDirectories>
+              <outputTargets>
+                <outputTarget>
+                  <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+                </outputTarget>
+              </outputTargets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
@@ -296,7 +270,6 @@
             </goals>
             <configuration>
               <sources>
-                <source>src/gen/protobuf/gen-java</source>
                 <source>src/gen/thrift/gen-javabean</source>
               </sources>
             </configuration>

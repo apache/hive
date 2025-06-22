@@ -1368,10 +1368,10 @@ public class Table implements Serializable {
     return sourceTable;
   }
 
-  public List<VirtualColumn> getVirtualColumns(HiveConf conf) {
+  public List<VirtualColumn> getVirtualColumns() {
     List<VirtualColumn> virtualColumns = new ArrayList<>();
     if (!isNonNative()) {
-      virtualColumns.addAll(VirtualColumn.getRegistry(conf));
+      virtualColumns.addAll(VirtualColumn.getRegistry());
     }
     if (isNonNative() && AcidUtils.isNonNativeAcidTable(this)) {
       virtualColumns.addAll(getStorageHandler().acidVirtualColumns());

@@ -182,7 +182,7 @@ public final class ColumnProjectionUtils {
 
   /**
    * Returns an array of column ids(start from zero) which is set in the given
-   * parameter <tt>conf</tt>.
+   * parameter <pre>conf</pre>.
    */
   public static List<Integer> getReadColumnIDs(Configuration conf) {
     String skips = conf.get(READ_COLUMN_IDS_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);

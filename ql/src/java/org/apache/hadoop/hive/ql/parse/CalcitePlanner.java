@@ -751,14 +751,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
     saveViewDefinition();
     String originalText = createVwDesc.getViewOriginalText();
     String expandedText = createVwDesc.getViewExpandedText();
-    List<FieldSchema> schema = createVwDesc.getSchema();
+    List<FieldSchema> schema = createVwDesc.getCols();
     List<FieldSchema> partitionColumns = createVwDesc.getPartCols();
     init(false);
     setAST(ast);
     ASTNode newAST = reAnalyzeViewAfterCbo(ast);
     createVwDesc.setViewOriginalText(originalText);
     createVwDesc.setViewExpandedText(expandedText);
-    createVwDesc.setSchema(schema);
+    createVwDesc.setCols(schema);
     createVwDesc.setPartCols(partitionColumns);
     return newAST;
   }
@@ -3093,7 +3093,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final TableType tableType = obtainTableType(tabMetaData);
 
         // 3.3 Add column info corresponding to virtual columns
-        List<VirtualColumn> virtualCols = tabMetaData.getVirtualColumns(conf);
+        List<VirtualColumn> virtualCols = tabMetaData.getVirtualColumns();
 
         virtualCols
             .forEach(vc ->

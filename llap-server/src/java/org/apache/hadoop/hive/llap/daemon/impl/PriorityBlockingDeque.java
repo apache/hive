@@ -83,7 +83,7 @@ public class PriorityBlockingDeque<E>
   private Comparator<E> comparator;
 
   /**
-   * Creates a <tt>PriorityBlockingDeque</tt> with a capacity of
+   * Creates a <pre>PriorityBlockingDeque</pre> with a capacity of
    * {@link Integer#MAX_VALUE}.
    */
   public PriorityBlockingDeque() {
@@ -91,10 +91,10 @@ public class PriorityBlockingDeque<E>
   }
 
   /**
-   * Creates a <tt>PriorityBlockingDeque</tt> with the given (fixed) capacity.
+   * Creates a <pre>PriorityBlockingDeque</pre> with the given (fixed) capacity.
    *
    * @param capacity the capacity of this deque
-   * @throws IllegalArgumentException if <tt>capacity</tt> is less than 1
+   * @throws IllegalArgumentException if <pre>capacity</pre> is less than 1
    */
   public PriorityBlockingDeque(int capacity) {
     this(null, capacity);
@@ -546,10 +546,10 @@ public class PriorityBlockingDeque<E>
    * Returns the number of additional elements that this deque can ideally
    * (in the absence of memory or resource constraints) accept without
    * blocking. This is always equal to the initial capacity of this deque
-   * less the current <tt>size</tt> of this deque.
+   * less the current <pre>size</pre> of this deque.
    * <br>
    * Note that you <em>cannot</em> always tell if an attempt to insert
-   * an element will succeed by inspecting <tt>remainingCapacity</tt>
+   * an element will succeed by inspecting <pre>remainingCapacity</pre>
    * because it may be the case that another thread is about to
    * insert or remove an element.
    */
@@ -637,16 +637,16 @@ public class PriorityBlockingDeque<E>
   /**
    * Removes the first occurrence of the specified element from this deque.
    * If the deque does not contain the element, it is unchanged.
-   * More formally, removes the first element <tt>e</tt> such that
-   * <tt>o.equals(e)</tt> (if such an element exists).
-   * Returns <tt>true</tt> if this deque contained the specified element
+   * More formally, removes the first element <pre>e</pre> such that
+   * <pre>o.equals(e)</pre> (if such an element exists).
+   * Returns <pre>true</pre> if this deque contained the specified element
    * (or equivalently, if this deque changed as a result of the call).
    * <br>
    * This method is equivalent to
    * {@link #removeFirstOccurrence(Object) removeFirstOccurrence}.
    *
    * @param o element to be removed from this deque, if present
-   * @return <tt>true</tt> if this deque changed as a result of the call
+   * @return <pre>true</pre> if this deque changed as a result of the call
    */
   @Override
   public boolean remove(Object o) {
@@ -669,12 +669,12 @@ public class PriorityBlockingDeque<E>
   }
 
   /**
-   * Returns <tt>true</tt> if this deque contains the specified element.
-   * More formally, returns <tt>true</tt> if and only if this deque contains
-   * at least one element <tt>e</tt> such that <tt>o.equals(e)</tt>.
+   * Returns <pre>true</pre> if this deque contains the specified element.
+   * More formally, returns <pre>true</pre> if and only if this deque contains
+   * at least one element <pre>e</pre> such that <pre>o.equals(e)</pre>.
    *
    * @param o object to be checked for containment in this deque
-   * @return <tt>true</tt> if this deque contains the specified element
+   * @return <pre>true</pre> if this deque contains the specified element
    */
   @Override
   public boolean contains(Object o) {
@@ -717,25 +717,23 @@ public class PriorityBlockingDeque<E>
    * is returned therein.  Otherwise, a new array is allocated with the
    * runtime type of the specified array and the size of this deque.
    * <br>
-   * <p>If this deque fits in the specified array with room to spare
+   * If this deque fits in the specified array with room to spare
    * (i.e., the array has more elements than this deque), the element in
    * the array immediately following the end of the deque is set to
-   * <tt>null</tt>.
-   * </p>
+   * <pre>null</pre>.
    * <p>Like the {@link #toArray()} method, this method acts as bridge between
    * array-based and collection-based APIs.  Further, this method allows
    * precise control over the runtime type of the output array, and may,
    * under certain circumstances, be used to save allocation costs.
    * </p>
-   * <p>Suppose <tt>x</tt> is a deque known to contain only strings.
+   * Suppose <pre>x</pre> is a deque known to contain only strings.
    * The following code can be used to dump the deque into a newly
-   * allocated array of <tt>String</tt>:
-   * </p>
+   * allocated array of <pre>String</pre>:
    * <pre>
    *     String[] y = x.toArray(new String[0]);</pre>
    * <br>
-   * Note that <tt>toArray(new Object[0])</tt> is identical in function to
-   * <tt>toArray()</tt>.
+   * Note that <pre>toArray(new Object[0])</pre> is identical in function to
+   * <pre>toArray()</pre>.
    *
    * @param a the array into which the elements of the deque are to
    *          be stored, if it is big enough; otherwise, a new array of the

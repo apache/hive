@@ -905,7 +905,7 @@ public class MetaToolObjectStore extends ObjectStore {
 
   public Set<Long> filterTablesForSummary(List<MetadataTableSummary> tableSummaries,
       Integer lastUpdatedDays, Integer tablesLimit) throws MetaException {
-    if (tableSummaries == null || tableSummaries.isEmpty()) {
+    if (tableSummaries == null || tableSummaries.isEmpty() || (tablesLimit != null && tablesLimit == 0)) {
       return Collections.emptySet();
     }
     Set<Long> tableIds = tableSummaries.stream().map(MetadataTableSummary::getTableId).collect(Collectors.toSet());

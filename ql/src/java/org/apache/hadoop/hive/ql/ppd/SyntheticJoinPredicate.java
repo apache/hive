@@ -68,7 +68,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class SyntheticJoinPredicate extends Transform {
 
-  private static transient Logger LOG = LoggerFactory.getLogger(SyntheticJoinPredicate.class.getName());
+  private static Logger LOG = LoggerFactory.getLogger(SyntheticJoinPredicate.class.getName());
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {

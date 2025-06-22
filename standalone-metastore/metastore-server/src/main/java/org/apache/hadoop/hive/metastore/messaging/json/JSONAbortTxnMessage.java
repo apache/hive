@@ -43,6 +43,8 @@ public class JSONAbortTxnMessage extends AbortTxnMessage {
 
   @JsonProperty
   private List<String> dbsUpdated;
+  @JsonProperty
+  private List<Long> writeIds;
 
   /**
    * Default constructor, needed for Jackson.
@@ -50,12 +52,13 @@ public class JSONAbortTxnMessage extends AbortTxnMessage {
   public JSONAbortTxnMessage() {
   }
 
-  public JSONAbortTxnMessage(String server, String servicePrincipal, Long txnid, Long timestamp, List<String> dbsUpdated) {
+  public JSONAbortTxnMessage(String server, String servicePrincipal, Long txnid, Long timestamp, List<String> dbsUpdated, List<Long> writeIds) {
     this.timestamp = timestamp;
     this.txnid = txnid;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.dbsUpdated = dbsUpdated;
+    this.writeIds = writeIds;
   }
 
   @Override
@@ -86,6 +89,11 @@ public class JSONAbortTxnMessage extends AbortTxnMessage {
   @Override
   public List<String> getDbsUpdated() {
     return dbsUpdated;
+  }
+
+  @Override
+  public List<Long> getWriteIds() {
+    return writeIds;
   }
 
   @Override

@@ -184,7 +184,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@lday
 POSTHOOK: Output: default@lday
 #### A masked pattern was here ####
-Warning: Map Join MAPJOIN[79][bigTable=?] in task 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[79][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 select * from
 (select        item1.S_ID  S_ID,
@@ -275,8 +275,8 @@ STAGE PLANS:
         Map 1 <- Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE)
         Map 6 <- Map 7 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Map 1 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -653,11 +653,34 @@ STAGE PLANS:
                         className: VectorReduceSinkEmptyKeyOperator
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumns: 1:int, 2:timestamp, 3:smallint
-                        valueExpressions: ConstantVectorExpression(val 0) -> 3:smallint
+                        valueColumns: 1:int, 2:timestamp
                     Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: timestamp), 0S (type: smallint)
+                    value expressions: _col0 (type: int), _col1 (type: timestamp)
         Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Full Outer Join 0 to 1
+                filter predicates:
+                  0 
+                  1 {true}
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
+        Reducer 4 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -704,35 +727,6 @@ STAGE PLANS:
                         valueColumns: 1:int, 2:timestamp
                     Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: int), _col1 (type: timestamp)
-        Reducer 4 
-            Execution mode: llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                notVectorizedReason: MAPJOIN operator: Vectorized & filtered full-outer joins not supported
-                vectorized: false
-            Reduce Operator Tree:
-              Map Join Operator
-                condition map:
-                     Full Outer Join 0 to 1
-                filter predicates:
-                  0 
-                  1 {true}
-                keys:
-                  0 
-                  1 
-                outputColumnNames: _col0, _col1, _col2, _col3
-                input vertices:
-                  0 Reducer 2
-                Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-                DynamicPartitionHashJoin: true
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -740,7 +734,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[79][bigTable=?] in task 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[79][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from
 (select        item1.S_ID  S_ID,
                 ytday1.D_DATE  D_DATE
