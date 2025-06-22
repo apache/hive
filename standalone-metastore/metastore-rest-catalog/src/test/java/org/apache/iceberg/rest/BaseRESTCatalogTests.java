@@ -43,12 +43,12 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
   }
 
   @BeforeEach
-  void before() {
+  void setup() {
     RCKUtils.purgeCatalogTestEntries(catalog);
   }
 
   @AfterAll
-  void afterClass() throws Exception {
+  void teardownAll() throws Exception {
     catalog.close();
   }
 

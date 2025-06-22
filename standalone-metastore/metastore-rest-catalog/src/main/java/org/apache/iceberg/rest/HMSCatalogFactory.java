@@ -18,7 +18,6 @@
  */
 package org.apache.iceberg.rest;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.servlet.http.HttpServlet;
@@ -110,9 +109,8 @@ public class HMSCatalogFactory {
   /**
    * Creates the REST catalog servlet instance.
    * @return the servlet
-   * @throws IOException if creation fails
    */
-  private HttpServlet createServlet() throws IOException {
+  private HttpServlet createServlet() {
     if (port >= 0 && path != null && !path.isEmpty()) {
       return createServlet(createCatalog());
     }
@@ -129,14 +127,10 @@ public class HMSCatalogFactory {
    */
   @SuppressWarnings("unused")
   public static ServletServerBuilder.Descriptor createServlet(Configuration configuration) {
-    try {
-      HMSCatalogFactory hms = new HMSCatalogFactory(configuration);
-      HttpServlet servlet = hms.createServlet();
-      if (servlet != null) {
-        return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet);
-      }
-    } catch (IOException exception) {
-      LOG.error("failed to create servlet ", exception);
+    HMSCatalogFactory hms = new HMSCatalogFactory(configuration);
+    HttpServlet servlet = hms.createServlet();
+    if (servlet != null) {
+      return new ServletServerBuilder.Descriptor(hms.getPort(), hms.getPath(), servlet);
     }
     return null;
   }
