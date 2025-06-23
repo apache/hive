@@ -20,6 +20,7 @@
 package org.apache.iceberg.rest;
 
 import java.util.Map;
+import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
@@ -32,8 +33,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @Category(MetastoreCheckinTest.class)
 class TestRESTCatalogJwtAuth extends BaseRESTCatalogTests {
   @RegisterExtension
-  private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION = HiveRESTCatalogServerExtension.builder()
-      .jwt().build();
+  private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION =
+      new HiveRESTCatalogServerExtension(AuthType.JWT);
 
   @Override
   protected Map<String, String> getDefaultClientConfiguration() throws Exception {

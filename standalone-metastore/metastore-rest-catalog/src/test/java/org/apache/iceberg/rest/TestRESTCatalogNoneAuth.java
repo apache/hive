@@ -22,35 +22,20 @@ package org.apache.iceberg.rest;
 import java.util.Map;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.junit.experimental.categories.Category;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Category(MetastoreCheckinTest.class)
-class TestRESTCatalogSimpleAuth extends BaseRESTCatalogTests {
+class TestRESTCatalogNoneAuth extends BaseRESTCatalogTests {
   @RegisterExtension
   private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION =
-      new HiveRESTCatalogServerExtension(AuthType.SIMPLE);
+      new HiveRESTCatalogServerExtension(AuthType.NONE);
 
   @Override
   protected Map<String, String> getDefaultClientConfiguration() {
     return Map.of(
-        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
-        "header.x-actor-username", "USER_1"
-    );
-  }
-
-  @Test
-  void testWithoutUserName() {
-    Map<String, String> properties = Map.of(
         "uri", REST_CATALOG_EXTENSION.getRestEndpoint()
     );
-    NotAuthorizedException error = Assertions.assertThrows(NotAuthorizedException.class,
-        () -> RCKUtils.initCatalogClient(properties));
-    Assertions.assertEquals("Not authorized: Authentication error: User header x-actor-username missing in request",
-        error.getMessage());
   }
 }

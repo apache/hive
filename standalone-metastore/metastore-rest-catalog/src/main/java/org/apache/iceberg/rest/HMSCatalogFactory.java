@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
+import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.ServletServerBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -99,7 +100,7 @@ public class HMSCatalogFactory {
    */
   private HttpServlet createServlet(Catalog catalog) {
     String authType = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
-    ServletSecurity security = new ServletSecurity(authType, configuration);
+    ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
 
