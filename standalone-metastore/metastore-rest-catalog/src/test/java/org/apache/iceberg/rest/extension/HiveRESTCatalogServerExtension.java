@@ -42,7 +42,7 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
   private final JwksServer jwksServer;
   private final RESTCatalogServer restCatalogServer;
 
-  public HiveRESTCatalogServerExtension(AuthType authType) {
+  private HiveRESTCatalogServerExtension(AuthType authType) {
     this.conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, authType.name());
     if (authType == AuthType.JWT) {
@@ -94,5 +94,21 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
 
   public String getRestEndpoint() {
     return restCatalogServer.getRestEndpoint();
+  }
+
+  public static class Builder {
+    private final AuthType authType;
+
+    private Builder(AuthType authType) {
+      this.authType = authType;
+    }
+
+    public HiveRESTCatalogServerExtension build() {
+      return new HiveRESTCatalogServerExtension(authType);
+    }
+  }
+
+  public static Builder builder(AuthType authType) {
+    return new Builder(authType);
   }
 }

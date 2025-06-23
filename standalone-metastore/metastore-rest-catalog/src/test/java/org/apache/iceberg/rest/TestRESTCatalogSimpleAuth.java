@@ -33,7 +33,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class TestRESTCatalogSimpleAuth extends BaseRESTCatalogTests {
   @RegisterExtension
   private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION =
-      new HiveRESTCatalogServerExtension(AuthType.SIMPLE);
+      HiveRESTCatalogServerExtension.builder(AuthType.SIMPLE).build();
 
   @Override
   protected Map<String, String> getDefaultClientConfiguration() {

@@ -30,7 +30,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class TestRESTCatalogNoneAuth extends BaseRESTCatalogTests {
   @RegisterExtension
   private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION =
-      new HiveRESTCatalogServerExtension(AuthType.NONE);
+      HiveRESTCatalogServerExtension.builder(AuthType.NONE).build();
 
   @Override
   protected Map<String, String> getDefaultClientConfiguration() {
