@@ -41,13 +41,14 @@ import java.util.Map;
  * But again, could be fragile.
  */
 public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMetaStoreClient {
-  SessionHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
-    super(createUnderlyingClient(conf, null, allowEmbedded), conf);
-  }
-
-  SessionHiveMetaStoreClient(
+  private SessionHiveMetaStoreClient(
       Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
     super(createUnderlyingClient(conf, hookLoader, allowEmbedded), conf);
+  }
+
+  static SessionHiveMetaStoreClient newSessionHiveMetaStoreClient(
+      Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
+    return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
   }
 
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,

@@ -6007,7 +6007,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     };
 
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
+      return SessionHiveMetaStoreClient.newSessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
     } else {
       return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
           SessionHiveMetaStoreClient.class.getName(), allowEmbedded);

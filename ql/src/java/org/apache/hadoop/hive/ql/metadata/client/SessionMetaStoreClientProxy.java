@@ -752,6 +752,26 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
+  public List<String> getAllTables(String catName, String dbName) throws TException {
+    List<String> tableNames = getDelegate().getAllTables(catName, dbName);
+
+    if (isDefaultCatalog(catName)) {
+      Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables = getTempTablesForDatabase(dbName, "?");
+      if (tables != null && tables.size() != 0) {
+        Set<String> tempTableNames = tables.keySet();
+
+        Set<String> allTableNames = new HashSet<String>(tableNames.size() + tempTableNames.size());
+        allTableNames.addAll(tableNames);
+        allTableNames.addAll(tempTableNames);
+        tableNames = new ArrayList<String>(allTableNames);
+        Collections.sort(tableNames);
+      }
+    }
+
+    return tableNames;
+  }
+
+  @Override
   public void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTable, boolean ifPurge)
       throws TException {
     if (table.isTemporary()) {

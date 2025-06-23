@@ -296,14 +296,15 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
       // Note that this logic may drop some of the tables of the database
       // even if the drop database fail for any reason
       // TODO: Fix this
-      List<String> materializedViews = getDelegate().getTables(req.getName(), ".*", TableType.MATERIALIZED_VIEW);
+      List<String> materializedViews =
+          getTables(req.getCatalogName(), req.getName(), ".*", TableType.MATERIALIZED_VIEW);
       for (String table : materializedViews) {
         // First we delete the materialized views
-        Table materializedView = getDelegate().getTable(getDefaultCatalog(conf), req.getName(), table);
+        Table materializedView = getTable(req.getCatalogName(), req.getName(), table);
         boolean isSoftDelete = req.isSoftDelete() && Boolean.parseBoolean(
             materializedView.getParameters().get(SOFT_DELETE_TABLE));
         materializedView.setTxnId(req.getTxnId());
-        getDelegate().dropTable(materializedView, req.isDeleteData() && !isSoftDelete, true, false);
+        dropTable(materializedView, req.isDeleteData() && !isSoftDelete, true, false);
       }
 
       /**
@@ -314,7 +315,7 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
        * {@link #dropTable(String, String, boolean, boolean, EnvironmentContext) dropTable} call to
        * ensure transactionality.
        */
-      List<String> tableNameList = getDelegate().getAllTables(req.getName());
+      List<String> tableNameList = getAllTables(req.getCatalogName(), req.getName());
       int tableCount = tableNameList.size();
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
       LOG.debug("Selecting dropDatabase method for " + req.getName() + " (" + tableCount + " tables), " +
@@ -620,7 +621,7 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
       request.setCatName(getDefaultCatalog(conf));
     }
 
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+    String catName = request.getCatName();
     String dbName = request.getDbName();
     String tblName = request.getTblName();
 
@@ -753,8 +754,9 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
   public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
       throws TException {
     GetPartitionNamesPsResponse res = getDelegate().listPartitionNamesRequest(req);
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     List<String> partNames = FilterUtils.filterPartitionNamesIfEnabled(
-        isClientFilterEnabled, filterHook, getDefaultCatalog(conf), req.getDbName(),
+        isClientFilterEnabled, filterHook, catName, req.getDbName(),
         req.getTblName(), res.getNames());
     res.setNames(partNames);
     return res;
@@ -782,7 +784,8 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
         FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
   }
 
-  @Override public ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
+  @Override
+  public ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
     ShowCompactResponse response = getDelegate().showCompactions(request);
     response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
         filterHook, getDefaultCatalog(conf), response.getCompacts()));
