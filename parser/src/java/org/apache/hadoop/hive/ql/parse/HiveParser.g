@@ -1016,6 +1016,12 @@ ddlStatement
     | createTableStatement
     | dropTableStatement
     | truncateTableStatement
+    | (KW_CREATE KW_OR KW_REPLACE KW_BRANCH) => createOrReplaceBranchStatement
+    | (KW_CREATE KW_OR KW_REPLACE KW_TAG) => createOrReplaceTagStatement
+    | createBranchStatement
+    | dropBranchStatement
+    | createTagStatement
+    | dropTagStatement
     | alterStatement
     | descStatement
     | showStatement
