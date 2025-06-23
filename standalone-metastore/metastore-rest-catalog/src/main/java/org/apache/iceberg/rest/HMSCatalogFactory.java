@@ -29,14 +29,11 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Catalog &amp; servlet factory.
  */
 public class HMSCatalogFactory {
-  private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogFactory.class);
   private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
 
   private final Configuration configuration;
