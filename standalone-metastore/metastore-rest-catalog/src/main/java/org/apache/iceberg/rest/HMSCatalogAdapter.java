@@ -359,6 +359,7 @@ public class HMSCatalogAdapter implements RESTClient {
   private RESTResponse dropNamespace(Map<String, String> vars) {
     if (asNamespaceCatalog != null) {
       CatalogHandlers.dropNamespace(asNamespaceCatalog, namespaceFromPathVars(vars));
+      return null;
     }
     throw new NamespaceNotSupported(catalog.toString());
   }
