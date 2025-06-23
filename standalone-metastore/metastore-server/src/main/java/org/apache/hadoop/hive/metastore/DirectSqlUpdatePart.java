@@ -897,8 +897,7 @@ class DirectSqlUpdatePart {
           @Override
           public List<Long> run(List<Long> input) throws Exception {
             String idLists = MetaStoreDirectSql.getIdListForIn(input);
-            String queryText = "select \"CD_ID\" from \"SDS\" where \"CD_ID\" in ( "
-                + idLists + ") group by \"CD_ID\"";
+            String queryText = "select DISTINCT \"CD_ID\" from \"SDS\" where \"CD_ID\" in ( " + idLists + ")";
             List<Long> cdIds = new ArrayList<>();
             try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
               List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
@@ -907,8 +906,8 @@ class DirectSqlUpdatePart {
                   cdIds.add(MetastoreDirectSqlUtils.extractSqlLong(cdId));
                 }
               }
-              return cdIds;
             }
+            return cdIds;
           }
     }));
     List<Long> unusedCdIds = cdIdsMayDelete.stream().filter(id -> !usedIds.contains(id)).collect(Collectors.toList());
