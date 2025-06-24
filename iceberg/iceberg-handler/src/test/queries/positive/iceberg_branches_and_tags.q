@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 create table ice01 (id int) stored by iceberg;
 insert into ice01 values (1), (2), (3), (4);
 

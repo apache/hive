@@ -56,12 +56,12 @@ POSTHOOK: query: select * from default.ice01.branch_branch1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-5
-6
 1
 2
 3
 4
+5
+6
 PREHOOK: query: create tag tag1 FROM ice01
 PREHOOK: type: ALTERTABLE_CREATETAG
 PREHOOK: Input: default@ice01
