@@ -97,7 +97,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     }
 
     byte[] utf8String = t.toString().getBytes();
-    StringSubstrColStartLen.populateSubstrOffsets(utf8String, 0, utf8String.length, craetePos(pos), len, index);
+    StringSubstrColStartLen.populateSubstrOffsets(utf8String, 0, utf8String.length, adjustStartPos(pos), len, index);
     if (index[0] == -1) {
       return r;
     }
@@ -110,7 +110,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     r.clear();
 
     byte[] utf8String = t.toString().getBytes();
-    int offset = StringSubstrColStart.getSubstrStartOffset(utf8String, 0, utf8String.length, craetePos(pos));
+    int offset = StringSubstrColStart.getSubstrStartOffset(utf8String, 0, utf8String.length, adjustStartPos(pos));
     if (offset == -1) {
       return r;
     }
@@ -174,23 +174,25 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return new BytesWritable();
     }
 
-    byte[] b = Arrays.copyOf(bw.getBytes(), bw.getLength());
-    StringSubstrColStartLen.populateSubstrOffsets(b, 0, b.length, craetePos(pos), len, index);
+    // Even though we are using longs, substr can only deal with ints, so we use
+    // the maximum int value as the maxValue
+    StringSubstrColStartLen.populateSubstrOffsets(bw.getBytes(), 0, bw.getLength(), adjustStartPos(pos), len, index);
     if (index[0] == -1) {
       return new BytesWritable();
     }
 
-    return new BytesWritable(arrayCopy(b, index[0], index[1]));
+    return new BytesWritable(arrayCopy(bw.getBytes(), index[0], index[1]));
   }
 
   private BytesWritable evaluateInternal(BytesWritable bw, int pos) {
-    byte[] b = Arrays.copyOf(bw.getBytes(), bw.getLength());
-    int offset = StringSubstrColStart.getSubstrStartOffset(b, 0, b.length, craetePos(pos));
+    // Even though we are using longs, substr can only deal with ints, so we use
+    // the maximum int value as the maxValue
+    int offset = StringSubstrColStart.getSubstrStartOffset(bw.getBytes(), 0, bw.getLength(), adjustStartPos(pos));
     if (offset == -1) {
       return new BytesWritable();
     }
 
-    return new BytesWritable(arrayCopy(b, offset, bw.getLength() - offset));
+    return new BytesWritable(arrayCopy(bw.getBytes(), offset, bw.getLength() - offset));
   }
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos){
@@ -221,11 +223,10 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       b[copyIdx] = src[srcIdx];
       copyIdx++;
     }
-
     return b;
   }
 
-  private int craetePos(int pos) {
+  private int adjustStartPos(int pos) {
     if (pos <= 0) {
       return pos;
     }
