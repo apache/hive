@@ -44,10 +44,10 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
 
   private HiveRESTCatalogServerExtension(AuthType authType) {
     this.conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, authType.name());
+    MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, authType.name());
     if (authType == AuthType.JWT) {
       jwksServer = new JwksServer();
-      MetastoreConf.setVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "jwt");
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, "jwt");
       MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
           String.format("http://localhost:%d/jwks", jwksServer.getPort()));
     } else {

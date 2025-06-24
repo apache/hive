@@ -48,7 +48,7 @@ public class HMSCatalogFactory {
    * @param conf the configuration
    */
   private HMSCatalogFactory(Configuration conf) {
-    port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT);
+    port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT);
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
     this.configuration = conf;
   }
@@ -99,7 +99,7 @@ public class HMSCatalogFactory {
    * @return the servlet
    */
   private HttpServlet createServlet(Catalog catalog) {
-    String authType = MetastoreConf.getVar(configuration, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH);
+    String authType = MetastoreConf.getVar(configuration, ConfVars.CATALOG_SERVLET_AUTH);
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
@@ -117,7 +117,7 @@ public class HMSCatalogFactory {
   
   /**
    * Factory method to describe Iceberg servlet.
-   * <p>This method name is found through configuration as {@link MetastoreConf.ConfVars#ICEBERG_CATALOG_SERVLET_FACTORY}
+   * <p>This method name is found through configuration as {@link MetastoreConf.ConfVars#CATALOG_SERVLET_FACTORY}
    * and looked up through reflection to start from HMS.</p>
    *
    * @param configuration the configuration
