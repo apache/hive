@@ -226,7 +226,7 @@ jobWrappers {
             $class: 'GitSCM',
             branches: scm.branches,
             doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-            extensions: scm.extensions,
+            extensions: [ cloneOption(honorRefspec: true, depth: 50, noTags: true, shallow: true) ],
             userRemoteConfigs: scm.userRemoteConfigs + [[
               name: 'origin',
               refspec: scm.userRemoteConfigs[0].refspec+ " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
