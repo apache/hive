@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -41,16 +42,16 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
   private final JwksServer jwksServer;
   private final RESTCatalogServer restCatalogServer;
 
-  public HiveRESTCatalogServerExtension(boolean jwtEnabled) {
+  private HiveRESTCatalogServerExtension(AuthType authType) {
     this.conf = MetastoreConf.newMetastoreConf();
-    if (jwtEnabled) {
+    MetastoreConf.setVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, authType.name());
+    if (authType == AuthType.JWT) {
       jwksServer = new JwksServer();
       MetastoreConf.setVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "jwt");
       MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
           String.format("http://localhost:%d/jwks", jwksServer.getPort()));
     } else {
       jwksServer = null;
-      MetastoreConf.setVar(conf, ConfVars.ICEBERG_CATALOG_SERVLET_AUTH, "simple");
     }
     restCatalogServer = new RESTCatalogServer();
   }
@@ -96,22 +97,18 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
   }
 
   public static class Builder {
-    private boolean jwtEnabled = false;
+    private final AuthType authType;
 
-    private Builder() {
-    }
-
-    public Builder jwt() {
-      jwtEnabled = true;
-      return this;
+    private Builder(AuthType authType) {
+      this.authType = authType;
     }
 
     public HiveRESTCatalogServerExtension build() {
-      return new HiveRESTCatalogServerExtension(jwtEnabled);
+      return new HiveRESTCatalogServerExtension(authType);
     }
   }
 
-  public static Builder builder() {
-    return new Builder();
+  public static Builder builder(AuthType authType) {
+    return new Builder(authType);
   }
 }

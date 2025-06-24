@@ -78,25 +78,25 @@ import java.util.Optional;
  * </p>
  */
 public class ServletSecurity {
+  public enum AuthType {
+    NONE, SIMPLE, JWT;
+
+    public static AuthType fromString(String type) {
+      return AuthType.valueOf(type.toUpperCase());
+    }
+  }
+
   private static final Logger LOG = LoggerFactory.getLogger(ServletSecurity.class);
   static final String X_USER = MetaStoreUtils.USER_NAME_HTTP_HEADER;
   private final boolean isSecurityEnabled;
-  private final boolean jwtAuthEnabled;
+  private final AuthType authType;
   private final Configuration conf;
   private JWTValidator jwtValidator = null;
 
-  public ServletSecurity(String authType, Configuration conf) {
-    this(conf, isAuthJwt(authType));
-  }
-
-  public ServletSecurity(Configuration conf, boolean jwt) {
+  public ServletSecurity(AuthType authType, Configuration conf) {
     this.conf = conf;
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
-    this.jwtAuthEnabled = jwt;
-  }
-
-  private static boolean isAuthJwt(String authType) {
-    return "jwt".equalsIgnoreCase(authType);
+    this.authType = authType;
   }
 
   /**
@@ -104,7 +104,7 @@ public class ServletSecurity {
    * @throws ServletException if the jwt validator creation throws an exception
    */
   public void init() throws ServletException {
-    if (jwtAuthEnabled && jwtValidator == null) {
+    if (authType == AuthType.JWT && jwtValidator == null) {
       try {
         jwtValidator = new JWTValidator(this.conf);
       } catch (Exception e) {
@@ -155,10 +155,14 @@ public class ServletSecurity {
    * @return a servlet instance or null if security initialization fails
    */
   public HttpServlet proxy(HttpServlet servlet) {
+    if (authType == AuthType.NONE) {
+      LOG.warn("Servlet security is disabled for {}", servlet);
+      return servlet;
+    }
     try {
       init();
     } catch (ServletException e) {
-      LOG.error("Unable to proxy security for servlet {}", servlet.toString(), e);
+      LOG.error("Unable to proxy security for servlet {}", servlet, e);
       return null;
     }
     return new ProxyServlet(servlet);
@@ -206,10 +210,12 @@ public class ServletSecurity {
       String userFromHeader = extractUserName(request, response);
       // Temporary, and useless for now. Here only to allow this to work on an otherwise kerberized
       // server.
-      if (isSecurityEnabled || jwtAuthEnabled) {
+      if (isSecurityEnabled || authType == AuthType.JWT) {
         LOG.info("Creating proxy user for: {}", userFromHeader);
         clientUgi = UserGroupInformation.createProxyUser(userFromHeader, UserGroupInformation.getLoginUser());
       } else {
+        // Unreachable in the case of NONE
+        Preconditions.checkState(authType == AuthType.SIMPLE);
         LOG.info("Creating remote user for: {}", userFromHeader);
         clientUgi = UserGroupInformation.createRemoteUser(userFromHeader);
       }
@@ -237,13 +243,15 @@ public class ServletSecurity {
 
   private String extractUserName(HttpServletRequest request, HttpServletResponse response)
       throws HttpAuthenticationException {
-    if (!jwtAuthEnabled) {
+    if (authType == AuthType.SIMPLE) {
       String userFromHeader = request.getHeader(X_USER);
       if (userFromHeader == null || userFromHeader.isEmpty()) {
         throw new HttpAuthenticationException("User header " + X_USER + " missing in request");
       }
       return userFromHeader;
     }
+    // Unreachable in the case of NONE
+    Preconditions.checkState(authType == AuthType.JWT);
     String signedJwt = extractBearerToken(request, response);
     if (signedJwt == null) {
       throw new HttpAuthenticationException("Couldn't find bearer token in the auth header in the request");

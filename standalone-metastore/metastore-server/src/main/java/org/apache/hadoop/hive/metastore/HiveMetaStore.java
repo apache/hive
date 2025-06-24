@@ -24,6 +24,7 @@ import java.util.concurrent.SynchronousQueue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
@@ -420,7 +421,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     processor = new ThriftHiveMetastore.Processor<>(handler);
     LOG.info("Starting DB backed MetaStore Server with generic processor");
     boolean jwt = MetastoreConf.getVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt");
-    ServletSecurity security = new ServletSecurity(conf, jwt);
+    AuthType authType = jwt ? AuthType.JWT : AuthType.SIMPLE;
+    ServletSecurity security = new ServletSecurity(authType, conf);
     Servlet thriftHttpServlet = security.proxy(new TServlet(processor, protocolFactory));
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
