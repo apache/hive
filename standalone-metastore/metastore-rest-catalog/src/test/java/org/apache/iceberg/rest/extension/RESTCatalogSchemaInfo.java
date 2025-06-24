@@ -16,20 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.iceberg.hive;
 
-/**
- * Test helper utility.
- */
-public class IcebergTestHelper {
-  /**
-   * Invalidates all clients remaining in the cached client pool held by the
-   * Catalog instance(s).
-   * <p>This is necessary when a new catalog is instantiated to avoid reusing
-   * old clients that may point to a (now) defunct catalog.</p>
-   */
-  public static void invalidatePoolCache() {
-      CachedClientPool.clientPoolCache().invalidateAll();
+package org.apache.iceberg.rest.extension;
+
+import java.io.File;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
+
+public class RESTCatalogSchemaInfo extends MetaStoreSchemaInfo {
+  private static final String BASE_DIR = System.getProperty("basedir");
+
+  public RESTCatalogSchemaInfo(String metastoreHome, String dbType) throws HiveMetaException {
+    super(metastoreHome, dbType);
   }
-  
+
+  @Override
+  public String getMetaStoreScriptDir() {
+    return new File(BASE_DIR, "../metastore-server/src/main/sql/derby").getAbsolutePath();
+  }
 }

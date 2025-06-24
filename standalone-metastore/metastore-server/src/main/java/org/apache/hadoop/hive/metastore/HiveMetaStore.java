@@ -126,8 +126,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static Server servletServer = null;
   /** the port and path of the property servlet. */
   private static int propertyServletPort = -1;
-  /** the port and path of the catalog servlet. */
-  private static int catalogServletPort = -1;
 
   /**
    * Gets the embedded servlet server.
@@ -144,15 +142,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static int getPropertyServletPort() {
     return propertyServletPort;
-  }
-  
-  /**
-   * Gets the catalog servlet connector port.
-   * <p>If configuration is 0, this port is allocated by the system.</p>
-   * @return the connector port or -1 if not configured
-   */
-  public static int getCatalogServletPort() {
-    return catalogServletPort;
   }
   
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
@@ -731,15 +720,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // optionally create and start the property and Iceberg REST server
     ServletServerBuilder builder = new ServletServerBuilder(conf);
     ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
-    ServletServerBuilder.Descriptor catalog = builder.addServlet(createIcebergServlet(conf));
+    builder.addServlet(createIcebergServlet(conf));
     servletServer = builder.start(LOG);
-    if (servletServer != null) {
-      if (properties != null) {
-          propertyServletPort = properties.getPort();
-      }
-      if (catalog != null) {
-        catalogServletPort = catalog.getPort();
-      }
+    if (servletServer != null && properties != null) {
+      propertyServletPort = properties.getPort();
     }
 
     // main server
