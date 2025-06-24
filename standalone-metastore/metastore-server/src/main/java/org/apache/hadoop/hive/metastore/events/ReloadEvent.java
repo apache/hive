@@ -23,8 +23,10 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ClientCapabilities;
 import org.apache.hadoop.hive.metastore.api.ClientCapability;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
+//import org.datanucleus.store.types.wrappers.ArrayList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +57,7 @@ public class ReloadEvent extends ListenerEvent {
      * @param handler handler that is firing the event
      */
     public ReloadEvent(String catName, String db, String table, List<List<String>> partVals, boolean status,
-                       boolean refreshEvent, Map<String, String> tblParams, IHMSHandler handler) throws MetaException,
+            boolean refreshEvent, Map<String, String> tblParams, IHMSHandler handler) throws MetaException,
             NoSuchObjectException {
         super(status, handler);
 
@@ -69,10 +72,15 @@ public class ReloadEvent extends ListenerEvent {
             }
             if (partVals != null) {
                 this.ptns = new ArrayList<>();
+                List<String> part_names = new ArrayList<>();
                 for(List<String> partVal : partVals) {
-                    this.ptns.add(handler.get_partition(MetaStoreUtils.prependNotNullCatToDbName(catName, db),
-                        table, partVal));
+                    part_names.add(Warehouse.makePartName(this.tableObj.getPartitionKeys(), partVal));
                 }
+                GetPartitionsByNamesRequest partitionsReq = new GetPartitionsByNamesRequest(
+                    MetaStoreUtils.prependNotNullCatToDbName(catName, db), table);
+                partitionsReq.setNames(part_names);
+                partitionsReq.setGet_col_stats(false);
+                this.ptns.addAll(handler.get_partitions_by_names_req(partitionsReq).getPartitions());
             } else {
                 this.ptns = null;
             }
