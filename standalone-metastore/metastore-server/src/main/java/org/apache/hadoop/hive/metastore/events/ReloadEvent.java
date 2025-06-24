@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
-//import org.datanucleus.store.types.wrappers.ArrayList;
 
 import java.util.ArrayList;
 import java.util.List;
