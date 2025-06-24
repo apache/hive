@@ -1,8 +1,6 @@
 -- Materialzed view definition has non-deterministic function
 
--- HiveFilter(condition=[<=(CAST($1):BIGINT, 1744204765)])
---! qt:replace:/(.*,\s)\d+(\)\])/$1#Masked#$2/
-
+set hive.test.currenttimestamp=2025-05-02 10:05:03;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 

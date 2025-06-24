@@ -80,7 +80,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class CrossProductHandler implements PhysicalPlanResolver, SemanticDispatcher {
 
-  protected static transient final Logger LOG = LoggerFactory
+  protected static final Logger LOG = LoggerFactory
       .getLogger(CrossProductHandler.class);
   private Boolean cartesianProductEdgeEnabled = null;
 

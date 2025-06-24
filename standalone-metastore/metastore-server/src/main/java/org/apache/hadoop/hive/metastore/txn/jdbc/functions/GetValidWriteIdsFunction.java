@@ -55,7 +55,7 @@ public class GetValidWriteIdsFunction implements TransactionalFunction<GetValidW
     // required to get the current state of txns to make validTxnList
     if (rqst.isSetValidTxnList()) {
       assert !rqst.isSetWriteId();
-      validTxnList = new ValidReadTxnList(rqst.getValidTxnList());
+      validTxnList = ValidReadTxnList.fromValue(rqst.getValidTxnList());
     } else if (rqst.isSetWriteId()) {
       validTxnList = TxnCommonUtils.createValidReadTxnList(getOpenTxns(jdbcResource), 
           getTxnId(jdbcResource, rqst.getFullTableNames().get(0), rqst.getWriteId())); 

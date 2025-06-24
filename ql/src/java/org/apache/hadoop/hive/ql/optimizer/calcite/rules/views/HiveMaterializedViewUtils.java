@@ -158,7 +158,7 @@ public class HiveMaterializedViewUtils {
               " ignored for rewriting as we could not obtain materialization txn ids");
       return null;
     }
-    ValidTxnWriteIdList materializationTxnWriteIds = new ValidTxnWriteIdList(materializationTxnList);
+    ValidTxnWriteIdList materializationTxnWriteIds = ValidTxnWriteIdList.fromValue(materializationTxnList);
     boolean ignore = false;
     for (String fullyQualifiedTableName : tablesUsedNames) {
       // Note. If the materialized view does not contain a table that is contained in the query,
@@ -261,7 +261,7 @@ public class HiveMaterializedViewUtils {
     } else {
       String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
       modifiedQueryRel = augmentMaterializationWithTimeInformation(
-              materialization, validTxnsList, new ValidTxnWriteIdList(materializationTxnList));
+              materialization, validTxnsList, ValidTxnWriteIdList.fromValue(materializationTxnList));
     }
 
     return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,

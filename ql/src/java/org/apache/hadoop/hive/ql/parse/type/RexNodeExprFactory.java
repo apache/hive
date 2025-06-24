@@ -48,6 +48,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlQuantifyOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.util.ConversionUtil;
@@ -615,8 +616,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
           SqlStdOperatorTable.ROW,
           operands);
     }
-    return rexBuilder.makeLiteral(constantValue,
-        TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory()), false);
+    RelDataType finalType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
+    boolean allowCast = finalType.getFamily() == SqlTypeFamily.CHARACTER;
+    return rexBuilder.makeLiteral(constantValue, finalType, allowCast);
   }
 
   /**

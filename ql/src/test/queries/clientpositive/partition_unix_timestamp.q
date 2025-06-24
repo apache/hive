@@ -1,5 +1,4 @@
--- HiveFilter(condition=[=(CAST($1):DOUBLE, 2.0250E3)])
---! qt:replace:/(.*,\s)[0-9.E]+(\)\])/$1#Masked#$2/
+set hive.test.currenttimestamp=2025-04-02 10:05:03;
 
 create table t1 (a int) partitioned by (p_year string);
 

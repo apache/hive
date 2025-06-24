@@ -58,7 +58,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[AND(IS NULL($0), null)])
+HiveProject(_o__c0=[AND(null, IS NULL($0))])
   HiveTableScan(table=[[default, very_simple_table_for_in_test]], table:alias=[very_simple_table_for_in_test])
 
 PREHOOK: query: select name IN('g','r') AND name IN('a','b') from very_simple_table_for_in_test
@@ -82,7 +82,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@very_simple_table_for_in_test
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[AND(IN($1, _UTF-16LE'x':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NULL($0), null)])
+HiveProject(_o__c0=[AND(null, IS NULL($0), IN($1, _UTF-16LE'x':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
   HiveTableScan(table=[[default, very_simple_table_for_in_test]], table:alias=[very_simple_table_for_in_test])
 
 PREHOOK: query: select name IN('g','r') AND name IN('a','b') AND othername IN('x', 'y') from very_simple_table_for_in_test

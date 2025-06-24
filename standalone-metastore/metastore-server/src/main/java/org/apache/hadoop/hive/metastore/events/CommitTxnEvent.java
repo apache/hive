@@ -23,6 +23,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 
+import java.util.List;
+
 /**
  * CommitTxnEvent
  * Event generated for commit transaction operation
@@ -33,24 +35,30 @@ public class CommitTxnEvent extends ListenerEvent {
 
   private final Long txnId;
   private final TxnType txnType;
+  private final List<Long> writeId;
+  private final List<String> databases;
 
   public CommitTxnEvent(Long transactionId, IHMSHandler handler) {
-    this(transactionId, null, handler);
+    this(transactionId, null, handler, null, null);
   }
 
   public CommitTxnEvent(Long transactionId, TxnType txnType) {
-    this(transactionId, txnType, null);
+    this(transactionId, txnType, null, null, null);
   }
 
   /**
    * @param transactionId Unique identification for the transaction just got committed.
    * @param txnType type of transaction
    * @param handler handler that is firing the event
+   * @param databases list of databases for which commit txn event is fired
+   * @param writeId write id for transaction
    */
-  public CommitTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler) {
+  public CommitTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler, List<String> databases, List<Long> writeId) {
     super(true, handler);
     this.txnId = transactionId;
     this.txnType = txnType;
+    this.writeId = writeId;
+    this.databases = databases;
   }
 
   /**
@@ -65,5 +73,19 @@ public class CommitTxnEvent extends ListenerEvent {
    */
   public TxnType getTxnType() {
     return txnType;
+  }
+
+    /**
+     * @return List of write ids for which commit txn event is fired
+     */
+  public List<Long> getWriteId() {
+    return writeId;
+  }
+
+    /**
+     * @return List of databases for which commit txn event is fired
+     */
+  public List<String> getDatabases() {
+    return databases;
   }
 }

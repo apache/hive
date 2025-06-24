@@ -786,7 +786,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           ? AcidOperationalProperties.parseString(txnProperties) : null;
 
       String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
+      writeIdList = value == null ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(value);
       LOG.info("Context:: " +
           "isAcid: {} " +
           "isVectorMode: {} " +
@@ -2097,7 +2097,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     ValidWriteIdList validWriteIdList
-            = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+            = (txnString == null) ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
     if (LOG.isDebugEnabled()) {
       LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
             + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));

@@ -602,7 +602,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
       for (int i = 0; i < operands.size(); i++) {
         RexNode operand = operands.get(i);
-        if (operand.getKind() == SqlKind.IN) {
+        if (operand instanceof RexCall && HiveIn.INSTANCE.equals(((RexCall) operand).op)) {
           RexCall inCall = (RexCall) operand;
           if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
             continue;
@@ -737,7 +737,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final Multimap<RexNode,SimilarRexNodeElement> inLHSExprToRHSExprs = LinkedHashMultimap.create();
       for (int i = 0; i < operands.size(); i++) {
         RexNode operand = operands.get(i);
-        if (operand.getKind() == SqlKind.IN) {
+        if (operand instanceof RexCall && HiveIn.INSTANCE.equals(((RexCall) operand).op)) {
           RexCall inCall = (RexCall) operand;
           if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
             continue;

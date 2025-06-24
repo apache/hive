@@ -24,7 +24,7 @@ import java.net.URISyntaxException;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 
 public class HiveSamlUtils {
 

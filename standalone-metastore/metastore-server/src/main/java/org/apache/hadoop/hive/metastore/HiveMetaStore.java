@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ShutdownHookManager;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.thrift.TProcessor;
@@ -125,8 +126,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static Server servletServer = null;
   /** the port and path of the property servlet. */
   private static int propertyServletPort = -1;
-  /** the port and path of the catalog servlet. */
-  private static int catalogServletPort = -1;
 
   /**
    * Gets the embedded servlet server.
@@ -145,15 +144,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return propertyServletPort;
   }
   
-  /**
-   * Gets the catalog servlet connector port.
-   * <p>If configuration is 0, this port is allocated by the system.</p>
-   * @return the connector port or -1 if not configured
-   */
-  public static int getCatalogServletPort() {
-    return catalogServletPort;
-  }
-  
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
       if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
@@ -168,9 +158,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *
    * <h1>IMPORTANT</h1>
    *
-   * This method is called indirectly by HiveMetastoreClient and HiveMetaStoreClientPreCatalog
-   * using reflection. It can not be removed and its arguments can't be changed without matching
-   * change in HiveMetastoreClient and HiveMetaStoreClientPreCatalog.
+   * This method is called indirectly by HiveMetastoreClient using reflection.
+   * It can not be removed and its arguments can't be changed without matching
+   * change in HiveMetastoreClient.
    *
    * @param conf configuration to use
    * @throws MetaException
@@ -394,6 +384,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE));
     httpServerConf.setResponseHeaderSize(
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE));
+    httpServerConf.setSendServerVersion(false);
+    httpServerConf.setSendXPoweredBy(false);
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
@@ -728,15 +720,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // optionally create and start the property and Iceberg REST server
     ServletServerBuilder builder = new ServletServerBuilder(conf);
     ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
-    ServletServerBuilder.Descriptor catalog = builder.addServlet(createIcebergServlet(conf));
+    builder.addServlet(createIcebergServlet(conf));
     servletServer = builder.start(LOG);
-    if (servletServer != null) {
-      if (properties != null) {
-          propertyServletPort = properties.getPort();
-      }
-      if (catalog != null) {
-        catalogServletPort = catalog.getPort();
-      }
+    if (servletServer != null && properties != null) {
+      propertyServletPort = properties.getPort();
     }
 
     // main server
@@ -771,7 +758,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @throws Exception
    */
   private static String getServerInstanceURI(int port) throws Exception {
-    return getServerHostName() + ":" + port;
+    return IPStackUtils.concatHostPort(getServerHostName(), port);
   }
 
   static String getServerHostName() throws Exception {

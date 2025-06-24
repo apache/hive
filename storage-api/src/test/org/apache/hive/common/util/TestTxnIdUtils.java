@@ -192,9 +192,9 @@ public class TestTxnIdUtils {
     -1);
 
     ValidWriteIdList a =
-        new ValidReaderWriteIdList("default.test:1:1:1:");
+        ValidReaderWriteIdList.fromValue("default.test:1:1:1:");
     ValidWriteIdList b =
-        new ValidReaderWriteIdList("default.test:1:9223372036854775807::");
+        ValidReaderWriteIdList.fromValue("default.test:1:9223372036854775807::");
 
     // should return -1 since b is more recent
     assertEquals(TxnIdUtils.compare(a, b), -1);

@@ -892,18 +892,24 @@ class DirectSqlUpdatePart {
         sdIdToNewCdId.containsKey(sdId) ? sdIdToNewCdId.get(sdId) : cdId);
     updateSDInBatch(validSdIds, idToSd, sdIdToCdId);
 
-    List<Long> usedIds = Batchable.runBatched(maxBatchSize, cdIdsMayDelete,
+    Set<Long> usedIds = new HashSet<>(Batchable.runBatched(maxBatchSize, cdIdsMayDelete,
         new Batchable<Long, Long>() {
           @Override
           public List<Long> run(List<Long> input) throws Exception {
             String idLists = MetaStoreDirectSql.getIdListForIn(input);
-            String queryText = "select \"CD_ID\" from \"SDS\" where \"CD_ID\" in ( " + idLists + ")";
+            String queryText = "select DISTINCT \"CD_ID\" from \"SDS\" where \"CD_ID\" in ( " + idLists + ")";
+            List<Long> cdIds = new ArrayList<>();
             try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-              List<Long> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
-              return new ArrayList<>(sqlResult);
+              List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+              if (sqlResult != null) {
+                for (Object cdId : sqlResult) {
+                  cdIds.add(MetastoreDirectSqlUtils.extractSqlLong(cdId));
+                }
+              }
             }
+            return cdIds;
           }
-    });
+    }));
     List<Long> unusedCdIds = cdIdsMayDelete.stream().filter(id -> !usedIds.contains(id)).collect(Collectors.toList());
 
     deleteCDInBatch(unusedCdIds);
@@ -1088,7 +1094,7 @@ class DirectSqlUpdatePart {
     ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
     AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
     if (cmd.getIdentityType() == IdentityType.DATASTORE) {
-      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, -1);
+      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, null);
     } else {
       throw new MetaException("Identity type is not datastore.");
     }

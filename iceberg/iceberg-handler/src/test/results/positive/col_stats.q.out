@@ -505,7 +505,7 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	                    
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"A\":\"true\",\"C\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: create table t1 (a int) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

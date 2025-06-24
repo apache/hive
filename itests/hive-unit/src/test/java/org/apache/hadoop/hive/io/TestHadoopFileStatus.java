@@ -75,7 +75,7 @@ public class TestHadoopFileStatus {
     FileStatus mockFileStatus = Mockito.mock(FileStatus.class);
     Mockito.when(mockDfs.getAclStatus(mockPath)).thenReturn(aclStatus);
     Mockito.when(mockDfs.getFileStatus(mockPath)).thenReturn(mockFileStatus);
-    sourceStatus = new HadoopFileStatus(hiveConf, mockDfs, mockPath);
+    sourceStatus = HadoopFileStatus.createInstance(hiveConf, mockDfs, mockPath);
     Assert.assertNotNull(sourceStatus.getAclEntries());
     Assert.assertTrue(sourceStatus.getAclEntries().size() == 3);
     Iterables.removeIf(sourceStatus.getAclEntries(), new Predicate<AclEntry>() {

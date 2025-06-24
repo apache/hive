@@ -25,13 +25,13 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlCollation;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +75,7 @@ public class TestHivePointLookupOptimizerRule {
   public void before() {
     planner = buildPlanner(Collections.singletonList(new HivePointLookupOptimizerRule.FilterCondition(2)));
     relBuilder = buildRelBuilder(planner, schemaMock, tableMock, hiveTableMDMock, MyRecord.class);
+    relBuilder = relBuilder.transform(c -> c.withSimplify(false));
   }
 
   @Test
@@ -375,8 +376,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
           .scan("t")
           .filter(and(relBuilder,
-                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
-                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
           .build();
 
     planner.setRoot(basePlan);
@@ -412,8 +413,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
           .scan("t")
           .filter(and(relBuilder,
-                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
-                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), litaOverflow, litbOverflow)))
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), litaOverflow, litbOverflow)))
           .build();
 
     planner.setRoot(basePlan);
@@ -444,8 +445,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
             .scan("t")
             .filter(and(relBuilder,
-                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
-                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
             .build();
 
     planner.setRoot(basePlan);
@@ -476,8 +477,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
             .scan("t")
             .filter(or(relBuilder,
-                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
-                    relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                    relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
             .build();
 
     planner.setRoot(basePlan);
@@ -507,8 +508,8 @@ public class TestHivePointLookupOptimizerRule {
     final RelNode basePlan = relBuilder
           .scan("t")
           .filter(and(relBuilder,
-                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita30, litb30),
-                  relBuilder.call(SqlStdOperatorTable.IN, relBuilder.field("f2"), lita14, litb14)))
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita30, litb30),
+                  relBuilder.call(HiveIn.INSTANCE, relBuilder.field("f2"), lita14, litb14)))
           .build();
 
     planner.setRoot(basePlan);

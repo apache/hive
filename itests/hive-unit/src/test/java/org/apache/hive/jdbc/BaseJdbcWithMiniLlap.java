@@ -716,8 +716,6 @@ public abstract class BaseJdbcWithMiniLlap {
         rowProcessor.process(row);
         ++rowCount;
       }
-       //In arrow-mode this will throw exception unless all buffers have been released
-       //See org.apache.hadoop.hive.llap.LlapArrowBatchRecordReader
       reader.close();
     }
     LlapBaseInputFormat.close(handleId);

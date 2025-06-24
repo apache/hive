@@ -25,7 +25,7 @@ POSTHOOK: Output: default@dest1_n39
 OPTIMIZED SQL: SELECT `t0`.`key`, `t2`.`value`
 FROM (SELECT `key`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND (`hr` = '12' AND `key` IS NOT NULL)) AS `t0`
+WHERE `ds` = '2008-04-08' AND `hr` = '12' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`

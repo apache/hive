@@ -59,7 +59,8 @@ public class HiveMergeableAggregate extends SqlAggFunction  {
 
   }
 
-  public SqlAggFunction getMergeAggFunction() {
+  @Override
+  public SqlAggFunction getRollup() {
     return mergeAgg;
   }
 

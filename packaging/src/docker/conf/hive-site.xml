@@ -61,7 +61,7 @@
         <value>/opt/hive/data/warehouse</value>
     </property>
     <property>
-        <name>metastore.metastore.event.db.notification.api.auth</name>
+        <name>hive.metastore.event.db.notification.api.auth</name>
         <value>false</value>
     </property>
 </configuration>

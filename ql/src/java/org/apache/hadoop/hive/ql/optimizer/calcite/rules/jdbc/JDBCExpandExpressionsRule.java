@@ -35,6 +35,7 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.RexNodeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,18 +180,15 @@ public abstract class JDBCExpandExpressionsRule extends RelOptRule {
       RexNode node = super.visitCall(inputCall);
       if (node instanceof RexCall) {
         RexCall call = (RexCall) node;
-        switch (call.getKind()) {
-          case IN:
-            return transformIntoOrAndClause(rexBuilder, call);
-          default:
-            break;
+        if (HiveIn.INSTANCE.equals(call.op)) {
+          return transformIntoOrAndClause(rexBuilder, call);
         }
       }
       return RexUtil.isFlat(node) ? node : RexUtil.flatten(rexBuilder, node);
     }
 
     private RexNode transformIntoOrAndClause(RexBuilder rexBuilder, RexCall expression) {
-      assert expression.getKind() == SqlKind.IN;
+      assert HiveIn.INSTANCE.equals(expression.op);
 
       if (expression.getOperands().get(0).getKind() != SqlKind.ROW) {
         // Nothing to do, return expression

@@ -42,7 +42,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -57,6 +58,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.entries
 PREHOOK: type: DESCTABLE
@@ -68,7 +73,7 @@ status              	int
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
-data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int,first_row_id:bigint,referenced_data_file:string,content_offset:bigint,content_size_in_bytes:bigint>	                    
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
@@ -150,7 +155,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.all_data_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -165,6 +171,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.all_entries
 PREHOOK: type: DESCTABLE
@@ -176,7 +186,7 @@ status              	int
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
-data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int,first_row_id:bigint,referenced_data_file:string,content_offset:bigint,content_size_in_bytes:bigint>	                    
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.data_files
 PREHOOK: type: DESCTABLE
@@ -184,7 +194,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.data_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -199,6 +210,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.delete_files
 PREHOOK: type: DESCTABLE
@@ -206,7 +221,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.delete_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -221,6 +237,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.metadata_log_entries
 PREHOOK: type: DESCTABLE
@@ -251,7 +271,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.all_delete_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -266,6 +287,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe default.ice_meta_desc.all_files
 PREHOOK: type: DESCTABLE
@@ -273,7 +298,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.all_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -288,6 +314,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
@@ -296,7 +326,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -311,6 +342,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.entries
 PREHOOK: type: DESCTABLE
@@ -323,7 +358,7 @@ status              	int
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
-data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int,first_row_id:bigint,referenced_data_file:string,content_offset:bigint,content_size_in_bytes:bigint>	                    
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
@@ -411,7 +446,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.all_data_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -426,6 +462,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.all_entries
 PREHOOK: type: DESCTABLE
@@ -438,7 +478,7 @@ status              	int
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
-data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int,first_row_id:bigint,referenced_data_file:string,content_offset:bigint,content_size_in_bytes:bigint>	                    
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.data_files
 PREHOOK: type: DESCTABLE
@@ -447,7 +487,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.data_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -462,6 +503,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.delete_files
 PREHOOK: type: DESCTABLE
@@ -470,7 +515,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.delete_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -485,6 +531,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
 PREHOOK: type: DESCTABLE
@@ -518,7 +568,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.all_delete_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -533,6 +584,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.all_files
 PREHOOK: type: DESCTABLE
@@ -541,7 +596,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.all_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -556,6 +612,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe extended default.ice_meta_desc.files
 PREHOOK: type: DESCTABLE
@@ -563,7 +623,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe extended default.ice_meta_desc.files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -578,6 +639,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe extended default.ice_meta_desc.entries
 PREHOOK: type: DESCTABLE
@@ -589,7 +654,7 @@ status              	int
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
-data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int,first_row_id:bigint,referenced_data_file:string,content_offset:bigint,content_size_in_bytes:bigint>	                    
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe extended default.ice_meta_desc.history
 PREHOOK: type: DESCTABLE
@@ -671,7 +736,8 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe extended default.ice_meta_desc.all_data_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -686,6 +752,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe extended default.ice_meta_desc.all_entries
 PREHOOK: type: DESCTABLE
@@ -697,7 +767,7 @@ status              	int
 snapshot_id         	bigint              	                    
 sequence_number     	bigint              	                    
 file_sequence_number	bigint              	                    
-data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	                    
+data_file           	struct<content:int,file_path:string,file_format:string,spec_id:int,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int,first_row_id:bigint,referenced_data_file:string,content_offset:bigint,content_size_in_bytes:bigint>	                    
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.data_files
 PREHOOK: type: DESCTABLE
@@ -706,7 +776,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.data_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -721,6 +792,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.delete_files
 PREHOOK: type: DESCTABLE
@@ -729,7 +804,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.delete_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -744,6 +820,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.metadata_log_entries
 PREHOOK: type: DESCTABLE
@@ -777,7 +857,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.all_delete_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -792,6 +873,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: describe formatted default.ice_meta_desc.all_files
 PREHOOK: type: DESCTABLE
@@ -800,7 +885,8 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.all_files
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
-#### A masked pattern was here ####
+content             	int                 	Contents of the file: 0=data, 1=position deletes, 2=equality deletes
+file_path           	string              	URI with FS scheme
 file_format         	string              	File format name: avro, orc, or parquet
 spec_id             	int                 	Partition spec ID   
 record_count        	bigint              	Number of records in the file
@@ -815,6 +901,10 @@ key_metadata        	binary              	Encryption key metadata blob
 split_offsets       	array<bigint>       	Splittable offsets  
 equality_ids        	array<int>          	Equality comparison field IDs
 sort_order_id       	int                 	Sort order ID       
+first_row_id        	bigint              	Starting row ID to assign to new rows
+referenced_data_file	string              	Fully qualified location (URI with FS scheme) of a data file that all deletes reference
+content_offset      	bigint              	The offset in the file where the content starts
+content_size_in_bytes	bigint              	The length of referenced content stored in the file
 readable_metrics    	struct<id:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:int,upper_bound:int>,value:struct<column_size:bigint,value_count:bigint,null_value_count:bigint,nan_value_count:bigint,lower_bound:string,upper_bound:string>>	Column metrics in readable form
 PREHOOK: query: drop table ice_meta_desc
 PREHOOK: type: DROPTABLE

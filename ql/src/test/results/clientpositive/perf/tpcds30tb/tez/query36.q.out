@@ -119,10 +119,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: (s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC', 'AL', 'GA') (type: boolean)
+                  filterExpr: (s_state) IN ('AL', 'FL', 'GA', 'LA', 'MI', 'MO', 'SC', 'SD') (type: boolean)
                   Statistics: Num rows: 1704 Data size: 160176 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC', 'AL', 'GA') (type: boolean)
+                    predicate: (s_state) IN ('AL', 'FL', 'GA', 'LA', 'MI', 'MO', 'SC', 'SD') (type: boolean)
                     Statistics: Num rows: 310 Data size: 29140 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: s_store_sk (type: bigint)

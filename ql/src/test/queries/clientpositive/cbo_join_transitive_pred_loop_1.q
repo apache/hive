@@ -1,7 +1,4 @@
-set hive.optimize.join.disjunctive.transitive.predicates.pushdown=false;
-
--- HiveProject(month=[CAST(202503):INTEGER])
---! qt:replace:/(.*month=\[CAST\()\d+(\).*)/$1#Masked#$2/
+set hive.test.currenttimestamp=2025-04-02 10:05:03;
 
 CREATE TABLE test1 (act_nbr string);
 CREATE TABLE test2 (month int);

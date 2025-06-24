@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.data;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +45,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public abstract class DeleteReadTests {
   // Schema passed to create tables
   public static final Schema SCHEMA = new Schema(
@@ -63,6 +66,12 @@ public abstract class DeleteReadTests {
   private Table table = null;
   private List<Record> records = null;
   private DataFile dataFile = null;
+
+  protected final int formatVersion;
+
+  public DeleteReadTests(int formatVersion) {
+    this.formatVersion = formatVersion;
+  }
 
   @Before
   public void writeTestDataFile() throws IOException {
@@ -102,6 +111,27 @@ public abstract class DeleteReadTests {
     return true;
   }
 
+  protected boolean countDeletes() {
+    return false;
+  }
+
+  /**
+   * This will only be called after calling rowSet(String, Table, String...), and only if
+   * countDeletes() is true.
+   */
+  protected long deleteCount() {
+    return 0L;
+  }
+
+  protected void checkDeleteCount(long expectedDeletes) {
+    if (countDeletes()) {
+      long actualDeletes = deleteCount();
+      assertThat(actualDeletes)
+              .as("Table should contain expected number of deletes")
+              .isEqualTo(expectedDeletes);
+    }
+  }
+
   @Test
   public void testEqualityDeletes() throws IOException {
     Schema deleteRowSchema = table.schema().select("data");
@@ -119,7 +149,7 @@ public abstract class DeleteReadTests {
         .addDeletes(eqDeletes)
         .commit();
 
-    StructLikeSet expected = rowSetWithoutIds(29, 89, 122);
+    StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
     Assert.assertEquals("Table should contain expected rows", expected, actual);
@@ -142,7 +172,7 @@ public abstract class DeleteReadTests {
         .addDeletes(eqDeletes)
         .commit();
 
-    StructLikeSet expected = selectColumns(rowSetWithoutIds(29, 89, 122), "id");
+    StructLikeSet expected = selectColumns(rowSetWithoutIds(table, records, 29, 89, 122), "id");
     StructLikeSet actual = rowSet(tableName, table, "id");
 
     if (expectPruned()) {
@@ -180,7 +210,7 @@ public abstract class DeleteReadTests {
         .addDeletes(eqDeletes)
         .commit();
 
-    StructLikeSet expected = rowSetWithoutIds(29, 89, 122, 144);
+    StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122, 144);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
     Assert.assertEquals("Table should contain expected rows", expected, actual);
@@ -194,15 +224,20 @@ public abstract class DeleteReadTests {
         Pair.of(dataFile.path(), 6L) // id = 122
     );
 
-    Pair<DeleteFile, CharSequenceSet> posDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), deletes);
+    Pair<DeleteFile, CharSequenceSet> posDeletes =
+            FileHelpers.writeDeleteFile(
+                    table,
+                    Files.localOutput(File.createTempFile("junit", null, temp.getRoot())),
+                    Row.of(0),
+                    deletes,
+                    formatVersion);
 
     table.newRowDelta()
         .addDeletes(posDeletes.first())
         .validateDataFilesExist(posDeletes.second())
         .commit();
 
-    StructLikeSet expected = rowSetWithoutIds(29, 89, 122);
+    StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
     Assert.assertEquals("Table should contain expected rows", expected, actual);
@@ -212,33 +247,47 @@ public abstract class DeleteReadTests {
   public void testMixedPositionAndEqualityDeletes() throws IOException {
     Schema dataSchema = table.schema().select("data");
     Record dataDelete = GenericRecord.create(dataSchema);
-    List<Record> dataDeletes = Lists.newArrayList(
-        dataDelete.copy("data", "a"), // id = 29
-        dataDelete.copy("data", "d"), // id = 89
-        dataDelete.copy("data", "g") // id = 122
-    );
+    List<Record> dataDeletes =
+            Lists.newArrayList(
+                    dataDelete.copy("data", "a"), // id = 29
+                    dataDelete.copy("data", "d"), // id = 89
+                    dataDelete.copy("data", "g") // id = 122
+            );
 
-    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, dataSchema);
+    DeleteFile eqDeletes =
+            FileHelpers.writeDeleteFile(
+                    table,
+                    Files.localOutput(File.createTempFile("junit", null, temp.getRoot())),
+                    Row.of(0),
+                    dataDeletes,
+                    dataSchema);
 
-    List<Pair<CharSequence, Long>> deletes = Lists.newArrayList(
-        Pair.of(dataFile.path(), 3L), // id = 89
-        Pair.of(dataFile.path(), 5L) // id = 121
-    );
+    List<Pair<CharSequence, Long>> deletes =
+            Lists.newArrayList(
+                    Pair.of(dataFile.location(), 3L), // id = 89
+                    Pair.of(dataFile.location(), 5L) // id = 121
+            );
 
-    Pair<DeleteFile, CharSequenceSet> posDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), deletes);
+    Pair<DeleteFile, CharSequenceSet> posDeletes =
+            FileHelpers.writeDeleteFile(
+                    table,
+                    Files.localOutput(File.createTempFile("junit", null, temp.getRoot())),
+                    Row.of(0),
+                    deletes,
+                    formatVersion);
 
-    table.newRowDelta()
-        .addDeletes(eqDeletes)
-        .addDeletes(posDeletes.first())
-        .validateDataFilesExist(posDeletes.second())
-        .commit();
+    table
+            .newRowDelta()
+            .addDeletes(eqDeletes)
+            .addDeletes(posDeletes.first())
+            .validateDataFilesExist(posDeletes.second())
+            .commit();
 
-    StructLikeSet expected = rowSetWithoutIds(29, 89, 121, 122);
+    StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 121, 122);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
+    assertThat(actual).as("Table should contain expected rows").isEqualTo(expected);
+    checkDeleteCount(4L);
   }
 
   @Test
@@ -269,7 +318,7 @@ public abstract class DeleteReadTests {
         .addDeletes(idEqDeletes)
         .commit();
 
-    StructLikeSet expected = rowSetWithoutIds(29, 89, 121, 122);
+    StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 121, 122);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
     Assert.assertEquals("Table should contain expected rows", expected, actual);
@@ -306,7 +355,7 @@ public abstract class DeleteReadTests {
         .addDeletes(eqDeletes)
         .commit();
 
-    StructLikeSet expected = rowSetWithoutIds(131);
+    StructLikeSet expected = rowSetWithoutIds(table, records, 131);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
     Assert.assertEquals("Table should contain expected rows", expected, actual);
@@ -321,12 +370,14 @@ public abstract class DeleteReadTests {
     return set;
   }
 
-  private StructLikeSet rowSetWithoutIds(int... idsToRemove) {
+  protected static StructLikeSet rowSetWithoutIds(
+          Table table, List<Record> recordList, int... idsToRemove) {
     Set<Integer> deletedIds = Sets.newHashSet(ArrayUtil.toIntList(idsToRemove));
     StructLikeSet set = StructLikeSet.create(table.schema().asStruct());
-    records.stream()
-        .filter(row -> !deletedIds.contains(row.getField("id")))
-        .forEach(set::add);
+    recordList.stream()
+            .filter(row -> !deletedIds.contains(row.getField("id")))
+            .map(record -> new InternalRecordWrapper(table.schema().asStruct()).wrap(record))
+            .forEach(set::add);
     return set;
   }
 }

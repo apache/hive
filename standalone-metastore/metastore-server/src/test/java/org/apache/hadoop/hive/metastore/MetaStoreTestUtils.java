@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,7 +273,7 @@ public class MetaStoreTestUtils {
     } else {
       uri = InetAddress.getLocalHost().getHostName();
     }
-    uri = uri + ":" + port;
+    uri = IPStackUtils.concatHostPort(uri, port);
     int retries = 0;
     while (true) {
       try {

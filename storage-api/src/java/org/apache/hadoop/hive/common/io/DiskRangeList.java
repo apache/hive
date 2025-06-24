@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.io;
 
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,10 @@ import org.slf4j.LoggerFactory;
  * Java also doesn't support multiple inheritance, so this cannot be done as "aspect"... */
 public class DiskRangeList extends DiskRange {
   private static final Logger LOG = LoggerFactory.getLogger(DiskRangeList.class);
+  @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE",
+          justification = "Changing these linkedlist attributes to be accessible via getter-setter methods will " +
+                  "lead to EI_EXPOSE_REP spotbug which will anyway have to be suppressed, in addition these " +
+                  "getter-setters will lead to a performance overhead, hence suppressing")
   public DiskRangeList prev, next;
 
   public DiskRangeList(long offset, long end) {
@@ -246,6 +251,7 @@ public class DiskRangeList extends DiskRange {
   public static class CreateHelper {
     private DiskRangeList tail = null, head;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Intended")
     public DiskRangeList getTail() {
       return tail;
     }
@@ -264,6 +270,7 @@ public class DiskRangeList extends DiskRange {
       }
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Intended")
     public DiskRangeList get() {
       return head;
     }
@@ -281,6 +288,7 @@ public class DiskRangeList extends DiskRange {
    * mutation. extract() can be used to obtain the modified list.
    */
   public static class MutateHelper extends DiskRangeList {
+    @SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Intended")
     public MutateHelper(DiskRangeList head) {
       super(-1, -1);
       assert head != null;

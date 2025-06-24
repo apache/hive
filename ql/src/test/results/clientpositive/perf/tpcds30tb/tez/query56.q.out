@@ -350,7 +350,7 @@ STAGE PLANS:
                   alias: item
                   Statistics: Num rows: 462000 Data size: 87318000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (i_color) IN ('orchid              ', 'chiffon             ', 'lace                ') (type: boolean)
+                    predicate: (i_color) IN ('chiffon             ', 'lace                ', 'orchid              ') (type: boolean)
                     Statistics: Num rows: 14589 Data size: 2757321 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i_item_id (type: string)

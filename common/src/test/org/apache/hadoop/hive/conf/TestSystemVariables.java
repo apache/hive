@@ -31,7 +31,7 @@ public class TestSystemVariables {
   public static final String SYSTEM = "system";
 
   private String makeVarName(String prefix, String value) {
-    return String.format("${%s:%s}", prefix, value);
+    return "${%s:%s}".formatted(prefix, value);
   }
 
   @Test

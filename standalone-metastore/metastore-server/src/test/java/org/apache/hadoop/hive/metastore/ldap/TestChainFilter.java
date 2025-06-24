@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.junit.Before;
@@ -93,7 +94,7 @@ public class TestChainFilter {
 
   @Test(expected = AuthenticationException.class)
   public void testApplyNegative() throws AuthenticationException, NamingException, IOException {
-    doThrow(AuthenticationException.class).when(filter3).apply((DirSearch) anyObject(), anyString());
+    doThrow(AuthenticationException.class).when(filter3).apply(ArgumentMatchers.<DirSearch>any(), anyString());
 
     when(factory1.getInstance(any(Configuration.class))).thenReturn(filter1);
     when(factory3.getInstance(any(Configuration.class))).thenReturn(filter3);

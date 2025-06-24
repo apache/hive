@@ -46,4 +46,9 @@ public class HiveSqlMinMaxAggFunction extends SqlAggFunction {
     }
     return super.unwrap(clazz);
   }
+
+  @Override
+  public SqlAggFunction getRollup() {
+    return this;
+  }
 }

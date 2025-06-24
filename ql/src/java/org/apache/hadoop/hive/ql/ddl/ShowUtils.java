@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.quantilescommon.QuantileSearchCriteria;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -257,7 +258,7 @@ public final class ShowUtils {
     final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(buffer));
     // to keep the visualization compact, we print only the quartiles (Q1, Q2 and Q3),
     // as min and max are displayed as separate statistics already
-    final float[] quantiles = kll.getQuantiles(new double[]{ 0.25, 0.5, 0.75 });
+    final float[] quantiles = kll.getQuantiles(new double[]{ 0.25, 0.5, 0.75 },  QuantileSearchCriteria.EXCLUSIVE);
 
     Function<Float, Object> converter;
 

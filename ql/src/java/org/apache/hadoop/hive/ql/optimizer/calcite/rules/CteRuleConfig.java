@@ -17,25 +17,39 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.util.ImmutableBeans;
 
 import java.util.List;
 import java.util.Map;
 
-public interface CteRuleConfig extends RelRule.Config {
-  CteRuleConfig DEFAULT = EMPTY.withOperandSupplier(b -> b.operand(TableScan.class).noInputs()).as(CteRuleConfig.class);
+public class CteRuleConfig extends HiveRuleConfig {
+  public static CteRuleConfig config() {
+    return new CteRuleConfig().withOperandSupplier(b -> b.operand(TableScan.class).noInputs()).as(CteRuleConfig.class);
+  }
 
-  CteRuleConfig withTableOccurrences(Map<List<String>, Integer> tableOccurrences);
-  @ImmutableBeans.Property
-  Map<List<String>, Integer> getTableOccurrences();
-  CteRuleConfig withReferenceThreshold(int referenceThreshold);
-  @ImmutableBeans.Property
-  int referenceThreshold();
+  private Map<List<String>, Integer> tableOccurences;
+  private int referenceThreshold;
+
+  public CteRuleConfig withTableOccurrences(Map<List<String>, Integer> tableOccurrences) {
+    this.tableOccurences = tableOccurrences;
+    return this;
+  }
+
+  public Map<List<String>, Integer> getTableOccurrences() {
+    return this.tableOccurences;
+  }
+
+  public CteRuleConfig withReferenceThreshold(int referenceThreshold) {
+    this.referenceThreshold = referenceThreshold;
+    return this;
+  }
+
+  public int referenceThreshold() {
+    return referenceThreshold;
+  }
 
   @Override
-  default RelOptRule toRule() {
+  public RelOptRule toRule() {
     throw new IllegalStateException("Must not be called");
   }
 }

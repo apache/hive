@@ -242,9 +242,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t
-          filterExpr: (i BETWEEN 8 AND 9 or i BETWEEN 9 AND 10) (type: boolean)
+          filterExpr: i BETWEEN 8 AND 10 (type: boolean)
           Filter Operator
-            predicate: (i BETWEEN 8 AND 9 or i BETWEEN 9 AND 10) (type: boolean)
+            predicate: i BETWEEN 8 AND 10 (type: boolean)
             Select Operator
               expressions: i (type: int)
               outputColumnNames: _col0
@@ -329,9 +329,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t
-          filterExpr: (i NOT BETWEEN 6 AND 7 and i NOT BETWEEN 9 AND 10) (type: boolean)
+          filterExpr: ((i < 6) or (i > 10) or ((i > 7) and (i < 9))) (type: boolean)
           Filter Operator
-            predicate: (i NOT BETWEEN 6 AND 7 and i NOT BETWEEN 9 AND 10) (type: boolean)
+            predicate: ((i < 6) or (i > 10) or ((i > 7) and (i < 9))) (type: boolean)
             Select Operator
               expressions: i (type: int)
               outputColumnNames: _col0
