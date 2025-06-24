@@ -1,9 +1,6 @@
-dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/a_ext_create_tab1;
-dfs -touchz ${system:test.tmp.dir}/a_ext_create_tab1/1.txt;
-dfs -chmod 555 ${system:test.tmp.dir}/a_ext_create_tab1/1.txt;
-
-dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/a_ext_create_tab2;
-dfs -chmod 555 ${system:test.tmp.dir}/a_ext_create_tab2;
+dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/t1;
+dfs -touchz ${system:test.tmp.dir}/t1/1.txt;
+dfs -chmod 555 ${system:test.tmp.dir}/t1/1.txt;
 
 set hive.metastore.pre.event.listeners=org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizer;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.fallback.FallbackHiveAuthorizerFactory;
