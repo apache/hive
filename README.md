@@ -16,6 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 -->
+
+just a test
 Apache Hive (TM)
 ================
 [![Master Build Status](https://travis-ci.org/apache/hive.svg?branch=master)](https://travis-ci.org/apache/hive/branches)
