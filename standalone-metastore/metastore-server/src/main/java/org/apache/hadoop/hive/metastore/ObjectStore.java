@@ -9678,8 +9678,25 @@ public class ObjectStore implements RawStore, Configurable {
                                                       List<TransactionalMetaStoreEventListener> listeners,
                                                       String validWriteIds, long writeId)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
+
+    return new GetHelper<Map<String, Map<String, String>>>(tbl.getCatName(),
+        tbl.getDbName(), tbl.getTableName(), true, false) {
+      @Override
+      protected String describeResult() {
+        return "Map of partition key to column stats if successful";
+      }
+      @Override
+      protected Map<String, Map<String, String>> getSqlResult(GetHelper<Map<String, Map<String, String>>> ctx)
+          throws MetaException {
+        return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
             listeners, validWriteIds, writeId);
+      }
+      @Override
+      protected Map<String, Map<String, String>> getJdoResult(GetHelper<Map<String, Map<String, String>>> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        throw new UnsupportedOperationException("Cannot update partition column statistics with JDO, make sure direct SQL is enabled");
+      }
+    }.run(false);
   }
 
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, String engine)

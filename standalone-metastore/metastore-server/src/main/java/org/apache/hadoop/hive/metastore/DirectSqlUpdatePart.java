@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 
 import javax.jdo.PersistenceManager;
-import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -473,10 +472,8 @@ class DirectSqlUpdatePart {
                                                       List<TransactionalMetaStoreEventListener> transactionalListeners)
           throws MetaException {
 
-    Transaction tx = pm.currentTransaction();
     try {
       dbType.lockInternal();
-      tx.begin();
       JDOConnection jdoConn = null;
       Map<String, Map<String, String>> result;
       try {
@@ -519,16 +516,12 @@ class DirectSqlUpdatePart {
       } finally {
         closeDbConn(jdoConn);
       }
-      tx.commit();
       return result;
     } catch (Exception e) {
       LOG.error("Unable to update Column stats for  " + tbl.getTableName(), e);
       throw new MetaException("Unable to update Column stats for  " + tbl.getTableName()
               + " due to: "  + e.getMessage());
     } finally {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
       dbType.unlockInternal();
     }
   }
