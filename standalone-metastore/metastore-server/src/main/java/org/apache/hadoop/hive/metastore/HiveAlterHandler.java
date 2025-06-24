@@ -420,35 +420,30 @@ public class HiveAlterHandler implements AlterHandler {
               req.setCatName(catName);
               req.setMaxParts((short) -1);
               parts = handler.get_partitions_req(req).getPartitions();
-              Table finalOldt = oldt;
+              Table table = oldt;
               int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
-                      MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+                  MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
               Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
                 @Override
                 public List<Void> run(List<Partition> input) throws Exception {
                   List<Partition> oldParts = new ArrayList<>(input.size());
                   List<List<String>> partVals = input.stream().map(Partition::getValues).collect(Collectors.toList());
-                  // update changed properties (stats)
                   for (Partition part : input) {
                     Partition oldPart = new Partition(part);
                     List<FieldSchema> oldCols = part.getSd().getCols();
                     part.getSd().setCols(newt.getSd().getCols());
                     List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catalogName, databaseName,
-                            tableName, part.getValues(), oldCols, finalOldt, part, null, null);
+                        tableName, part.getValues(), oldCols, table, part, null, null);
                     assert (colStats.isEmpty());
                     if (!cascade) {
+                      // update changed properties (stats)
                       oldPart.setParameters(part.getParameters());
                       oldParts.add(oldPart);
                     }
                   }
                   Deadline.checkTimeout();
-                  if (cascade) {
-                    msdb.alterPartitions(catalogName, databaseName, tableName, partVals, input, newt.getWriteId(),
-                            writeIdList);
-                  } else {
-                    msdb.alterPartitions(catalogName, newDbName, newTblName, partVals, oldParts, newt.getWriteId(),
-                            writeIdList);
-                  }
+                  msdb.alterPartitions(catalogName, databaseName, tableName,
+                      partVals, (cascade) ? input : oldParts, newt.getWriteId(), writeIdList);
                   return Collections.emptyList();
                 }
               });
