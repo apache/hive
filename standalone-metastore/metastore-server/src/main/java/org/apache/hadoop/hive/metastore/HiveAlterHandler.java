@@ -54,8 +54,10 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -351,19 +353,6 @@ public class HiveAlterHandler implements AlterHandler {
           String oldTblLocPath = srcPath.toUri().getPath();
           String newTblLocPath = dataWasMoved ? destPath.toUri().getPath() : null;
 
-          // also the location field in partition
-          parts = msdb.getPartitions(catalogName, databaseName, tableName, -1);
-          for (Partition part : parts) {
-            String oldPartLoc = part.getSd().getLocation();
-            if (dataWasMoved && oldPartLoc.contains(oldTblLocPath)) {
-              URI oldUri = new Path(oldPartLoc).toUri();
-              String newPath = oldUri.getPath().replace(oldTblLocPath, newTblLocPath);
-              Path newPartLocPath = new Path(oldUri.getScheme(), oldUri.getAuthority(), newPath);
-              part.getSd().setLocation(newPartLocPath.toString());
-            }
-            part.setDbName(newDbName);
-            part.setTableName(newTblName);
-          }
           // Do not verify stats parameters on a partitioned table.
           msdb.alterTable(catalogName, databaseName, tableName, newt, null);
           int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
@@ -371,6 +360,23 @@ public class HiveAlterHandler implements AlterHandler {
 
           // alterPartition is only for changing the partition location in the table rename
           if (dataWasMoved) {
+            PartitionsRequest req = new PartitionsRequest(newDbName, newTblName);
+            req.setCatName(catName);
+            req.setMaxParts((short) -1);
+            parts = handler.get_partitions_req(req).getPartitions();
+
+            for (Partition part : parts) {
+              String oldPartLoc = part.getSd().getLocation();
+              if (oldPartLoc.contains(oldTblLocPath)) {
+                URI oldUri = new Path(oldPartLoc).toUri();
+                String newPath = oldUri.getPath().replace(oldTblLocPath, newTblLocPath);
+                Path newPartLocPath = new Path(oldUri.getScheme(), oldUri.getAuthority(), newPath);
+                part.getSd().setLocation(newPartLocPath.toString());
+              }
+              part.setDbName(newDbName);
+              part.setTableName(newTblName);
+            }
+
             Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
               @Override
               public List<Void> run(List<Partition> input) throws Exception {
@@ -410,7 +416,10 @@ public class HiveAlterHandler implements AlterHandler {
             msdb.alterTable(catalogName, databaseName, tableName, newt, null);
 
             if (cascade || retainOnColRemoval) {
-              parts = msdb.getPartitions(catalogName, databaseName, tableName, -1);
+              PartitionsRequest req = new PartitionsRequest(dbname, name);
+              req.setCatName(catName);
+              req.setMaxParts((short) -1);
+              parts = handler.get_partitions_req(req).getPartitions();
               Table finalOldt = oldt;
               int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
                       MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
@@ -469,17 +478,13 @@ public class HiveAlterHandler implements AlterHandler {
       }
       // commit the changes
       success = msdb.commitTransaction();
-    } catch (InvalidObjectException e) {
+    } catch (InvalidOperationException | MetaException e) {
+      throw e;
+    } catch (TException e) {
       LOG.debug("Failed to get object from Metastore ", e);
       throw new InvalidOperationException(
           "Unable to change partition or table."
               + " Check metastore logs for detailed stack." + e.getMessage());
-    }
-    catch (NoSuchObjectException e) {
-      LOG.debug("Object not found in metastore ", e);
-      throw new InvalidOperationException(
-          "Unable to change partition or table. Object " +  e.getMessage() + " does not exist."
-              + " Check metastore logs for detailed stack.");
     } finally {
       if (success) {
         // Txn was committed successfully.

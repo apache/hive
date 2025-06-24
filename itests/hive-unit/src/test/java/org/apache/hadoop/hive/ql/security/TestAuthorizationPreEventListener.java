@@ -240,6 +240,8 @@ public class TestAuthorizationPreEventListener {
 
 
     driver.run(String.format("alter table %s rename to %s", tblName, renamed));
+    // remove the last auth call, which is for the get_partitions_req
+    authCalls.remove(authCalls.size() - 1);
     listSize = authCalls.size();
 
     Table renamedTableFromEvent = (
