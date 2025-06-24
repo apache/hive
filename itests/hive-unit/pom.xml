@@ -549,6 +549,33 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.junit.jupiter:junit-jupiter</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>
+                    Banned jupiter dependency was found!
+                    Only remove this rule if you confirmed that adding jupiter dependency
+                    to the project won't make unit tests silently skipped.
+                  </message>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
