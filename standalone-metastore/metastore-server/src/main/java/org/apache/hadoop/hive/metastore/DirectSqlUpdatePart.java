@@ -744,7 +744,7 @@ class DirectSqlUpdatePart {
       throws MetaException {
     Map<Long, Long> sdIdToCdId = new HashMap<>();
     Map<Long, Long> sdIdToSerdeId = new HashMap<>();
-    List<Long> cdIds = new ArrayList<>();
+    Set<Long> cdIds = new HashSet<>();
     List<Long> validSdIds = filterIdsByNonNullValue(new ArrayList<>(idToSd.keySet()), idToSd);
     Batchable.runBatched(maxBatchSize, validSdIds, new Batchable<Long, Void>() {
       @Override
@@ -793,7 +793,7 @@ class DirectSqlUpdatePart {
     updateBucketColsInBatch(idToBucketCols, validSdIds);
     updateSortColsInBatch(idToSortCols, validSdIds);
     updateSkewedInfoInBatch(idToSkewedInfo, validSdIds);
-    Map<Long, Long> sdIdToNewCdId = updateCDInBatch(cdIds, validSdIds, sdIdToCdId, sdIdToNewColumns);
+    Map<Long, Long> sdIdToNewCdId = updateCDInBatch(cdIds.stream().toList(), validSdIds, sdIdToCdId, sdIdToNewColumns);
     updateSerdeInBatch(serdeIds, serdeIdToSerde);
     updateParamTableInBatch("\"SERDE_PARAMS\"", "\"SERDE_ID\"", serdeIds, serdeParamsOpt);
 
@@ -1158,6 +1158,10 @@ class DirectSqlUpdatePart {
     Map<Long, List<Pair<Integer, Integer>>> oldCdIdToColIdxPairs = new HashMap<>();
     for (Long sdId : sdIds) {
       Long cdId = sdIdToCdId.get(sdId);
+      if (oldCdIdToNewCdId.containsKey(cdId)) {
+        sdIdToNewCdId.put(sdId, oldCdIdToNewCdId.get(cdId));
+        continue;
+      }
       List<Pair<Integer, FieldSchema>> cols = cdIdToColIdxPair.get(cdId);
       // Placeholder to avoid IndexOutOfBoundsException.
       List<FieldSchema> oldCols = new ArrayList<>(Collections.nCopies(cols.size(), null));
