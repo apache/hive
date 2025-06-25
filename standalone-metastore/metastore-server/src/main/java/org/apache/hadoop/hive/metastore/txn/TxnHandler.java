@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
+import org.apache.hadoop.hive.metastore.api.ReplayedTxnsForPolicyResult;
 import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -656,6 +657,21 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException {
     new ReplTableWriteIdStateFunction(rqst, mutexAPI, transactionalListeners).execute(jdbcResource);
   }
+
+  /**
+   *
+    * @param replPolicy replication policy for which we want to get the replayed transactions
+   * @return Map of source and target transaction ids for the given replication policy.
+   */
+  @Override
+  public ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) {
+    try {
+      return jdbcResource.execute(new GetReplayedTxnsForPolicyHandler(replPolicy));
+    } catch (MetaException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 
   @Override
   public GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst) throws MetaException {
