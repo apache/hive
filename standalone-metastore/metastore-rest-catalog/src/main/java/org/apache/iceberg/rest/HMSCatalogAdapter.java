@@ -53,6 +53,7 @@ import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 import org.apache.iceberg.rest.requests.CommitTransactionRequest;
 import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
@@ -123,13 +124,6 @@ public class HMSCatalogAdapter implements RESTClient {
     this.catalog = catalog;
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
-  }
-
-  enum HTTPMethod {
-    GET,
-    HEAD,
-    POST,
-    DELETE
   }
 
   enum Route {
