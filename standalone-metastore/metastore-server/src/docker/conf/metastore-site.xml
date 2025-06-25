@@ -16,28 +16,20 @@
   limitations under the License.
 -->
 <configuration>
-    <property>
-        <name>metastore.warehouse.dir</name>
-        <value>/opt/hive/data/warehouse</value>
-    </property>
-    <property>
-        <name>metastore.compactor.initiator.on</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>metastore.compactor.cleaner.on</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>metastore.event.db.notification.api.auth</name>
-        <value>false</value>
-    </property>
-    <property>
-        <name>metastore.catalog.servlet.port</name>
-        <value>9001</value>
-    </property>
-    <property>
-        <name>metastore.catalog.servlet.auth</name>
-        <value>none</value>
-    </property>
+  <property>
+    <name>metastore.warehouse.dir</name>
+    <value>/opt/hive/data/warehouse</value>
+  </property>
+  <property>
+    <name>metastore.event.db.notification.api.auth</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>metastore.catalog.servlet.port</name>
+    <value>9001</value>
+  </property>
+  <property>
+    <name>metastore.catalog.servlet.auth</name>
+    <value>none</value>
+  </property>
 </configuration>
