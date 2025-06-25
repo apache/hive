@@ -1143,7 +1143,7 @@ public class StatsRulesProcFactory {
               value = Integer.parseInt(boundValue);
             }
             long maxValue = cs.getRange().maxValue.longValue();
-            int minValue = cs.getRange().minValue.intValue();
+            long minValue = cs.getRange().minValue.longValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
                 return currNumRows;
