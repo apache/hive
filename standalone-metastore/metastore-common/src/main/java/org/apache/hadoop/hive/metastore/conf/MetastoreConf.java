@@ -1853,26 +1853,26 @@ public class MetastoreConf {
             new StringSetValidator("simple", "jwt"),
         "Property-maps servlet authentication method (simple or jwt)."
     ),
-    ICEBERG_CATALOG_SERVLET_FACTORY("metastore.iceberg.catalog.servlet.factory",
-            "hive.metastore.iceberg.catalog.servlet.factory",
-            "org.apache.iceberg.rest.HMSCatalogFactory",
-            "HMS Iceberg Catalog servlet factory class name."
+    CATALOG_SERVLET_FACTORY("metastore.catalog.servlet.factory",
+        "hive.metastore.catalog.servlet.factory",
+        "org.apache.iceberg.rest.HMSCatalogFactory",
+        "HMS Catalog servlet factory class name. The default serves Iceberg REST API."
             + "The factory needs to expose a method: "
             + "public static HttpServlet createServlet(Configuration configuration);"
+    ),
+    CATALOG_SERVLET_PORT("metastore.catalog.servlet.port",
+        "hive.metastore.catalog.servlet.port", -1,
+        "HMS Catalog servlet server port. Negative value disables the servlet," +
+            " 0 will let the system determine the catalog server port," +
+            " positive value will be used as-is."
+    ),
+    CATALOG_SERVLET_AUTH("metastore.catalog.servlet.auth",
+        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("none", "simple", "jwt"),
+        "HMS Catalog servlet authentication method (none, simple, or jwt)."
     ),
     ICEBERG_CATALOG_SERVLET_PATH("metastore.iceberg.catalog.servlet.path",
         "hive.metastore.iceberg.catalog.servlet.path", "iceberg",
         "HMS Iceberg Catalog servlet path component of URL endpoint."
-    ),
-    ICEBERG_CATALOG_SERVLET_PORT("metastore.iceberg.catalog.servlet.port",
-        "hive.metastore.iceberg.catalog.servlet.port", -1,
-        "HMS Iceberg Catalog servlet server port. Negative value disables the servlet," +
-            " 0 will let the system determine the catalog server port," +
-            " positive value will be used as-is."
-    ),
-    ICEBERG_CATALOG_SERVLET_AUTH("metastore.iceberg.catalog.servlet.auth",
-        "hive.metastore.iceberg.catalog.servlet.auth", "jwt", new StringSetValidator("simple", "jwt"),
-        "HMS Iceberg Catalog servlet authentication method (simple or jwt)."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
         "hive.metastore.iceberg.catalog.cache.expiry", -1,

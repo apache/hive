@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getModelIdentity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,11 +42,6 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MStringList;
-import org.datanucleus.ExecutionContext;
-import org.datanucleus.api.jdo.JDOPersistenceManager;
-import org.datanucleus.metadata.AbstractClassMetaData;
-import org.datanucleus.metadata.AbstractMemberMetaData;
-import org.datanucleus.metadata.IdentityType;
 
 /**
  * This class contains the methods to insert into tables on the underlying database using direct SQL
@@ -66,16 +62,6 @@ class DirectSqlInsertPart {
    */
   interface BatchExecutionContext {
     void execute(String batchQueryText, int batchRowCount) throws MetaException;
-  }
-
-  private Long getDataStoreId(Class<?> modelClass) throws MetaException {
-    ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
-    AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
-    if (cmd.getIdentityType() == IdentityType.DATASTORE) {
-      return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, null);
-    } else {
-      throw new MetaException("Identity type is not datastore.");
-    }
   }
 
   private void insertInBatch(String tableName, String columns, int columnCount, int rowCount,
@@ -751,24 +737,24 @@ class DirectSqlInsertPart {
           || sd.getCD().getCols() == null) {
         throw new MetaException("Invalid partition");
       }
-      Long serDeId = getDataStoreId(MSerDeInfo.class);
+      Long serDeId = getModelIdentity(pm, MSerDeInfo.class);
       serdeIdToSerDeInfo.put(serDeId, sd.getSerDeInfo());
 
       Long cdId;
       LongIdentity storeId = (LongIdentity) pm.getObjectId(sd.getCD());
       if (storeId == null) {
-        cdId = getDataStoreId(MColumnDescriptor.class);
+        cdId = getModelIdentity(pm, MColumnDescriptor.class);
         cdIdToColumnDescriptor.put(cdId, sd.getCD());
       } else {
         cdId = (Long) storeId.getKeyAsObject();
       }
 
-      Long sdId = getDataStoreId(MStorageDescriptor.class);
+      Long sdId = getModelIdentity(pm, MStorageDescriptor.class);
       sdIdToStorageDescriptor.put(sdId, sd);
       sdIdToSerdeId.put(sdId, serDeId);
       sdIdToCdId.put(sdId, cdId);
 
-      Long partId = getDataStoreId(MPartition.class);
+      Long partId = getModelIdentity(pm, MPartition.class);
       partIdToPartition.put(partId, part);
       partIdToSdId.put(partId, sdId);
 
@@ -781,7 +767,7 @@ class DirectSqlInsertPart {
       if (CollectionUtils.isNotEmpty(sd.getSkewedColValues())) {
         int skewedValCount = sd.getSkewedColValues().size();
         for (int i = 0; i < skewedValCount; i++) {
-          Long stringListId = getDataStoreId(MStringList.class);
+          Long stringListId = getModelIdentity(pm, MStringList.class);
           stringListIds.add(stringListId);
           stringListIdToSdId.put(stringListId, sdId);
           List<String> stringList = sd.getSkewedColValues().get(i).getInternalList();
@@ -795,13 +781,13 @@ class DirectSqlInsertPart {
 
       List<MPartitionPrivilege> partPrivileges = partPrivilegesList.get(index);
       for (MPartitionPrivilege partPrivilege : partPrivileges) {
-        Long partGrantId = getDataStoreId(MPartitionPrivilege.class);
+        Long partGrantId = getModelIdentity(pm, MPartitionPrivilege.class);
         partGrantIdToPrivilege.put(partGrantId, partPrivilege);
         partGrantIdToPartId.put(partGrantId, partId);
       }
       List<MPartitionColumnPrivilege> partColPrivileges = partColPrivilegesList.get(index);
       for (MPartitionColumnPrivilege partColPrivilege : partColPrivileges) {
-        Long partColumnGrantId = getDataStoreId(MPartitionColumnPrivilege.class);
+        Long partColumnGrantId = getModelIdentity(pm, MPartitionColumnPrivilege.class);
         partColumnGrantIdToPrivilege.put(partColumnGrantId, partColPrivilege);
         partColumnGrantIdToPartId.put(partColumnGrantId, partId);
       }

@@ -33,11 +33,11 @@
         <value>false</value>
     </property>
     <property>
-        <name>hive.metastore.iceberg.catalog.servlet.port</name>
+        <name>metastore.catalog.servlet.port</name>
         <value>9001</value>
     </property>
     <property>
-        <name>hive.metastore.iceberg.catalog.servlet.auth</name>
-        <value>simple</value>
+        <name>metastore.catalog.servlet.auth</name>
+        <value>none</value>
     </property>
 </configuration>
