@@ -945,12 +945,6 @@ public abstract class BaseMetaStoreClientProxy extends NormalizedMetaStoreClient
   }
 
   @Override
-  public CompactionResponse compact2(String dbname, String tableName, String partitionName,
-      CompactionType type, Map<String, String> tblproperties) throws TException {
-    return delegate.compact2(dbname, tableName, partitionName, type, tblproperties);
-  }
-
-  @Override
   public CompactionResponse compact2(CompactionRequest request) throws TException {
     return delegate.compact2(request);
   }

@@ -1445,7 +1445,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
       partNames.add("pcol1=" + partVal);
     }
     // Truncate a table
-    client.truncateTable(catName, dbName, tableNames[0], partNames);
+    client.truncateTable(catName, dbName, tableNames[0], null, partNames, null, -1, true, null);
 
     // Truncate a table in the wrong catalog
     try {
@@ -1561,8 +1561,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     try {
       List<String> partNames = client.listPartitionNames(partitionedTable.getDbName(),
           partitionedTable.getTableName(), (short) -1);
-      client.truncateTable("nosuch", partitionedTable.getDbName(), partitionedTable.getTableName(),
-          partNames);
+      client.truncateTable("nosuch", partitionedTable.getDbName(), partitionedTable.getTableName(), null,
+          partNames, null, -1, true, null);
       Assert.fail(); // For reasons I don't understand and am too lazy to debug at the moment the
       // NoSuchObjectException gets swallowed by a TApplicationException in remote mode.
     } catch (TApplicationException|NoSuchObjectException e) {

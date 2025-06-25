@@ -296,7 +296,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     Partition newPart =
         client.getPartition(catName, dbName, tableName, Collections.singletonList("a0"));
     newPart.getParameters().put("test_key", "test_value");
-    client.alter_partition(catName, dbName, tableName, newPart);
+    client.alter_partition(catName, dbName, tableName, newPart, null);
 
     Partition fetched =
         client.getPartition(catName, dbName, tableName, Collections.singletonList("a0"));
@@ -309,7 +309,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     Partition newPart1 =
         client.getPartition(catName, dbName, tableName, Collections.singletonList("a2"));
     newPart1.getSd().setLocation(MetaStoreTestUtils.getTestWarehouseDir("somewhere"));
-    client.alter_partitions(catName, dbName, tableName, Arrays.asList(newPart, newPart1));
+    client.alter_partitions(catName, dbName, tableName, Arrays.asList(newPart, newPart1),
+        new EnvironmentContext(), null, -1);
     fetched =
         client.getPartition(catName, dbName, tableName, Collections.singletonList("a1"));
     Assert.assertEquals(catName, fetched.getCatName());
@@ -417,7 +418,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   public void testAlterPartitionBogusCatalogName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition("nosuch", DB_NAME, TABLE_NAME, partitions.get(3));
+    client.alter_partition("nosuch", DB_NAME, TABLE_NAME, partitions.get(3), null);
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -704,7 +705,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   public void testAlterPartitionsBogusCatalogName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part));
+    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part),
+        new EnvironmentContext(),  null, -1);
   }
 
   @Test(expected = InvalidOperationException.class)

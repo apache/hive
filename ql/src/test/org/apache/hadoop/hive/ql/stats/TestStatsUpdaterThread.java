@@ -709,7 +709,7 @@ public class TestStatsUpdaterThread {
       IMetaStoreClient msClient, String tblName, String partName, String val) throws Exception {
     Partition part = msClient.getPartition(ss.getCurrentDatabase(), tblName, partName);
     part.getParameters().put(StatsUpdaterThread.SKIP_STATS_AUTOUPDATE_PROPERTY, val);
-    msClient.alter_partition(part.getCatName(), part.getDbName(), tblName, part);
+    msClient.alter_partition(part.getCatName(), part.getDbName(), tblName, part, null);
   }
 
   private void verifyAndUnsetColStats(
@@ -759,7 +759,7 @@ public class TestStatsUpdaterThread {
 
   private void verifyStatsUpToDate(String tbl, List<String> cols, IMetaStoreClient msClient,
       String validWriteIds, boolean isUpToDate) throws Exception {
-    Table table = msClient.getTable(ss.getCurrentCatalog(), ss.getCurrentDatabase(), tbl, validWriteIds);
+    Table table = msClient.getTable(ss.getCurrentCatalog(), ss.getCurrentDatabase(), tbl, validWriteIds, false, null);
     verifyStatsUpToDate(table.getParameters(), cols, isUpToDate);
   }
 

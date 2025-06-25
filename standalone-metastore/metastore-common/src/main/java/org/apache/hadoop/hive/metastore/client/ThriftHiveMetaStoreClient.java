@@ -3099,26 +3099,6 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
   }
 
   @Override
-  public CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
-      Map<String, String> tblproperties) throws TException {
-    CompactionRequest cr = new CompactionRequest();
-    if (dbname == null) {
-      cr.setDbname(DEFAULT_DATABASE_NAME);
-    } else {
-      cr.setDbname(dbname);
-    }
-    cr.setTablename(tableName);
-    if (partitionName != null) {
-      cr.setPartitionname(partitionName);
-    }
-    cr.setType(type);
-    cr.setProperties(tblproperties);
-    cr.setInitiatorId(JavaUtils.hostname() + "-" + MANUALLY_INITIATED_COMPACTION);
-    cr.setInitiatorVersion(ThriftHiveMetaStoreClient.class.getPackage().getImplementationVersion());
-    return client.compact2(cr);
-  }
-
-  @Override
   public CompactionResponse compact2(CompactionRequest request) throws TException {
     return client.compact2(request);
   }
