@@ -50,6 +50,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -4277,6 +4278,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     rqst.setTxn_type(txnType);
     client.abort_txn(rqst);
   }
+
+
+  @Override
+  public ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) throws NoSuchTxnException, TException{
+    return client.get_replayed_txns_for_policy(replPolicy);
+  }
+
 
   @Override
   public void commitTxn(long txnid) throws TException {
