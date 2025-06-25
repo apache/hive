@@ -797,15 +797,13 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
   }
 
   @Override
-  public void alter_table(String catName, String dbName, String tbl_name,
-      Table new_tbl,
-      EnvironmentContext envContext, String validWriteIds)
-      throws TException {
+  public void alter_table(String catName, String dbName, String tbl_name, Table new_tbl,
+      EnvironmentContext envContext, String validWriteIds) throws TException {
     if (isDefaultCatalog(catName)) {
       Table old_tbl = getTempTable(dbName, tbl_name);
       if (old_tbl != null) {
-        //actually temp table does not support partitions, cascade is not applicable here
-        alterTempTable(dbName, tbl_name, old_tbl, new_tbl, null);
+        // actually temp table does not support partitions, cascade is not applicable here
+        alterTempTable(dbName, tbl_name, old_tbl, new_tbl);
         return;
       }
     }
@@ -942,10 +940,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     return null;
   }
 
-  private void alterTempTable(String dbname, String tbl_name,
-      Table oldt,
-      Table newt,
-      EnvironmentContext envContext) throws TException {
+  private void alterTempTable(String dbname, String tbl_name, Table oldt, Table newt) throws TException {
     dbname = dbname.toLowerCase();
     tbl_name = tbl_name.toLowerCase();
     boolean shouldDeleteColStats = false;
@@ -1029,7 +1024,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     return false;
   }
 
-  private boolean needToUpdateStats(Map<String,String> props, EnvironmentContext environmentContext) {
+  private boolean needToUpdateStats(Map<String,String> props) {
     if (null == props) {
       return false;
     }
@@ -1044,14 +1039,12 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
     }
     //first set basic stats to true
     StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
     //then invalidate column stats
     StatsSetupConst.clearColumnStatsState(props);
     return statsPresent;
   }
 
   private void truncateTempTable(Table table) throws TException {
-
     boolean isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
     try {
       // this is not transactional
@@ -1077,9 +1070,8 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
         }
       }
 
-      EnvironmentContext environmentContext = new EnvironmentContext();
-      if (needToUpdateStats(table.getParameters(), environmentContext)) {
-        alter_table_with_environmentContext(table.getDbName(), table.getTableName(), table, environmentContext);
+      if (needToUpdateStats(table.getParameters())) {
+        alterTempTable(table.getDbName(), table.getTableName(), table, table);
       }
     } catch (Exception e) {
       throw new MetaException(e.getMessage());
