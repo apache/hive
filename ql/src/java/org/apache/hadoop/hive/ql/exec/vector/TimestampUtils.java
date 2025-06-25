@@ -18,21 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.util.concurrent.TimeUnit;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 
 public final class TimestampUtils {
-
-  static final long MILLISECONDS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
-  static final long NANOSECONDS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
-
-  public static long daysToNanoseconds(long daysSinceEpoch) {
-    return DateWritableV2.daysToMillis((int) daysSinceEpoch) * NANOSECONDS_PER_MILLISECOND;
-  }
 
   public static TimestampWritableV2 timestampColumnVectorWritable(
       TimestampColumnVector timestampColVector, int elementNum,
@@ -62,5 +55,10 @@ public final class TimestampUtils {
           ts.getTime(), ts.getNanos()).toString();
     }
     return o.toString();
+  }
+
+  public static Timestamp fromColumnVector(TimestampColumnVector tcv, int row) {
+    return Timestamp.ofEpochSecond(Math.floorDiv(tcv.time[row], 1000L), tcv.nanos[row],
+        tcv.isUTC() ? ZoneOffset.UTC : ZoneId.systemDefault());
   }
 }

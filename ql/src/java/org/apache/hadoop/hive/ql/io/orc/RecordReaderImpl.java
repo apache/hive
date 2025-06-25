@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -53,19 +54,20 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.orc.TypeDescription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.orc.OrcFile;
 
 public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
                               implements RecordReader {
-  static final Logger LOG = LoggerFactory.getLogger(RecordReaderImpl.class);
   private final VectorizedRowBatch batch;
+  private final boolean useUTCTimestamp;
   private int rowInBatch;
   private long baseRow;
 
   protected RecordReaderImpl(ReaderImpl fileReader,
-    Reader.Options options, final Configuration conf) throws IOException {
+      Reader.Options options, final Configuration conf) throws IOException {
     super(fileReader, options);
+    this.useUTCTimestamp = fileReader.isUTC();
     final boolean useDecimal64ColumnVectors = conf != null && HiveConf.getVar(conf,
       HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
     if (useDecimal64ColumnVectors){
@@ -444,7 +446,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static TimestampWritableV2 nextTimestamp(ColumnVector vector,
+  private TimestampWritableV2 nextTimestamp(ColumnVector vector,
                                            int row,
                                            Object previous) {
     if (vector.isRepeating) {
@@ -458,14 +460,15 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
         result = (TimestampWritableV2) previous;
       }
       TimestampColumnVector tcv = (TimestampColumnVector) vector;
-      result.setInternal(tcv.time[row], tcv.nanos[row]);
+      tcv.setIsUTC(useUTCTimestamp);
+      result.set(TimestampUtils.fromColumnVector(tcv, row));
       return result;
     } else {
       return null;
     }
   }
 
-  static OrcStruct nextStruct(ColumnVector vector,
+  private OrcStruct nextStruct(ColumnVector vector,
                               int row,
                               TypeDescription schema,
                               Object previous) {
@@ -493,7 +496,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static OrcUnion nextUnion(ColumnVector vector,
+  private OrcUnion nextUnion(ColumnVector vector,
                             int row,
                             TypeDescription schema,
                             Object previous) {
@@ -518,7 +521,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static ArrayList<Object> nextList(ColumnVector vector,
+  private ArrayList<Object> nextList(ColumnVector vector,
                                     int row,
                                     TypeDescription schema,
                                     Object previous) {
@@ -558,7 +561,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static Map<Object,Object> nextMap(ColumnVector vector,
+  private Map<Object,Object> nextMap(ColumnVector vector,
                                     int row,
                                     TypeDescription schema,
                                     Object previous) {
@@ -573,7 +576,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       TypeDescription valueType = schema.getChildren().get(1);
       LinkedHashMap<Object,Object> result;
       if (previous == null || previous.getClass() != LinkedHashMap.class) {
-        result = new LinkedHashMap<Object,Object>(length);
+        result = new LinkedHashMap<>(length);
       } else {
         result = (LinkedHashMap<Object,Object>) previous;
         // I couldn't think of a good way to reuse the keys and value objects
@@ -590,50 +593,31 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static Object nextValue(ColumnVector vector,
+  private Object nextValue(ColumnVector vector,
                           int row,
                           TypeDescription schema,
                           Object previous) {
-    switch (schema.getCategory()) {
-      case BOOLEAN:
-        return nextBoolean(vector, row, previous);
-      case BYTE:
-        return nextByte(vector, row, previous);
-      case SHORT:
-        return nextShort(vector, row, previous);
-      case INT:
-        return nextInt(vector, row, previous);
-      case LONG:
-        return nextLong(vector, row, previous);
-      case FLOAT:
-        return nextFloat(vector, row, previous);
-      case DOUBLE:
-        return nextDouble(vector, row, previous);
-      case STRING:
-        return nextString(vector, row, previous);
-      case CHAR:
-        return nextChar(vector, row, schema.getMaxLength(), previous);
-      case VARCHAR:
-        return nextVarchar(vector, row, schema.getMaxLength(), previous);
-      case BINARY:
-        return nextBinary(vector, row, previous);
-      case DECIMAL:
-        return nextDecimal(vector, row, previous);
-      case DATE:
-        return nextDate(vector, row, previous);
-      case TIMESTAMP:
-        return nextTimestamp(vector, row, previous);
-      case STRUCT:
-        return nextStruct(vector, row, schema, previous);
-      case UNION:
-        return nextUnion(vector, row, schema, previous);
-      case LIST:
-        return nextList(vector, row, schema, previous);
-      case MAP:
-        return nextMap(vector, row, schema, previous);
-      default:
-        throw new IllegalArgumentException("Unknown type " + schema);
-    }
+      return switch (schema.getCategory()) {
+          case BOOLEAN -> nextBoolean(vector, row, previous);
+          case BYTE -> nextByte(vector, row, previous);
+          case SHORT -> nextShort(vector, row, previous);
+          case INT -> nextInt(vector, row, previous);
+          case LONG -> nextLong(vector, row, previous);
+          case FLOAT -> nextFloat(vector, row, previous);
+          case DOUBLE -> nextDouble(vector, row, previous);
+          case STRING -> nextString(vector, row, previous);
+          case CHAR -> nextChar(vector, row, schema.getMaxLength(), previous);
+          case VARCHAR -> nextVarchar(vector, row, schema.getMaxLength(), previous);
+          case BINARY -> nextBinary(vector, row, previous);
+          case DECIMAL -> nextDecimal(vector, row, previous);
+          case DATE -> nextDate(vector, row, previous);
+          case TIMESTAMP -> nextTimestamp(vector, row, previous);
+          case STRUCT -> nextStruct(vector, row, schema, previous);
+          case UNION -> nextUnion(vector, row, schema, previous);
+          case LIST -> nextList(vector, row, schema, previous);
+          case MAP -> nextMap(vector, row, schema, previous);
+          default -> throw new IllegalArgumentException("Unknown type " + schema);
+      };
   }
 
   /* Routines for copying between VectorizedRowBatches */
@@ -789,18 +773,10 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     castedDestination.noNulls = castedSource.noNulls;
     if (source.isRepeating) {
       castedDestination.isNull[0] = castedSource.isNull[0];
-      for(int c=0; c > castedSource.fields.length; ++c) {
-        copyColumn(castedDestination.fields[c], castedSource.fields[c], 0, 1);
-      }
     } else {
       if (!castedSource.noNulls) {
         for (int r = 0; r < length; ++r) {
           castedDestination.isNull[r] = castedSource.isNull[sourceOffset + r];
-        }
-      } else {
-        for (int c = 0; c > castedSource.fields.length; ++c) {
-          copyColumn(castedDestination.fields[c], castedSource.fields[c],
-              sourceOffset, length);
         }
       }
     }
@@ -829,13 +805,9 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
           castedDestination.tags[r] = castedSource.tags[sourceOffset + r];
         }
       } else {
-        for(int r=0; r < length; ++r) {
+        for (int r=0; r < length; ++r) {
           castedDestination.tags[r] = castedSource.tags[sourceOffset + r];
         }
-      }
-      for(int c=0; c > castedSource.fields.length; ++c) {
-        copyColumn(castedDestination.fields[c], castedSource.fields[c],
-            sourceOffset, length);
       }
     }
   }
@@ -954,7 +926,6 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
    * @param destination the batch to copy into
    * @param source the batch to copy from
    * @param sourceStart the row number to start from in the source
-   * @return the number of rows copied
    */
   void copyIntoBatch(VectorizedRowBatch destination,
                      VectorizedRowBatch source,

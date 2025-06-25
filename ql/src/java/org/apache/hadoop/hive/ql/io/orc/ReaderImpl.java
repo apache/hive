@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.orc.OrcFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +84,9 @@ public class ReaderImpl extends org.apache.orc.impl.ReaderImpl
     return new RecordReaderImpl(this, options, conf);
   }
 
-
+  boolean isUTC() {
+    return useUTCTimestamp;
+  }
 
   @Override
   public RecordReader rows(boolean[] include) throws IOException {

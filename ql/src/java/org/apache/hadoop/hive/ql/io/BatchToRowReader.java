@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -518,7 +519,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
         result = (TimestampWritableV2) previous;
       }
       TimestampColumnVector tcv = (TimestampColumnVector) vector;
-      result.setInternal(tcv.time[row], tcv.nanos[row]);
+      result.set(TimestampUtils.fromColumnVector(tcv, row));
       return result;
     } else {
       return null;
