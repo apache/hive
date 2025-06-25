@@ -178,13 +178,13 @@ class FireEventRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->partitionVals = array();
-                        $_size948 = 0;
-                        $_etype951 = 0;
-                        $xfer += $input->readListBegin($_etype951, $_size948);
-                        for ($_i952 = 0; $_i952 < $_size948; ++$_i952) {
-                            $elem953 = null;
-                            $xfer += $input->readString($elem953);
-                            $this->partitionVals []= $elem953;
+                        $_size939 = 0;
+                        $_etype942 = 0;
+                        $xfer += $input->readListBegin($_etype942, $_size939);
+                        for ($_i943 = 0; $_i943 < $_size939; ++$_i943) {
+                            $elem944 = null;
+                            $xfer += $input->readString($elem944);
+                            $this->partitionVals []= $elem944;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -201,16 +201,16 @@ class FireEventRequest
                 case 7:
                     if ($ftype == TType::MAP) {
                         $this->tblParams = array();
-                        $_size954 = 0;
-                        $_ktype955 = 0;
-                        $_vtype956 = 0;
-                        $xfer += $input->readMapBegin($_ktype955, $_vtype956, $_size954);
-                        for ($_i958 = 0; $_i958 < $_size954; ++$_i958) {
-                            $key959 = '';
-                            $val960 = '';
-                            $xfer += $input->readString($key959);
-                            $xfer += $input->readString($val960);
-                            $this->tblParams[$key959] = $val960;
+                        $_size945 = 0;
+                        $_ktype946 = 0;
+                        $_vtype947 = 0;
+                        $xfer += $input->readMapBegin($_ktype946, $_vtype947, $_size945);
+                        for ($_i949 = 0; $_i949 < $_size945; ++$_i949) {
+                            $key950 = '';
+                            $val951 = '';
+                            $xfer += $input->readString($key950);
+                            $xfer += $input->readString($val951);
+                            $this->tblParams[$key950] = $val951;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -260,8 +260,8 @@ class FireEventRequest
             }
             $xfer += $output->writeFieldBegin('partitionVals', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->partitionVals));
-            foreach ($this->partitionVals as $iter961) {
-                $xfer += $output->writeString($iter961);
+            foreach ($this->partitionVals as $iter952) {
+                $xfer += $output->writeString($iter952);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -277,9 +277,9 @@ class FireEventRequest
             }
             $xfer += $output->writeFieldBegin('tblParams', TType::MAP, 7);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->tblParams));
-            foreach ($this->tblParams as $kiter962 => $viter963) {
-                $xfer += $output->writeString($kiter962);
-                $xfer += $output->writeString($viter963);
+            foreach ($this->tblParams as $kiter953 => $viter954) {
+                $xfer += $output->writeString($kiter953);
+                $xfer += $output->writeString($viter954);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

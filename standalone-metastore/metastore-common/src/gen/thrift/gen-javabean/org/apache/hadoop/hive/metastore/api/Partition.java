@@ -1301,13 +1301,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list404 = iprot.readListBegin();
-                struct.values = new java.util.ArrayList<java.lang.String>(_list404.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem405;
-                for (int _i406 = 0; _i406 < _list404.size; ++_i406)
+                org.apache.thrift.protocol.TList _list394 = iprot.readListBegin();
+                struct.values = new java.util.ArrayList<java.lang.String>(_list394.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem395;
+                for (int _i396 = 0; _i396 < _list394.size; ++_i396)
                 {
-                  _elem405 = iprot.readString();
-                  struct.values.add(_elem405);
+                  _elem395 = iprot.readString();
+                  struct.values.add(_elem395);
                 }
                 iprot.readListEnd();
               }
@@ -1360,15 +1360,15 @@ package org.apache.hadoop.hive.metastore.api;
           case 7: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map407 = iprot.readMapBegin();
-                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map407.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key408;
-                @org.apache.thrift.annotation.Nullable java.lang.String _val409;
-                for (int _i410 = 0; _i410 < _map407.size; ++_i410)
+                org.apache.thrift.protocol.TMap _map397 = iprot.readMapBegin();
+                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map397.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key398;
+                @org.apache.thrift.annotation.Nullable java.lang.String _val399;
+                for (int _i400 = 0; _i400 < _map397.size; ++_i400)
                 {
-                  _key408 = iprot.readString();
-                  _val409 = iprot.readString();
-                  struct.parameters.put(_key408, _val409);
+                  _key398 = iprot.readString();
+                  _val399 = iprot.readString();
+                  struct.parameters.put(_key398, _val399);
                 }
                 iprot.readMapEnd();
               }
@@ -1445,9 +1445,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.values.size()));
-          for (java.lang.String _iter411 : struct.values)
+          for (java.lang.String _iter401 : struct.values)
           {
-            oprot.writeString(_iter411);
+            oprot.writeString(_iter401);
           }
           oprot.writeListEnd();
         }
@@ -1478,10 +1478,10 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter412 : struct.parameters.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter402 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter412.getKey());
-            oprot.writeString(_iter412.getValue());
+            oprot.writeString(_iter402.getKey());
+            oprot.writeString(_iter402.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1586,9 +1586,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetValues()) {
         {
           oprot.writeI32(struct.values.size());
-          for (java.lang.String _iter413 : struct.values)
+          for (java.lang.String _iter403 : struct.values)
           {
-            oprot.writeString(_iter413);
+            oprot.writeString(_iter403);
           }
         }
       }
@@ -1610,10 +1610,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter414 : struct.parameters.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter404 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter414.getKey());
-            oprot.writeString(_iter414.getValue());
+            oprot.writeString(_iter404.getKey());
+            oprot.writeString(_iter404.getValue());
           }
         }
       }
@@ -1643,13 +1643,13 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list415 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.values = new java.util.ArrayList<java.lang.String>(_list415.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem416;
-          for (int _i417 = 0; _i417 < _list415.size; ++_i417)
+          org.apache.thrift.protocol.TList _list405 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.values = new java.util.ArrayList<java.lang.String>(_list405.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem406;
+          for (int _i407 = 0; _i407 < _list405.size; ++_i407)
           {
-            _elem416 = iprot.readString();
-            struct.values.add(_elem416);
+            _elem406 = iprot.readString();
+            struct.values.add(_elem406);
           }
         }
         struct.setValuesIsSet(true);
@@ -1677,15 +1677,15 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(6)) {
         {
-          org.apache.thrift.protocol.TMap _map418 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
-          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map418.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key419;
-          @org.apache.thrift.annotation.Nullable java.lang.String _val420;
-          for (int _i421 = 0; _i421 < _map418.size; ++_i421)
+          org.apache.thrift.protocol.TMap _map408 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
+          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map408.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key409;
+          @org.apache.thrift.annotation.Nullable java.lang.String _val410;
+          for (int _i411 = 0; _i411 < _map408.size; ++_i411)
           {
-            _key419 = iprot.readString();
-            _val420 = iprot.readString();
-            struct.parameters.put(_key419, _val420);
+            _key409 = iprot.readString();
+            _val410 = iprot.readString();
+            struct.parameters.put(_key409, _val410);
           }
         }
         struct.parameters = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(struct.parameters); struct.setParametersIsSet(true);

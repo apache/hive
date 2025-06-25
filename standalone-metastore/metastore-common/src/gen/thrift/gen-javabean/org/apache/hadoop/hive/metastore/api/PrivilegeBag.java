@@ -325,14 +325,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // PRIVILEGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list122 = iprot.readListBegin();
-                struct.privileges = new java.util.ArrayList<HiveObjectPrivilege>(_list122.size);
-                @org.apache.thrift.annotation.Nullable HiveObjectPrivilege _elem123;
-                for (int _i124 = 0; _i124 < _list122.size; ++_i124)
+                org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
+                struct.privileges = new java.util.ArrayList<HiveObjectPrivilege>(_list112.size);
+                @org.apache.thrift.annotation.Nullable HiveObjectPrivilege _elem113;
+                for (int _i114 = 0; _i114 < _list112.size; ++_i114)
                 {
-                  _elem123 = new HiveObjectPrivilege();
-                  _elem123.read(iprot);
-                  struct.privileges.add(_elem123);
+                  _elem113 = new HiveObjectPrivilege();
+                  _elem113.read(iprot);
+                  struct.privileges.add(_elem113);
                 }
                 iprot.readListEnd();
               }
@@ -358,9 +358,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PRIVILEGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.privileges.size()));
-          for (HiveObjectPrivilege _iter125 : struct.privileges)
+          for (HiveObjectPrivilege _iter115 : struct.privileges)
           {
-            _iter125.write(oprot);
+            _iter115.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPrivileges()) {
         {
           oprot.writeI32(struct.privileges.size());
-          for (HiveObjectPrivilege _iter126 : struct.privileges)
+          for (HiveObjectPrivilege _iter116 : struct.privileges)
           {
-            _iter126.write(oprot);
+            _iter116.write(oprot);
           }
         }
       }
@@ -405,14 +405,14 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list127 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.privileges = new java.util.ArrayList<HiveObjectPrivilege>(_list127.size);
-          @org.apache.thrift.annotation.Nullable HiveObjectPrivilege _elem128;
-          for (int _i129 = 0; _i129 < _list127.size; ++_i129)
+          org.apache.thrift.protocol.TList _list117 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.privileges = new java.util.ArrayList<HiveObjectPrivilege>(_list117.size);
+          @org.apache.thrift.annotation.Nullable HiveObjectPrivilege _elem118;
+          for (int _i119 = 0; _i119 < _list117.size; ++_i119)
           {
-            _elem128 = new HiveObjectPrivilege();
-            _elem128.read(iprot);
-            struct.privileges.add(_elem128);
+            _elem118 = new HiveObjectPrivilege();
+            _elem118.read(iprot);
+            struct.privileges.add(_elem118);
           }
         }
         struct.setPrivilegesIsSet(true);

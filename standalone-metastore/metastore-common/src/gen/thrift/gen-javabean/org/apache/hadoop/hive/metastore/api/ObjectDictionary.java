@@ -334,25 +334,25 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // VALUES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map352 = iprot.readMapBegin();
-                struct.values = new java.util.HashMap<java.lang.String,java.util.List<java.nio.ByteBuffer>>(2*_map352.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key353;
-                @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> _val354;
-                for (int _i355 = 0; _i355 < _map352.size; ++_i355)
+                org.apache.thrift.protocol.TMap _map342 = iprot.readMapBegin();
+                struct.values = new java.util.HashMap<java.lang.String,java.util.List<java.nio.ByteBuffer>>(2*_map342.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key343;
+                @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> _val344;
+                for (int _i345 = 0; _i345 < _map342.size; ++_i345)
                 {
-                  _key353 = iprot.readString();
+                  _key343 = iprot.readString();
                   {
-                    org.apache.thrift.protocol.TList _list356 = iprot.readListBegin();
-                    _val354 = new java.util.ArrayList<java.nio.ByteBuffer>(_list356.size);
-                    @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem357;
-                    for (int _i358 = 0; _i358 < _list356.size; ++_i358)
+                    org.apache.thrift.protocol.TList _list346 = iprot.readListBegin();
+                    _val344 = new java.util.ArrayList<java.nio.ByteBuffer>(_list346.size);
+                    @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem347;
+                    for (int _i348 = 0; _i348 < _list346.size; ++_i348)
                     {
-                      _elem357 = iprot.readBinary();
-                      _val354.add(_elem357);
+                      _elem347 = iprot.readBinary();
+                      _val344.add(_elem347);
                     }
                     iprot.readListEnd();
                   }
-                  struct.values.put(_key353, _val354);
+                  struct.values.put(_key343, _val344);
                 }
                 iprot.readMapEnd();
               }
@@ -378,14 +378,14 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST, struct.values.size()));
-          for (java.util.Map.Entry<java.lang.String, java.util.List<java.nio.ByteBuffer>> _iter359 : struct.values.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.util.List<java.nio.ByteBuffer>> _iter349 : struct.values.entrySet())
           {
-            oprot.writeString(_iter359.getKey());
+            oprot.writeString(_iter349.getKey());
             {
-              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter359.getValue().size()));
-              for (java.nio.ByteBuffer _iter360 : _iter359.getValue())
+              oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter349.getValue().size()));
+              for (java.nio.ByteBuffer _iter350 : _iter349.getValue())
               {
-                oprot.writeBinary(_iter360);
+                oprot.writeBinary(_iter350);
               }
               oprot.writeListEnd();
             }
@@ -413,14 +413,14 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
-        for (java.util.Map.Entry<java.lang.String, java.util.List<java.nio.ByteBuffer>> _iter361 : struct.values.entrySet())
+        for (java.util.Map.Entry<java.lang.String, java.util.List<java.nio.ByteBuffer>> _iter351 : struct.values.entrySet())
         {
-          oprot.writeString(_iter361.getKey());
+          oprot.writeString(_iter351.getKey());
           {
-            oprot.writeI32(_iter361.getValue().size());
-            for (java.nio.ByteBuffer _iter362 : _iter361.getValue())
+            oprot.writeI32(_iter351.getValue().size());
+            for (java.nio.ByteBuffer _iter352 : _iter351.getValue())
             {
-              oprot.writeBinary(_iter362);
+              oprot.writeBinary(_iter352);
             }
           }
         }
@@ -431,24 +431,24 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, ObjectDictionary struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map363 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
-        struct.values = new java.util.HashMap<java.lang.String,java.util.List<java.nio.ByteBuffer>>(2*_map363.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _key364;
-        @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> _val365;
-        for (int _i366 = 0; _i366 < _map363.size; ++_i366)
+        org.apache.thrift.protocol.TMap _map353 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.LIST); 
+        struct.values = new java.util.HashMap<java.lang.String,java.util.List<java.nio.ByteBuffer>>(2*_map353.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _key354;
+        @org.apache.thrift.annotation.Nullable java.util.List<java.nio.ByteBuffer> _val355;
+        for (int _i356 = 0; _i356 < _map353.size; ++_i356)
         {
-          _key364 = iprot.readString();
+          _key354 = iprot.readString();
           {
-            org.apache.thrift.protocol.TList _list367 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-            _val365 = new java.util.ArrayList<java.nio.ByteBuffer>(_list367.size);
-            @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem368;
-            for (int _i369 = 0; _i369 < _list367.size; ++_i369)
+            org.apache.thrift.protocol.TList _list357 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+            _val355 = new java.util.ArrayList<java.nio.ByteBuffer>(_list357.size);
+            @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer _elem358;
+            for (int _i359 = 0; _i359 < _list357.size; ++_i359)
             {
-              _elem368 = iprot.readBinary();
-              _val365.add(_elem368);
+              _elem358 = iprot.readBinary();
+              _val355.add(_elem358);
             }
           }
-          struct.values.put(_key364, _val365);
+          struct.values.put(_key354, _val355);
         }
       }
       struct.setValuesIsSet(true);

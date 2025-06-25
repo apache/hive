@@ -114,14 +114,14 @@ class ColumnStatistics
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->statsObj = array();
-                        $_size298 = 0;
-                        $_etype301 = 0;
-                        $xfer += $input->readListBegin($_etype301, $_size298);
-                        for ($_i302 = 0; $_i302 < $_size298; ++$_i302) {
-                            $elem303 = null;
-                            $elem303 = new \metastore\ColumnStatisticsObj();
-                            $xfer += $elem303->read($input);
-                            $this->statsObj []= $elem303;
+                        $_size289 = 0;
+                        $_etype292 = 0;
+                        $xfer += $input->readListBegin($_etype292, $_size289);
+                        for ($_i293 = 0; $_i293 < $_size289; ++$_i293) {
+                            $elem294 = null;
+                            $elem294 = new \metastore\ColumnStatisticsObj();
+                            $xfer += $elem294->read($input);
+                            $this->statsObj []= $elem294;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -170,8 +170,8 @@ class ColumnStatistics
             }
             $xfer += $output->writeFieldBegin('statsObj', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->statsObj));
-            foreach ($this->statsObj as $iter304) {
-                $xfer += $iter304->write($output);
+            foreach ($this->statsObj as $iter295) {
+                $xfer += $iter295->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

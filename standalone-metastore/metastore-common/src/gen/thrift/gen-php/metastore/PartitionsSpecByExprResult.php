@@ -81,14 +81,14 @@ class PartitionsSpecByExprResult
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->partitionsSpec = array();
-                        $_size525 = 0;
-                        $_etype528 = 0;
-                        $xfer += $input->readListBegin($_etype528, $_size525);
-                        for ($_i529 = 0; $_i529 < $_size525; ++$_i529) {
-                            $elem530 = null;
-                            $elem530 = new \metastore\PartitionSpec();
-                            $xfer += $elem530->read($input);
-                            $this->partitionsSpec []= $elem530;
+                        $_size516 = 0;
+                        $_etype519 = 0;
+                        $xfer += $input->readListBegin($_etype519, $_size516);
+                        for ($_i520 = 0; $_i520 < $_size516; ++$_i520) {
+                            $elem521 = null;
+                            $elem521 = new \metastore\PartitionSpec();
+                            $xfer += $elem521->read($input);
+                            $this->partitionsSpec []= $elem521;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -122,8 +122,8 @@ class PartitionsSpecByExprResult
             }
             $xfer += $output->writeFieldBegin('partitionsSpec', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->partitionsSpec));
-            foreach ($this->partitionsSpec as $iter531) {
-                $xfer += $iter531->write($output);
+            foreach ($this->partitionsSpec as $iter522) {
+                $xfer += $iter522->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

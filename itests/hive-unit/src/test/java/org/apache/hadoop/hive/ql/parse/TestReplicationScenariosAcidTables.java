@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -38,12 +37,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
@@ -89,7 +84,6 @@ import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.io.File;
 import java.io.IOException;
@@ -99,14 +93,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
@@ -114,14 +106,12 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_TABLE_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET;
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runCleaner;
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 
 import static org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector.isMetricsEnabledForTests;
-import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.OPEN_TXNS;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -299,202 +289,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     } finally {
       txnHandler.abortTxn(new AbortTxnRequest(sourceTxnId));
     }
-  }
-
-
-  @Test
-  public void testRemoveDanglingTxnWithOpenTxnOnSource() throws Throwable {
-    List<String> withClauseList =  Arrays.asList("'" + HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET + "'='true'");
-    HiveConf primaryConf = primary.getConf();
-
-    WarehouseInstance.Tuple bootstrapDump =primary.run("use " + primaryDbName)
-              .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
-                      "tblproperties (\"transactional\"=\"true\")")
-              .run("insert into t1 values(1)")
-            .run("create table t2 (id int) clustered by(id) into 3 buckets stored as orc " +
-                    "tblproperties (\"transactional\"=\"true\")")
-            .run("insert into t2 values(1)")
-              .dump(primaryDbName, withClauseList);
-
-    // Opening long running transaction on primary  db
-    Thread longRunningTxnThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        LOG.info("Entered new thread");
-        IDriver driver = DriverFactory.newDriver(primaryConf);
-        SessionState.start(new CliSessionState(primaryConf));
-        try {
-          driver.run("insert into " +primaryDbName +".t1 select * from " +primaryDbName +".t1 where id in (select reflect(\"java.lang.Thread\", \"sleep\", bigint(1 * 360000)))");
-        } catch (CommandProcessorException e) {
-          throw new RuntimeException(e);
-        }
-        LOG.info("Exit new thread success");
-      }
-    });
-    longRunningTxnThread.start();
-    LOG.info("Created new thread {}", longRunningTxnThread.getName());
-
-    replica.load(replicatedDbName, primaryDbName, withClauseList);
-    try {
-      WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
-              .run("insert into t1 values(2)")
-              .run("insert into t1 values(3)")
-              .run("insert into t1 values(4)")
-              .dump(primaryDbName, withClauseList);
-
-      FileSystem fs = new Path(incrementalDump.dumpLocation).getFileSystem(conf);
-      Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-      assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-      //    "_open_txns" file should be present in the dump directory which contains open transactions on the source.
-      Path openTxnDumpPath = new Path(dumpPath, OPEN_TXNS);
-      assertTrue(fs.exists(openTxnDumpPath));
-      List<Long> openTxnCountFromDump = getOpenTxnCountFromDump(fs, openTxnDumpPath);
-      assertEquals(1, openTxnCountFromDump.size());
-
-      replica.load(replicatedDbName, primaryDbName, withClauseList);
-      TxnStore replicaTxnManager = TxnUtils.getTxnStore(replica.getConf());
-      // Get the repl_txn_map for given policy and check if it has the open transactions
-      // It should have the open transactions which are present in the dump file as that was open when dump started.
-      Map<String, String> replayedTxnsForPolicy = replicaTxnManager.getReplayedTxnsForPolicy(replicatedDbName.toLowerCase() + ".*").getReplTxnMapEntry();
-      assertEquals(openTxnCountFromDump.size(), replayedTxnsForPolicy.size());
-
-      Set<Long> replayedTxnIds = replayedTxnsForPolicy.keySet()
-              .stream()
-              .map(Long::valueOf)
-              .collect(Collectors.toSet());
-      assertEquals(new HashSet<>(openTxnCountFromDump), replayedTxnIds);
-    } finally {
-      if (longRunningTxnThread.isAlive()) {
-        LOG.info("Interrupting long-running transaction thread...");
-        longRunningTxnThread.interrupt();
-        longRunningTxnThread.join(5000);  // wait max 5 sec
-        LOG.info("Long-running transaction thread cleanup complete");
-      }
-    }
-  }
-
-  @Test
-  public void testRemoveDanglingTxnWithOpenTxnOnSourceAndDanglingTxnOnDR() throws Throwable {
-    List<String> withClauseList =  Arrays.asList("'" + HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET + "'='true'");
-    HiveConf primaryConf = primary.getConf();
-
-    primary.run("use " + primaryDbName)
-            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
-                    "tblproperties (\"transactional\"=\"true\")")
-            .run("insert into t1 values(1)")
-            .run("create table t2 (id int) clustered by(id) into 3 buckets stored as orc " +
-                    "tblproperties (\"transactional\"=\"true\")")
-            .run("insert into t2 values(1)")
-            .dump(primaryDbName, withClauseList);
-
-    // Adding long running transaction on primarydb
-    Thread longRunningTxnThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        LOG.info("Entered new thread");
-        IDriver driver = DriverFactory.newDriver(primaryConf);
-        SessionState.start(new CliSessionState(primaryConf));
-        try {
-          driver.run("insert into " +primaryDbName +".t1 select * from " +primaryDbName +".t1 where id in (select reflect(\"java.lang.Thread\", \"sleep\", bigint(1 * 360000)))");
-        } catch (CommandProcessorException e) {
-          throw new RuntimeException(e);
-        }
-        LOG.info("Exit new thread success");
-      }
-    });
-    longRunningTxnThread.start();
-    LOG.info("Created new thread {}", longRunningTxnThread.getName());
-
-    replica.load(replicatedDbName, primaryDbName, withClauseList);
-    try {
-      TxnStore primaryTxnManager = TxnUtils.getTxnStore(primary.getConf());
-      TxnStore replicaTxnManager = TxnUtils.getTxnStore(replica.getConf());
-
-      //Setting and opening some repl created transactions on replica to indicate some dangling transactions
-      int numTxn = 10;
-      int nextTxnId = 500;
-      SeedTxnIdRequest txnIdRequest = new SeedTxnIdRequest(nextTxnId);
-      replicaTxnManager.seedTxnId(txnIdRequest);
-      List<Long> txnList = replOpenTxnForTest(nextTxnId, numTxn, replicatedDbName.toLowerCase() + ".*", replicaTxnManager);
-
-      assertEquals(numTxn, txnList.size());
-      Map<String, String> replayedTxnsForPolicy = replicaTxnManager.getReplayedTxnsForPolicy(replicatedDbName.toLowerCase() + ".*").getReplTxnMapEntry();
-      assertEquals(numTxn, replayedTxnsForPolicy.size());
-
-      WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
-              .run("insert into t1 values(2)")
-              .run("insert into t1 values(3)")
-              .run("insert into t1 values(4)")
-              .dump(primaryDbName, withClauseList);
-      replica.load(replicatedDbName, primaryDbName, withClauseList);
-
-      FileSystem fs = new Path(incrementalDump.dumpLocation).getFileSystem(conf);
-      Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-      assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-
-      Path openTxnDumpPath = new Path(dumpPath, OPEN_TXNS);
-      assertTrue(fs.exists(openTxnDumpPath));
-      List<Long> openTxnCountFromDump = getOpenTxnCountFromDump(fs, openTxnDumpPath);
-      // on the primaryDb / source there should be only one  open transaction i.e long running insert query
-      assertEquals(1, openTxnCountFromDump.size());
-
-      replayedTxnsForPolicy = replicaTxnManager.getReplayedTxnsForPolicy(replicatedDbName.toLowerCase() + ".*").getReplTxnMapEntry();
-      // post replication repl_txn_map should have the open transaction which was present in the dump file
-      // all other dangling transactions should be removed.
-      assertEquals(openTxnCountFromDump.size(), replayedTxnsForPolicy.size());
-      Set<Long> replayedTxnIds = replayedTxnsForPolicy.keySet()
-              .stream()
-              .map(Long::valueOf)
-              .collect(Collectors.toSet());
-      assertEquals(new HashSet<>(openTxnCountFromDump), replayedTxnIds);
-    } finally {
-      if (longRunningTxnThread.isAlive()) {
-        LOG.info("Interrupting long-running transaction thread...");
-        longRunningTxnThread.interrupt();
-        longRunningTxnThread.join(5000);  // wait max 5 sec
-        LOG.info("Long-running transaction thread cleanup complete");
-      }
-    }
-  }
-
-
-  private List<Long> getOpenTxnCountFromDump(FileSystem fs, Path openTxnDumpPath) throws IOException {
-    List<Long> openTxnIds = new ArrayList<>();
-    String line = null;
-    try (FSDataInputStream fsis = fs.open(openTxnDumpPath);
-         BufferedReader br = new BufferedReader(new InputStreamReader(fsis))) {
-
-      line = br.readLine();
-      if (line != null && !line.trim().isEmpty()) {
-
-        openTxnIds = Arrays.stream(line.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(Long::valueOf)
-                .collect(Collectors.toList());
-      }
-    } catch (NumberFormatException e) {
-      throw new IOException("Failed to parse numeric ID from line: '" + line + "' in file " + openTxnDumpPath, e);
-    } catch (IOException e) {
-      // Catch general IO exceptions for file operations
-      throw new IOException("Error reading from dump file " + openTxnDumpPath + ": " + e.getMessage(), e);
-    }
-    return openTxnIds;
-  }
-
-  private List<Long> replOpenTxnForTest(long startId, int numTxn, String replPolicy, TxnStore txnHandler)
-          throws Exception {
-    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, numTxn);
-    long lastId = startId + numTxn - 1;
-    OpenTxnRequest rqst = new OpenTxnRequest(numTxn, "me", "localhost");
-    rqst.setReplPolicy(replPolicy);
-    rqst.setReplSrcTxnIds(LongStream.rangeClosed(startId, lastId)
-            .boxed().collect(Collectors.toList()));
-    rqst.setTxn_type(TxnType.REPL_CREATED);
-    OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
-    List<Long> txnList = openedTxns.getTxn_ids();
-    junit.framework.Assert.assertEquals(txnList.size(), numTxn);
-    return txnList;
   }
 
   @Test

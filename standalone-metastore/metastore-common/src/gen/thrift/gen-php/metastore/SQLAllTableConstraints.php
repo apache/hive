@@ -154,14 +154,14 @@ class SQLAllTableConstraints
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->primaryKeys = array();
-                        $_size18 = 0;
-                        $_etype21 = 0;
-                        $xfer += $input->readListBegin($_etype21, $_size18);
-                        for ($_i22 = 0; $_i22 < $_size18; ++$_i22) {
-                            $elem23 = null;
-                            $elem23 = new \metastore\SQLPrimaryKey();
-                            $xfer += $elem23->read($input);
-                            $this->primaryKeys []= $elem23;
+                        $_size9 = 0;
+                        $_etype12 = 0;
+                        $xfer += $input->readListBegin($_etype12, $_size9);
+                        for ($_i13 = 0; $_i13 < $_size9; ++$_i13) {
+                            $elem14 = null;
+                            $elem14 = new \metastore\SQLPrimaryKey();
+                            $xfer += $elem14->read($input);
+                            $this->primaryKeys []= $elem14;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -171,14 +171,14 @@ class SQLAllTableConstraints
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->foreignKeys = array();
-                        $_size24 = 0;
-                        $_etype27 = 0;
-                        $xfer += $input->readListBegin($_etype27, $_size24);
-                        for ($_i28 = 0; $_i28 < $_size24; ++$_i28) {
-                            $elem29 = null;
-                            $elem29 = new \metastore\SQLForeignKey();
-                            $xfer += $elem29->read($input);
-                            $this->foreignKeys []= $elem29;
+                        $_size15 = 0;
+                        $_etype18 = 0;
+                        $xfer += $input->readListBegin($_etype18, $_size15);
+                        for ($_i19 = 0; $_i19 < $_size15; ++$_i19) {
+                            $elem20 = null;
+                            $elem20 = new \metastore\SQLForeignKey();
+                            $xfer += $elem20->read($input);
+                            $this->foreignKeys []= $elem20;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -188,14 +188,14 @@ class SQLAllTableConstraints
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->uniqueConstraints = array();
-                        $_size30 = 0;
-                        $_etype33 = 0;
-                        $xfer += $input->readListBegin($_etype33, $_size30);
-                        for ($_i34 = 0; $_i34 < $_size30; ++$_i34) {
-                            $elem35 = null;
-                            $elem35 = new \metastore\SQLUniqueConstraint();
-                            $xfer += $elem35->read($input);
-                            $this->uniqueConstraints []= $elem35;
+                        $_size21 = 0;
+                        $_etype24 = 0;
+                        $xfer += $input->readListBegin($_etype24, $_size21);
+                        for ($_i25 = 0; $_i25 < $_size21; ++$_i25) {
+                            $elem26 = null;
+                            $elem26 = new \metastore\SQLUniqueConstraint();
+                            $xfer += $elem26->read($input);
+                            $this->uniqueConstraints []= $elem26;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -205,14 +205,14 @@ class SQLAllTableConstraints
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->notNullConstraints = array();
-                        $_size36 = 0;
-                        $_etype39 = 0;
-                        $xfer += $input->readListBegin($_etype39, $_size36);
-                        for ($_i40 = 0; $_i40 < $_size36; ++$_i40) {
-                            $elem41 = null;
-                            $elem41 = new \metastore\SQLNotNullConstraint();
-                            $xfer += $elem41->read($input);
-                            $this->notNullConstraints []= $elem41;
+                        $_size27 = 0;
+                        $_etype30 = 0;
+                        $xfer += $input->readListBegin($_etype30, $_size27);
+                        for ($_i31 = 0; $_i31 < $_size27; ++$_i31) {
+                            $elem32 = null;
+                            $elem32 = new \metastore\SQLNotNullConstraint();
+                            $xfer += $elem32->read($input);
+                            $this->notNullConstraints []= $elem32;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -222,14 +222,14 @@ class SQLAllTableConstraints
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->defaultConstraints = array();
-                        $_size42 = 0;
-                        $_etype45 = 0;
-                        $xfer += $input->readListBegin($_etype45, $_size42);
-                        for ($_i46 = 0; $_i46 < $_size42; ++$_i46) {
-                            $elem47 = null;
-                            $elem47 = new \metastore\SQLDefaultConstraint();
-                            $xfer += $elem47->read($input);
-                            $this->defaultConstraints []= $elem47;
+                        $_size33 = 0;
+                        $_etype36 = 0;
+                        $xfer += $input->readListBegin($_etype36, $_size33);
+                        for ($_i37 = 0; $_i37 < $_size33; ++$_i37) {
+                            $elem38 = null;
+                            $elem38 = new \metastore\SQLDefaultConstraint();
+                            $xfer += $elem38->read($input);
+                            $this->defaultConstraints []= $elem38;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -239,14 +239,14 @@ class SQLAllTableConstraints
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->checkConstraints = array();
-                        $_size48 = 0;
-                        $_etype51 = 0;
-                        $xfer += $input->readListBegin($_etype51, $_size48);
-                        for ($_i52 = 0; $_i52 < $_size48; ++$_i52) {
-                            $elem53 = null;
-                            $elem53 = new \metastore\SQLCheckConstraint();
-                            $xfer += $elem53->read($input);
-                            $this->checkConstraints []= $elem53;
+                        $_size39 = 0;
+                        $_etype42 = 0;
+                        $xfer += $input->readListBegin($_etype42, $_size39);
+                        for ($_i43 = 0; $_i43 < $_size39; ++$_i43) {
+                            $elem44 = null;
+                            $elem44 = new \metastore\SQLCheckConstraint();
+                            $xfer += $elem44->read($input);
+                            $this->checkConstraints []= $elem44;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -273,8 +273,8 @@ class SQLAllTableConstraints
             }
             $xfer += $output->writeFieldBegin('primaryKeys', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->primaryKeys));
-            foreach ($this->primaryKeys as $iter54) {
-                $xfer += $iter54->write($output);
+            foreach ($this->primaryKeys as $iter45) {
+                $xfer += $iter45->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -285,8 +285,8 @@ class SQLAllTableConstraints
             }
             $xfer += $output->writeFieldBegin('foreignKeys', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->foreignKeys));
-            foreach ($this->foreignKeys as $iter55) {
-                $xfer += $iter55->write($output);
+            foreach ($this->foreignKeys as $iter46) {
+                $xfer += $iter46->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -297,8 +297,8 @@ class SQLAllTableConstraints
             }
             $xfer += $output->writeFieldBegin('uniqueConstraints', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->uniqueConstraints));
-            foreach ($this->uniqueConstraints as $iter56) {
-                $xfer += $iter56->write($output);
+            foreach ($this->uniqueConstraints as $iter47) {
+                $xfer += $iter47->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -309,8 +309,8 @@ class SQLAllTableConstraints
             }
             $xfer += $output->writeFieldBegin('notNullConstraints', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->notNullConstraints));
-            foreach ($this->notNullConstraints as $iter57) {
-                $xfer += $iter57->write($output);
+            foreach ($this->notNullConstraints as $iter48) {
+                $xfer += $iter48->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -321,8 +321,8 @@ class SQLAllTableConstraints
             }
             $xfer += $output->writeFieldBegin('defaultConstraints', TType::LST, 5);
             $output->writeListBegin(TType::STRUCT, count($this->defaultConstraints));
-            foreach ($this->defaultConstraints as $iter58) {
-                $xfer += $iter58->write($output);
+            foreach ($this->defaultConstraints as $iter49) {
+                $xfer += $iter49->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -333,8 +333,8 @@ class SQLAllTableConstraints
             }
             $xfer += $output->writeFieldBegin('checkConstraints', TType::LST, 6);
             $output->writeListBegin(TType::STRUCT, count($this->checkConstraints));
-            foreach ($this->checkConstraints as $iter59) {
-                $xfer += $iter59->write($output);
+            foreach ($this->checkConstraints as $iter50) {
+                $xfer += $iter50->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

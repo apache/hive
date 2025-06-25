@@ -118,13 +118,13 @@ class GetDatabaseRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
-                        $_size1108 = 0;
-                        $_etype1111 = 0;
-                        $xfer += $input->readListBegin($_etype1111, $_size1108);
-                        for ($_i1112 = 0; $_i1112 < $_size1108; ++$_i1112) {
-                            $elem1113 = null;
-                            $xfer += $input->readString($elem1113);
-                            $this->processorCapabilities []= $elem1113;
+                        $_size1099 = 0;
+                        $_etype1102 = 0;
+                        $xfer += $input->readListBegin($_etype1102, $_size1099);
+                        for ($_i1103 = 0; $_i1103 < $_size1099; ++$_i1103) {
+                            $elem1104 = null;
+                            $xfer += $input->readString($elem1104);
+                            $this->processorCapabilities []= $elem1104;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -168,8 +168,8 @@ class GetDatabaseRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
-            foreach ($this->processorCapabilities as $iter1114) {
-                $xfer += $output->writeString($iter1114);
+            foreach ($this->processorCapabilities as $iter1105) {
+                $xfer += $output->writeString($iter1105);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

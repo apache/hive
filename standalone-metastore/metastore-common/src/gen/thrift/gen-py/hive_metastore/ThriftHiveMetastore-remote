@@ -210,7 +210,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void abort_txn(AbortTxnRequest rqst)')
     print('  void abort_txns(AbortTxnsRequest rqst)')
     print('  void commit_txn(CommitTxnRequest rqst)')
-    print('  ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(string policyName)')
     print('  i64 get_latest_txnid_in_conflict(i64 txnId)')
     print('  void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst)')
     print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
@@ -1515,12 +1514,6 @@ elif cmd == 'commit_txn':
         print('commit_txn requires 1 args')
         sys.exit(1)
     pp.pprint(client.commit_txn(eval(args[0]),))
-
-elif cmd == 'get_replayed_txns_for_policy':
-    if len(args) != 1:
-        print('get_replayed_txns_for_policy requires 1 args')
-        sys.exit(1)
-    pp.pprint(client.get_replayed_txns_for_policy(args[0],))
 
 elif cmd == 'get_latest_txnid_in_conflict':
     if len(args) != 1:

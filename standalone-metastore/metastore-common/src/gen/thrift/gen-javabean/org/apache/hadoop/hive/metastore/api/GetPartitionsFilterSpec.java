@@ -419,13 +419,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 8: // FILTERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1466 = iprot.readListBegin();
-                struct.filters = new java.util.ArrayList<java.lang.String>(_list1466.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1467;
-                for (int _i1468 = 0; _i1468 < _list1466.size; ++_i1468)
+                org.apache.thrift.protocol.TList _list1456 = iprot.readListBegin();
+                struct.filters = new java.util.ArrayList<java.lang.String>(_list1456.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1457;
+                for (int _i1458 = 0; _i1458 < _list1456.size; ++_i1458)
                 {
-                  _elem1467 = iprot.readString();
-                  struct.filters.add(_elem1467);
+                  _elem1457 = iprot.readString();
+                  struct.filters.add(_elem1457);
                 }
                 iprot.readListEnd();
               }
@@ -459,9 +459,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(FILTERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filters.size()));
-            for (java.lang.String _iter1469 : struct.filters)
+            for (java.lang.String _iter1459 : struct.filters)
             {
-              oprot.writeString(_iter1469);
+              oprot.writeString(_iter1459);
             }
             oprot.writeListEnd();
           }
@@ -499,9 +499,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetFilters()) {
         {
           oprot.writeI32(struct.filters.size());
-          for (java.lang.String _iter1470 : struct.filters)
+          for (java.lang.String _iter1460 : struct.filters)
           {
-            oprot.writeString(_iter1470);
+            oprot.writeString(_iter1460);
           }
         }
       }
@@ -517,13 +517,13 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list1471 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.filters = new java.util.ArrayList<java.lang.String>(_list1471.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1472;
-          for (int _i1473 = 0; _i1473 < _list1471.size; ++_i1473)
+          org.apache.thrift.protocol.TList _list1461 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.filters = new java.util.ArrayList<java.lang.String>(_list1461.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1462;
+          for (int _i1463 = 0; _i1463 < _list1461.size; ++_i1463)
           {
-            _elem1472 = iprot.readString();
-            struct.filters.add(_elem1472);
+            _elem1462 = iprot.readString();
+            struct.filters.add(_elem1462);
           }
         }
         struct.setFiltersIsSet(true);

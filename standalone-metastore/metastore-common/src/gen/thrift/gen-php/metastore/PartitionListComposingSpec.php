@@ -69,14 +69,14 @@ class PartitionListComposingSpec
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size397 = 0;
-                        $_etype400 = 0;
-                        $xfer += $input->readListBegin($_etype400, $_size397);
-                        for ($_i401 = 0; $_i401 < $_size397; ++$_i401) {
-                            $elem402 = null;
-                            $elem402 = new \metastore\Partition();
-                            $xfer += $elem402->read($input);
-                            $this->partitions []= $elem402;
+                        $_size388 = 0;
+                        $_etype391 = 0;
+                        $xfer += $input->readListBegin($_etype391, $_size388);
+                        for ($_i392 = 0; $_i392 < $_size388; ++$_i392) {
+                            $elem393 = null;
+                            $elem393 = new \metastore\Partition();
+                            $xfer += $elem393->read($input);
+                            $this->partitions []= $elem393;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class PartitionListComposingSpec
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter403) {
-                $xfer += $iter403->write($output);
+            foreach ($this->partitions as $iter394) {
+                $xfer += $iter394->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

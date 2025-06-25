@@ -212,7 +212,6 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void abort_txn(const AbortTxnRequest& rqst) = 0;
   virtual void abort_txns(const AbortTxnsRequest& rqst) = 0;
   virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
-  virtual void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) = 0;
   virtual int64_t get_latest_txnid_in_conflict(const int64_t txnId) = 0;
   virtual void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) = 0;
   virtual void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) = 0;
@@ -925,9 +924,6 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void commit_txn(const CommitTxnRequest& /* rqst */) override {
-    return;
-  }
-  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& /* _return */, const std::string& /* policyName */) override {
     return;
   }
   int64_t get_latest_txnid_in_conflict(const int64_t /* txnId */) override {
@@ -24611,119 +24607,6 @@ class ThriftHiveMetastore_commit_txn_presult {
 
 };
 
-typedef struct _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset {
-  _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset() : policyName(false) {}
-  bool policyName :1;
-} _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset;
-
-class ThriftHiveMetastore_get_replayed_txns_for_policy_args {
- public:
-
-  ThriftHiveMetastore_get_replayed_txns_for_policy_args(const ThriftHiveMetastore_get_replayed_txns_for_policy_args&);
-  ThriftHiveMetastore_get_replayed_txns_for_policy_args& operator=(const ThriftHiveMetastore_get_replayed_txns_for_policy_args&);
-  ThriftHiveMetastore_get_replayed_txns_for_policy_args() noexcept
-                                                        : policyName() {
-  }
-
-  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_args() noexcept;
-  std::string policyName;
-
-  _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset __isset;
-
-  void __set_policyName(const std::string& val);
-
-  bool operator == (const ThriftHiveMetastore_get_replayed_txns_for_policy_args & rhs) const
-  {
-    if (!(policyName == rhs.policyName))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_replayed_txns_for_policy_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_replayed_txns_for_policy_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_get_replayed_txns_for_policy_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_pargs() noexcept;
-  const std::string* policyName;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset {
-  _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset() : success(false), o1(false) {}
-  bool success :1;
-  bool o1 :1;
-} _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset;
-
-class ThriftHiveMetastore_get_replayed_txns_for_policy_result {
- public:
-
-  ThriftHiveMetastore_get_replayed_txns_for_policy_result(const ThriftHiveMetastore_get_replayed_txns_for_policy_result&);
-  ThriftHiveMetastore_get_replayed_txns_for_policy_result& operator=(const ThriftHiveMetastore_get_replayed_txns_for_policy_result&);
-  ThriftHiveMetastore_get_replayed_txns_for_policy_result() noexcept {
-  }
-
-  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_result() noexcept;
-  ReplayedTxnsForPolicyResult success;
-  MetaException o1;
-
-  _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset __isset;
-
-  void __set_success(const ReplayedTxnsForPolicyResult& val);
-
-  void __set_o1(const MetaException& val);
-
-  bool operator == (const ThriftHiveMetastore_get_replayed_txns_for_policy_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    if (!(o1 == rhs.o1))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_replayed_txns_for_policy_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_replayed_txns_for_policy_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset {
-  _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset() : success(false), o1(false) {}
-  bool success :1;
-  bool o1 :1;
-} _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset;
-
-class ThriftHiveMetastore_get_replayed_txns_for_policy_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_presult() noexcept;
-  ReplayedTxnsForPolicyResult* success;
-  MetaException o1;
-
-  _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 typedef struct _ThriftHiveMetastore_get_latest_txnid_in_conflict_args__isset {
   _ThriftHiveMetastore_get_latest_txnid_in_conflict_args__isset() : txnId(false) {}
   bool txnId :1;
@@ -36233,9 +36116,6 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void commit_txn(const CommitTxnRequest& rqst) override;
   void send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn();
-  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override;
-  void send_get_replayed_txns_for_policy(const std::string& policyName);
-  void recv_get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return);
   int64_t get_latest_txnid_in_conflict(const int64_t txnId) override;
   void send_get_latest_txnid_in_conflict(const int64_t txnId);
   int64_t recv_get_latest_txnid_in_conflict();
@@ -36723,7 +36603,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_abort_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_abort_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_get_replayed_txns_for_policy(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_latest_txnid_in_conflict(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_repl_tbl_writeid_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_valid_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -37011,7 +36890,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["abort_txn"] = &ThriftHiveMetastoreProcessor::process_abort_txn;
     processMap_["abort_txns"] = &ThriftHiveMetastoreProcessor::process_abort_txns;
     processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
-    processMap_["get_replayed_txns_for_policy"] = &ThriftHiveMetastoreProcessor::process_get_replayed_txns_for_policy;
     processMap_["get_latest_txnid_in_conflict"] = &ThriftHiveMetastoreProcessor::process_get_latest_txnid_in_conflict;
     processMap_["repl_tbl_writeid_state"] = &ThriftHiveMetastoreProcessor::process_repl_tbl_writeid_state;
     processMap_["get_valid_write_ids"] = &ThriftHiveMetastoreProcessor::process_get_valid_write_ids;
@@ -38925,16 +38803,6 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->commit_txn(rqst);
   }
 
-  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_replayed_txns_for_policy(_return, policyName);
-    }
-    ifaces_[i]->get_replayed_txns_for_policy(_return, policyName);
-    return;
-  }
-
   int64_t get_latest_txnid_in_conflict(const int64_t txnId) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -40443,9 +40311,6 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void commit_txn(const CommitTxnRequest& rqst) override;
   int32_t send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn(const int32_t seqid);
-  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override;
-  int32_t send_get_replayed_txns_for_policy(const std::string& policyName);
-  void recv_get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const int32_t seqid);
   int64_t get_latest_txnid_in_conflict(const int64_t txnId) override;
   int32_t send_get_latest_txnid_in_conflict(const int64_t txnId);
   int64_t recv_get_latest_txnid_in_conflict(const int32_t seqid);

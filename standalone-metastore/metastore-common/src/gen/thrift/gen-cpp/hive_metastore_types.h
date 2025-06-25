@@ -444,8 +444,6 @@ class FieldSchema;
 
 class EnvironmentContext;
 
-class ReplayedTxnsForPolicyResult;
-
 class SQLPrimaryKey;
 
 class SQLForeignKey;
@@ -1254,48 +1252,6 @@ class EnvironmentContext : public virtual ::apache::thrift::TBase {
 void swap(EnvironmentContext &a, EnvironmentContext &b);
 
 std::ostream& operator<<(std::ostream& out, const EnvironmentContext& obj);
-
-typedef struct _ReplayedTxnsForPolicyResult__isset {
-  _ReplayedTxnsForPolicyResult__isset() : replTxnMapEntry(false) {}
-  bool replTxnMapEntry :1;
-} _ReplayedTxnsForPolicyResult__isset;
-
-class ReplayedTxnsForPolicyResult : public virtual ::apache::thrift::TBase {
- public:
-
-  ReplayedTxnsForPolicyResult(const ReplayedTxnsForPolicyResult&);
-  ReplayedTxnsForPolicyResult& operator=(const ReplayedTxnsForPolicyResult&);
-  ReplayedTxnsForPolicyResult() noexcept {
-  }
-
-  virtual ~ReplayedTxnsForPolicyResult() noexcept;
-  std::map<std::string, std::string>  replTxnMapEntry;
-
-  _ReplayedTxnsForPolicyResult__isset __isset;
-
-  void __set_replTxnMapEntry(const std::map<std::string, std::string> & val);
-
-  bool operator == (const ReplayedTxnsForPolicyResult & rhs) const
-  {
-    if (!(replTxnMapEntry == rhs.replTxnMapEntry))
-      return false;
-    return true;
-  }
-  bool operator != (const ReplayedTxnsForPolicyResult &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ReplayedTxnsForPolicyResult & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(ReplayedTxnsForPolicyResult &a, ReplayedTxnsForPolicyResult &b);
-
-std::ostream& operator<<(std::ostream& out, const ReplayedTxnsForPolicyResult& obj);
 
 typedef struct _SQLPrimaryKey__isset {
   _SQLPrimaryKey__isset() : table_db(false), table_name(false), column_name(false), key_seq(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false), catName(false) {}

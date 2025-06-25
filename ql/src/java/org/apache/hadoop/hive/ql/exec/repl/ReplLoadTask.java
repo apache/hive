@@ -957,18 +957,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     long currentTimestamp = System.currentTimeMillis();
     ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
     LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
-
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET)) {
-
-      ClearDanglingTxnWork clearDanglingTxnWork = new ClearDanglingTxnWork(work.getDumpDirectory(), targetDb.getName());
-      Task<ClearDanglingTxnWork> clearDanglingTxnTaskTask = TaskFactory.get(clearDanglingTxnWork, conf);
-      if (childTasks.isEmpty()) {
-        childTasks.add(clearDanglingTxnTaskTask);
-      } else {
-        DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(Collections.singletonList(clearDanglingTxnTaskTask)));
-      }
-    }
-
     return 0;
   }
 
