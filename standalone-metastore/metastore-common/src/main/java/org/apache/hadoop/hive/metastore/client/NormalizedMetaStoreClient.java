@@ -155,12 +155,6 @@ public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public final void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
-      throws MetaException, TException {
-    truncateTable(catName, dbName, tableName, null, partNames, null, -1, true, null);
-  }
-
-  @Override
   public final void truncateTable(TableName table, List<String> partNames) throws TException {
     truncateTable(table.getCat(), table.getDb(), table.getTable(), table.getTableMetaRef(), partNames, null,
         -1, true, null);
@@ -215,15 +209,6 @@ public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
   public final Table getTable(String catName, String dbName, String tableName) throws MetaException, TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
-    return getTable(req);
-  }
-
-  @Override
-  public final Table getTable(String catName, String dbName, String tableName, String validWriteIdList)
-      throws TException {
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCatName(catName);
-    req.setValidWriteIdList(validWriteIdList);
     return getTable(req);
   }
 
@@ -427,14 +412,6 @@ public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public final List<Partition> getPartitionsByNames(String catName, String dbName, String tableName,
-      List<String> partNames) throws NoSuchObjectException, MetaException, TException {
-    GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(
-        MetaStoreUtils.prependCatalogToDbName(catName, dbName, conf), tableName, partNames);
-    return getPartitionsByNames(req).getPartitions();
-  }
-
-  @Override
   public final List<Partition> listPartitionsWithAuthInfo(String dbName, String tableName,
       List<String> partialPvals, short maxParts, String userName, List<String> groupNames)
       throws MetaException, TException, NoSuchObjectException {
@@ -562,17 +539,6 @@ public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
     PartitionDropOptions options = PartitionDropOptions.instance()
         .deleteData(deleteData)
         .ifExists(ifExists);
-    return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options, null);
-  }
-
-  @Override
-  public final List<Partition> dropPartitions(String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, boolean deleteData, boolean ifExists, boolean needResults)
-      throws NoSuchObjectException, MetaException, TException {
-    PartitionDropOptions options = PartitionDropOptions.instance()
-        .deleteData(deleteData)
-        .ifExists(ifExists)
-        .returnResults(needResults);
     return dropPartitions(getDefaultCatalog(conf), dbName, tblName, partExprs, options, null);
   }
 
@@ -749,31 +715,8 @@ public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public final ShowLocksResponse showLocks() throws TException {
-    return showLocks(new ShowLocksRequest());
-  }
-
-  @Override
-  public final void compact(String dbname, String tableName, String partitionName, CompactionType type)
-      throws TException {
-    compact2(dbname, tableName, partitionName, type, null);
-  }
-
-  @Override
-  public final void compact(String dbname, String tableName, String partitionName, CompactionType type,
-      Map<String, String> tblproperties) throws TException {
-    compact2(dbname, tableName, partitionName, type, tblproperties);
-  }
-
-  @Override
   public final ShowCompactResponse showCompactions() throws TException {
     return showCompactions(new ShowCompactRequest());
-  }
-
-  @Override
-  public final void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
-      List<String> partNames) throws TException {
-    addDynamicPartitions(txnId, writeId, dbName, tableName, partNames, null);
   }
 
   @Override
@@ -804,13 +747,5 @@ public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
   public final void dropConstraint(String dbName, String tableName, String constraintName)
       throws MetaException, NoSuchObjectException, TException {
     dropConstraint(getDefaultCatalog(conf), dbName, tableName, constraintName);
-  }
-
-  @Override
-  public final OptionalCompactionInfoStruct findNextCompact(String workerId)
-      throws MetaException, TException {
-    FindNextCompactRequest req = new FindNextCompactRequest();
-    req.setWorkerId(workerId);
-    return findNextCompact(req);
   }
 }

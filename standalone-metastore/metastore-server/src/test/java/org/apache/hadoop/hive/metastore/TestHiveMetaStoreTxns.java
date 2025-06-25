@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -418,7 +419,11 @@ public class TestHiveMetaStoreTxns {
     client.createTable(tbl);
     tbl = client.getTable(dbName, tblName);
 
-    client.compact2(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MINOR, new HashMap<>());
+    CompactionRequest compactionRequest = new CompactionRequest();
+    compactionRequest.setDbname(tbl.getDbName());
+    compactionRequest.setTablename(tbl.getTableName());
+    compactionRequest.setType(CompactionType.MINOR);
+    client.compact2(compactionRequest);
     FindNextCompactRequest compactRequest = new FindNextCompactRequest();
     compactRequest.setWorkerId("myworker");
     OptionalCompactionInfoStruct optionalCi = client.findNextCompact(compactRequest);
