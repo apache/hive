@@ -1,30 +1,3 @@
-#### A masked pattern was here ####
-PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
-PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-#### A masked pattern was here ####
-POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: Select * from t1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-#### A masked pattern was here ####
-POSTHOOK: query: Select * from t1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
-PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
-PREHOOK: Output: database:default
-PREHOOK: Output: default@LikeExternalTable
-#### A masked pattern was here ####
-POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@LikeExternalTable
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
