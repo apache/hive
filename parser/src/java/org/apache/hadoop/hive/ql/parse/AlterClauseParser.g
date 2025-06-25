@@ -649,7 +649,7 @@ alterStatementSuffixDropTag
 createTagStatement
 @init { gParent.pushMsg("alter table drop tag (if exists) tagName", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_TAG ifNotExists? tagName=identifier snapshotIdOfRef? refRetain? KW_FROM tableName
+    : KW_CREATE KW_TAG ifNotExists? tagName=identifier KW_FROM tableName snapshotIdOfRef? refRetain?
     -> ^(TOK_ALTERTABLE tableName
      ^(TOK_ALTERTABLE_CREATE_TAG $tagName ifNotExists? snapshotIdOfRef? refRetain?)
      )
