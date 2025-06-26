@@ -29,7 +29,6 @@ import static org.junit.Assert.assertNotEquals;
 import org.junit.Test;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * TestUDFUUID.
@@ -54,7 +53,7 @@ public class TestUDFUUID {
     String id1 = udf.evaluate(null).toString();
     long timestampAfter = System.currentTimeMillis();
     UUID v7id1 = UUID.fromString(id1);
-    assertEquals(7, v7id1.version());;
+    assertEquals(7, v7id1.version());
     long v7IdTimeStamp = v7id1.getMostSignificantBits() >>> 16;
     assertTrue(v7IdTimeStamp <= timestampAfter && timestampBefore <= v7IdTimeStamp);
     String id2 = udf.evaluate(null).toString();
