@@ -263,12 +263,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     try {
       String msg =
-          "Starting hive metastore on port "
-              + cli.getPort()
-              + ". PID is "
-              + ProcessHandle.current().pid();
+          "Starting hive metastore on port %d. PID is %d"
+              .formatted(cli.getPort(), ProcessHandle.current().pid());
       LOG.info(msg);
-      if (cli.isVerbose()) {
+      if (isCliVerbose) {
         System.err.println(msg);
       }
 
