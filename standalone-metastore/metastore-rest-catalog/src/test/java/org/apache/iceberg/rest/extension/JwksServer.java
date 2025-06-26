@@ -30,7 +30,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
@@ -72,7 +71,7 @@ public class JwksServer {
   }
 
   private static String generateJWT(String user, Path keyFile) throws Exception {
-    RSAKey rsaKeyPair = RSAKey.parse(new String(java.nio.file.Files.readAllBytes(keyFile), StandardCharsets.UTF_8));
+    RSAKey rsaKeyPair = RSAKey.parse(Files.readString(keyFile));
     // Create RSA-signer with the private key
     JWSSigner signer = new RSASSASigner(rsaKeyPair);
     JWSHeader header = new JWSHeader
