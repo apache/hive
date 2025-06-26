@@ -34,9 +34,9 @@ from (
 where b.cc>1;
 
 EXPLAIN
-SELECT user_id 
+SELECT user_id
 FROM (
-  SELECT 
+  SELECT
   CAST(key AS INT) AS user_id
   ,CASE WHEN (value LIKE 'aaa%' OR value LIKE 'vvv%')
   THEN 1
@@ -45,7 +45,7 @@ FROM (
 ) sub
 WHERE sub.tag_student > 0;
 
-EXPLAIN 
+EXPLAIN
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1;
 
 set hive.optimize.ppd=true;
@@ -104,7 +104,7 @@ CREATE
  UNION ALL
      SELECT
         dt_from as DT_FROM,
-        uuid() as DT_TO
+        uuid_v7() as DT_TO
      FROM
        arc;
 
