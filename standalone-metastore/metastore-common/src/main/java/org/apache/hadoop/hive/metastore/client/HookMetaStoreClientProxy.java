@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -82,12 +83,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-import static org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient.SNAPSHOT_REF;
-import static org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implements IMetaStoreClient {
-  private final Configuration conf;
   private final HiveMetaHookLoader hookLoader;
   private final MetaStoreFilterHook filterHook;
   private final boolean isClientFilterEnabled;
@@ -97,12 +95,6 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
   public HookMetaStoreClientProxy(Configuration conf, @Nullable HiveMetaHookLoader hookLoader,
       IMetaStoreClient delegate) {
     super(delegate, conf);
-    if (conf == null) {
-      conf = MetastoreConf.newMetastoreConf();
-      this.conf = conf;
-    } else {
-      this.conf = new Configuration(conf);
-    }
 
     this.hookLoader = hookLoader;
 
@@ -457,9 +449,9 @@ public class HookMetaStoreClientProxy extends BaseMetaStoreClientProxy implement
       }
 
       if (ref != null) {
-        context.putToProperties(SNAPSHOT_REF, ref);
+        context.putToProperties(HiveMetaStoreClient.SNAPSHOT_REF, ref);
       }
-      context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
+      context.putToProperties(HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
 
       hook.preTruncateTable(table, context, partNames);
     }

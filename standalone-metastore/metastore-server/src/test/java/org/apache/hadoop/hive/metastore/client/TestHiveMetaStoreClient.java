@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.thrift.transport.TTransport;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,22 +49,23 @@ public class TestHiveMetaStoreClient extends MetaStoreClientTest {
 
   @After
   public void cleanUp() throws Exception {
-    HiveMetaStoreClient.getConnCount().set(0);
+    ThriftHiveMetaStoreClient.getConnCount().set(0);
   }
 
   @Test
   public void testTTransport() throws MetaException {
     HiveMetaStoreClient client = metaStore.getClient();
-    assertTrue(isRemote ? client.getTTransport().isOpen() : client.getTTransport() == null);
+    TTransport tTransport = client.getThriftClient().getTTransport();
+    assertTrue(isRemote ? tTransport.isOpen() : tTransport == null);
 
     client.close();
-    assertTrue(isRemote ? !client.getTTransport().isOpen() : client.getTTransport() == null);
+    assertTrue(isRemote ? !tTransport.isOpen() : tTransport == null);
   }
 
   @Test
   public void testReconnect() throws MetaException {
     HiveMetaStoreClient client = metaStore.getClient();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, ThriftHiveMetaStoreClient.getConnCount().get());
 
     try {
       client.reconnect();
@@ -71,27 +73,27 @@ public class TestHiveMetaStoreClient extends MetaStoreClientTest {
       // expected in local metastore
       assertFalse(isRemote);
     }
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, ThriftHiveMetaStoreClient.getConnCount().get());
 
     client.close();
-    assertEquals(0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(0, ThriftHiveMetaStoreClient.getConnCount().get());
   }
 
   @Test
   public void testCloseClient() throws MetaException {
     HiveMetaStoreClient client1 = metaStore.getClient();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, ThriftHiveMetaStoreClient.getConnCount().get());
 
     HiveMetaStoreClient client2 = metaStore.getClient();
-    assertEquals(isRemote ? 2 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 2 : 0, ThriftHiveMetaStoreClient.getConnCount().get());
 
     client1.close();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, ThriftHiveMetaStoreClient.getConnCount().get());
 
     client1.close();
-    assertEquals(isRemote ? 1 : 0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(isRemote ? 1 : 0, ThriftHiveMetaStoreClient.getConnCount().get());
 
     client2.close();
-    assertEquals(0, HiveMetaStoreClient.getConnCount().get());
+    assertEquals(0, ThriftHiveMetaStoreClient.getConnCount().get());
   }
 }
