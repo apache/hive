@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hive.common.util.SuppressFBWarnings;
 
 import java.time.DateTimeException;
@@ -235,6 +236,11 @@ public class Timestamp implements Comparable<Timestamp> {
     return new Timestamp(LocalDateTime
         .ofInstant(Instant.ofEpochMilli(epochMilli), ZoneOffset.UTC)
         .withNano(nanos));
+  }
+
+  public static Timestamp from(TimestampColumnVector tcv, int row) {
+    return Timestamp.ofEpochSecond(Math.floorDiv(tcv.time[row], 1000L), tcv.nanos[row],
+        tcv.isUTC() ? ZoneOffset.UTC : ZoneId.systemDefault());
   }
 
   public void setNanos(int nanos) {

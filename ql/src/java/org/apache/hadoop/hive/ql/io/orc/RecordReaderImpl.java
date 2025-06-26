@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -464,9 +462,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       } else {
         result = (TimestampWritableV2) previous;
       }
-      TimestampColumnVector tcv = (TimestampColumnVector) vector;
-      result.set(Timestamp.ofEpochSecond(Math.floorDiv(tcv.time[row], 1000L), tcv.nanos[row],
-          tcv.isUTC() ? ZoneOffset.UTC : ZoneId.systemDefault()));
+      result.set(Timestamp.from((TimestampColumnVector) vector, row));
       return result;
     } else {
       return null;
