@@ -65,23 +65,16 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   private final VectorizedRowBatch batch;
   private int rowInBatch;
   private long baseRow;
+  private final boolean useUTC;
 
   protected RecordReaderImpl(ReaderImpl fileReader,
     Reader.Options options, final Configuration conf) throws IOException {
     super(fileReader, options);
+    useUTC = fileReader.isUTC();
     final boolean useDecimal64ColumnVectors = conf != null && HiveConf.getVar(conf,
       HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
-    if (useDecimal64ColumnVectors){
-      batch = this.schema.createRowBatchV2();
-    } else {
-      batch = this.schema.createRowBatch();
-    }
     // Workaround for ORC not initializing TimestampColumnVector properly
-    for (int i = 0; i < batch.numCols; ++i) {
-      if (batch.cols[i] instanceof TimestampColumnVector) {
-        ((TimestampColumnVector) batch.cols[i]).setIsUTC(fileReader.isUTC());
-      }
-    }
+    batch = createRowBatch(useDecimal64ColumnVectors);
     rowInBatch = 0;
   }
 
@@ -100,7 +93,12 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   }
 
   public VectorizedRowBatch createRowBatch(boolean useDecimal64) {
-    return useDecimal64 ? this.schema.createRowBatchV2() : this.schema.createRowBatch();
+    TimestampColumnVector.setUseUTC(useUTC);
+    try {
+      return useDecimal64 ? this.schema.createRowBatchV2() : this.schema.createRowBatch();
+    } finally {
+      TimestampColumnVector.setUseUTC(null);
+    }
   }
 
   @Override
