@@ -52,10 +52,7 @@ import java.util.Map;
 @InterfaceStability.Evolving
 public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMetaStoreClient, AutoCloseable {
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
-  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
-  public static final String SKIP_DROP_PARTITION = "dropPartitionSkip";
   public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
-  public static final String SNAPSHOT_REF = "snapshot_ref";
 
   private final ThriftHiveMetaStoreClient thriftClient;
 

@@ -27,7 +27,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslHelper;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -106,6 +105,9 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
   // Test capability for tests.
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
       Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
+  public static final String SKIP_DROP_PARTITION = "dropPartitionSkip";
+  public static final String SNAPSHOT_REF = "snapshot_ref";
 
   // Name of the HiveMetaStore class. It is used to initialize embedded metastore
   private static final String HIVE_METASTORE_CLASS = "org.apache.hadoop.hive.metastore.HiveMetaStore";
@@ -1546,7 +1548,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     }
 
     if (context.getProperties() != null &&
-        Boolean.parseBoolean(context.getProperties().get(HiveMetaStoreClient.SKIP_DROP_PARTITION))) {
+        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
       return Lists.newArrayList();
     }
 
@@ -1637,9 +1639,9 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     if (context == null) {
       context = new EnvironmentContext();
       if (ref != null) {
-        context.putToProperties(HiveMetaStoreClient.SNAPSHOT_REF, ref);
+        context.putToProperties(SNAPSHOT_REF, ref);
       }
-      context.putToProperties(HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
+      context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     }
     TruncateTableRequest req =
         new TruncateTableRequest(prependCatalogToDbName(catName, dbName, conf), tableName);
