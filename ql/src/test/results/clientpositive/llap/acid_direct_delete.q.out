@@ -1,0 +1,57 @@
+PREHOOK: query: drop table if exists full_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists full_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table ext(a int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext
+POSTHOOK: query: create external table ext(a int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext
+PREHOOK: query: insert into table ext values(1),(2),(3),(4),(5),(6),(7), (8), (9), (12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ext
+POSTHOOK: query: insert into table ext values(1),(2),(3),(4),(5),(6),(7), (8), (9), (12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ext
+POSTHOOK: Lineage: ext.a SCRIPT []
+PREHOOK: query: create table full_acid(a int) stored as orc tblproperties("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@full_acid
+POSTHOOK: query: create table full_acid(a int) stored as orc tblproperties("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@full_acid
+PREHOOK: query: insert into table full_acid select * from ext where a != 3 and a <=7 group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext
+PREHOOK: Output: default@full_acid
+POSTHOOK: query: insert into table full_acid select * from ext where a != 3 and a <=7 group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext
+POSTHOOK: Output: default@full_acid
+POSTHOOK: Lineage: full_acid.a SIMPLE [(ext)ext.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: insert into table full_acid select * from ext where a>7 group by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext
+PREHOOK: Output: default@full_acid
+POSTHOOK: query: insert into table full_acid select * from ext where a>7 group by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext
+POSTHOOK: Output: default@full_acid
+POSTHOOK: Lineage: full_acid.a SIMPLE [(ext)ext.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: delete from full_acid where a in (2, 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@full_acid
+PREHOOK: Output: default@full_acid
+POSTHOOK: query: delete from full_acid where a in (2, 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@full_acid
+POSTHOOK: Output: default@full_acid
