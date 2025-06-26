@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -33,7 +35,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -111,6 +116,44 @@ public class VerifyingObjectStore extends ObjectStore {
         catName, dbName, tableName, colNames, engine, false, true);
     verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
+  }
+
+  @Override
+  public List<Partition> alterPartitions(String catName, String dbName, String tblName, List<List<String>> part_vals,
+      List<Partition> newParts, long writeId, String queryWriteIdList) throws InvalidObjectException, MetaException {
+    List<Partition> results = new ArrayList<>(newParts.size());
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    boolean success = false;
+    try {
+      openTransaction();
+      MTable table = ensureGetMTable(catName, dbName, tblName);
+      if (writeId > 0) {
+        newParts.forEach(newPart -> newPart.setWriteId(writeId));
+      }
+      List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
+      List<String> partNames = new ArrayList<>();
+      for (List<String> partVal : part_vals) {
+        partNames.add(Warehouse.makePartName(partCols, partVal));
+      }
+      List<Partition> oldParts = getPartitionsByNames(catName, dbName, tblName, partNames);
+      if (oldParts.size() != partNames.size()) {
+        throw new MetaException("Some partitions to be altered are missing");
+      }
+      List<Partition> tmpNewParts = new ArrayList<>(newParts);
+      alterPartitionsInternal(table, partNames, newParts, queryWriteIdList, true, false);
+      alterPartitionsInternal(table, partNames, oldParts, queryWriteIdList, false, true);
+      results = alterPartitionsInternal(table, partNames, tmpNewParts, queryWriteIdList, true, false);
+      // commit the changes
+      success = commitTransaction();
+    } catch (Exception exception) {
+      LOG.error("Alter failed", exception);
+      throw new MetaException(exception.getMessage());
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return results;
   }
 
   @Override

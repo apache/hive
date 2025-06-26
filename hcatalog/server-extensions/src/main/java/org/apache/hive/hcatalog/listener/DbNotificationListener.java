@@ -668,7 +668,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return;
     }
     CommitTxnMessage msg =
-        MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId());
+        MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId(), commitTxnEvent.getDatabases(), commitTxnEvent.getWriteId());
 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.COMMIT_TXN.toString(),
@@ -688,7 +688,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return;
     }
     AbortTxnMessage msg =
-        MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId(), abortTxnEvent.getDbsUpdated());
+        MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId(), abortTxnEvent.getDbsUpdated(), abortTxnEvent.getWriteId());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ABORT_TXN.toString(),
             msgEncoder.getSerializer().serialize(msg));
@@ -1023,7 +1023,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   public void onReload(ReloadEvent reloadEvent) throws MetaException {
     Table tableObj = reloadEvent.getTableObj();
     ReloadMessage msg = MessageBuilder.getInstance().buildReloadMessage(tableObj,
-            reloadEvent.getPartitionObj(), reloadEvent.isRefreshEvent());
+            reloadEvent.getPartitions(), reloadEvent.isRefreshEvent());
     NotificationEvent event =
             new NotificationEvent(0, now(), EventType.RELOAD.toString(),
                     msgEncoder.getSerializer().serialize(msg));

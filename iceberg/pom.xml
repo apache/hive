@@ -26,14 +26,14 @@
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
     <!-- Upgrade roaringbit version in parent pom.xml whenever upgrading iceberg version -->
-    <iceberg.version>1.6.1</iceberg.version>
+    <iceberg.version>1.9.1</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
-    <iceberg.avro.version>1.11.4</iceberg.avro.version>
+    <iceberg.avro.version>1.12.0</iceberg.avro.version>
     <iceberg.checkstyle.plugin.version>3.5.0</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
     <google.errorprone.version>2.29.2</google.errorprone.version>
-    <assertj.version>3.24.2</assertj.version>
+    <assertj.version>3.27.3</assertj.version>
     <awaitility.version>4.2.1</awaitility.version>
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
