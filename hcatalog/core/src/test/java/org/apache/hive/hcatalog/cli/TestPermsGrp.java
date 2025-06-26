@@ -288,8 +288,4 @@ public class TestPermsGrp {
     sd.setSerdeInfo(new SerDeInfo());
     return tbl;
   }
-
-
-  private SecurityManager securityManager;
-
 }
