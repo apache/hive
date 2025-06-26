@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslHelper;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -88,21 +89,11 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.createThriftPartitionsReq;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
-
-  private final String CLASS_NAME = ThriftHiveMetaStoreClient.class.getName();
-
-  public static final String MANUALLY_INITIATED_COMPACTION = "manual";
-  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
-  public static final String SKIP_DROP_PARTITION = "dropPartitionSkip";
-
-  public static final String SNAPSHOT_REF = "snapshot_ref";
-  public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -110,15 +101,14 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
    * doesn't have (e.g. a getting a table of a new type), it will get back failures when the
    * capability checking is enabled (the default).
    */
-  public final static ClientCapabilities VERSION = new ClientCapabilities(
+  public final static ClientCapabilities DEFAULT_VERSION = new ClientCapabilities(
       Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES));
   // Test capability for tests.
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
       Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
 
   // Name of the HiveMetaStore class. It is used to initialize embedded metastore
-  private static final String HIVE_METASTORE_CLASS =
-      "org.apache.hadoop.hive.metastore.HiveMetaStore";
+  private static final String HIVE_METASTORE_CLASS = "org.apache.hadoop.hive.metastore.HiveMetaStore";
 
   // Method used to create Hive Metastore client. It is called as
   // HiveMetaStore.newHMSHandler("hive client", this.conf, true);
@@ -128,6 +118,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
   private TTransport transport = null;
   private boolean isConnected = false;
   private URI metastoreUris[];
+  private Random rng;
   private String tokenStrForm;
   private final boolean localMetaStore;
   private final URIResolverHook uriResolverHook;
@@ -151,15 +142,16 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
   private static final String REPL_EVENTS_WITH_DUPLICATE_ID_IN_METASTORE =
       "Notification events with duplicate event ids in the meta store.";
 
+  private static final String PERF_DEBUG_TEMPLATE = "method={}, duration={}, comments=HMS client";
+
   private static final Logger LOG = LoggerFactory.getLogger(ThriftHiveMetaStoreClient.class);
 
-  public ThriftHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded)
-      throws MetaException {
+  public ThriftHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
     super(conf);
-    version = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST) ? TEST_VERSION : VERSION;
+    version =
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST) ? TEST_VERSION : DEFAULT_VERSION;
     uriResolverHook = loadUriResolverHook();
-    fileMetadataBatchSize = MetastoreConf.getIntVar(
-        conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
+    fileMetadataBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
 
     if ((MetastoreConf.get(conf, "hive.metastore.client.capabilities")) != null) {
       String[] capabilities = MetastoreConf.get(conf, "hive.metastore.client.capabilities").split(",");
@@ -375,7 +367,11 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     if (metastoreUris.length <= 1) {
       return;
     }
-    Random rng = new Random();
+
+    if (rng == null) {
+      rng = new Random();
+    }
+
     int index = rng.nextInt(metastoreUris.length - 1) + 1;
     URI tmp = metastoreUris[0];
     metastoreUris[0] = metastoreUris[index];
@@ -714,11 +710,9 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
               UserGroupInformation ugi = SecurityUtils.getUGI();
               client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
             } catch (LoginException e) {
-              LOG.warn("Failed to do login. set_ugi() is not successful, " +
-                  "Continuing without it.", e);
+              LOG.warn("Failed to do login. set_ugi() is not successful, Continuing without it.", e);
             } catch (IOException e) {
-              LOG.warn("Failed to find ugi of client set_ugi() is not successful, " +
-                  "Continuing without it.", e);
+              LOG.warn("Failed to find ugi of client set_ugi() is not successful, Continuing without it.", e);
             } catch (TException e) {
               LOG.warn("set_ugi() not successful, Likely cause: new client talking to old server. "
                   + "Continuing without it.", e);
@@ -1128,8 +1122,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getAggrColStatsFor",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getAggrColStatsFor", diff);
       }
     }
   }
@@ -1553,7 +1546,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     }
 
     if (context.getProperties() != null &&
-        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
+        Boolean.parseBoolean(context.getProperties().get(HiveMetaStoreClient.SKIP_DROP_PARTITION))) {
       return Lists.newArrayList();
     }
 
@@ -1644,9 +1637,9 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     if (context == null) {
       context = new EnvironmentContext();
       if (ref != null) {
-        context.putToProperties(SNAPSHOT_REF, ref);
+        context.putToProperties(HiveMetaStoreClient.SNAPSHOT_REF, ref);
       }
-      context.putToProperties(TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
+      context.putToProperties(HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION, Boolean.toString(!deleteData));
     }
     TruncateTableRequest req =
         new TruncateTableRequest(prependCatalogToDbName(catName, dbName, conf), tableName);
@@ -1800,8 +1793,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsWithAuthInfo",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "listPartitionsWithAuthInfo", diff);
       }
     }
   }
@@ -1821,8 +1813,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsWithAuthInfo",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "listPartitionsWithAuthInfo", diff);
       }
     }
   }
@@ -1912,8 +1903,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "listPartitionsSpecByExpr",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "listPartitionsSpecByExpr", diff);
       }
     }
   }
@@ -1942,8 +1932,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getDatabase",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getDatabase", diff);
       }
     }
   }
@@ -2057,8 +2046,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTable",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getTable", diff);
       }
     }
   }
@@ -2337,8 +2325,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getPrimaryKeys",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getPrimaryKeys", diff);
       }
     }
   }
@@ -2356,8 +2343,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getForeignKeys",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getForeignKeys", diff);
       }
     }
   }
@@ -2375,8 +2361,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getUniqueConstraints",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getUniqueConstraints", diff);
       }
     }
   }
@@ -2394,8 +2379,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getNotNullConstraints",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getNotNullConstraints", diff);
       }
     }
   }
@@ -2436,8 +2420,8 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
       return client.get_all_table_constraints(req).getAllTableConstraints();
     } finally {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getAllTableConstraints",
-            System.currentTimeMillis() - t1, "HMS client");
+        long diff = System.currentTimeMillis() - t1;
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getAllTableConstraints", diff);
       }
     }
   }
@@ -2510,8 +2494,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getTableColumnStatistics",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getTableColumnStatistics", diff);
       }
     }
   }
@@ -2572,8 +2555,7 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
-        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getConfigValue",
-            diff, "HMS client");
+        LOG.debug(PERF_DEBUG_TEMPLATE, "getConfigValue", diff);
       }
     }
   }
@@ -3129,6 +3111,8 @@ public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
 
   @Override
   public void insertTable(Table table, boolean overwrite) throws MetaException {
+    // This method is originally introduced to update druid's metadata using HiveMetaHook.
+    // Therefore, ThriftClient and HMS do nothing here.
   }
 
   @Override

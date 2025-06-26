@@ -51,13 +51,12 @@ public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy impleme
     return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
   }
 
+  @SuppressWarnings("squid:S2095")
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
       Boolean allowEmbedded) throws MetaException {
     IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
-    IMetaStoreClient clientWithLocalCache =
-        new LocalCachingMetaStoreClientProxy(conf, thriftClient);
-    IMetaStoreClient sessionLevelClient =
-        new SessionMetaStoreClientProxy(conf, clientWithLocalCache);
+    IMetaStoreClient clientWithLocalCache = new LocalCachingMetaStoreClientProxy(conf, thriftClient);
+    IMetaStoreClient sessionLevelClient = new SessionMetaStoreClientProxy(conf, clientWithLocalCache);
     IMetaStoreClient clientWithHook = new HookMetaStoreClientProxy(conf, hookLoader, sessionLevelClient);
     return clientWithHook;
   }

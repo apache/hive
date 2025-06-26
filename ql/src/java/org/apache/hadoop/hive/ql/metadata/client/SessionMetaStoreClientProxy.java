@@ -712,11 +712,11 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
 
       List<Matcher> dbPatternList = new ArrayList<>();
       for (String element : dbPatterns.split("\\|")) {
-        dbPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+        dbPatternList.add(Pattern.compile(element.replace("*", ".*")).matcher(""));
       }
       List<Matcher> tblPatternList = new ArrayList<>();
       for (String element : tablePatterns.split("\\|")) {
-        tblPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
+        tblPatternList.add(Pattern.compile(element.replace("*", ".*")).matcher(""));
       }
       for (Map.Entry<String, Map<String, org.apache.hadoop.hive.ql.metadata.Table>> outer : tmpTables.entrySet()) {
         if (!matchesAny(outer.getKey(), dbPatternList)) {
@@ -1949,7 +1949,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
         getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.warn("No current SessionState, skipping temp partitions for " + qualifiedTableName);
+      LOG.warn("No current SessionState, failed to get temp partitions for " + qualifiedTableName);
       return null;
     }
     assertTempTablePartitioned(t);
@@ -1965,7 +1965,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
         getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.warn("No current SessionState, skipping temp partitions for " + qualifiedTableName);
+      LOG.warn("No current SessionState, skip removing temp partitions for " + qualifiedTableName);
       return;
     }
     ss.getTempPartitions().remove(Warehouse.getQualifiedName(t));
@@ -1980,7 +1980,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
         getQualifiedName(t.getDbName().toLowerCase(), t.getTableName().toLowerCase());
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.warn("No current SessionState, skipping temp partitions for " + qualifiedTableName);
+      LOG.warn("No current SessionState, skip creating temp partitions for " + qualifiedTableName);
       return;
     }
     TempTable tt = new TempTable(t);

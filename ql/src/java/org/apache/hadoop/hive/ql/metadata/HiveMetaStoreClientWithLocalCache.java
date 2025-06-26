@@ -43,19 +43,21 @@ public class HiveMetaStoreClientWithLocalCache extends BaseMetaStoreClientProxy 
     this(conf, null, true);
   }
 
-  public HiveMetaStoreClientWithLocalCache(Configuration conf, HiveMetaHookLoader hookLoader) throws MetaException {
+  public HiveMetaStoreClientWithLocalCache(Configuration conf, HiveMetaHookLoader hookLoader)
+      throws MetaException {
     this(conf, hookLoader, true);
   }
 
-  public HiveMetaStoreClientWithLocalCache(Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
+  public HiveMetaStoreClientWithLocalCache(Configuration conf, HiveMetaHookLoader hookLoader,
+      Boolean allowEmbedded) throws MetaException {
     super(createUnderlyingClient(conf, hookLoader, allowEmbedded), conf);
   }
 
+  @SuppressWarnings("squid:S2095")
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
       Boolean allowEmbedded) throws MetaException {
     IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
-    IMetaStoreClient clientWithLocalCache =
-        new LocalCachingMetaStoreClientProxy(conf, thriftClient);
+    IMetaStoreClient clientWithLocalCache = new LocalCachingMetaStoreClientProxy(conf, thriftClient);
     IMetaStoreClient clientWithHook = new HookMetaStoreClientProxy(conf, hookLoader, clientWithLocalCache);
     return clientWithHook;
   }

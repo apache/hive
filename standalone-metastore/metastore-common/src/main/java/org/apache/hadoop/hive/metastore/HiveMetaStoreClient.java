@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.client.HookMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransport;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -40,7 +40,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Hive Metastore Client.
@@ -51,12 +50,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-public class HiveMetaStoreClient extends BaseMetaStoreClientProxy
-    implements IMetaStoreClient, AutoCloseable {
+public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMetaStoreClient, AutoCloseable {
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
   public static final String SKIP_DROP_PARTITION = "dropPartitionSkip";
   public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
+  public static final String SNAPSHOT_REF = "snapshot_ref";
 
   private final ThriftHiveMetaStoreClient thriftClient;
 
@@ -161,13 +160,12 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy
   }
 
   @VisibleForTesting
-  public TTransport getTTransport() {
-    return thriftClient.getTTransport();
-  }
-
-  @VisibleForTesting
-  public static AtomicInteger getConnCount() {
-    return ThriftHiveMetaStoreClient.getConnCount();
+  public ThriftHiveMetaStoreClient getThriftClient() {
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST)) {
+      return thriftClient;
+    } else {
+      return null;
+    }
   }
 
   public static void setProcessorCapabilities(final String[] capabilities) {
