@@ -72,8 +72,9 @@ module CompactionType
   MAJOR = 2
   REBALANCE = 3
   ABORT_TXN_CLEANUP = 4
-  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE", 4 => "ABORT_TXN_CLEANUP"}
-  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE, ABORT_TXN_CLEANUP]).freeze
+  SMART_OPTIMIZE = 5
+  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE", 4 => "ABORT_TXN_CLEANUP", 5 => "SMART_OPTIMIZE"}
+  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE, ABORT_TXN_CLEANUP, SMART_OPTIMIZE]).freeze
 end
 
 module GrantRevokeType
@@ -326,6 +327,10 @@ class GetCatalogsResponse; end
 class DropCatalogRequest; end
 
 class Database; end
+
+class GetDatabaseObjectsRequest; end
+
+class GetDatabaseObjectsResponse; end
 
 class SerDeInfo; end
 
@@ -1818,6 +1823,41 @@ class Database
     unless @type.nil? || ::DatabaseType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetDatabaseObjectsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATALOGNAME = 1
+  PATTERN = 2
+
+  FIELDS = {
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
+    PATTERN => {:type => ::Thrift::Types::STRING, :name => 'pattern', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetDatabaseObjectsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DATABASES = 1
+
+  FIELDS = {
+    DATABASES => {:type => ::Thrift::Types::LIST, :name => 'databases', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Database}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field databases is unset!') unless @databases
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -5139,6 +5179,7 @@ class NotificationEventRequest
   CATNAME = 4
   DBNAME = 5
   TABLENAMES = 6
+  EVENTTYPELIST = 7
 
   FIELDS = {
     LASTEVENT => {:type => ::Thrift::Types::I64, :name => 'lastEvent'},
@@ -5146,7 +5187,8 @@ class NotificationEventRequest
     EVENTTYPESKIPLIST => {:type => ::Thrift::Types::LIST, :name => 'eventTypeSkipList', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
-    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    EVENTTYPELIST => {:type => ::Thrift::Types::LIST, :name => 'eventTypeList', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -5340,6 +5382,7 @@ class FireEventRequest
   PARTITIONVALS = 5
   CATNAME = 6
   TBLPARAMS = 7
+  BATCHPARTITIONVALSFORREFRESH = 8
 
   FIELDS = {
     SUCCESSFUL => {:type => ::Thrift::Types::BOOL, :name => 'successful'},
@@ -5348,7 +5391,8 @@ class FireEventRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
     PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TBLPARAMS => {:type => ::Thrift::Types::MAP, :name => 'tblParams', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
+    TBLPARAMS => {:type => ::Thrift::Types::MAP, :name => 'tblParams', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
+    BATCHPARTITIONVALSFORREFRESH => {:type => ::Thrift::Types::LIST, :name => 'batchPartitionValsForRefresh', :element => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

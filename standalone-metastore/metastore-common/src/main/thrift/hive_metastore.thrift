@@ -219,6 +219,7 @@ enum CompactionType {
     MAJOR = 2,
     REBALANCE = 3,
     ABORT_TXN_CLEANUP = 4,
+    SMART_OPTIMIZE = 5,
 }
 
 enum GrantRevokeType {
@@ -436,6 +437,15 @@ struct Database {
   11: optional DatabaseType type,
   12: optional string connector_name,
   13: optional string remote_dbname
+}
+
+struct GetDatabaseObjectsRequest {
+  1: optional string catalogName,
+  2: optional string pattern
+}
+
+struct GetDatabaseObjectsResponse {
+  1: required list<Database> databases
 }
 
 // This object holds the information needed by SerDes
@@ -1501,7 +1511,8 @@ struct NotificationEventRequest {
     3: optional list<string> eventTypeSkipList,
     4: optional string catName,
     5: optional string dbName,
-    6: optional list<string> tableNames
+    6: optional list<string> tableNames,
+    7: optional list<string> eventTypeList
 }
 
 struct NotificationEvent {
@@ -1566,6 +1577,8 @@ struct FireEventRequest {
     5: optional list<string> partitionVals,
     6: optional string catName,
     7: optional map<string, string> tblParams,
+    // To keep the backward compatibility, batch partition vals for reload event is used
+    8: optional list<list<string>> batchPartitionValsForRefresh
 }
 
 struct FireEventResponse {
@@ -2613,6 +2626,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
+  GetDatabaseObjectsResponse get_databases_req (1:GetDatabaseObjectsRequest request) throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
   void alter_database_req(1:AlterDatabaseRequest alterDbReq) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 

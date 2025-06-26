@@ -72,12 +72,16 @@ public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEn
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String tagName = "test_tag_1";
+    String tagName2 = "test_tag_2";
     Long snapshotId = table.history().get(0).snapshotId();
     shell.executeStatement(String.format("ALTER TABLE customers CREATE TAG %s FOR SYSTEM_VERSION AS OF %d",
         tagName, snapshotId));
+    shell.executeStatement(
+        String.format("CREATE TAG %s FROM customers FOR SYSTEM_VERSION AS OF %d", tagName2, snapshotId));
     table.refresh();
     SnapshotRef ref = table.refs().get(tagName);
     Assert.assertEquals(snapshotId.longValue(), ref.snapshotId());
+    Assert.assertEquals(snapshotId.longValue(), table.refs().get(tagName2).snapshotId());
     Assert.assertNull(ref.maxRefAgeMs());
   }
 
@@ -88,13 +92,17 @@ public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEn
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String tagName = "test_tag_1";
+    String tagName2 = "test_tag_2";
     Long snapshotId = table.history().get(0).snapshotId();
 
     shell.executeStatement(String.format("ALTER TABLE customers CREATE TAG %s FOR SYSTEM_TIME AS OF '%s'",
         tagName, timestampAfterSnapshot(table, 0)));
+    shell.executeStatement(String.format("CREATE TAG %s FROM customers FOR SYSTEM_TIME AS OF '%s'", tagName2,
+        timestampAfterSnapshot(table, 0)));
     table.refresh();
     SnapshotRef ref = table.refs().get(tagName);
     Assert.assertEquals(snapshotId.longValue(), ref.snapshotId());
+    Assert.assertEquals(snapshotId.longValue(), table.refs().get(tagName2).snapshotId());
   }
 
   @Test
@@ -104,12 +112,15 @@ public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEn
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String tagName = "test_tag_1";
+    String tagName2 = "test_tag_2";
     long maxRefAge = 5L;
     shell.executeStatement(String.format("ALTER TABLE customers CREATE TAG %s RETAIN %d DAYS", tagName, maxRefAge));
+    shell.executeStatement(String.format("CREATE TAG %s FROM customers RETAIN %d DAYS", tagName2, maxRefAge));
     table.refresh();
     SnapshotRef ref = table.refs().get(tagName);
     Assert.assertEquals(table.currentSnapshot().snapshotId(), ref.snapshotId());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), ref.maxRefAgeMs().longValue());
+    Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), table.refs().get(tagName2).maxRefAgeMs().longValue());
   }
 
   @Test
@@ -119,15 +130,20 @@ public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEn
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String tagName = "test_tag_1";
+    String tagName2 = "test_tag_2";
     Long snapshotId = table.history().get(0).snapshotId();
     long maxRefAge = 5L;
     shell.executeStatement(String.format("ALTER TABLE customers CREATE TAG %s FOR SYSTEM_VERSION AS OF %d RETAIN" +
             " %d DAYS",
         tagName, snapshotId, maxRefAge));
+    shell.executeStatement(
+        String.format("CREATE TAG %s FROM customers FOR SYSTEM_VERSION AS OF %d RETAIN %d DAYS", tagName2, snapshotId,
+            maxRefAge));
     table.refresh();
     SnapshotRef ref = table.refs().get(tagName);
     Assert.assertEquals(snapshotId.longValue(), ref.snapshotId());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), ref.maxRefAgeMs().longValue());
+    Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), table.refs().get(tagName2).maxRefAgeMs().longValue());
   }
 
   @Test

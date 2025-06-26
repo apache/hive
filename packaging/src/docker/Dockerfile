@@ -57,7 +57,7 @@ RUN tar -xzvf /opt/hadoop-$HADOOP_VERSION.tar.gz -C /opt/ && \
     tar -xzvf /opt/apache-tez-$TEZ_VERSION-bin.tar.gz -C /opt && \
     rm -rf /opt/apache-tez-$TEZ_VERSION-bin/share/*
 
-FROM openjdk:8-jre-slim AS run
+FROM eclipse-temurin:17.0.12_7-jre-ubi9-minimal AS run
 
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
@@ -68,8 +68,8 @@ COPY --from=env /opt/apache-tez-$TEZ_VERSION-bin /opt/tez
 
 # Install dependencies
 RUN set -ex; \
-    apt-get update; \
-    apt-get -y install procps; \
+    microdnf update -y; \
+    microdnf -y install procps; \
     rm -rf /var/lib/apt/lists/*
 
 # Set necessary environment variables.
@@ -86,7 +86,7 @@ RUN chmod +x /entrypoint.sh
 
 
 ARG UID=1000
-RUN adduser --no-create-home --disabled-login --gecos "" --uid $UID hive && \
+RUN useradd --no-create-home -s /sbin/nologin -c "" --uid $UID hive && \
     chown hive /opt/tez && \
     chown hive /opt/hive && \
     chown hive /opt/hadoop && \

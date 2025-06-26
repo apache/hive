@@ -42,9 +42,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:636
-maxFileSize:222
-minFileSize:206
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_rc_merge_test_stat
@@ -95,9 +95,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:239
-maxFileSize:239
-minFileSize:239
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_rc_merge_test_stat
@@ -161,9 +161,9 @@ columns:struct columns { i32 key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds}
 totalNumberFiles:3
-totalFileSize:636
-maxFileSize:222
-minFileSize:206
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_rc_merge_test_part_stat
@@ -228,9 +228,9 @@ columns:struct columns { i32 key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds}
 totalNumberFiles:1
-totalFileSize:239
-maxFileSize:239
-minFileSize:239
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_rc_merge_test_part_stat

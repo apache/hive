@@ -56,16 +56,22 @@ public class TestQOutProcessor {
             "some text before [name=hdfs://localhost:11111/tmp/ct_noperm_loc_foo1]] some text between hdfs://localhost:22222/tmp/ct_noperm_loc_foo2 some text after"));
 
     Assert.assertEquals(
-        String.format("-rw-r--r--   3 %s %s       2557 %s hdfs://%s", QOutProcessor.HDFS_USER_MASK,
-            QOutProcessor.HDFS_GROUP_MASK, QOutProcessor.HDFS_DATE_MASK, QOutProcessor.HDFS_MASK),
+        String.format("-rw-r--r--   3 %s %s       %s %s hdfs://%s", QOutProcessor.HDFS_USER_MASK,
+            QOutProcessor.HDFS_GROUP_MASK, QOutProcessor.HDFS_SIZE_MASK , QOutProcessor.HDFS_DATE_MASK, QOutProcessor.HDFS_MASK),
         processLine(
             "-rw-r--r--   3 hiveptest supergroup       2557 2018-01-11 17:09 hdfs://hello_hdfs_path"));
 
     Assert.assertEquals(
-        String.format("-rw-r--r--   3 %s %s       2557 %s hdfs://%s", QOutProcessor.HDFS_USER_MASK,
-            QOutProcessor.HDFS_GROUP_MASK, QOutProcessor.HDFS_DATE_MASK, QOutProcessor.HDFS_MASK),
+        String.format("-rw-r--r--   3 %s %s       %s %s hdfs://%s", QOutProcessor.HDFS_USER_MASK,
+            QOutProcessor.HDFS_GROUP_MASK, QOutProcessor.HDFS_SIZE_MASK, QOutProcessor.HDFS_DATE_MASK, QOutProcessor.HDFS_MASK),
         processLine(
             "-rw-r--r--   3 hiveptest supergroup       2557 2018-01-11 17:09 hdfs://hello_hdfs_path"));
+    // Test Hdfs Size not to be masked when its 0.
+    Assert.assertEquals(
+            String.format("-rw-r--r--   3 %s %s       0 %s hdfs://%s", QOutProcessor.HDFS_USER_MASK,
+                    QOutProcessor.HDFS_GROUP_MASK, QOutProcessor.HDFS_DATE_MASK, QOutProcessor.HDFS_MASK),
+            processLine(
+                    "-rw-r--r--   3 hiveptest supergroup       0 2018-01-11 17:09 hdfs://hello_hdfs_path"));
   }
 
   private String processLine(String line) {

@@ -91,13 +91,14 @@ def buildHive(args) {
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
-export MAVEN_OPTS="-Xmx2g"
+export MAVEN_OPTS="-Xmx4G"
 export -n HIVE_CONF_DIR
-cp $SETTINGS .git/settings.xml
-OPTS=" -s $PWD/.git/settings.xml -B -Dtest.groups= "
+sw java 17 && . /etc/profile.d/java.sh
+mkdir -p .m2/repository
+cp $SETTINGS .m2/settings.xml
+OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
 OPTS+=" -Pitests,qsplits,dist,errorProne"
-OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePlugin=INFO"
-OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
+OPTS+=" -Dmaven.repo.local=$PWD/.m2/repository"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
@@ -134,6 +135,8 @@ def hdbPodTemplate(closure) {
         resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
+        resourceRequestEphemeralStorage: '10Gi',
+        resourceLimitEphemeralStorage: '20Gi',
         envVars: [
             envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2376'),
             envVar(key: 'DOCKER_TLS_VERIFY', value: '1'),
@@ -225,7 +228,7 @@ jobWrappers {
             $class: 'GitSCM',
             branches: scm.branches,
             doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-            extensions: scm.extensions,
+            extensions: [ cloneOption(honorRefspec: true, depth: 50, noTags: true, shallow: true) ],
             userRemoteConfigs: scm.userRemoteConfigs + [[
               name: 'origin',
               refspec: scm.userRemoteConfigs[0].refspec+ " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
@@ -294,12 +297,14 @@ fi
         stage('init-metastore') {
            withEnv(["dbType=$dbType"]) {
              sh '''#!/bin/bash -e
+             sw java 17 && . /etc/profile.d/java.sh
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
 sw hive-dev $PWD
 export DOCKER_NETWORK=host
 export DBNAME=metastore
+export HADOOP_CLIENT_OPTS="--add-opens java.base/java.net=ALL-UNNAMED"
 reinit_metastore $dbType
 time docker rm -f dev_$dbType || true
 '''
@@ -368,7 +373,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
         }
         try {
           stage('Test') {
-            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test")
           }
         } finally {
           stage('PostProcess') {
@@ -402,6 +407,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
       }
       stage('Generate javadoc') {
           sh """#!/bin/bash -e
+          sw java 17 && . /etc/profile.d/java.sh
 mvn install javadoc:javadoc javadoc:aggregate -DskipTests -pl '!itests/hive-jmh,!itests/util'
 """
       }

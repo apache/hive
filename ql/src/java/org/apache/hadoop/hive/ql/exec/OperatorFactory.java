@@ -82,7 +82,7 @@ import com.google.common.base.Preconditions;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public final class OperatorFactory {
-  protected static transient final Logger LOG = LoggerFactory.getLogger(OperatorFactory.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(OperatorFactory.class);
   private static final IdentityHashMap<Class<? extends OperatorDesc>,
     Class<? extends Operator<? extends OperatorDesc>>> opvec = new IdentityHashMap<>();
   private static final IdentityHashMap<Class<? extends OperatorDesc>,

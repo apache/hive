@@ -103,6 +103,7 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixUpdateStats[partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
+  | alterStatementSuffixDropCol
   | alterStatementSuffixUpdateColumns
   ;
 
@@ -116,7 +117,7 @@ optimizeTblRewriteDataSuffix
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
     : KW_REWRITE KW_DATA compactPool? whereClause? orderByClause?
-    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'MAJOR'"] TOK_BLOCKING compactPool? whereClause? orderByClause?)
+    -> ^(TOK_ALTERTABLE_COMPACT Identifier["'SMART_OPTIMIZE'"] compactPool? whereClause? orderByClause?)
     ;
 
 alterStatementPartitionKeyType
@@ -221,6 +222,13 @@ alterStatementSuffixAddCol
     : (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN restrictOrCascade?
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS columnNameTypeList restrictOrCascade?)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS columnNameTypeList restrictOrCascade?)
+    ;
+
+alterStatementSuffixDropCol
+@init { gParent.pushMsg("drop column statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_COLUMN ifExists? columnName restrictOrCascade?
+    -> ^(TOK_ALTERTABLE_DROPCOL ifExists? columnName restrictOrCascade?)
     ;
 
 alterStatementSuffixAddConstraint
@@ -550,11 +558,40 @@ alterStatementSuffixReplaceTag
     -> ^(TOK_ALTERTABLE_REPLACE_SNAPSHOTREF KW_TAG $sourceBranch $snapshotId refRetain?)
     ;
 
+dropBranchStatement
+@init { gParent.pushMsg("alter table drop branch (if exists) branchName", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_BRANCH ifExists? branchName=identifier KW_FROM tableName
+    -> ^(TOK_ALTERTABLE tableName
+     ^(TOK_ALTERTABLE_DROP_BRANCH ifExists? $branchName)
+     )
+    ;
+
 alterStatementSuffixDropBranch
 @init { gParent.pushMsg("alter table drop branch (if exists) branchName", state); }
 @after { gParent.popMsg(state); }
     : KW_DROP KW_BRANCH ifExists? branchName=identifier
     -> ^(TOK_ALTERTABLE_DROP_BRANCH ifExists? $branchName)
+    ;
+
+createBranchStatement
+@init { gParent.pushMsg("create branch statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_CREATE KW_BRANCH ifNotExists? branchName=identifier KW_FROM tableName
+      snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE tableName
+          ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName ifNotExists? snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+       )
+       ;
+
+createOrReplaceBranchStatement
+@init { gParent.pushMsg("create branch statement", state); }
+@after { gParent.popMsg(state); }
+    :  KW_CREATE KW_OR KW_REPLACE KW_BRANCH branchName=identifier KW_FROM tableName
+      snapshotIdOfRef? refRetain? retentionOfSnapshots?
+    -> ^(TOK_ALTERTABLE tableName
+          ^(TOK_ALTERTABLE_CREATE_BRANCH $branchName KW_REPLACE snapshotIdOfRef? refRetain? retentionOfSnapshots?)
+    )
     ;
 
 alterStatementSuffixCreateBranch
@@ -593,11 +630,29 @@ retentionOfSnapshots
     -> ^(TOK_WITH_SNAPSHOT_RETENTION $minSnapshotsToKeep ($maxSnapshotAge $timeUnit)?)
     ;
 
+dropTagStatement
+@init { gParent.pushMsg("drop tag (if exists) tagName", state); }
+@after { gParent.popMsg(state); }
+    : KW_DROP KW_TAG ifExists? tagName=identifier KW_FROM tableName
+    -> ^(TOK_ALTERTABLE tableName
+     ^(TOK_ALTERTABLE_DROP_TAG ifExists? $tagName)
+     )
+    ;
+
 alterStatementSuffixDropTag
 @init { gParent.pushMsg("alter table drop tag (if exists) tagName", state); }
 @after { gParent.popMsg(state); }
     : KW_DROP KW_TAG ifExists? tagName=identifier
     -> ^(TOK_ALTERTABLE_DROP_TAG ifExists? $tagName)
+    ;
+
+createTagStatement
+@init { gParent.pushMsg("alter table drop tag (if exists) tagName", state); }
+@after { gParent.popMsg(state); }
+    : KW_CREATE KW_TAG ifNotExists? tagName=identifier KW_FROM tableName snapshotIdOfRef? refRetain?
+    -> ^(TOK_ALTERTABLE tableName
+     ^(TOK_ALTERTABLE_CREATE_TAG $tagName ifNotExists? snapshotIdOfRef? refRetain?)
+     )
     ;
 
 alterStatementSuffixCreateTag
@@ -606,6 +661,15 @@ alterStatementSuffixCreateTag
     : KW_CREATE KW_TAG ifNotExists? tagName=identifier snapshotIdOfRef? refRetain?
     -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName ifNotExists? snapshotIdOfRef? refRetain?)
     ;
+
+createOrReplaceTagStatement
+@init { gParent.pushMsg("create  or replace tag", state); }
+@after { gParent.popMsg(state); }
+     : KW_CREATE KW_OR KW_REPLACE KW_TAG tagName=identifier snapshotIdOfRef? refRetain? KW_FROM tableName
+     -> ^(TOK_ALTERTABLE tableName
+      ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
+     )
+     ;
 
 alterStatementSuffixCreateOrReplaceTag
 @init { gParent.pushMsg("alter table create tag", state); }

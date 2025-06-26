@@ -282,6 +282,8 @@ public class Main {
     ServerConnector connector;
     final HttpConfiguration httpConf = new HttpConfiguration();
     httpConf.setRequestHeaderSize(1024 * 64);
+    httpConf.setSendServerVersion(false);
+    httpConf.setSendXPoweredBy(false);
     final HttpConnectionFactory http = new HttpConnectionFactory(httpConf);
 
     if (conf.getBoolean(AppConfig.USE_SSL, false)) {

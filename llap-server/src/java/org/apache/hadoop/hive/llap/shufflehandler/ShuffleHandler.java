@@ -328,7 +328,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
             DEFAULT_SHUFFLE_MAPOUTPUT_META_INFO_CACHE_SIZE));
 
     userRsrc = new ConcurrentHashMap<>();
-    secretManager = new JobTokenSecretManager();
+    secretManager = new JobTokenSecretManager(conf);
     shuffle = new Shuffle(conf);
     if (conf.getBoolean(SHUFFLE_DIR_WATCHER_ENABLED, SHUFFLE_DIR_WATCHER_ENABLED_DEFAULT)) {
       LOG.info("Attempting to start dirWatcher");

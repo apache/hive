@@ -69,6 +69,19 @@ class FireEventRequest
                 'type' => TType::STRING,
                 ),
         ),
+        8 => array(
+            'var' => 'batchPartitionValsForRefresh',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::LST,
+            'elem' => array(
+                'type' => TType::LST,
+                'etype' => TType::STRING,
+                'elem' => array(
+                    'type' => TType::STRING,
+                    ),
+                ),
+        ),
     );
 
     /**
@@ -99,6 +112,10 @@ class FireEventRequest
      * @var array
      */
     public $tblParams = null;
+    /**
+     * @var (string[])[]
+     */
+    public $batchPartitionValsForRefresh = null;
 
     public function __construct($vals = null)
     {
@@ -123,6 +140,9 @@ class FireEventRequest
             }
             if (isset($vals['tblParams'])) {
                 $this->tblParams = $vals['tblParams'];
+            }
+            if (isset($vals['batchPartitionValsForRefresh'])) {
+                $this->batchPartitionValsForRefresh = $vals['batchPartitionValsForRefresh'];
             }
         }
     }
@@ -178,13 +198,13 @@ class FireEventRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->partitionVals = array();
-                        $_size925 = 0;
-                        $_etype928 = 0;
-                        $xfer += $input->readListBegin($_etype928, $_size925);
-                        for ($_i929 = 0; $_i929 < $_size925; ++$_i929) {
-                            $elem930 = null;
-                            $xfer += $input->readString($elem930);
-                            $this->partitionVals []= $elem930;
+                        $_size939 = 0;
+                        $_etype942 = 0;
+                        $xfer += $input->readListBegin($_etype942, $_size939);
+                        for ($_i943 = 0; $_i943 < $_size939; ++$_i943) {
+                            $elem944 = null;
+                            $xfer += $input->readString($elem944);
+                            $this->partitionVals []= $elem944;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -201,18 +221,43 @@ class FireEventRequest
                 case 7:
                     if ($ftype == TType::MAP) {
                         $this->tblParams = array();
-                        $_size931 = 0;
-                        $_ktype932 = 0;
-                        $_vtype933 = 0;
-                        $xfer += $input->readMapBegin($_ktype932, $_vtype933, $_size931);
-                        for ($_i935 = 0; $_i935 < $_size931; ++$_i935) {
-                            $key936 = '';
-                            $val937 = '';
-                            $xfer += $input->readString($key936);
-                            $xfer += $input->readString($val937);
-                            $this->tblParams[$key936] = $val937;
+                        $_size945 = 0;
+                        $_ktype946 = 0;
+                        $_vtype947 = 0;
+                        $xfer += $input->readMapBegin($_ktype946, $_vtype947, $_size945);
+                        for ($_i949 = 0; $_i949 < $_size945; ++$_i949) {
+                            $key950 = '';
+                            $val951 = '';
+                            $xfer += $input->readString($key950);
+                            $xfer += $input->readString($val951);
+                            $this->tblParams[$key950] = $val951;
                         }
                         $xfer += $input->readMapEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
+                    if ($ftype == TType::LST) {
+                        $this->batchPartitionValsForRefresh = array();
+                        $_size952 = 0;
+                        $_etype955 = 0;
+                        $xfer += $input->readListBegin($_etype955, $_size952);
+                        for ($_i956 = 0; $_i956 < $_size952; ++$_i956) {
+                            $elem957 = null;
+                            $elem957 = array();
+                            $_size958 = 0;
+                            $_etype961 = 0;
+                            $xfer += $input->readListBegin($_etype961, $_size958);
+                            for ($_i962 = 0; $_i962 < $_size958; ++$_i962) {
+                                $elem963 = null;
+                                $xfer += $input->readString($elem963);
+                                $elem957 []= $elem963;
+                            }
+                            $xfer += $input->readListEnd();
+                            $this->batchPartitionValsForRefresh []= $elem957;
+                        }
+                        $xfer += $input->readListEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -260,8 +305,8 @@ class FireEventRequest
             }
             $xfer += $output->writeFieldBegin('partitionVals', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->partitionVals));
-            foreach ($this->partitionVals as $iter938) {
-                $xfer += $output->writeString($iter938);
+            foreach ($this->partitionVals as $iter964) {
+                $xfer += $output->writeString($iter964);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -277,11 +322,27 @@ class FireEventRequest
             }
             $xfer += $output->writeFieldBegin('tblParams', TType::MAP, 7);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->tblParams));
-            foreach ($this->tblParams as $kiter939 => $viter940) {
-                $xfer += $output->writeString($kiter939);
-                $xfer += $output->writeString($viter940);
+            foreach ($this->tblParams as $kiter965 => $viter966) {
+                $xfer += $output->writeString($kiter965);
+                $xfer += $output->writeString($viter966);
             }
             $output->writeMapEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->batchPartitionValsForRefresh !== null) {
+            if (!is_array($this->batchPartitionValsForRefresh)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('batchPartitionValsForRefresh', TType::LST, 8);
+            $output->writeListBegin(TType::LST, count($this->batchPartitionValsForRefresh));
+            foreach ($this->batchPartitionValsForRefresh as $iter967) {
+                $output->writeListBegin(TType::STRING, count($iter967));
+                foreach ($iter967 as $iter968) {
+                    $xfer += $output->writeString($iter968);
+                }
+                $output->writeListEnd();
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

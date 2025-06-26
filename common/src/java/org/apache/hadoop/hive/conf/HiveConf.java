@@ -722,6 +722,8 @@ public class HiveConf extends Configuration {
         "Streaming jobs that log to standard error with this prefix can log counter or status information."),
     STREAM_REPORTER_ENABLED("stream.stderr.reporter.enabled", true,
         "Enable consumption of status and counter messages for streaming jobs."),
+    ORC_COMPRESS("hive.exec.orc.default.compress", "ZLIB", "Define the default compression codec for ORC file. " +
+            "ZLIB is the default value in hive until ZSTD which is default from orc 2.x is tested"),
     COMPRESS_RESULT("hive.exec.compress.output", false,
         "This controls whether the final outputs of a query (to a local/HDFS file or a Hive table) is compressed. \n" +
         "The compression codec and other options are determined from Hadoop config variables mapred.output.compress*"),
@@ -2238,7 +2240,7 @@ public class HiveConf extends Configuration {
         "Use stats from iceberg table snapshot for query planning. This has two values metastore and iceberg"),
     HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS("hive.iceberg.expire.snapshot.numthreads", 4,
         "The number of threads to be used for deleting files during expire snapshot. If set to 0 or below it uses the" +
-            " defult DirectExecutorService"),
+            " default DirectExecutorService"),
 
     HIVE_ICEBERG_MASK_DEFAULT_LOCATION("hive.iceberg.mask.default.location", false,
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
@@ -2564,9 +2566,6 @@ public class HiveConf extends Configuration {
         "if the complete small table can fit in memory, and a map-join can be performed."),
 
     HIVE_SCRIPT_OPERATOR_TRUST("hive.exec.script.trust", false, ""),
-    HIVE_ROW_OFFSET("hive.exec.rowoffset", false,
-        "Whether to provide the row offset virtual column"),
-
     // Optimizer
     HIVE_OPT_INDEX_FILTER("hive.optimize.index.filter", true, "Whether to enable automatic use of indexes"),
 
@@ -2585,10 +2584,6 @@ public class HiveConf extends Configuration {
         "If this config is true only pushed down filters remain in the operator tree, \n" +
         "and the original filter is removed. If this config is false, the original filter \n" +
         "is also left in the operator tree at the original place."),
-    HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN("hive.optimize.join.disjunctive.transitive.predicates.pushdown",
-        false, "Whether to transitively infer disjunctive predicates across joins. \n"
-        + "Disjunctive predicates are hard to simplify and pushing them down might lead to infinite rule matching "
-        + "causing stackoverflow and OOM errors"),
     HIVE_POINT_LOOKUP_OPTIMIZER("hive.optimize.point.lookup", true,
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVE_POINT_LOOKUP_OPTIMIZER_MIN("hive.optimize.point.lookup.min", 2,
@@ -4097,6 +4092,10 @@ public class HiveConf extends Configuration {
         "This flag is used in HiveServer2 to enable a user to use HiveServer2 without\n" +
         "turning on Tez for HiveServer2. The user could potentially want to run queries\n" +
         "over Tez without the pool of sessions."),
+    HIVE_SERVER2_TEZ_SESSIONS_METRICS_COLLECTION_INTERVAL(
+        "hive.server2.tez.sessions.metrics.collection.interval", "10s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Interval for collecting metrics from Tez sessions."),
     HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK("hive.server2.tez.queue.access.check", false,
         "Whether to check user access to explicitly specified YARN queues. " +
           "yarn.resourcemanager.webapp.address must be configured to use this."),
@@ -4705,9 +4704,9 @@ public class HiveConf extends Configuration {
         "The default value is true."),
 
     HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST("hive.vectorized.adaptor.custom.udf.whitelist", "",
-        "Custom UDF allowed when hive.vectorized.adaptor.usage.mode is chosen.\n" +
-        "Specify classes separated by commas:\n" +
-        "package.FooClass,package.BarClass"),
+        "A comma-separated list of custom UDFs allowed to operate in vectorized mode " +
+        "when hive.vectorized.adaptor.usage.mode is set to chosen.\n" +
+        "Only Generic UDFs are supported for whitelisting; ensure that each custom UDF class extends GenericUDF"),
 
     HIVE_VECTORIZATION_PTF_MAX_MEMORY_BUFFERING_BATCH_COUNT("hive.vectorized.ptf.max.memory.buffering.batch.count", 25,
         "Maximum number of vectorized row batches to buffer in memory for PTF\n" +
@@ -6782,7 +6781,6 @@ public class HiveConf extends Configuration {
       ConfVars.HIVE_MAPRED_MODE.varname,
       ConfVars.HIVE_MAPSIDE_AGGREGATE.varname,
       ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES.varname,
-      ConfVars.HIVE_ROW_OFFSET.varname,
       ConfVars.HIVE_VARIABLE_SUBSTITUTE.varname,
       ConfVars.HIVE_VARIABLE_SUBSTITUTE_DEPTH.varname,
       ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME.varname,

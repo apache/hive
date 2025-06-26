@@ -177,6 +177,10 @@
                   \Qhttps://raw.githubusercontent.com/locationtech/jts/master/LICENSE_EPLv2.txt\E
                   \Qhttps://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt\E
                 </EPL-2.0>
+                <EDL-1.0>
+                  \Qhttps://www.eclipse.org/org/documents/edl-v10.php\E
+                  \Qhttp://www.eclipse.org/org/documents/edl-v10.php\E
+                </EDL-1.0>
                 <MIT>
                   https?://(www\.)?opensource\.org/licenses/mit(-license.php)?
                 </MIT>

@@ -87,7 +87,7 @@ class HiveSchemaConverter {
           case SHORT:
             Preconditions.checkArgument(autoConvert, "Unsupported Hive type %s, use integer " +
                     "instead or enable automatic type conversion, set 'iceberg.mr.schema.auto.conversion' to true",
-                ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
+                typeInfo.toString().toUpperCase());
 
             LOG.debug("Using auto conversion from SHORT/BYTE to INTEGER");
             return Types.IntegerType.get();

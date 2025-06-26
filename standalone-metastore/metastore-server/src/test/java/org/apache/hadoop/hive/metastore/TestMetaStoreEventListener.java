@@ -325,7 +325,7 @@ public class TestMetaStoreEventListener {
     msc.alter_table(dbName, tblName, renamedTable);
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 1);
+    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 2);
 
     renamedTable = msc.getTable(dbName, renamed);
 

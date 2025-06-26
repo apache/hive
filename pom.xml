@@ -66,8 +66,8 @@
     <standalone-metastore.version>4.1.0-SNAPSHOT</standalone-metastore.version>
     <hive.version.shortname>4.1.0</hive.version.shortname>
     <!-- Build Properties -->
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <hive.path.to.root>.</hive.path.to.root>
@@ -92,7 +92,7 @@
     <test.excludes.additional/>
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4 -Duser.country=US</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4 -Duser.country=US -Dio.netty.tryReflectionSetAccessible=true -Djava.locale.providers=COMPAT,CLDR --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED</maven.test.jvm.args>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
@@ -110,13 +110,13 @@
     <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <avatica.version>1.23.0</avatica.version>
-    <avro.version>1.11.4</avro.version>
+    <avro.version>1.12.0</avro.version>
     <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
     <calcite.version>1.33.0</calcite.version>
-    <datanucleus-api-jdo.version>5.2.8</datanucleus-api-jdo.version>
-    <datanucleus-core.version>5.2.10</datanucleus-core.version>
+    <datanucleus-api-jdo.version>6.0.3</datanucleus-api-jdo.version>
+    <datanucleus-core.version>6.0.10</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>5.2.10</datanucleus-rdbms.version>
+    <datanucleus-rdbms.version>6.0.10</datanucleus-rdbms.version>
     <commons-cli.version>1.5.0</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
@@ -124,7 +124,7 @@
     <commons-compress.version>1.26.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-io.version>2.14.0</commons-io.version>
+    <commons-io.version>2.16.1</commons-io.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
@@ -143,6 +143,7 @@
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
     <hppc.version>0.7.2</hppc.version>
+    <graalvm.version>23.0.8</graalvm.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.7</disruptor.version>
     <hikaricp.version>4.0.3</hikaricp.version>
@@ -164,7 +165,6 @@
     <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
-    <jts.version>1.19.0</jts.version>
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.11.2</junit.jupiter.version>
     <junit.vintage.version>5.11.2</junit.vintage.version>
@@ -182,31 +182,34 @@
     <postgres.version>42.7.3</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>5.9</opencsv.version>
-    <orc.version>1.9.4</orc.version>
+    <orc.version>2.1.2</orc.version>
     <otel.version>1.42.0</otel.version>
-    <mockito-core.version>3.4.4</mockito-core.version>
-    <mockito-inline.version>4.11.0</mockito-inline.version>
+    <mockito-core.version>5.17.0</mockito-core.version>
+    <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.116.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.15.1</parquet.version>
+    <parquet.version>1.15.2</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
+    <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
+    <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <rat.version>0.16.1</rat.version>
     <roaringbit.version>1.2.1</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.1.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.10.4</tez.version>
+    <tez.version>0.10.5</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.10.4</snappy.version>
-    <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
+    <jersey-wadl-doclet.version>4.0.0-M2</jersey-wadl-doclet.version>
+    <jaxb-runtime.version>4.0.0-M2</jaxb-runtime.version>
     <velocity.version>2.3</velocity.version>
     <xerces.version>2.12.2</xerces.version>
     <xmlsec.version>2.3.4</xmlsec.version>
@@ -221,7 +224,7 @@
     <rs-api.version>2.0.1</rs-api.version>
     <json-path.version>2.9.0</json-path.version>
     <janino.version>3.1.12</janino.version>
-    <datasketches.version>1.2.0</datasketches.version>
+    <datasketches.version>2.0.0</datasketches.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
@@ -230,7 +233,7 @@
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
-    <project.build.outputTimestamp>2024-01-01T00:00:00Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -352,12 +355,6 @@
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.locationtech.jts</groupId>
-        <artifactId>jts-core</artifactId>
-        <version>${jts.version}</version>
-        <scope>runtime</scope>
-      </dependency>
-      <dependency>
         <groupId>com.sun.jersey</groupId>
         <artifactId>jersey-core</artifactId>
         <version>${jersey.version}</version>
@@ -373,9 +370,14 @@
         <version>${jersey.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.sun.jersey.contribs</groupId>
-        <artifactId>wadl-resourcedoc-doclet</artifactId>
-        <version>${wadl-resourcedoc-doclet.version}</version>
+        <groupId>org.glassfish.jersey.ext</groupId>
+        <artifactId>jersey-wadl-doclet</artifactId>
+        <version>${jersey-wadl-doclet.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb-runtime.version}</version>
       </dependency>
       <dependency>
         <groupId>com.sun.jersey</groupId>
@@ -416,6 +418,16 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-math3</artifactId>
         <version>${commons-math3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js-scriptengine</artifactId>
+        <version>${graalvm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js</artifactId>
+        <version>${graalvm.version}</version>
       </dependency>
       <dependency>
         <groupId>io.jsonwebtoken</groupId>
@@ -1401,36 +1413,8 @@
         <version>${tez.version}</version>
         <exclusions>
           <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-common</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-hdfs</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-yarn-client</artifactId>
+            <groupId>*</groupId>
+            <artifactId>*</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -1573,6 +1557,11 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.os72</groupId>
+          <artifactId>protoc-jar-maven-plugin</artifactId>
+          <version>${protoc-jar-maven-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -1822,7 +1811,6 @@
             <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
-            <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
             <test.src.tables/>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
@@ -1848,6 +1836,7 @@
         </executions>
         <configuration>
           <excludes>
+            <exclude>.m2/**</exclude>
             <eclude>.gitattributes</eclude>
             <exclude>*.patch</exclude>
             <exclude>**/pull_request_template.md</exclude>
@@ -1903,6 +1892,29 @@
         <groupId>org.jamon</groupId>
         <artifactId>jamon-maven-plugin</artifactId>
         <version>${jamon.plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <doclint>none</doclint>
+          <useStandardDocletOptions>false</useStandardDocletOptions>
+          <additionalDependencies>
+            <additionalDependency>
+              <groupId>io.dropwizard.metrics</groupId>
+              <artifactId>metrics-core</artifactId>
+              <version>${dropwizard.version}</version>
+            </additionalDependency>
+          </additionalDependencies>
+        </configuration>
+        <executions>
+          <execution>
+            <id>aggregate</id>
+            <goals>
+              <goal>aggregate</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

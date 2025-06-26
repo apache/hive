@@ -72,15 +72,20 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String branchName = "test_branch_1";
+    String branchName2 = "test_branch_2";
     Long snapshotId = table.history().get(0).snapshotId();
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_VERSION AS OF %d",
         branchName, snapshotId));
+    shell.executeStatement(
+        String.format("CREATE BRANCH %s FROM customers FOR SYSTEM_VERSION AS OF %d", branchName2,
+            snapshotId));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);
     Assert.assertEquals(snapshotId.longValue(), ref.snapshotId());
     Assert.assertNull(ref.minSnapshotsToKeep());
     Assert.assertNull(ref.maxSnapshotAgeMs());
     Assert.assertNull(ref.maxRefAgeMs());
+    Assert.assertEquals(snapshotId.longValue(), table.refs().get(branchName2).snapshotId());
   }
 
   @Test
@@ -90,13 +95,18 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String branchName = "test_branch_1";
+    String branchName2 = "test_branch_2";
     Long snapshotId = table.history().get(0).snapshotId();
 
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_TIME AS OF '%s'",
         branchName, timestampAfterSnapshot(table, 0)));
+    shell.executeStatement(
+        String.format("CREATE BRANCH %s FROM customers FOR SYSTEM_TIME AS OF '%s'", branchName2,
+            timestampAfterSnapshot(table, 0)));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);
     Assert.assertEquals(snapshotId.longValue(), ref.snapshotId());
+    Assert.assertEquals(snapshotId.longValue(), table.refs().get(branchName2).snapshotId());
   }
 
   @Test
@@ -106,15 +116,19 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String branchName = "test_branch_1";
+    String branchName2 = "test_branch_2";
     long maxRefAge = 5L;
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s RETAIN %d DAYS",
         branchName, maxRefAge));
+    shell.executeStatement(
+        String.format("CREATE BRANCH %s FROM customers RETAIN %d DAYS", branchName2, maxRefAge));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);
     Assert.assertEquals(table.currentSnapshot().snapshotId(), ref.snapshotId());
     Assert.assertNull(ref.minSnapshotsToKeep());
     Assert.assertNull(ref.maxSnapshotAgeMs());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), ref.maxRefAgeMs().longValue());
+    Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), table.refs().get(branchName2).maxRefAgeMs().longValue());
   }
 
   @Test
@@ -124,13 +138,18 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String branchName = "test_branch_1";
+    String branchName2 = "test_branch_2";
     Integer minSnapshotsToKeep = 2;
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s WITH SNAPSHOT RETENTION %d SNAPSHOTS",
         branchName, minSnapshotsToKeep));
+    shell.executeStatement(
+        String.format("CREATE BRANCH %s  FROM customers WITH SNAPSHOT RETENTION %d SNAPSHOTS", branchName2,
+            minSnapshotsToKeep));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);
     Assert.assertEquals(table.currentSnapshot().snapshotId(), ref.snapshotId());
     Assert.assertEquals(minSnapshotsToKeep, ref.minSnapshotsToKeep());
+    Assert.assertEquals(minSnapshotsToKeep, table.refs().get(branchName2).minSnapshotsToKeep());
     Assert.assertNull(ref.maxSnapshotAgeMs());
     Assert.assertNull(ref.maxRefAgeMs());
   }
@@ -142,15 +161,21 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String branchName = "test_branch_1";
+    String branchName2 = "test_branch_2";
     Integer minSnapshotsToKeep = 2;
     long maxSnapshotAge = 2L;
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s WITH SNAPSHOT RETENTION %d SNAPSHOTS" +
         " %d DAYS", branchName, minSnapshotsToKeep, maxSnapshotAge));
+    shell.executeStatement(
+        String.format("CREATE BRANCH %s FROM customers WITH SNAPSHOT RETENTION %d SNAPSHOTS %d DAYS", branchName2,
+            minSnapshotsToKeep, maxSnapshotAge));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);
     Assert.assertEquals(table.currentSnapshot().snapshotId(), ref.snapshotId());
     Assert.assertEquals(minSnapshotsToKeep, ref.minSnapshotsToKeep());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxSnapshotAge), ref.maxSnapshotAgeMs().longValue());
+    Assert.assertEquals(TimeUnit.DAYS.toMillis(maxSnapshotAge),
+        table.refs().get(branchName2).maxSnapshotAgeMs().longValue());
     Assert.assertNull(ref.maxRefAgeMs());
   }
 
@@ -161,19 +186,27 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
             fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     String branchName = "test_branch_1";
+    String branchName2 = "test_branch_2";
     Long snapshotId = table.history().get(0).snapshotId();
     Integer minSnapshotsToKeep = 2;
     long maxSnapshotAge = 2L;
     long maxRefAge = 5L;
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR SYSTEM_VERSION AS OF %d RETAIN" +
-            " %d DAYS WITH SNAPSHOT RETENTION %d SNAPSHOTS %d days",
-        branchName, snapshotId, maxRefAge, minSnapshotsToKeep, maxSnapshotAge));
+            " %d DAYS WITH SNAPSHOT RETENTION %d SNAPSHOTS %d days", branchName, snapshotId, maxRefAge,
+        minSnapshotsToKeep, maxSnapshotAge));
+    shell.executeStatement(String.format("CREATE BRANCH %s  FROM customers FOR SYSTEM_VERSION AS OF %d RETAIN %d DAYS" +
+            " WITH SNAPSHOT RETENTION %d SNAPSHOTS %d days", branchName2, snapshotId, maxRefAge, minSnapshotsToKeep,
+        maxSnapshotAge));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName);
+    SnapshotRef ref2 = table.refs().get(branchName2);
     Assert.assertEquals(snapshotId.longValue(), ref.snapshotId());
     Assert.assertEquals(minSnapshotsToKeep, ref.minSnapshotsToKeep());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxSnapshotAge), ref.maxSnapshotAgeMs().longValue());
     Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), ref.maxRefAgeMs().longValue());
+    Assert.assertEquals(snapshotId.longValue(), ref2.snapshotId());
+    Assert.assertEquals(TimeUnit.DAYS.toMillis(maxSnapshotAge), ref2.maxSnapshotAgeMs().longValue());
+    Assert.assertEquals(TimeUnit.DAYS.toMillis(maxRefAge), ref2.maxRefAgeMs().longValue());
   }
 
   @Test
@@ -216,14 +249,18 @@ public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWit
     String tagName = "test_tag";
     String branchName2 = "test_branch_2";
     String nonExistTag = "test_non_exist_tag";
+    String branchName3 = "test_branch_3";
     shell.executeStatement(String.format("ALTER TABLE customers CREATE TAG %s", tagName));
 
     // Create a branch based on an existing tag.
     shell.executeStatement(String.format("ALTER TABLE customers CREATE BRANCH %s FOR TAG AS OF %s",
         branchName1, tagName));
+    shell.executeStatement(
+        String.format("CREATE BRANCH %s FROM customers FOR TAG AS OF %s", branchName3, tagName));
     table.refresh();
     SnapshotRef ref = table.refs().get(branchName1);
     Assert.assertEquals(table.currentSnapshot().snapshotId(), ref.snapshotId());
+    Assert.assertEquals(table.currentSnapshot().snapshotId(), table.refs().get(branchName3).snapshotId());
     Assert.assertNull(ref.minSnapshotsToKeep());
     Assert.assertNull(ref.maxSnapshotAgeMs());
     Assert.assertNull(ref.maxRefAgeMs());

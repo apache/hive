@@ -1008,7 +1008,7 @@ public final class FileUtils {
     // into destPath without failing. So check it before renaming.
     if (fs.exists(destPath)) {
       throw new IOException("Cannot rename the source path. The destination "
-          + "path already exists.");
+              + "path already exists.");
     }
     return fs.rename(sourcePath, destPath);
   }
@@ -1094,8 +1094,10 @@ public final class FileUtils {
     if (childStatus.getOwner().equals(user)) {
       return;
     }
-    String msg = String.format("Permission Denied: User %s can't delete %s because sticky bit is"
-        + " set on the parent dir and user does not own this file or its parent", user, path);
+    String msg = ("""
+        Permission Denied: User %s can't delete %s because sticky bit is\
+         set on the parent dir and user does not own this file or its parent\
+        """).formatted(user, path);
     throw new IOException(msg);
 
   }

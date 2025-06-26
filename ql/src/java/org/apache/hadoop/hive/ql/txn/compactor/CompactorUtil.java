@@ -75,6 +75,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -84,6 +85,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
@@ -92,7 +94,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class CompactorUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CompactorUtil.class);
   public static final String COMPACTOR = "compactor";
+  public static final String COMPACTOR_PREFIX = COMPACTOR + ".";
   private static final String COMPACTOR_THRESHOLD_PREFIX = "compactorthreshold.";
+
 
   /**
    * List of accepted properties for defining the compactor's job queue.
@@ -578,5 +582,21 @@ public class CompactorUtil {
       poolName = params.get(Constants.HIVE_COMPACTOR_WORKER_POOL);
     }
     return poolName;
+  }
+
+  public static void overrideConfProps(HiveConf conf, CompactionInfo ci, Map<String, String> properties) {
+    overrideConfProps(conf, new StringableMap(ci.properties), properties);
+  }
+
+  public static void overrideConfProps(
+          HiveConf conf, Map<String, String> ciProperties, Map<String, String> properties) {
+    Stream.of(properties, ciProperties)
+            .filter(Objects::nonNull)
+            .flatMap(map -> map.entrySet().stream())
+            .filter(entry -> entry.getKey().startsWith(COMPACTOR_PREFIX))
+            .forEach(entry -> {
+              String property = entry.getKey().substring(COMPACTOR_PREFIX.length());
+              conf.set(property, entry.getValue());
+            });
   }
 }

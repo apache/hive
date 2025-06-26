@@ -176,6 +176,7 @@ TOK_DESCFUNCTION;
 TOK_ALTERTABLE;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
+TOK_ALTERTABLE_DROPCOL;
 TOK_ALTERTABLE_RENAMECOL;
 TOK_ALTERTABLE_RENAMEPART;
 TOK_ALTERTABLE_REPLACECOLS;
@@ -1015,6 +1016,12 @@ ddlStatement
     | createTableStatement
     | dropTableStatement
     | truncateTableStatement
+    | (KW_CREATE KW_OR KW_REPLACE KW_BRANCH) => createOrReplaceBranchStatement
+    | (KW_CREATE KW_OR KW_REPLACE KW_TAG) => createOrReplaceTagStatement
+    | createBranchStatement
+    | dropBranchStatement
+    | createTagStatement
+    | dropTagStatement
     | alterStatement
     | descStatement
     | showStatement

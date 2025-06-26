@@ -178,6 +178,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
@@ -550,6 +551,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
+
+    // Add user custom UDFs
+    addCustomUDFs(SessionState.getSessionConf());
   }
 
   private class VectorTaskColumnInfo {
@@ -2408,6 +2412,40 @@ public class Vectorizer implements PhysicalPlanResolver {
       vectorTaskColumnInfo.setReduceColumnNullOrder(columnNullOrder);
 
       return true;
+    }
+  }
+
+  private void addCustomUDFs(HiveConf hiveConf) {
+    if (hiveConf == null) {
+      return;
+    }
+
+    if (HiveVectorAdaptorUsageMode.CHOSEN !=
+        HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf)) {
+      return;
+    }
+
+    String[] udfs =
+        HiveConf.getTrimmedStringsVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTOR_ADAPTOR_CUSTOM_UDF_WHITELIST);
+    if (udfs == null) {
+      return;
+    }
+
+    ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
+
+    for (String udf : udfs) {
+      try {
+        Class<?> cls = Class.forName(udf, true, loader);
+        if (GenericUDF.class.isAssignableFrom(cls)) {
+          supportedGenericUDFs.add(cls);
+          LOG.info("Registered custom UDF: {}", udf);
+        } else {
+          LOG.warn("{} must inherit from the GenericUDF", udf);
+        }
+      } catch (ClassNotFoundException e) {
+        LOG.warn("Failed to register custom UDF: {}", udf, e);
+      }
     }
   }
 

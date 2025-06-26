@@ -315,7 +315,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitive
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -2695,7 +2697,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if (storageFormat.fillStorageFormat(child)) {
               directoryDesc.setInputFormat(storageFormat.getInputFormat());
               directoryDesc.setOutputFormat(storageFormat.getOutputFormat());
-              directoryDesc.setSerName(storageFormat.getSerde());
+              directoryDesc.setSerde(storageFormat.getSerde());
               directoryDescIsSet = true;
               continue;
             }
@@ -2713,7 +2715,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             case HiveParser.TOK_TABLESERIALIZER:
               ASTNode serdeChild = (ASTNode) child.getChild(0);
               storageFormat.setSerde(unescapeSQLString(serdeChild.getChild(0).getText()));
-              directoryDesc.setSerName(storageFormat.getSerde());
+              directoryDesc.setSerde(storageFormat.getSerde());
               if (serdeChild.getChildCount() > 1) {
                 directoryDesc.setSerdeProps(new HashMap<String, String>());
                 readProps((ASTNode) serdeChild.getChild(1).getChild(0), directoryDesc.getSerdeProps());
@@ -4976,12 +4978,51 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         pos++;
       }
     }
+    Operator output = generateSelectOperator(dest, selExprList, qb, input, exprList, out_rwsch, colList, selectStar, posn);
+    if (isInTransform) {
+      output = genScriptPlan(trfm, qb, output);
+    }
+
+    if (isUDTF) {
+      output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb, output, outerLV);
+
+      if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
+              && qb.getParseInfo().getDestSchemaForClause(dest) != null) {
+        List<ExprNodeDesc> expColList = explodeColListForUDTF(colList);
+        output = generateSelectOperator(dest, selExprList, qb, output, exprList, opParseCtx.get(output).getRowResolver(), expColList, selectStar, posn);
+      }
+    }
+
+    LOG.debug("Created Select Plan row schema: {}", out_rwsch);
+    return output;
+  }
+
+  /**
+   * Generates a Select operator for the given query block and destination.
+   * This method processes the SELECT clause of the query, creating the necessary
+   * operator to handle the selection of columns or expressions.
+   *
+   * @param dest The destination clause identifier.
+   * @param selExprList The ASTNode representing the SELECT expression list.
+   * @param qb The query block containing metadata and context for the query.
+   * @param input The input operator to which the Select operator will be connected.
+   * @param exprList The ASTNode representing the list of expressions in the SELECT clause.
+   * @param out_rwsch The RowResolver for the output schema of the Select operator.
+   * @param colList The list of column expressions to be included in the Select operator.
+   * @param selectStar A boolean indicating whether the SELECT clause includes a wildcard (*).
+   * @param posn The position of the current expression in the SELECT clause.
+   * @return The generated Select operator.
+   * @throws SemanticException If there is an error during the generation of the operator.
+   */
+  private Operator<?> generateSelectOperator(String dest, ASTNode selExprList, QB qb, Operator<?> input,
+                                             ASTNode exprList, RowResolver out_rwsch, List<ExprNodeDesc> colList,
+                                          boolean selectStar, int posn) throws SemanticException {
     selectStar = selectStar && exprList.getChildCount() == posn + 1;
 
     out_rwsch = handleInsertStatementSpec(colList, dest, out_rwsch, qb, selExprList);
 
-    List<String> columnNames = new ArrayList<String>();
-    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+    List<String> columnNames = new ArrayList<>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
     for (int i = 0; i < colList.size(); i++) {
       String outputCol = getColumnInternalName(i);
       colExprMap.put(outputCol, colList.get(i));
@@ -4989,19 +5030,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new SelectDesc(colList, columnNames, selectStar), new RowSchema(
-            out_rwsch.getColumnInfos()), input), out_rwsch);
+            new SelectDesc(colList, columnNames, selectStar), new RowSchema(
+                    out_rwsch.getColumnInfos()), input), out_rwsch);
 
     output.setColumnExprMap(colExprMap);
-    if (isInTransform) {
-      output = genScriptPlan(trfm, qb, output);
-    }
 
-    if (isUDTF) {
-      output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb, output, outerLV);
-    }
-
-    LOG.debug("Created Select Plan row schema: {}", out_rwsch);
     return output;
   }
 
@@ -5059,6 +5092,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Explodes a list of columns represented by a complex datatype for a User-Defined Table Function (UDTF).
+   * This method takes a list of column descriptors and explodes it into individual
+   * columns based on the structure of the list's element type.
+   *
+   * @param colList A list of column descriptors representing multiple columns
+   *                with a list type like array<struct<col1:string,col2:int>>
+   * @return A list of exploded column descriptors, where each column corresponds
+   *         to a field in the struct type of the list's element.
+   */
+  List<ExprNodeDesc> explodeColListForUDTF(List<ExprNodeDesc> colList) {
+    List<ExprNodeDesc> expColList = new ArrayList<>();
+
+    ListTypeInfo typeInfo = (ListTypeInfo) colList.get(0).getTypeInfo();
+    StructTypeInfo elementTypeInfo = (StructTypeInfo) typeInfo.getListElementTypeInfo();
+
+    List<String> fieldNames = elementTypeInfo.getAllStructFieldNames();
+    List<TypeInfo> typeInfos = elementTypeInfo.getAllStructFieldTypeInfos();
+
+    for (int i = 0; i < fieldNames.size(); i++) {
+      ExprNodeColumnDesc colDesc = new ExprNodeColumnDesc();
+      colDesc.setColumn(fieldNames.get(i));
+      colDesc.setTypeInfo(typeInfos.get(i));
+      expColList.add(colDesc);
+    }
+
+    return expColList;
+  }
+
+  /**
    * This modifies the Select projections when the Select is part of an insert statement and
    * the insert statement specifies a column list for the target table, e.g.
    * create table source (a int, b int);
@@ -5084,6 +5146,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return outputRR;
     }
     if(targetTableSchema.size() != col_list.size()) {
+      if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)
+              && col_list.get(0).getTypeInfo() instanceof ListTypeInfo
+              && targetTableSchema.size() == explodeColListForUDTF(col_list).size()){
+        return outputRR;
+      }
       Table target = qb.getMetaData().getDestTableForAlias(dest);
       Partition partition = target == null ? qb.getMetaData().getDestPartitionForAlias(dest) : null;
       throw new SemanticException(generateErrorMessage(selExprList,
@@ -7914,7 +7981,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tblDesc.setCols(new ArrayList<>(fieldSchemas));
         tblDesc.setPartCols(new ArrayList<>(partitionColumns));
       } else if (viewDesc != null) {
-        viewDesc.setSchema(new ArrayList<>(fieldSchemas));
+        viewDesc.setCols(new ArrayList<>(fieldSchemas));
         viewDesc.setPartCols(new ArrayList<>(partitionColumns));
         if (viewDesc.isOrganized()) {
           viewDesc.setSortCols(new ArrayList<>(sortColumns));
@@ -11988,13 +12055,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // put virtual columns into RowResolver.
-      List<VirtualColumn> vcList = new ArrayList<>();
-      if (!tab.isNonNative()) {
-        vcList.addAll(VirtualColumn.getRegistry(conf));
-      }
-      if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab)) {
-        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
-      }
+      List<VirtualColumn> vcList = tab.getVirtualColumns();
 
       vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
               vc.getTypeInfo(), alias, true, vc.getIsHidden()
@@ -13424,7 +13485,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new ArrayList<FieldSchema>(resultSchema);
     ParseUtils.validateColumnNameUniqueness(derivedSchema);
 
-    List<FieldSchema> imposedSchema = createVwDesc.getSchema();
+    List<FieldSchema> imposedSchema = createVwDesc.getCols();
     if (imposedSchema != null) {
       int explicitColCount = imposedSchema.size();
       int derivedColCount = derivedSchema.size();
@@ -13480,7 +13541,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Set schema and expanded text for the view
-    createVwDesc.setSchema(derivedSchema);
+    createVwDesc.setCols(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
   }
 

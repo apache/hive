@@ -89,6 +89,9 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
         ICEBERG_STORAGE_HANDLER);
     table.setProperty("table_type", "ICEBERG");
     table.setProperty("write.format.default", "orc");
+    // set the default max snapshot age to 1 day for query history
+    // this is applied only during table creation, it can be manually altered afterward.
+    table.setProperty("history.expire.max-snapshot-age-ms", Integer.toString(24 * 60 * 60 * 1000));
     table.setProperty(hive_metastoreConstants.META_TABLE_NAME, QUERY_HISTORY_DB_TABLE_NAME);
 
     table.setFields(schema.getFields());
