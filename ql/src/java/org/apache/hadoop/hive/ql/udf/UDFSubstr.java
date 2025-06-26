@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +34,8 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+
+import static java.util.Arrays.copyOfRange;
 
 /**
  * UDFSubstr.
@@ -181,7 +182,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return new BytesWritable();
     }
 
-    return new BytesWritable(arrayCopy(bw.getBytes(), index[0], index[1]));
+    return new BytesWritable(copyOfRange(bw.getBytes(), index[0], index[0] + index[1]));
   }
 
   private BytesWritable evaluateInternal(BytesWritable bw, int pos) {
@@ -192,7 +193,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return new BytesWritable();
     }
 
-    return new BytesWritable(arrayCopy(bw.getBytes(), offset, bw.getLength() - offset));
+    return new BytesWritable(copyOfRange(bw.getBytes(), offset, bw.getLength()));
   }
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos){
@@ -215,17 +216,6 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     return new SubStrStatEstimator();
   }
 
-  private byte[] arrayCopy(byte[] src, int pos, int len) {
-    byte[] b = new byte[len];
-
-    int copyIdx = 0;
-    for (int srcIdx = pos; copyIdx < len; srcIdx++) {
-      b[copyIdx] = src[srcIdx];
-      copyIdx++;
-    }
-    return b;
-  }
-
   private int adjustStartPos(int pos) {
     if (pos <= 0) {
       return pos;
@@ -244,7 +234,6 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       // 99 rows with 0 length
       // orig avg is 10
       // new avg is 5 (if substr(5)) ; but in reality it will stay ~10
-      Optional<Double> start = getRangeWidth(csList.get(1).getRange());
       Range startRange = csList.get(1).getRange();
       if (startRange != null && startRange.minValue != null) {
         double newAvgColLen = cs.getAvgColLen() - startRange.minValue.doubleValue();
@@ -255,7 +244,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       if (csList.size() > 2) {
         Range lengthRange = csList.get(2).getRange();
         if (lengthRange != null && lengthRange.maxValue != null) {
-          Double w = lengthRange.maxValue.doubleValue();
+          double w = lengthRange.maxValue.doubleValue();
           if (cs.getAvgColLen() > w) {
             cs.setAvgColLen(w);
           }
@@ -263,15 +252,5 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       }
       return Optional.of(cs);
     }
-
-    private Optional<Double> getRangeWidth(Range range) {
-      if (range != null) {
-        if (range.minValue != null && range.maxValue != null) {
-          return Optional.of(range.maxValue.doubleValue() - range.minValue.doubleValue());
-        }
-      }
-      return Optional.empty();
-    }
-
-  }
+ }
 }
