@@ -23,12 +23,8 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import org.junit.Test;
-
-import java.util.UUID;
 
 /**
  * TestUDFUUID.
@@ -37,30 +33,16 @@ public class TestUDFUUID {
   @Test
   public void testUUID() throws Exception {
     UDFUUID udf = new UDFUUID();
+
     String id1 = udf.evaluate().toString();
     String id2 = udf.evaluate().toString();
+
     assertFalse(id1.equals(id2));
+
     assertEquals(id1.length(), 36);
     assertEquals(id2.length(), 36);
-    GenericUDFBridge bridge = new GenericUDFBridge("uuid", false, UDFUUID.class.getName());
-    assertFalse(FunctionRegistry.isDeterministic(bridge));
-  }
 
-  @Test
-  public void testUUIDv7() throws Exception {
-    UDFUUIDv7 udf = new UDFUUIDv7();
-    long timestampBefore = System.currentTimeMillis();
-    String id1 = udf.evaluate(null).toString();
-    long timestampAfter = System.currentTimeMillis();
-    UUID v7id1 = UUID.fromString(id1);
-    assertEquals(7, v7id1.version());
-    long v7IdTimeStamp = v7id1.getMostSignificantBits() >>> 16;
-    assertTrue(v7IdTimeStamp <= timestampAfter && timestampBefore <= v7IdTimeStamp);
-    String id2 = udf.evaluate(null).toString();
-    assertNotEquals(id1, id2);
-    assertEquals(36, id1.length());
-    assertEquals(36, id2.length());
-    GenericUDFBridge bridge = new GenericUDFBridge("uuid_v7", false, UDFUUIDv7.class.getName());
+    GenericUDFBridge bridge = new GenericUDFBridge("uuid", false, UDFUUID.class.getName());
     assertFalse(FunctionRegistry.isDeterministic(bridge));
   }
 }

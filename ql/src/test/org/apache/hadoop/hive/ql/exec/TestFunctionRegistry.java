@@ -561,6 +561,7 @@ public class TestFunctionRegistry {
 
     checkNondeterministicFn(getUDF("rand"));
     checkNondeterministicFn(getUDF("uuid"));
+    checkNondeterministicFn(getUDF("uuid_v7"));
 
     checkRuntimeConstant(getUDF("current_database"));
     checkRuntimeConstant(getUDF("current_date"));

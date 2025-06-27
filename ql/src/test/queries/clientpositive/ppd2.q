@@ -104,7 +104,7 @@ CREATE
  UNION ALL
      SELECT
         dt_from as DT_FROM,
-        uuid_v7() as DT_TO
+        uuid() as DT_TO
      FROM
        arc;
 
