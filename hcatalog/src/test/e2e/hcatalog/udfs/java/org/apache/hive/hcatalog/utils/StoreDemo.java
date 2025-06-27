@@ -130,7 +130,7 @@ public class StoreDemo {
     job.setOutputKeyClass(IntWritable.class);
     job.setNumReduceTasks(0);
     job.setOutputValueClass(DefaultHCatRecord.class);
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
+    ExitUtil.terminate(job.waitForCompletion(true) ? 0 : 1);
   }
 
 
@@ -144,7 +144,7 @@ public class StoreDemo {
       "the unpartitioned numbers_nopart_empty_initially table.\n\tIf the second argument is \"nopart_pig\", " +
       "data is written to the unpartitioned numbers_nopart_pig_empty_initially table.\nt" +
       "The hcat jar location should be specified as file://<full path to jar>\n");
-    System.exit(2);
+    ExitUtil.terminate(2);
 
   }
 

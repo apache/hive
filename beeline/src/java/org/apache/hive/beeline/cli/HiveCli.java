@@ -17,6 +17,7 @@
  */
 package org.apache.hive.beeline.cli;
 
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.beeline.BeeLine;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class HiveCli {
 
   public static void main(String[] args) throws IOException {
     int status = new HiveCli().runWithArgs(args, null);
-    System.exit(status);
+    ExitUtil.terminate(status);
   }
 
   public int runWithArgs(String[] cmd, InputStream inputStream) throws IOException {

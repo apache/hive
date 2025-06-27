@@ -28,6 +28,8 @@ import java.sql.Statement;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
+import org.apache.hadoop.util.ExitUtil;
+
 public class SunSignalHandler implements BeeLineSignalHandler, SignalHandler {
   private Statement stmt = null;
   private final BeeLine beeLine;
@@ -50,7 +52,7 @@ public class SunSignalHandler implements BeeLineSignalHandler, SignalHandler {
       // exit the JVM if Ctrl+C is received
       // and no current statement is executing
       if(stmt == null || stmt.isClosed()) {
-        System.exit(127);
+        ExitUtil.terminate(127);
       } else {
         beeLine.info(beeLine.loc("interrupt-ctrl-c"));
         stmt.cancel();

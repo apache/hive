@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hive.hcatalog.NoExitSecurityManager;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.thrift.TException;
 import org.junit.AfterClass;
@@ -220,12 +220,13 @@ public class TestHiveClientCache {
   private static class LocalMetaServer implements Runnable {
     public final int MS_PORT = 20101;
     private final HiveConf hiveConf;
-    private final SecurityManager securityManager;
     public final static int WAIT_TIME_FOR_BOOTUP = 30000;
 
     public LocalMetaServer() {
-      securityManager = System.getSecurityManager();
-      System.setSecurityManager(new NoExitSecurityManager());
+      ExitUtil.disableSystemExit();
+      ExitUtil.disableSystemHalt();
+      ExitUtil.resetFirstExitException();
+      ExitUtil.resetFirstHaltException();
       hiveConf = new HiveConf(TestHiveClientCache.class);
       hiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:"
           + MS_PORT);
@@ -261,7 +262,8 @@ public class TestHiveClientCache {
     }
 
     public void shutDown() {
-      System.setSecurityManager(securityManager);
+      ExitUtil.resetFirstExitException();
+      ExitUtil.resetFirstHaltException();
     }
   }
 }

@@ -18,8 +18,10 @@
 
 package org.apache.hive.hplsql;
 
+import org.apache.hadoop.util.ExitUtil;
+
 public class Hplsql {
   public static void main(String[] args) throws Exception {
-    System.exit(new Exec().run(args));
+    ExitUtil.terminate(new Exec().run(args));
   }
 }

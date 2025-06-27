@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.ExitUtil;
 
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
@@ -146,7 +147,7 @@ public class TestHiveHistory {
         ss.out = new SessionStream(System.out, true, "UTF-8");
         ss.err = new SessionStream(System.err, true, "UTF-8");
       } catch (UnsupportedEncodingException e) {
-        System.exit(3);
+        ExitUtil.terminate(3);
       }
 
       SessionState.start(ss);

@@ -51,8 +51,8 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.hcatalog.DerbyPolicy;
-import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.thrift.TException;
@@ -81,7 +81,8 @@ public class TestPermsGrp {
 
   @After
   public void tearDown() throws Exception {
-    System.setSecurityManager(securityManager);
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
   }
 
   @Before
@@ -96,8 +97,10 @@ public class TestPermsGrp {
 
     isServerRunning = true;
 
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
+    ExitUtil.disableSystemExit();
+    ExitUtil.disableSystemHalt();
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
     Policy.setPolicy(new DerbyPolicy());
 
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
@@ -285,8 +288,4 @@ public class TestPermsGrp {
     sd.setSerdeInfo(new SerDeInfo());
     return tbl;
   }
-
-
-  private SecurityManager securityManager;
-
 }

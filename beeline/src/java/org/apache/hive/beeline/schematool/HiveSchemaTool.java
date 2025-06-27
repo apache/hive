@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.beeline.BeeLine;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
@@ -201,7 +202,7 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
         .create("metaDbType");
     additionalGroup.addOption(metaDbTypeOpt);
     System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getVarname(), "true");
-    System.exit(tool.run(findHomeDir(), args, additionalGroup,
+    ExitUtil.terminate(tool.run(findHomeDir(), args, additionalGroup,
         MetastoreConf.newMetastoreConf()));
   }
 }
