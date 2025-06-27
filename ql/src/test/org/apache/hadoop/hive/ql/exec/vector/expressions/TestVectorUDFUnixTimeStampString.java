@@ -26,11 +26,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvException;
+import java.io.BufferedReader;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,6 +39,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.CharacterCodingException;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.List;
+import java.util.ArrayList;
 
 @RunWith(Parameterized.class)
 public class TestVectorUDFUnixTimeStampString {
@@ -60,15 +58,19 @@ public class TestVectorUDFUnixTimeStampString {
   }
 
   @Parameterized.Parameters(name = "('{0}'), zone={1}, parserLegacy={2}")
-  public static Collection<String[]> readInputs() throws IOException, CsvException {
-    CSVParser parser = new CSVParserBuilder().withSeparator(';').withIgnoreQuotations(true).build();
+  public static Collection<String[]> readInputs() throws IOException {
+    List<String[]> result = new ArrayList<>();
     try (InputStream in = TestVectorUDFUnixTimeStampString.class.getResourceAsStream(
         "TestVectorUnixTimeStampString.csv")) {
       Objects.requireNonNull(in);
-      try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(in)).withCSVParser(parser).build()) {
-        return reader.readAll();
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          result.add(line.split(";"));
+        }
       }
     }
+    return result;
   }
 
   @Test
