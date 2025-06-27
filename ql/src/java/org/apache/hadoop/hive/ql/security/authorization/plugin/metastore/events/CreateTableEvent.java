@@ -20,11 +20,12 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -34,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /*
@@ -62,11 +62,18 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
+    Database                  database = event.getDatabase();
     String                    uri   = getSdLocation(table.getSd());
 
-    if (StringUtils.isNotEmpty(uri)) {
+    if (StringUtils.isEmpty(uri)) {
+      return ret;
+    }
+
+    // Skip DFS_URI only if table location is under default db path
+    if (this.needDFSUriAuth(uri, this.getDefaultTablePath(database, table))) {
       ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
     }
+
     return ret;
   }
 
@@ -82,8 +89,12 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
 
-    if (StringUtils.isNotEmpty(uri) && !TableType.EXTERNAL_TABLE.toString().equalsIgnoreCase(table.getTableType())) {
-      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+    if (StringUtils.isNotEmpty(uri)) {
+      // Skip DFS_URI for external tables and if managed table location is under default db path
+      if (!MetaStoreUtils.isExternalTable(table) && this.needDFSUriAuth(uri,
+          this.getDefaultTablePath(database, table))) {
+        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+      }
     }
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);
@@ -101,4 +112,20 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     }
     return ret;
   }
+
+  private String getDefaultTablePath(Database database, Table table) {
+    String expectedTablePath = null;
+    try {
+      expectedTablePath = preEventContext.getHandler().getWh().getDefaultTablePath(database, table).toString();
+    } catch (MetaException e) {
+      LOG.warn("Got exception fetching Default location for dbName: {} tableName: {} ", database.getName(),
+          table.getTableName(), e);
+    }
+    return expectedTablePath;
+  }
+
+  private boolean needDFSUriAuth(String uri, String expectedTablePath) {
+    return (StringUtils.isEmpty(expectedTablePath) || !uri.equalsIgnoreCase(expectedTablePath));
+  }
+
 }
