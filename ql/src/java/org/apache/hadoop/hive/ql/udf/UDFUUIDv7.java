@@ -34,12 +34,12 @@ import org.apache.hadoop.io.Text;
 @Description(name = "uuid_v7",
         value = "_FUNC_() - Returns a universally unique identifier (UUID_V7) string.",
         extended = """
-                The value is returned as a canonical UUID 36-character string.
+                The value is returned as a canonical UUIDv7 36-character string.
                 Example:
                   > SELECT _FUNC_();
-                  '0baf1f52-53df-487f-8292-99a03716b688'
+                  '0197b082-4dc8-770e-9a75-bd601dff26a1'
                   > SELECT _FUNC_();
-                  '36718a53-84f5-45d6-8796-4f79983ad49d'""")
+                  '0197b082-bc45-745f-adb7-43df40797b0b'""")
 @UDFType(deterministic = false)
 public class UDFUUIDv7 extends GenericUDF {
   private final Text result = new Text();
