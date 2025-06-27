@@ -740,9 +740,8 @@ public class TestHiveMetaStoreAuthorizer {
       assertEquals("Should have one DFS_URI privilege object", 1, tableOutputs.size());
       HivePrivilegeObject DFSUriObj = tableOutputs.get(0);
 
-      assertEquals("Output object should be a table",
-          HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI,
-          DFSUriObj.getType());
+      assertEquals("DFS_URI should be same as new partition location",
+          oldPart.getSd().getLocation()+ "/hh=01", DFSUriObj.getObjectName());
     } catch (Exception e) {
       fail("testV_AlterPartition_DFSUriPrivObject() failed with " + e);
     }

@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import java.util.List;
+
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-
-import java.util.List;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
