@@ -29,7 +29,7 @@ public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
 
   @Before
   public void openWarehouse() throws Exception {
-    warehouse = new Warehouse(conf);
+    warehouse = Warehouse.create(conf);
     client = createClient();
   }
 
