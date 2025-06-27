@@ -1664,7 +1664,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>enforce-banned-dependencies-licenses</id>
+            <id>enforce-banned-dependencies</id>
             <goals>
               <goal>enforce</goal>
             </goals>
@@ -1677,17 +1677,6 @@
                   </excludes>
                   <message>A banned license dependency was found!</message>
                 </bannedDependencies>
-              </rules>
-              <fail>true</fail>
-            </configuration>
-          </execution>
-          <execution>
-            <id>enforce-banned-dependencies-logging</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
                 <bannedDependencies>
                   <excludes>
                     <!-- Move to SLF4J -->
