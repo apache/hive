@@ -64,6 +64,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
@@ -307,7 +308,7 @@ public class LoadPartitions {
         + partSpecToString(partSpec.getPartSpec()) + " with source location: "
         + partSpec.getLocation());
       if (!lastProcessedStageFound && lastPartSpec != null &&
-        lastPartSpec.getLocation() != partSpec.getLocation()) {
+              !Objects.equals(lastPartSpec.getLocation(), partSpec.getLocation())) {
         //Don't process copy task if already processed as part of previous run
         continue;
       }
