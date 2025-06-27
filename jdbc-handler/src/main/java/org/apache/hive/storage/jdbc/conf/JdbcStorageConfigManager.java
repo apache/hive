@@ -45,6 +45,7 @@ public class JdbcStorageConfigManager {
   public static final String CONFIG_PWD_KEYSTORE = Constants.JDBC_KEYSTORE;
   public static final String CONFIG_PWD_KEY = Constants.JDBC_KEY;
   public static final String CONFIG_PWD_URI = Constants.JDBC_PASSWORD_URI;
+
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
                JdbcStorageConfig.JDBC_URL,
@@ -66,7 +67,9 @@ public class JdbcStorageConfigManager {
       if (!key.equals(CONFIG_PWD) &&
           !key.equals(CONFIG_PWD_KEYSTORE) &&
           !key.equals(CONFIG_PWD_KEY) &&
-          !key.equals(CONFIG_PWD_URI)) {
+          !key.equals(CONFIG_PWD_URI) &&
+          !key.equals(CONFIG_USERNAME)
+      ) {
         jobProps.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
       }
     }
