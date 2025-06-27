@@ -1,8 +1,8 @@
-Warning: Map Join MAPJOIN[105][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[104][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[103][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[102][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[101][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[101][bigTable=?] in task 'Reducer 9' is a cross product
+Warning: Map Join MAPJOIN[105][bigTable=?] in task 'Reducer 7' is a cross product
+Warning: Map Join MAPJOIN[104][bigTable=?] in task 'Reducer 7' is a cross product
+Warning: Map Join MAPJOIN[103][bigTable=?] in task 'Reducer 7' is a cross product
+Warning: Map Join MAPJOIN[102][bigTable=?] in task 'Reducer 7' is a cross product
 CBO PLAN:
 HiveProject(b1_lp=[$0], b1_cnt=[$1], b1_cntd=[$2], b2_lp=[$15], b2_cnt=[$16], b2_cntd=[$17], b3_lp=[$12], b3_cnt=[$13], b3_cntd=[$14], b4_lp=[$9], b4_cnt=[$10], b4_cntd=[$11], b5_lp=[$6], b5_cnt=[$7], b5_cntd=[$8], b6_lp=[$3], b6_cnt=[$4], b6_cntd=[$5])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
