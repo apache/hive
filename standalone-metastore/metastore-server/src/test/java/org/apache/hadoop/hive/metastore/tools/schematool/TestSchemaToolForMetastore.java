@@ -29,10 +29,9 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -45,12 +44,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.MetastoreRuleFactory;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -75,20 +69,13 @@ public class TestSchemaToolForMetastore {
   private PrintStream outStream;
   private SchemaToolTaskValidate validator;
 
-  public TestSchemaToolForMetastore(DatabaseRule dbms){
-    this.dbms = dbms;
+  public TestSchemaToolForMetastore(String dbType){
+    this.dbms = MetastoreRuleFactory.create(dbType);
   }
 
   @Parameterized.Parameters(name = "{0}")
-  public static Collection<Object[]> databases() {
-    List<Object[]> dbs = new ArrayList<>();
-    dbs.add(new Object[] { new Derby(true) });
-    dbs.add(new Object[] { new Mysql() });
-    dbs.add(new Object[] { new Oracle() });
-    dbs.add(new Object[] { new Postgres() });
-    dbs.add(new Object[] { new Mariadb() });
-    dbs.add(new Object[] { new Mssql() });
-    return dbs;
+  public static Collection<String> databases() {
+    return Arrays.asList("derby.clean", "mysql", "oracle", "postgres", "mariadb", "mssql");
   }
   
   @Before

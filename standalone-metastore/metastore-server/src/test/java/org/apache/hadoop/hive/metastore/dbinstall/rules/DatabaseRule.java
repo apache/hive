@@ -17,37 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract JUnit TestRule for different RDMBS types.
  */
 public abstract class DatabaseRule extends ExternalResource {
-  private static final Logger LOG = LoggerFactory.getLogger(DatabaseRule.class);
-
   protected static final String HIVE_USER = "hiveuser";
   // used in most of the RDBMS configs, except MSSQL
   protected static final String HIVE_PASSWORD = "hivepassword";
   protected static final String HIVE_DB = "hivedb";
-  private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
   public abstract String getHivePassword();
-
-  public abstract String getDockerImageName();
-
-  public abstract String[] getDockerAdditionalArgs();
 
   public abstract String getDbType();
 
@@ -57,25 +39,13 @@ public abstract class DatabaseRule extends ExternalResource {
 
   public abstract String getJdbcDriver();
 
-  public abstract String getJdbcUrl(String hostAddress);
-
-  public final String getJdbcUrl() {
-    return getJdbcUrl(getContainerHostAddress());
-  }
-
-  public final String getContainerHostAddress() {
-    String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
-    if (hostAddress != null) {
-      return hostAddress;
-    } else {
-      return "localhost";
-    }
-  }
+  public abstract String getJdbcUrl();
 
   private boolean verbose;
 
   public DatabaseRule() {
     verbose = System.getProperty("verbose.schematool") != null;
+    MetastoreSchemaTool.setHomeDirForTesting();
   }
 
   public DatabaseRule setVerbose(boolean verbose) {
@@ -92,151 +62,15 @@ public abstract class DatabaseRule extends ExternalResource {
    *
    * @return URL
    */
-  public abstract String getInitialJdbcUrl(String hostAddress);
+  public abstract String getInitialJdbcUrl();
 
-  public final String getInitialJdbcUrl() {
-    return getInitialJdbcUrl(getContainerHostAddress());
-  }
-
-  /**
-   * Determine if the docker container is ready to use.
-   *
-   * @param pr output of docker logs command
-   * @return true if ready, false otherwise
-   */
-  public abstract boolean isContainerReady(ProcessResults pr);
+  @Override
+  public abstract void before() throws Exception;
+  @Override
+  public abstract void after();
 
   protected String[] buildArray(String... strs) {
     return strs;
-  }
-
-  public static class ProcessResults {
-    final String stdout;
-    final String stderr;
-    final int rc;
-
-    public ProcessResults(String stdout, String stderr, int rc) {
-      this.stdout = stdout;
-      this.stderr = stderr;
-      this.rc = rc;
-    }
-  }
-
-  @Override
-  public void before() throws Exception { //runDockerContainer
-    runCmdAndPrintStreams(buildRmCmd(), 600);
-    if (runCmdAndPrintStreams(buildRunCmd(), 600).rc != 0) {
-      printDockerEvents();
-      throw new RuntimeException("Unable to start docker container");
-    }
-    long startTime = System.currentTimeMillis();
-    ProcessResults pr;
-    do {
-      Thread.sleep(1000);
-      pr = runCmdAndPrintStreams(buildLogCmd(), 30);
-      if (pr.rc != 0) {
-        printDockerEvents();
-        throw new RuntimeException("Failed to get docker logs");
-      }
-    } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
-    if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
-      printDockerEvents();
-      throw new RuntimeException(
-          String.format("Container initialization failed within %d seconds. Please check the hive logs.",
-              MAX_STARTUP_WAIT / 1000));
-    }
-    MetastoreSchemaTool.setHomeDirForTesting();
-  }
-
-  @Override
-  public void after() { // stopAndRmDockerContainer
-    if ("true".equalsIgnoreCase(System.getProperty("metastore.itest.no.stop.container"))) {
-      LOG.warn("Not stopping container " + getDockerContainerName() + " at user request, please "
-          + "be sure to shut it down before rerunning the test.");
-      return;
-    }
-    try {
-      if (runCmdAndPrintStreams(buildRmCmd(), 600).rc != 0) {
-        throw new RuntimeException("Unable to remove docker container");
-      }
-    } catch (InterruptedException | IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  protected String getDockerContainerName() {
-    String suffix = System.getenv("HIVE_TEST_DOCKER_CONTAINER_SUFFIX");
-    if (suffix == null) {
-      suffix = "";
-    } else {
-      suffix = "-" + suffix;
-    }
-    return String.format("metastore-test-%s-install%s", getDbType(), suffix);
-  }
-
-  private ProcessResults runCmd(String[] cmd, long secondsToWait)
-      throws IOException, InterruptedException {
-    LOG.info("Going to run: " + StringUtils.join(cmd, " "));
-    Process proc = Runtime.getRuntime().exec(cmd);
-    if (!proc.waitFor(Math.abs(secondsToWait), TimeUnit.SECONDS)) {
-      throw new RuntimeException("Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
-    }
-    BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-    final StringBuilder lines = new StringBuilder();
-    reader.lines().forEach(s -> lines.append(s).append('\n'));
-
-    reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-    final StringBuilder errLines = new StringBuilder();
-    reader.lines().forEach(s -> errLines.append(s).append('\n'));
-    LOG.info("Result lines#: {}(stdout);{}(stderr)",lines.length(), errLines.length());
-    return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
-  }
-
-  private ProcessResults runCmdAndPrintStreams(String[] cmd, long secondsToWait)
-      throws InterruptedException, IOException {
-    ProcessResults results = runCmd(cmd, secondsToWait);
-    LOG.info("Stdout from proc: " + results.stdout);
-    LOG.info("Stderr from proc: " + results.stderr);
-    return results;
-  }
-
-  protected void printDockerEvents() {
-    try {
-      runCmdAndPrintStreams(new String[] { "docker", "events", "--since", "24h", "--until", "0s" }, 3);
-    } catch (Exception e) {
-      LOG.warn("A problem was encountered while attempting to retrieve Docker events (the system made an analytical"
-          + " best effort to list the events to reveal the root cause). No further actions are necessary.", e);
-    }
-  }
-
-  private String[] buildRunCmd() {
-    List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
-    cmd.add("docker");
-    cmd.add("run");
-    cmd.add("--rm");
-    cmd.add("--name");
-    cmd.add(getDockerContainerName());
-    cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
-    cmd.add(getDockerImageName());
-    return cmd.toArray(new String[cmd.size()]);
-  }
-
-  private String[] buildRmCmd() {
-    return buildArray(
-        "docker",
-        "rm",
-        "-f",
-        "-v",
-        getDockerContainerName()
-    );
-  }
-
-  private String[] buildLogCmd() {
-    return buildArray(
-        "docker",
-        "logs",
-        getDockerContainerName()
-    );
   }
 
   public String getHiveUser(){
