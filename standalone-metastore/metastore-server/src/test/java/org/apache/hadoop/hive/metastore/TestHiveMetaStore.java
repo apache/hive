@@ -3519,7 +3519,7 @@ public abstract class TestHiveMetaStore {
     nonClosingClient.getAllDatabases();
     // Drop connection without calling close. HMS thread deleteContext
     // will trigger cleanup
-    nonClosingClient.getTTransport().close();
+    nonClosingClient.getThriftClient().getTTransport().close();
 
     MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after transport close", () -> {
       Set<JDOPersistenceManager> objectsAfterDroppedConnection = new HashSet<>(getJDOPersistenceManagerCache());
