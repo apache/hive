@@ -158,11 +158,7 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMe
 
   @VisibleForTesting
   public ThriftHiveMetaStoreClient getThriftClient() {
-    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST)) {
-      return thriftClient;
-    } else {
-      return null;
-    }
+    return thriftClient;
   }
 
   public static void setProcessorCapabilities(final String[] capabilities) {
