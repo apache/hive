@@ -60,7 +60,7 @@ public class HiveInBetweenExpandRule {
     public void onMatch(RelOptRuleCall call) {
       final Filter filter = call.rel(0);
       RexInBetweenExpander expander = new RexInBetweenExpander(
-          filter.getCluster().getRexBuilder());
+          filter.getCluster().getRexBuilder(), RexUnknownAs.FALSE);
       RexNode condition = expander.apply(filter.getCondition());
 
       if (!expander.modified) {
@@ -86,7 +86,7 @@ public class HiveInBetweenExpandRule {
     public void onMatch(RelOptRuleCall call) {
       final Join join = call.rel(0);
       RexInBetweenExpander expander = new RexInBetweenExpander(
-          join.getCluster().getRexBuilder());
+          join.getCluster().getRexBuilder(), RexUnknownAs.FALSE);
       RexNode condition = expander.apply(join.getCondition());
 
       if (!expander.modified) {
@@ -116,7 +116,7 @@ public class HiveInBetweenExpandRule {
     public void onMatch(RelOptRuleCall call) {
       final Project project = call.rel(0);
       RexInBetweenExpander expander = new RexInBetweenExpander(
-          project.getCluster().getRexBuilder());
+          project.getCluster().getRexBuilder(), RexUnknownAs.UNKNOWN);
       List<RexNode> newProjects = new ArrayList<>();
       for (RexNode expr : project.getProjects()) {
         newProjects.add(expander.apply(expr));
@@ -142,18 +142,21 @@ public class HiveInBetweenExpandRule {
   private static final class RexInBetweenExpander extends RexShuttle {
 
     private final RexBuilder rexBuilder;
+    private final RexUnknownAs unknownAs;
     private boolean modified;
 
-    private RexInBetweenExpander(RexBuilder rexBuilder) {
+
+    private RexInBetweenExpander(RexBuilder rexBuilder, final RexUnknownAs unknownAs) {
       this.rexBuilder = rexBuilder;
       this.modified = false;
+      this.unknownAs = unknownAs;
     }
 
     @Override
     public RexNode visitCall(final RexCall call) {
       switch (call.getKind()) {
       case SEARCH: {
-        return new SearchTransformer<>(rexBuilder, call, RexUnknownAs.UNKNOWN).transform().accept(this);
+        return new SearchTransformer<>(rexBuilder, call, unknownAs).transform().accept(this);
       }
       case AND: {
         boolean[] update = {false};
