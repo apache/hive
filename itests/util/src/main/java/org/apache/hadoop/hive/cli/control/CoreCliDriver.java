@@ -92,7 +92,6 @@ public class CoreCliDriver extends CliAdapter {
   @AfterClass
   public void shutdown() throws Exception {
     qt.shutdown();
-    metaStoreHandler.getRule().after();
   }
 
   @Override

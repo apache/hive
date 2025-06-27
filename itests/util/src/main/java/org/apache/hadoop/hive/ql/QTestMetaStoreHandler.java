@@ -97,13 +97,7 @@ public class QTestMetaStoreHandler {
     return "sqlserver".equalsIgnoreCase(metastoreType) ? "MSSQL" : metastoreType.toUpperCase();
   }
 
-  public void beforeTest() throws Exception {
-    if (isDerby()) {
-      getRule().before();
-    }
-  }
-
-  public void afterTest(QTestUtil qt) throws Exception {
+  public void truncateDatabase(QTestUtil qt) throws Exception {
 
     // special qtest logic, which doesn't fit quite well into Derby.after()
     if (isDerby()) {
