@@ -4230,12 +4230,12 @@ public class HiveConf extends Configuration {
         "excessive threads are killed after this time interval."),
 
     // Configuration for async thread pool in SessionManager
-    HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 100,
+    HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 250,
         "Number of threads in the async thread pool for HiveServer2"),
     HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT("hive.server2.async.exec.shutdown.timeout", "10s",
         new TimeValidator(TimeUnit.SECONDS),
         "How long HiveServer2 shutdown will wait for async threads to terminate."),
-    HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE("hive.server2.async.exec.wait.queue.size", 100,
+    HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE("hive.server2.async.exec.wait.queue.size", 250,
         "Size of the wait queue for async thread pool in HiveServer2.\n" +
         "After hitting this limit, the async thread pool will reject new requests."),
     HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME("hive.server2.async.exec.keepalive.time", "10s",
