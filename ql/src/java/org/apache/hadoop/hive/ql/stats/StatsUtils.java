@@ -139,12 +139,12 @@ public class StatsUtils {
 
   // Range lower limit for date type when not defined (days, heuristic): '1999-01-01'
   private static final int DATE_RANGE_LOWER_LIMIT = 10593;
-  // Range upper limit for date type when not defined (days, heuristic): '2024-12-31'
-  private static final int DATE_RANGE_UPPER_LIMIT = 20089;
+  // Range upper limit for date type when not defined (days, heuristic): '2030-12-31'
+  private static final int DATE_RANGE_UPPER_LIMIT = 22279;
   // Range lower limit for timestamp type when not defined (seconds, heuristic): '1999-01-01 00:00:00'
   private static final long TIMESTAMP_RANGE_LOWER_LIMIT = 915148800L;
-  // Range upper limit for timestamp type when not defined (seconds, heuristic): '2024-12-31 23:59:59'
-  private static final long TIMESTAMP_RANGE_UPPER_LIMIT = 1735689599L;
+  // Range upper limit for timestamp type when not defined (seconds, heuristic): '2030-12-31 23:59:59'
+  private static final long TIMESTAMP_RANGE_UPPER_LIMIT = 1924991999L;
 
   private static final ForkJoinPool statsForkJoinPool = new ForkJoinPool(
           Runtime.getRuntime().availableProcessors(),
@@ -923,15 +923,15 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(-128,127);
     }
-    else if(colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)){
+    else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)){
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(-32768, 32767);
-    } else if(colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
+    } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(Long.MIN_VALUE, Long.MAX_VALUE);
+      cs.setRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
+      cs.setRange(Long.MIN_VALUE, Long.MAX_VALUE);
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().primitive1());
       cs.setRange(Float.MIN_VALUE, Float.MAX_VALUE);

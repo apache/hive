@@ -1,0 +1,131 @@
+PREHOOK: query: create table ice01 (id int) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create table ice01 (id int) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: create branch branch1 FROM ice01
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: create branch branch1 FROM ice01
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: insert into default.ice01.branch_branch1 values (5), (6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into default.ice01.branch_branch1 values (5), (6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+5
+6
+PREHOOK: query: create or replace branch test_branch_1 FROM ice01
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: create or replace branch test_branch_1 FROM ice01
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_branch1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_branch1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+5
+6
+PREHOOK: query: create branch if not exists branch1 FROM ice01
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: create branch if not exists branch1 FROM ice01
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: create tag tag1 FROM ice01
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice01
+POSTHOOK: query: create tag tag1 FROM ice01
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.tag_tag1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.tag_tag1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: delete from ice01 where id=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where id=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: create or replace tag tag1 FROM ice01
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice01
+POSTHOOK: query: create or replace tag tag1 FROM ice01
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.tag_tag1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.tag_tag1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+3
+4
+PREHOOK: query: create tag if not exists tag1 FROM ice01
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@ice01
+POSTHOOK: query: create tag if not exists tag1 FROM ice01
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@ice01
+PREHOOK: query: drop branch branch1 FROM ice01
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: drop branch branch1 FROM ice01
+POSTHOOK: type: ALTERTABLE_DROPBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: drop tag tag1 FROM ice01
+PREHOOK: type: ALTERTABLE_DROPTAG
+PREHOOK: Input: default@ice01
+POSTHOOK: query: drop tag tag1 FROM ice01
+POSTHOOK: type: ALTERTABLE_DROPTAG
+POSTHOOK: Input: default@ice01

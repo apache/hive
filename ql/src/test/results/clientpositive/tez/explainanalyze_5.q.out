@@ -469,14 +469,14 @@ Stage-3
               Reducer 2
               File Output Operator [FS_7]
                 table:{"name:":"default.acid_dot_n0"}
-                Select Operator [SEL_6] (rows=1/8 width=3)
+                Select Operator [SEL_6] (rows=1459/8 width=3)
                   Output:["_col0"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_5]
                     PartitionCols:UDFToInteger(_col0)
-                    Select Operator [SEL_2] (rows=1/8 width=3)
+                    Select Operator [SEL_2] (rows=1459/8 width=3)
                       Output:["_col0"]
-                      Filter Operator [FIL_8] (rows=1/8 width=3)
+                      Filter Operator [FIL_8] (rows=1459/8 width=3)
                         predicate:(cint < -1070551679)
                         TableScan [TS_0] (rows=5819/12288 width=3)
                           default@acid_dot_n0,acid_dot_n0, ACID table,Tbl:COMPLETE,Col:NONE,Output:["cint"]

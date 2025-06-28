@@ -109,14 +109,14 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (rn < 100) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: rn (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
