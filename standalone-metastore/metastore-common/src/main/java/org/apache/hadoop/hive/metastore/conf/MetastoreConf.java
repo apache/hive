@@ -1878,6 +1878,11 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
+    ICEBERG_CATALOG_EVENT_LISTENER_CLASS("hive.metastore.catalog.event.listener.class",
+            "hive.metastore.catalog.event.listener.class",
+        "org.apache.iceberg.rest.HMSEventListener",
+        "HMS Iceberg Catalog event listener class name."
+    ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,
             "HMS embedded HTTP server minimum number of threads."
