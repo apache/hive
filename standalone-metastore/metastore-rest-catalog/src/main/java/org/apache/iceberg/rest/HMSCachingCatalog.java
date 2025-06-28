@@ -63,11 +63,6 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   }
 
   @Override
-  public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
-    return hiveCatalog.buildTable(identifier, schema);
-  }
-
-  @Override
   public void createNamespace(Namespace nmspc, Map<String, String> map) {
     hiveCatalog.createNamespace(nmspc, map);
   }
@@ -84,7 +79,7 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
 
   @Override
   public boolean dropNamespace(Namespace nmspc) throws NamespaceNotEmptyException {
-    return nsCatalog.dropNamespace(nmspc);
+    return hiveCatalog.dropNamespace(nmspc);
   }
 
   @Override
@@ -107,11 +102,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   }
 
   @Override
-  public void invalidateTable(TableIdentifier tableIdentifier) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Avoid invalidating table: {}", tableIdentifier);
-    }
-    super.invalidateTable(tableIdentifier);
+  public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
+    return hiveCatalog.buildTable(identifier, schema);
   }
 
 

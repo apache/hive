@@ -38,7 +38,7 @@ import org.apache.iceberg.hive.HiveCatalog;
  * Catalog &amp; servlet factory.
  */
 public class HMSCatalogFactory {
-  private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
+ private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
 
   /**
    * Convenience soft reference to last catalog.
@@ -64,7 +64,7 @@ public class HMSCatalogFactory {
    * declared in configuration and found through introspection.</p>
    * @param conf the configuration
    */
-  private HMSCatalogFactory(Configuration conf) {
+  protected HMSCatalogFactory(Configuration conf) {
     port = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT);
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
     this.configuration = conf;
