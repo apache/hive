@@ -91,7 +91,7 @@ if [ -n "$HIVE_VERSION" ]; then
 else
   HIVE_VERSION=$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)
   HIVE_TAR="$SOURCE_DIR/metastore-server/target/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz"
-  if  ls "$HIVE_TAR" || mvn -f "$SOURCE_DIR/pom.xml" clean package -DskipTests; then
+  if  ls "$HIVE_TAR" || mvn -f "$SOURCE_DIR/metastore-server/pom.xml" clean package -DskipTests -DallModules; then
     cp "$HIVE_TAR" "$WORK_DIR/"
   else
     echo "Failed to compile Hive Metastore project, exiting..."
