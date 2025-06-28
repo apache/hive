@@ -48,8 +48,7 @@ public class HMSEventListener extends MetaStoreEventListener {
     @Override
     public void onAlterTable(AlterTableEvent event) {
         Catalog catalog = HMSCatalogFactory.getLastCatalog();
-        if (catalog instanceof HMSCachingCatalog) {
-            HMSCachingCatalog<?> hmsCachingCatalog = (HMSCachingCatalog<?>) catalog;
+        if (catalog instanceof HMSCachingCatalog hmsCachingCatalog) {
             String dbName = event.getOldTable().getDbName();
             String tableName = event.getOldTable().getTableName();
             LOG.debug("onAlterTable: invalidating table cache for {}.{}", dbName, tableName);
@@ -60,8 +59,7 @@ public class HMSEventListener extends MetaStoreEventListener {
     @Override
     public void onDropTable(DropTableEvent event) {
         Catalog catalog = HMSCatalogFactory.getLastCatalog();
-        if (catalog instanceof HMSCachingCatalog) {
-            HMSCachingCatalog<?> hmsCachingCatalog = (HMSCachingCatalog<?>) catalog;
+        if (catalog instanceof HMSCachingCatalog hmsCachingCatalog) {
             String dbName = event.getTable().getDbName();
             String tableName = event.getTable().getTableName();
             LOG.debug("onDropTable: invalidating table cache for {}.{}", dbName, tableName);
@@ -72,8 +70,7 @@ public class HMSEventListener extends MetaStoreEventListener {
     @Override
     public void onReload(ReloadEvent reloadEvent) {
         Catalog catalog = HMSCatalogFactory.getLastCatalog();
-        if (catalog instanceof HMSCachingCatalog) {
-            HMSCachingCatalog<?> hmsCachingCatalog = (HMSCachingCatalog<?>) catalog;
+        if (catalog instanceof HMSCachingCatalog hmsCachingCatalog) {
             Table tableObj = reloadEvent.getTableObj();
             String dbName = tableObj.getDbName();
             String tableName = tableObj.getTableName();
@@ -85,8 +82,7 @@ public class HMSEventListener extends MetaStoreEventListener {
     @Override
     public void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException {
         Catalog catalog = HMSCatalogFactory.getLastCatalog();
-        if (catalog instanceof HMSCachingCatalog) {
-            HMSCachingCatalog<?> hmsCachingCatalog = (HMSCachingCatalog<?>) catalog;
+        if (catalog instanceof HMSCachingCatalog hmsCachingCatalog) {
             String dbName = dbEvent.getDatabase().getName();
             LOG.debug("onDropDatabase: invalidating tables cache for {}", dbName);
             hmsCachingCatalog.invalidateNamespace(dbName);

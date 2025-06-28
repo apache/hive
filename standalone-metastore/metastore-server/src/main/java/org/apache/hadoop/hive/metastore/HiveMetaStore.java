@@ -681,7 +681,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // if expiry is negative, no cache is used, so no need to register the listener
       long expiry = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
       // if the port is negative, no REST catalog is configured, so no need to register the listener
-      int icebergPort = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PORT);
+      int icebergPort = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT);
       if (icebergPort >= 0 && expiry > 0) {
         String listeners = MetastoreConf.getVar(conf, ConfVars.EVENT_LISTENERS);
         if (listeners == null || listeners.isEmpty()) {
