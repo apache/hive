@@ -47,10 +47,6 @@ public abstract class BaseMetaStoreClientProxy extends BaseMetaStoreClient {
     this.delegate = delegate;
   }
 
-  public final IMetaStoreClient getDelegate() {
-    return delegate;
-  }
-
   @Override
   public boolean isCompatibleWith(Configuration conf) {
     return delegate.isCompatibleWith(conf);

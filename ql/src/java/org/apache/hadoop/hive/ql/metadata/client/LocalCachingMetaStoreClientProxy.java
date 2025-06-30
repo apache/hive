@@ -170,7 +170,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
         Table r = (Table) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
-          r = getDelegate().getTable(req);
+          r = delegate.getTable(req);
           mscLocalCache.put(cacheKey, r);
         } else {
           LOG.debug(
@@ -185,7 +185,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return r;
       }
     }
-    return getDelegate().getTable(req);
+    return delegate.getTable(req);
   }
 
   @Override
@@ -206,7 +206,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       @Override
       public PartitionsWrapper get() throws TException {
         List<Partition> parts = new ArrayList<>();
-        boolean hasUnknownPart = getDelegate().listPartitionsByExpr(req, parts);
+        boolean hasUnknownPart = delegate.listPartitionsByExpr(req, parts);
         return new PartitionsWrapper(parts, hasUnknownPart);
       }
     };
@@ -256,7 +256,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
             catName, dbName, tableName, maxParts);
         PartitionNamesWrapper r = (PartitionNamesWrapper) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
-          r = new PartitionNamesWrapper(getDelegate().listPartitionNames(catName, dbName, tableName, maxParts));
+          r = new PartitionNamesWrapper(delegate.listPartitionNames(catName, dbName, tableName, maxParts));
           mscLocalCache.put(cacheKey, r);
         } else {
           LOG.debug(
@@ -271,7 +271,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return r.partitionNames;
       }
     }
-    return getDelegate().listPartitionNames(catName, dbName, tableName, maxParts);
+    return delegate.listPartitionNames(catName, dbName, tableName, maxParts);
   }
 
   @Override
@@ -281,7 +281,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       @Override
       public PartitionSpecsWrapper get() throws TException {
         List<PartitionSpec> parts = new ArrayList<>();
-        boolean hasUnknownPart = getDelegate().listPartitionsSpecByExpr(req, parts);
+        boolean hasUnknownPart = delegate.listPartitionsSpecByExpr(req, parts);
         return new PartitionSpecsWrapper(parts, hasUnknownPart);
       }
     };
@@ -339,7 +339,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
           return colStats;
         }
         // 3) If they were not, gather the remaining
-        List<ColumnStatisticsObj> newColStats = getDelegate().getTableColumnStatistics(catName, dbName, tableName,
+        List<ColumnStatisticsObj> newColStats = delegate.getTableColumnStatistics(catName, dbName, tableName,
             colStatsMissing, engine, validWriteIdList);
         // 4) Populate the cache
         MetaStoreClientCacheUtils.loadTableColumnStatisticsCache(cache, newColStats, catName, dbName,
@@ -356,7 +356,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().getTableColumnStatistics(catName, dbName, tableName, colNames, engine, validWriteIdList);
+    return delegate.getTableColumnStatistics(catName, dbName, tableName, colNames, engine, validWriteIdList);
   }
 
   @Override
@@ -379,7 +379,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
         AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
-          r = getDelegate().getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
+          r = delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
           mscLocalCache.put(cacheKey, r);
         } else {
           LOG.debug(
@@ -395,7 +395,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
+    return delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
   }
 
   @Override
@@ -419,7 +419,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         // 3) If they were not, gather the remaining
         GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(req);
         newRqst.setNames(partitionsMissing);
-        GetPartitionsByNamesResult r = getDelegate().getPartitionsByNames(newRqst);
+        GetPartitionsByNamesResult r = delegate.getPartitionsByNames(newRqst);
         // 4) Populate the cache
         List<Partition> newPartitions =
             MetaStoreClientCacheUtils.loadPartitionsByNamesCache(cache, r, req, watermark);
@@ -435,7 +435,7 @@ public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().getPartitionsByNames(req);
+    return delegate.getPartitionsByNames(req);
   }
 
   // cf. SessionMetaStoreClientProxy.getValidWriteIdList

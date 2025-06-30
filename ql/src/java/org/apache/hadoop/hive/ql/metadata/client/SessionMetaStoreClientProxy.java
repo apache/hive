@@ -212,7 +212,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
       Table table = (Table) queryCache.get(cacheKey);
       if (table == null) {
-        table = getDelegate().getTable(req);
+        table = delegate.getTable(req);
         if (tableId == -1) {
           queryCache.put(cacheKeyTableId, table.getId());
           req.setId(table.getId());
@@ -222,12 +222,12 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return table;
     }
-    return getDelegate().getTable(req);
+    return delegate.getTable(req);
   }
 
   @Override
   public List<String> getTables(String catName, String dbName, String tablePattern) throws TException {
-    List<String> tableNames = getDelegate().getTables(catName, dbName, tablePattern);
+    List<String> tableNames = delegate.getTables(catName, dbName, tablePattern);
 
     if (isDefaultCatalog(catName)) {
       // May need to merge with list of temp tables
@@ -261,7 +261,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
   @Override
   public List<String> getTables(String catName, String dbname, String tablePattern, TableType tableType)
       throws TException {
-    List<String> tableNames = getDelegate().getTables(dbname, tablePattern, tableType);
+    List<String> tableNames = delegate.getTables(dbname, tablePattern, tableType);
 
     if (isDefaultCatalog(catName)) {
       if (tableType == TableType.MANAGED_TABLE || tableType == TableType.EXTERNAL_TABLE) {
@@ -313,7 +313,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return tables;
     } else {
-      return getDelegate().getTables(catName, dbName, tableNames, projectionsSpec);
+      return delegate.getTables(catName, dbName, tableNames, projectionsSpec);
     }
   }
 
@@ -326,7 +326,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().tableExists(catName, dbName, tableName);
+    return delegate.tableExists(catName, dbName, tableName);
   }
 
   @Override
@@ -338,7 +338,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().getSchema(catName, dbName, tableName);
+    return delegate.getSchema(catName, dbName, tableName);
   }
 
   @Override
@@ -363,7 +363,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       // 3) If they were not, gather the remaining
       List<ColumnStatisticsObj> newColStats =
-          getDelegate().getTableColumnStatistics(catName, dbName, tableName, colStatsMissing,
+          delegate.getTableColumnStatistics(catName, dbName, tableName, colStatsMissing,
               engine, validWriteIdList);
       // 4) Populate the cache
       MetaStoreClientCacheUtils.loadTableColumnStatisticsCache(cache, newColStats, catName, dbName,
@@ -374,7 +374,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       return result;
     }
 
-    return getDelegate()
+    return delegate
         .getTableColumnStatistics(catName, dbName, tableName, colNames, engine, validWriteIdList);
   }
 
@@ -399,7 +399,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
           catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
       List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts,
+        v = delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts,
             userName, groupNames);
         queryCache.put(cacheKey, v);
       } else {
@@ -409,7 +409,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v;
     }
-    return getDelegate().listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts,
+    return delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals, maxParts,
         userName, groupNames);
   }
 
@@ -434,7 +434,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
           catName, dbName, tableName, maxParts, userName, groupNames);
       List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
+        v = delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -443,7 +443,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v;
     }
-    return getDelegate().listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
+    return delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, maxParts, userName, groupNames);
   }
 
   @Override
@@ -471,7 +471,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_REQ, req);
       GetPartitionsPsWithAuthResponse v = (GetPartitionsPsWithAuthResponse) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().listPartitionsWithAuthInfoRequest(req);
+        v = delegate.listPartitionsWithAuthInfoRequest(req);
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -480,7 +480,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v;
     }
-    return getDelegate().listPartitionsWithAuthInfoRequest(req);
+    return delegate.listPartitionsWithAuthInfoRequest(req);
   }
 
   @Override
@@ -507,7 +507,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, catName, dbName, tableName, maxParts);
       List<String> v = (List<String>) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().listPartitionNames(catName, dbName, tableName, maxParts);
+        v = delegate.listPartitionNames(catName, dbName, tableName, maxParts);
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -516,7 +516,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v;
     }
-    return getDelegate().listPartitionNames(catName, dbName, tableName, maxParts);
+    return delegate.listPartitionNames(catName, dbName, tableName, maxParts);
   }
 
   @Override
@@ -551,7 +551,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_REQ, req);
       GetPartitionNamesPsResponse v = (GetPartitionNamesPsResponse) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().listPartitionNamesRequest(req);
+        v = delegate.listPartitionNamesRequest(req);
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -560,7 +560,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v;
     }
-    return getDelegate().listPartitionNamesRequest(req);
+    return delegate.listPartitionNamesRequest(req);
   }
 
   @Override
@@ -586,7 +586,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       PartitionsWrapper v = (PartitionsWrapper) queryCache.get(cacheKey);
       if (v == null) {
         List<Partition> parts = new ArrayList<>();
-        boolean hasUnknownPart = getDelegate().listPartitionsByExpr(req, parts);
+        boolean hasUnknownPart = delegate.listPartitionsByExpr(req, parts);
         v = new MetaStoreClientCacheUtils.PartitionsWrapper(parts, hasUnknownPart);
         queryCache.put(cacheKey, v);
       } else {
@@ -598,7 +598,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       result.addAll(v.partitions);
       return v.hasUnknownPartition;
     }
-    return getDelegate().listPartitionsByExpr(req, result);
+    return delegate.listPartitionsByExpr(req, result);
   }
 
   @Override
@@ -629,7 +629,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       PartitionSpecsWrapper v = (PartitionSpecsWrapper) queryCache.get(cacheKey);
       if (v == null) {
         List<PartitionSpec> parts = new ArrayList<>();
-        boolean hasUnknownPart = getDelegate().listPartitionsSpecByExpr(req, parts);
+        boolean hasUnknownPart = delegate.listPartitionsSpecByExpr(req, parts);
         v = new PartitionSpecsWrapper(parts, hasUnknownPart);
         queryCache.put(cacheKey, v);
       } else {
@@ -640,7 +640,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       result.addAll(v.partitionSpecs);
       return v.hasUnknownPartition;
     }
-    return getDelegate().listPartitionsSpecByExpr(req, result);
+    return delegate.listPartitionsSpecByExpr(req, result);
   }
 
   @Override
@@ -674,14 +674,14 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       // 3) If they were not, gather the remaining
       GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(req);
       newRqst.setNames(partitionsMissing);
-      GetPartitionsByNamesResult r = getDelegate().getPartitionsByNames(newRqst);
+      GetPartitionsByNamesResult r = delegate.getPartitionsByNames(newRqst);
       // 4) Populate the cache
       List<Partition> newPartitions =
           MetaStoreClientCacheUtils.loadPartitionsByNamesCache(cache, r, req, null);
       // 5) Sort result (in case there is any assumption) and return
       return MetaStoreClientCacheUtils.computePartitionsByNamesFinal(req, partitions, newPartitions);
     }
-    return getDelegate().getPartitionsByNames(req);
+    return delegate.getPartitionsByNames(req);
   }
 
   /**
@@ -693,14 +693,14 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     if (tbl.isTemporary()) {
       createTempTable(tbl);
     } else {
-      getDelegate().createTable(request);
+      delegate.createTable(request);
     }
   }
 
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
       List<String> tableTypes) throws TException {
-    List<TableMeta> tableMetas = getDelegate().getTableMeta(dbPatterns, tablePatterns, tableTypes);
+    List<TableMeta> tableMetas = delegate.getTableMeta(dbPatterns, tablePatterns, tableTypes);
 
     if (isDefaultCatalog(catName)) {
       Map<String, Map<String, org.apache.hadoop.hive.ql.metadata.Table>> tmpTables =
@@ -752,7 +752,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
 
   @Override
   public List<String> getAllTables(String catName, String dbName) throws TException {
-    List<String> tableNames = getDelegate().getAllTables(catName, dbName);
+    List<String> tableNames = delegate.getAllTables(catName, dbName);
 
     if (isDefaultCatalog(catName)) {
       Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables = getTempTablesForDatabase(dbName, "?");
@@ -776,7 +776,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     if (table.isTemporary()) {
       dropTempTable(table, deleteData, ifPurge);
     } else {
-      getDelegate().dropTable(table, deleteData, ignoreUnknownTable, ifPurge);
+      delegate.dropTable(table, deleteData, ignoreUnknownTable, ifPurge);
     }
   }
 
@@ -791,7 +791,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return;
       }
     }
-    getDelegate().truncateTable(catName, dbName, tableName, ref, partNames, validWriteIds, writeId,
+    delegate.truncateTable(catName, dbName, tableName, ref, partNames, validWriteIds, writeId,
         deleteData, context);
   }
 
@@ -806,7 +806,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return;
       }
     }
-    getDelegate().alter_table(catName, dbName, tbl_name, new_tbl, envContext, validWriteIds);
+    delegate.alter_table(catName, dbName, tbl_name, new_tbl, envContext, validWriteIds);
   }
 
   @Override
@@ -820,7 +820,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().get_privilege_set(hiveObject, userName, groupNames);
+    return delegate.get_privilege_set(hiveObject, userName, groupNames);
   }
 
   @Override
@@ -835,7 +835,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return updateTempTableColumnStats(dbName, tableName, colStats);
       }
     }
-    return getDelegate().setPartitionColumnStatistics(request);
+    return delegate.setPartitionColumnStatistics(request);
   }
 
   @Override
@@ -860,7 +860,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return true;
       }
     }
-    return getDelegate().deleteColumnStatistics(req);
+    return delegate.deleteColumnStatistics(req);
   }
 
   private void createTempTable(Table tbl) throws TException {
@@ -1274,7 +1274,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return result;
       }
     }
-    return getDelegate().add_partition(partition);
+    return delegate.add_partition(partition);
   }
 
   @Override
@@ -1303,7 +1303,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         }
       }
     }
-    return getDelegate().add_partitions_pspec(partitionSpec);
+    return delegate.add_partitions_pspec(partitionSpec);
   }
 
   @Override
@@ -1326,7 +1326,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().add_partitions(partitions, ifNotExists, needResults);
+    return delegate.add_partitions(partitions, ifNotExists, needResults);
   }
 
   @Override
@@ -1345,7 +1345,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return HiveMetaStoreClientUtils.deepCopy(partition);
       }
     }
-    return getDelegate().getPartition(catName, dbName, tblName, name);
+    return delegate.getPartition(catName, dbName, tblName, name);
   }
 
   @Override
@@ -1364,7 +1364,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return HiveMetaStoreClientUtils.deepCopy(partition);
       }
     }
-    return getDelegate().getPartition(catName, dbName, tblName, partVals);
+    return delegate.getPartition(catName, dbName, tblName, partVals);
 
   }
 
@@ -1378,7 +1378,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().getPartitionsWithSpecs(request);
+    return delegate.getPartitionsWithSpecs(request);
   }
 
   @Override
@@ -1408,7 +1408,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return results;
       }
     }
-    return getDelegate().listPartitionNames(req);
+    return delegate.listPartitionNames(req);
   }
 
   private static final class PartitionNamesComparator implements java.util.Comparator<Partition> {
@@ -1460,7 +1460,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return getPartitionsForMaxParts(tt.listPartitions(), maxParts);
       }
     }
-    return getDelegate().listPartitions(catName, dbName, tblName, maxParts);
+    return delegate.listPartitions(catName, dbName, tblName, maxParts);
   }
 
   @Override
@@ -1473,7 +1473,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return getPartitionsForMaxParts(tt.getPartitionsByPartitionVals(partVals), maxParts);
       }
     }
-    return getDelegate().listPartitions(catName, dbName, tblName, partVals, maxParts);
+    return delegate.listPartitions(catName, dbName, tblName, partVals, maxParts);
   }
 
   @Override
@@ -1486,7 +1486,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return getPartitionSpecProxy(table, tt.listPartitions(), maxParts);
       }
     }
-    return getDelegate().listPartitionSpecs(catName, dbName, tableName, maxParts);
+    return delegate.listPartitionSpecs(catName, dbName, tableName, maxParts);
   }
 
   @Override
@@ -1507,7 +1507,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return HiveMetaStoreClientUtils.deepCopy(partition);
       }
     }
-    return getDelegate().getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
+    return delegate.getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
   }
 
   @Override
@@ -1534,7 +1534,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return result;
       }
     }
-    return getDelegate().dropPartition(catName, dbName, tblName, partVals, options);
+    return delegate.dropPartition(catName, dbName, tblName, partVals, options);
   }
 
   @Override
@@ -1552,7 +1552,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return result;
       }
     }
-    return getDelegate().dropPartition(catName, dbName, tableName, partitionName, deleteData);
+    return delegate.dropPartition(catName, dbName, tableName, partitionName, deleteData);
   }
 
   @Override
@@ -1585,7 +1585,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().dropPartitions(catName, dbName, tblName, partExprs, options, context);
+    return delegate.dropPartitions(catName, dbName, tblName, partExprs, options, context);
   }
 
   @Override
@@ -1602,7 +1602,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     }
 
     if (sourceTempTable == null && destTempTable == null) {
-      return getDelegate().exchange_partition(partitionSpecs, sourceCatName, sourceDbName, sourceTableName,
+      return delegate.exchange_partition(partitionSpecs, sourceCatName, sourceDbName, sourceTableName,
           destCatName, destDbName, destTableName);
     } else if (sourceTempTable != null && destTempTable != null) {
       TempTable sourceTT = getPartitionedTempTable(sourceTempTable);
@@ -1630,7 +1630,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     }
 
     if (sourceTempTable == null && destTempTable == null) {
-      return getDelegate()
+      return delegate
           .exchange_partitions(partitionSpecs, sourceCatName, sourceDbName, sourceTableName, destCatName, destDbName,
               destTableName);
     } else if (sourceTempTable != null && destTempTable != null) {
@@ -1653,7 +1653,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    getDelegate().alter_partition(catName, dbName, tblName, newPart, environmentContext, writeIdList);
+    delegate.alter_partition(catName, dbName, tblName, newPart, environmentContext, writeIdList);
   }
 
   @Override
@@ -1668,7 +1668,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    getDelegate().alter_partitions(catName, dbName, tblName, newParts, environmentContext, writeIdList,
+    delegate.alter_partitions(catName, dbName, tblName, newParts, environmentContext, writeIdList,
         writeId);
   }
 
@@ -1684,7 +1684,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    getDelegate().renamePartition(catName, dbname, tableName, partitionVals, newPart, validWriteIds, txnId,
+    delegate.renamePartition(catName, dbname, tableName, partitionVals, newPart, validWriteIds, txnId,
         makeCopy);
   }
 
@@ -1703,7 +1703,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().appendPartition(catName, dbName, tableName, partVals);
+    return delegate.appendPartition(catName, dbName, tableName, partVals);
   }
 
   @Override
@@ -1734,7 +1734,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().appendPartition(catName, dbName, tableName, partitionName);
+    return delegate.appendPartition(catName, dbName, tableName, partitionName);
   }
 
   @Override
@@ -1748,7 +1748,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
             maxParts);
       }
     }
-    return getDelegate().listPartitionsByFilter(catName, dbName, tableName, filter, maxParts);
+    return delegate.listPartitionsByFilter(catName, dbName, tableName, filter, maxParts);
   }
 
   @Override
@@ -1760,7 +1760,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return getPartitionedTempTable(table).getNumPartitionsByFilter(generateJDOFilter(table, filter));
       }
     }
-    return getDelegate().getNumPartitionsByFilter(catName, dbName, tableName, filter);
+    return delegate.getNumPartitionsByFilter(catName, dbName, tableName, filter);
   }
 
   @Override
@@ -1774,13 +1774,13 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
                 .listPartitionsByFilter(generateJDOFilter(table, filter)), maxParts);
       }
     }
-    return getDelegate().listPartitionSpecsByFilter(catName, dbName, tblName, filter, maxParts);
+    return delegate.listPartitionSpecsByFilter(catName, dbName, tblName, filter, maxParts);
   }
 
   @Override
   public PartitionValuesResponse listPartitionValues(PartitionValuesRequest request) throws TException {
     if (request == null || request.getPartitionKeys() == null || request.getPartitionKeys().isEmpty()) {
-      return getDelegate().listPartitionValues(request);
+      return delegate.listPartitionValues(request);
     }
 
     if (isDefaultCatalog(request.getCatName())) {
@@ -1818,7 +1818,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
     }
 
-    return getDelegate().listPartitionValues(request);
+    return delegate.listPartitionValues(request);
   }
 
   private PartitionSpecProxy getPartitionSpecProxy(Table table,
@@ -2217,7 +2217,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       Table table = getTempTable(tbl.getDbName(), tbl.getTableName());
       return table != null ? HiveMetaStoreClientUtils.deepCopy(table) : tbl;
     }
-    return getDelegate().getTranslateTableDryrun(tbl);
+    return delegate.getTranslateTableDryrun(tbl);
   }
 
   /**
@@ -2232,7 +2232,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.CONFIG_VALUE, name, defaultValue);
       String v = (String) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().getConfigValue(name, defaultValue);
+        v = delegate.getConfigValue(name, defaultValue);
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -2241,7 +2241,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v;
     }
-    return getDelegate().getConfigValue(name, defaultValue);
+    return delegate.getConfigValue(name, defaultValue);
   }
 
   @Override
@@ -2252,7 +2252,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.DATABASE, catalogName, databaseName);
       Database v = (Database) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().getDatabase(catalogName, databaseName);
+        v = delegate.getDatabase(catalogName, databaseName);
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -2261,7 +2261,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v;
     }
-    return getDelegate().getDatabase(catalogName, databaseName);
+    return delegate.getDatabase(catalogName, databaseName);
   }
 
   @Override
@@ -2272,7 +2272,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.PRIMARY_KEYS, req);
       PrimaryKeysResponse v = (PrimaryKeysResponse) queryCache.get(cacheKey);
       if (v == null) {
-        v = new PrimaryKeysResponse(getDelegate().getPrimaryKeys(req));
+        v = new PrimaryKeysResponse(delegate.getPrimaryKeys(req));
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -2281,7 +2281,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v.getPrimaryKeys();
     }
-    return getDelegate().getPrimaryKeys(req);
+    return delegate.getPrimaryKeys(req);
   }
 
   @Override
@@ -2292,7 +2292,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.FOREIGN_KEYS, req);
       ForeignKeysResponse v = (ForeignKeysResponse) queryCache.get(cacheKey);
       if (v == null) {
-        v = new ForeignKeysResponse(getDelegate().getForeignKeys(req));
+        v = new ForeignKeysResponse(delegate.getForeignKeys(req));
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -2301,7 +2301,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v.getForeignKeys();
     }
-    return getDelegate().getForeignKeys(req);
+    return delegate.getForeignKeys(req);
   }
 
   @Override
@@ -2312,7 +2312,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.UNIQUE_CONSTRAINTS, req);
       UniqueConstraintsResponse v = (UniqueConstraintsResponse) queryCache.get(cacheKey);
       if (v == null) {
-        v = new UniqueConstraintsResponse(getDelegate().getUniqueConstraints(req));
+        v = new UniqueConstraintsResponse(delegate.getUniqueConstraints(req));
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -2321,7 +2321,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v.getUniqueConstraints();
     }
-    return getDelegate().getUniqueConstraints(req);
+    return delegate.getUniqueConstraints(req);
   }
 
   @Override
@@ -2332,7 +2332,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, req);
       NotNullConstraintsResponse v = (NotNullConstraintsResponse) queryCache.get(cacheKey);
       if (v == null) {
-        v = new NotNullConstraintsResponse(getDelegate().getNotNullConstraints(req));
+        v = new NotNullConstraintsResponse(delegate.getNotNullConstraints(req));
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -2341,7 +2341,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       }
       return v.getNotNullConstraints();
     }
-    return getDelegate().getNotNullConstraints(req);
+    return delegate.getNotNullConstraints(req);
   }
 
   @Override
@@ -2363,7 +2363,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req);
       AggrStats v = (AggrStats) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
+        v = delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
         queryCache.put(cacheKey, v);
       } else {
         LOG.debug(
@@ -2373,7 +2373,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       return v;
     }
 
-    return getDelegate().getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
+    return delegate.getAggrColStatsFor(catName, dbName, tblName, colNames, partNames, engine, writeIdList);
   }
 
   @Override
@@ -2383,12 +2383,12 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_ID, fullTableName);
       ValidWriteIdList v = (ValidWriteIdList) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().getValidWriteIds(fullTableName);
+        v = delegate.getValidWriteIds(fullTableName);
         queryCache.put(cacheKey, v);
       }
       return v;
     }
-    return getDelegate().getValidWriteIds(fullTableName);
+    return delegate.getValidWriteIds(fullTableName);
   }
 
   @Override
@@ -2398,12 +2398,12 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
       CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_ID, fullTableName, writeId);
       ValidWriteIdList v = (ValidWriteIdList) queryCache.get(cacheKey);
       if (v == null) {
-        v = getDelegate().getValidWriteIds(fullTableName, writeId);
+        v = delegate.getValidWriteIds(fullTableName, writeId);
         queryCache.put(cacheKey, v);
       }
       return v;
     }
-    return getDelegate().getValidWriteIds(fullTableName, writeId);
+    return delegate.getValidWriteIds(fullTableName, writeId);
   }
 
   @Override
@@ -2424,13 +2424,13 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         return tblValidWriteIds;
       }
       // 3) If they were not, gather the remaining
-      List<TableValidWriteIds> r = getDelegate().getValidWriteIds(fullTableNamesMissing, validTxnList);
+      List<TableValidWriteIds> r = delegate.getValidWriteIds(fullTableNamesMissing, validTxnList);
       // 4) Populate the cache
       List<TableValidWriteIds> newTblValidWriteIds = loadValidWriteIdsCache(cache, r, rqst);
       // 5) Sort result (in case there is any assumption) and return
       return computeValidWriteIdsFinal(rqst, tblValidWriteIds, newTblValidWriteIds);
     }
-    return getDelegate().getValidWriteIds(tablesList, validTxnList);
+    return delegate.getValidWriteIds(tablesList, validTxnList);
   }
 
   private Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(CacheI cache,
@@ -2561,7 +2561,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     if (validWriteIdList == null) {
       validWriteIdList = getValidWriteIdList(dbName, tableName);
     }
-    return getDelegate().getPartitionColumnStatistics(catName, dbName, tableName, partNames, colNames, engine,
+    return delegate.getPartitionColumnStatistics(catName, dbName, tableName, partNames, colNames, engine,
         validWriteIdList);
   }
 
@@ -2570,7 +2570,7 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
-    return getDelegate().getPartitionRequest(req);
+    return delegate.getPartitionRequest(req);
   }
 
   @Override
@@ -2578,6 +2578,6 @@ public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     if (req.getValidWriteIdList() == null) {
       req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
-    return getDelegate().getPartitionsRequest(req);
+    return delegate.getPartitionsRequest(req);
   }
 }
