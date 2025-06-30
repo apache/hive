@@ -18,8 +18,11 @@
  */
 package org.apache.iceberg.rest;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
@@ -37,9 +40,23 @@ import org.apache.iceberg.hive.HiveCatalog;
 public class HMSCatalogFactory {
   private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
 
-  private final Configuration configuration;
-  private final int port;
-  private final String path;
+  /**
+   * Convenience soft reference to last catalog.
+   */
+  protected static final AtomicReference<Reference<Catalog>> catalogRef = new AtomicReference<>();
+
+  public static Catalog getLastCatalog() {
+    Reference<Catalog> soft = catalogRef.get();
+    return soft != null ? soft.get() : null;
+  }
+
+  protected static void setLastCatalog(Catalog catalog) {
+    catalogRef.set(new SoftReference<>(catalog));
+  }
+
+  protected final Configuration configuration;
+  protected final int port;
+  protected final String path;
 
   /**
    * Factory constructor.
@@ -65,7 +82,7 @@ public class HMSCatalogFactory {
    * Creates the catalog instance.
    * @return the catalog
    */
-  private Catalog createCatalog() {
+  protected Catalog createCatalog() {
     final Map<String, String> properties = new TreeMap<>();
     MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
@@ -98,7 +115,7 @@ public class HMSCatalogFactory {
    * @param catalog the Iceberg catalog
    * @return the servlet
    */
-  private HttpServlet createServlet(Catalog catalog) {
+  protected HttpServlet createServlet(Catalog catalog) {
     String authType = MetastoreConf.getVar(configuration, ConfVars.CATALOG_SERVLET_AUTH);
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
@@ -108,9 +125,11 @@ public class HMSCatalogFactory {
    * Creates the REST catalog servlet instance.
    * @return the servlet
    */
-  private HttpServlet createServlet() {
+  protected HttpServlet createServlet() {
     if (port >= 0 && path != null && !path.isEmpty()) {
-      return createServlet(createCatalog());
+      Catalog actualCatalog = createCatalog();
+      setLastCatalog(actualCatalog);
+      return createServlet(actualCatalog);
     }
     return null;
   }

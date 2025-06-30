@@ -41,6 +41,7 @@ public class RESTCatalogServer {
 
   private static int createMetastoreServerWithRESTCatalog(int restPort, Configuration conf) throws Exception {
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT, restPort);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY, 1000L);
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf,
         true, false, false, false);
   }
