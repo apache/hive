@@ -4266,7 +4266,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private List<Partition> add_partitions_core(final RawStore ms,
       AddPartitionsRequest request) throws TException {
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+    String catName = request.getCatName();
     String dbName = request.getDbName();
     String tblName = request.getTblName();
     if (dbName == null || tblName == null) {
@@ -4303,7 +4303,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
       Map<String, Partition> nameToPart = new LinkedHashMap<>();
       for (final Partition part : request.getParts()) {
-        if(request.isSkipColumnSchemaForPartition()) {
+        if (request.isSkipColumnSchemaForPartition()) {
           part.getSd().setCols(tbl.getSd().getCols());
         }
         // Collect partition column stats to be updated if present. Partition objects passed down
@@ -4337,10 +4337,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new AlreadyExistsException("Partition(s) already exist, partition name(s): " + existedPartNames);
       }
 
-      List<Partition> partitionsToAdd = new ArrayList<>(nameToPart.values());
-      if (partitionsToAdd.isEmpty()) {
+      if (nameToPart.isEmpty()) {
         return Collections.emptyList();
       }
+      List<Partition> partitionsToAdd = new ArrayList<>(nameToPart.values());
       // Only authorize on newly created partitions
       firePreEvent(new PreAddPartitionEvent(tbl, partitionsToAdd, this));
 
@@ -4451,11 +4451,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * @param tblName
    * @param dbName
    * @param partsToAdd
-   * @return
    * @throws MetaException
    * @throws TException
    */
-  private boolean validatePartition(final Partition part, final String catName,
+  private void validatePartition(final Partition part, final String catName,
                                     final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd)
       throws MetaException, TException {
     MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
@@ -4487,7 +4486,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // upstream as such a command doesn't make sense.
       throw new MetaException("Duplicate partitions in the list: " + part);
     }
-    return true;
   }
 
   /**
@@ -4597,6 +4595,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       boolean isColSkippedForPartitions = request.isSkipColumnSchemaForPartition();
       // Make sure all the partitions have the catalog set as well
       request.getParts().forEach(p -> p.setCatName(catName));
+      request.setCatName(catName);
       List<Partition> parts = add_partitions_core(getMS(), request);
       if (request.isNeedResult()) {
         if (isColSkippedForPartitions) {
