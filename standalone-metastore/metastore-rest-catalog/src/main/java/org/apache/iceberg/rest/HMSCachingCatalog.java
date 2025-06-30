@@ -97,10 +97,6 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     return hiveCatalog.namespaceExists(namespace);
   }
 
-  public void invalidateTable(String dbName, String tableName) {
-    super.invalidateTable(TableIdentifier.of(dbName, tableName));
-  }
-
   @Override
   public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
     return hiveCatalog.buildTable(identifier, schema);
