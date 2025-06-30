@@ -50,7 +50,7 @@ import java.util.Map;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements AutoCloseable {
+public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMetaStoreClient, AutoCloseable {
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
 

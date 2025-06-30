@@ -41,7 +41,7 @@ import java.util.Map;
  * so the readers of the objects in these maps should have the most recent view of the object.
  * But again, could be fragile.
  */
-public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy {
+public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMetaStoreClient {
   private SessionHiveMetaStoreClient(
       Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
     super(createUnderlyingClient(conf, hookLoader, allowEmbedded), conf);
