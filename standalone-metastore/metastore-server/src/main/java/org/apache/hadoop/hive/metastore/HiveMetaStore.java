@@ -669,6 +669,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
     ctxHandler.setSecurityHandler(securityHandler);
   }
+
+  /**
+   * Configure the metastore to propagate events to eventual Iceberg catalog.
+   * @param conf the configuration
+   */
+  private static void configureIcebergCacheHandling(Configuration conf) {
+    // If we start a REST catalog, we need to listen to events to maintain its consistency.
+    String eventListenerClass = MetastoreConf.getVar(conf, ConfVars.ICEBERG_CATALOG_EVENT_LISTENER_CLASS);
+    if (eventListenerClass != null && !eventListenerClass.isEmpty()) {
+      // if expiry is negative, no cache is used, so no need to register the listener
+      long expiry = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
+      // if the port is negative, no REST catalog is configured, so no need to register the listener
+      int icebergPort = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT);
+      if (icebergPort >= 0 && expiry > 0) {
+        LOG.info("Configuring Iceberg catalog event listener: {}", eventListenerClass);
+        String listeners = MetastoreConf.getVar(conf, ConfVars.EVENT_LISTENERS);
+        if (listeners == null || listeners.isEmpty()) {
+          MetastoreConf.setVar(conf, ConfVars.EVENT_LISTENERS, eventListenerClass);
+        } else {
+          MetastoreConf.setVar(conf, ConfVars.EVENT_LISTENERS, listeners + "," + eventListenerClass);
+        }
+      }
+    }
+  }
+
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
    *
@@ -683,6 +708,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
+    // If we start an Iceberg REST catalog, we need to listen to events to maintain its consistency.
+    configureIcebergCacheHandling(conf);
     isMetaStoreRemote = true;
     String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
     boolean isHttpTransport = transportMode.equalsIgnoreCase("http");

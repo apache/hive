@@ -35,12 +35,15 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * Class that wraps an Iceberg Catalog to cache tables.
  */
 public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
   private final HiveCatalog hiveCatalog;
   
   public HMSCachingCatalog(HiveCatalog catalog, long expiration) {
@@ -90,6 +93,26 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   @Override
   public boolean namespaceExists(Namespace namespace) {
     return hiveCatalog.namespaceExists(namespace);
+  }
+
+  public void invalidateTable(String dbName, String tableName) {
+    super.invalidateTable(TableIdentifier.of(dbName, tableName));
+  }
+
+  @Override
+  public void invalidateTable(TableIdentifier tableIdentifier) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Avoid invalidating table: {}", tableIdentifier);
+    }
+    super.invalidateTable(tableIdentifier);
+  }
+
+
+  public void invalidateNamespace(String namespace) {
+    Namespace ns = Namespace.of(namespace);
+    for (TableIdentifier table : listTables(ns)) {
+      invalidateTable(table);
+    }
   }
 
   @Override
