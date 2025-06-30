@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.client.LocalCachingMetaStoreClientProxy;
 import org.apache.hadoop.hive.ql.metadata.client.SessionMetaStoreClientProxy;
@@ -58,7 +59,8 @@ public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy {
     IMetaStoreClient clientWithLocalCache = new LocalCachingMetaStoreClientProxy(conf, thriftClient);
     IMetaStoreClient sessionLevelClient = new SessionMetaStoreClientProxy(conf, clientWithLocalCache);
     IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, hookLoader, sessionLevelClient);
-    return clientWithHook;
+    IMetaStoreClient synchronizedClient = new SynchronizedMetaStoreClientProxy(conf, clientWithHook);
+    return synchronizedClient;
   }
 
   public static Map<String, Table> getTempTablesForDatabase(String dbName, String tblName) {

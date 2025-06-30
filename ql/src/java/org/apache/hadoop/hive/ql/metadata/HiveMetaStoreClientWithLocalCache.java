@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.client.LocalCachingMetaStoreClientProxy;
 
@@ -59,6 +60,7 @@ public class HiveMetaStoreClientWithLocalCache extends BaseMetaStoreClientProxy 
     IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
     IMetaStoreClient clientWithLocalCache = new LocalCachingMetaStoreClientProxy(conf, thriftClient);
     IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, hookLoader, clientWithLocalCache);
-    return clientWithHook;
+    IMetaStoreClient synchronizedClient = new SynchronizedMetaStoreClientProxy(conf, clientWithHook);
+    return synchronizedClient;
   }
 }

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.thrift.TException;
 
@@ -65,17 +66,23 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements Aut
 
   public HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
-    super(createUnderlyingClient(conf, hookLoader, allowEmbedded), conf);
-    HookEnabledMetaStoreClientProxy hookProxy = (HookEnabledMetaStoreClientProxy) getDelegate();
-    this.thriftClient = (ThriftHiveMetaStoreClient) hookProxy.getDelegate();
+    this(conf, hookLoader, new ThriftHiveMetaStoreClient(conf, allowEmbedded));
+  }
+
+  private HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader,
+      ThriftHiveMetaStoreClient thriftClient) {
+    super(createUnderlyingClient(conf, hookLoader, thriftClient), conf);
+    this.thriftClient = thriftClient;
   }
 
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
-      Boolean allowEmbedded) throws MetaException {
-    IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
+      ThriftHiveMetaStoreClient thriftClient) {
     IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, hookLoader, thriftClient);
-    return clientWithHook;
+    IMetaStoreClient synchronizedClient = new SynchronizedMetaStoreClientProxy(conf, clientWithHook);
+    return synchronizedClient;
   }
+
+  // methods for test
 
   public boolean createType(Type type) throws TException {
     return thriftClient.createType(type);
@@ -159,6 +166,8 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements Aut
   public ThriftHiveMetaStoreClient getThriftClient() {
     return thriftClient;
   }
+
+  // static members
 
   public static void setProcessorCapabilities(final String[] capabilities) {
     ThriftHiveMetaStoreClient.setProcessorCapabilities(capabilities);

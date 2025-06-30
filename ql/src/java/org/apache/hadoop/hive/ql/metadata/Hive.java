@@ -6114,11 +6114,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
         throw ex;
       }
-      String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTORE_URIS);
-      if (!org.apache.commons.lang3.StringUtils.isEmpty(metaStoreUris)) {
-        // get a synchronized wrapper if the meta store is remote.
-        metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
-      }
     }
     return metaStoreClient;
   }
