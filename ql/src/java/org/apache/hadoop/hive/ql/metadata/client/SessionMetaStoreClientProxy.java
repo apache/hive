@@ -150,8 +150,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTa
  * 2. query-level caching
  * 3. communication to the transaction manager for the current session.
  */
-public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy
-    implements IMetaStoreClient {
+public class SessionMetaStoreClientProxy extends BaseMetaStoreClientProxy {
   private static final Logger LOG = LoggerFactory.getLogger(SessionMetaStoreClientProxy.class);
 
   private volatile Warehouse wh = null;

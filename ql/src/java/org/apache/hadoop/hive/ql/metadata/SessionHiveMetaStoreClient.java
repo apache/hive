@@ -22,7 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.client.HookMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.client.LocalCachingMetaStoreClientProxy;
@@ -40,13 +40,13 @@ import java.util.Map;
  * so the readers of the objects in these maps should have the most recent view of the object.
  * But again, could be fragile.
  */
-public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMetaStoreClient {
+public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy {
   private SessionHiveMetaStoreClient(
       Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
     super(createUnderlyingClient(conf, hookLoader, allowEmbedded), conf);
   }
 
-  static SessionHiveMetaStoreClient newSessionHiveMetaStoreClient(
+  static SessionHiveMetaStoreClient newClient(
       Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
     return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
   }
@@ -57,7 +57,7 @@ public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy impleme
     IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
     IMetaStoreClient clientWithLocalCache = new LocalCachingMetaStoreClientProxy(conf, thriftClient);
     IMetaStoreClient sessionLevelClient = new SessionMetaStoreClientProxy(conf, clientWithLocalCache);
-    IMetaStoreClient clientWithHook = new HookMetaStoreClientProxy(conf, hookLoader, sessionLevelClient);
+    IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, hookLoader, sessionLevelClient);
     return clientWithHook;
   }
 

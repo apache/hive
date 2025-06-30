@@ -22,7 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.client.HookMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.client.LocalCachingMetaStoreClientProxy;
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.client.LocalCachingMetaStoreClientProx
  * It helps to reduce the time spent in compilation by using HS2 memory more effectively, and it allows to
  * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
  */
-public class HiveMetaStoreClientWithLocalCache extends BaseMetaStoreClientProxy implements IMetaStoreClient {
+public class HiveMetaStoreClientWithLocalCache extends BaseMetaStoreClientProxy {
   public static void init(Configuration conf) {
     LocalCachingMetaStoreClientProxy.init(conf);
   }
@@ -58,7 +58,7 @@ public class HiveMetaStoreClientWithLocalCache extends BaseMetaStoreClientProxy 
       Boolean allowEmbedded) throws MetaException {
     IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
     IMetaStoreClient clientWithLocalCache = new LocalCachingMetaStoreClientProxy(conf, thriftClient);
-    IMetaStoreClient clientWithHook = new HookMetaStoreClientProxy(conf, hookLoader, clientWithLocalCache);
+    IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, hookLoader, clientWithLocalCache);
     return clientWithHook;
   }
 }

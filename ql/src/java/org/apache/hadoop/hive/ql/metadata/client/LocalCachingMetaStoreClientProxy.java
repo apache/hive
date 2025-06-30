@@ -77,8 +77,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
  * It helps to reduce the time spent in compilation by using HS2 memory more effectively, and it allows to
  * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
  */
-public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy
-    implements IMetaStoreClient {
+public class LocalCachingMetaStoreClientProxy extends BaseMetaStoreClientProxy {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalCachingMetaStoreClientProxy.class);
 

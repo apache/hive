@@ -38,7 +38,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
-public abstract class BaseMetaStoreClientProxy extends NormalizedMetaStoreClient {
+public abstract class BaseMetaStoreClientProxy extends BaseMetaStoreClient {
 
   protected final IMetaStoreClient delegate;
 

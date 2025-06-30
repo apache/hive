@@ -92,7 +92,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.createThrift
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
-public class ThriftHiveMetaStoreClient extends NormalizedMetaStoreClient {
+public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner

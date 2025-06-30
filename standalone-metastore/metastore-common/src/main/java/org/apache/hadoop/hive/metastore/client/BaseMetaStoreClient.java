@@ -40,12 +40,12 @@ import java.util.Map;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
-public abstract class NormalizedMetaStoreClient implements IMetaStoreClient {
+public abstract class BaseMetaStoreClient implements IMetaStoreClient {
 
   // Keep a copy of HiveConf so if Session conf changes, we may need to get a new HMS client.
   protected final Configuration conf;
 
-  public NormalizedMetaStoreClient(Configuration conf) {
+  public BaseMetaStoreClient(Configuration conf) {
     if (conf == null) {
       conf = MetastoreConf.newMetastoreConf();
       this.conf = conf;
