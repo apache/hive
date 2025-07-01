@@ -24,11 +24,33 @@ likely need to add a number of new values. -->
     <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
   </property>
   <property>
-    <name>metastore.task.threads.always</name>
-    <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask</value>
+    <name>metastore.warehouse.dir</name>
+    <value>/opt/hive/data/warehouse</value>
   </property>
   <property>
-    <name>metastore.expression.proxy</name>
-    <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>
+    <name>metastore.compactor.initiator.on</name>
+    <value>false</value>
   </property>
+  <property>
+    <name>metastore.compactor.cleaner.on</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>metastore.event.db.notification.api.auth</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>metastore.catalog.servlet.port</name>
+    <value>9001</value>
+  </property>
+  <property>
+    <name>metastore.catalog.servlet.auth</name>
+    <value>none</value>
+  </property>
+  <property>
+    <!-- Disable IcebergHouseKeeperService thread. See HIVE-29052 for details -->
+    <name>metastore.task.threads.remote</name>
+    <value>org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService,org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService,org.apache.hadoop.hive.metastore.txn.service.AcidTxnCleanerService,org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService,org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask,org.apache.hadoop.hive.metastore.PartitionManagementTask</value>
+  </property>
+
 </configuration>

@@ -101,6 +101,7 @@ fi
 
 cp "$CACHE_DIR/hadoop-$HADOOP_VERSION.tar.gz" "$WORK_DIR/"
 cp -R "$SOURCE_DIR/metastore-server/src/docker/conf" "$WORK_DIR/"
+cp -R "$SOURCE_DIR/metastore-server/src/main/resources/metastore-site.xml" "$WORK_DIR/conf/"
 cp -R "$SOURCE_DIR/metastore-server/src/docker/entrypoint.sh" "$WORK_DIR/"
 cp    "$SOURCE_DIR/metastore-server/src/docker/Dockerfile" "$WORK_DIR/"
 docker build \
