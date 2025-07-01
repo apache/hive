@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
  * The reflection logic originally comes from {@link org.apache.hadoop.hive.metastore.HiveMetaStoreClient}.
  * This should be used by multi-thread applications unless all the underlying layers are thread-safe.
  */
-public class SynchronizedMetaStoreClientProxy extends BaseMetaStoreClientProxy {
+public class SynchronizedMetaStoreClientProxy extends BaseMetaStoreClientProxy implements IMetaStoreClient {
   public SynchronizedMetaStoreClientProxy(Configuration conf, IMetaStoreClient delegate) {
     super(HiveMetaStoreClient.newSynchronizedClient(delegate), conf);
   }

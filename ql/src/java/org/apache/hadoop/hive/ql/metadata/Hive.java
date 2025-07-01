@@ -124,6 +124,9 @@ import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
@@ -6006,11 +6009,20 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
+    IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
+    IMetaStoreClient clientWithLocalCache = new HiveMetaStoreClientWithLocalCache(conf, thriftClient);
+    IMetaStoreClient sessionLevelClient = new SessionHiveMetaStoreClient(conf, clientWithLocalCache);
+    IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, hookLoader, sessionLevelClient);
+
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return SessionHiveMetaStoreClient.newClient(conf, hookLoader, allowEmbedded);
+      return new SynchronizedMetaStoreClientProxy(conf, clientWithHook);
     } else {
-      return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
-          SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+      return RetryingMetaStoreClient.getProxy(
+          conf,
+          new Class[] {Configuration.class, IMetaStoreClient.class},
+          new Object[] {conf, clientWithHook},
+          SynchronizedMetaStoreClientProxy.class.getName()
+      );
     }
   }
 

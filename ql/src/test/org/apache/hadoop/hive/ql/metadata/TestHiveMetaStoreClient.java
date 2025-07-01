@@ -36,6 +36,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.thrift.TException;
 
 import java.util.HashMap;
@@ -62,10 +66,17 @@ import static org.junit.Assert.assertNotNull;
  *  As we support more APIs, we should add them here with appropriate test cases.
  *
  */
-public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache implements IMetaStoreClient {
+public class TestHiveMetaStoreClient extends BaseMetaStoreClientProxy {
+
+  private static IMetaStoreClient createUnderlyingClient(Configuration conf) throws MetaException {
+    IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, true);
+    IMetaStoreClient clientWithLocalCache = new HiveMetaStoreClientWithLocalCache(conf, thriftClient);
+    IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, null, clientWithLocalCache);
+    return new SynchronizedMetaStoreClientProxy(conf, clientWithHook);
+  }
 
   public TestHiveMetaStoreClient(Configuration conf) throws MetaException {
-    super(conf);
+    super(createUnderlyingClient(conf), conf);
   }
 
   public GetPartitionResponse getPartitionRequest(GetPartitionRequest req) {

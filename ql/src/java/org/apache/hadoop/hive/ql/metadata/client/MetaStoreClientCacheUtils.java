@@ -229,7 +229,7 @@ public class MetaStoreClientCacheUtils {
   public static class CacheWrapper implements CacheI {
     final Cache<CacheKey, Object> c;
 
-    protected CacheWrapper(Cache<CacheKey, Object> c) {
+    public CacheWrapper(Cache<CacheKey, Object> c) {
       this.c = c;
     }
 
