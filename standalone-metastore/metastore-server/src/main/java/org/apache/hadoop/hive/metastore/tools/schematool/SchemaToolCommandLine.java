@@ -26,6 +26,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.util.ExitUtil;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -320,7 +321,7 @@ public class SchemaToolCommandLine {
     if (reason != null) {
       throw new ParseException(reason);
     } else {
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
   }
 

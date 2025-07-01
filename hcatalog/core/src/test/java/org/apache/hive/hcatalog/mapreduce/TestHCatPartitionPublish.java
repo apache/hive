@@ -56,8 +56,8 @@ import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.hcatalog.DerbyPolicy;
-import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
 import org.apache.hive.hcatalog.data.HCatRecord;
@@ -75,7 +75,6 @@ public class TestHCatPartitionPublish {
   private static boolean isServerRunning = false;
   private static HiveConf hcatConf;
   private static HiveMetaStoreClient msc;
-  private static SecurityManager securityManager;
   private static Configuration conf = new Configuration(true);
   private static String testName;
 
@@ -115,8 +114,10 @@ public class TestHCatPartitionPublish {
     MetaStoreTestUtils.startMetaStoreWithRetry(hcatConf);
 
     isServerRunning = true;
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
+    ExitUtil.disableSystemExit();
+    ExitUtil.disableSystemHalt();
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
     Policy.setPolicy(new DerbyPolicy());
 
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
@@ -144,7 +145,8 @@ public class TestHCatPartitionPublish {
     if (mrCluster != null) {
       mrCluster.shutdown();
     }
-    System.setSecurityManager(securityManager);
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
     isServerRunning = false;
   }
 

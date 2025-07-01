@@ -119,7 +119,7 @@ public class RCFileGenerator {
     System.err.println("Usage: rcfilegen format number_of_rows " +
         "output_file plain_output_file");
     System.err.println("  format one of:  student voter alltypes");
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   public static void main(String[] args) throws Exception {

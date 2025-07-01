@@ -23,6 +23,8 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.util.ExitUtil;
+
 /**
  * extracturl.
  *
@@ -48,7 +50,7 @@ public final class extracturl {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
   }
 

@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -255,7 +256,7 @@ public class HiveStrictManagedMigration {
 
     // TODO: Something is preventing the process from terminating after main(), adding exit() as hacky solution.
     if (hiveConf == null) {
-      System.exit(RC);
+      ExitUtil.terminate(RC);
     }
   }
 

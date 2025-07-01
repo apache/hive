@@ -26,6 +26,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.logging.log4j.Level;
 
 /**
@@ -137,7 +138,7 @@ public class CommonCliOptions {
 
       if (commandLine.hasOption('h')) {
         printUsage();
-        System.exit(1);
+        ExitUtil.terminate(1);
       }
       if (commandLine.hasOption('v')) {
         verbose = true;
@@ -145,7 +146,7 @@ public class CommonCliOptions {
     } catch (ParseException e) {
       System.err.println(e.getMessage());
       printUsage();
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
 
   }
