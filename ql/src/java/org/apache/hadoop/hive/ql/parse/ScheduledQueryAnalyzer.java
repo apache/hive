@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQuery._Fields;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -74,7 +75,19 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     ScheduledQueryMaintenanceWork work;
     ScheduledQueryMaintenanceRequestType type = translateAstType(ast.getToken().getType());
     ScheduledQuery parsedSchq = interpretAstNode(ast);
+    boolean throwException = true;
+    if (type == ScheduledQueryMaintenanceRequestType.DROP) {
+      boolean ifExists = ast.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null;
+      throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
+    }
     ScheduledQuery schq = fillScheduledQuery(type, parsedSchq);
+    if (schq == null) {
+      if (throwException) {
+        throw new SemanticException(ErrorMsg.INVALID_SCHEDULED_QUERY, parsedSchq.getScheduleKey().getScheduleName());
+      } else {
+        return;
+      }
+    }
     checkAuthorization(type, schq);
     LOG.info("scheduled query operation: " + type + " " + schq);
     try {
@@ -102,7 +115,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
         schqStored.setNextExecutionIsSet(false);
         return composeOverlayObject(schqChanges, schqStored);
       } catch (TException e) {
-        throw new SemanticException("unable to get Scheduled query" + e);
+        LOG.error("Unable to get Scheduled query" + e);
+        return null;
       }
     }
   }
@@ -198,6 +212,8 @@ public class ScheduledQueryAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_EXECUTE:
       int now = (int) (System.currentTimeMillis() / 1000);
       schq.setNextExecution(now);
+      return;
+    case HiveParser.TOK_IFEXISTS:
       return;
     default:
       throw new SemanticException("Unexpected token: " + node.getType());

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -201,6 +203,53 @@ public class TestScheduledQueryStatements {
       assertThat(sq.get().getNextExecution(), Matchers.greaterThan((int) (System.currentTimeMillis() / 1000)));
     }
 
+  }
+
+  @Test
+  public void testDrop() throws ParseException, Exception {
+    IDriver driver = createDriver();
+
+    driver.run("set role admin");
+    driver.run("create scheduled query drop1 cron '0 0 7 * * ? *' as select 1 from tu");
+    driver.run("drop scheduled query drop1");
+
+    try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("drop1", "hive"));
+      assertFalse(sq.isPresent());
+    }
+  }
+
+  @Test
+  public void testDropIfExists() throws ParseException, Exception {
+    IDriver driver = createDriver();
+
+    driver.run("set role admin");
+    driver.run("create scheduled query drop2 cron '0 0 7 * * ? *' as select 1 from tu");
+    driver.run("drop scheduled query if exists drop2");
+
+    try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("drop2", "hive"));
+      assertFalse(sq.isPresent());
+    }
+  }
+
+  @Test
+  public void testDropWithoutCreate() throws ParseException, Exception, SemanticException {
+    IDriver driver = createDriver();
+    driver.run("set role admin");
+    driver.run("drop scheduled query drop3");
+  }
+
+  @Test
+  public void testDropIfExistsWithoutCreate() throws ParseException, Exception {
+    IDriver driver = createDriver();
+    driver.run("set role admin");
+    driver.run("drop scheduled query if exists drop4");
+
+    try (CloseableObjectStore os = new CloseableObjectStore(env_setup.getTestCtx().hiveConf)) {
+      Optional<MScheduledQuery> sq = os.getMScheduledQuery(new ScheduledQueryKey("drop4", "hive"));
+      assertFalse(sq.isPresent());
+    }
   }
 
   @Test
