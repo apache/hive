@@ -440,7 +440,7 @@ public class HiveMetaStoreClientWithLocalCache extends BaseMetaStoreClientProxy 
     return delegate.getPartitionsByNames(req);
   }
 
-  // cf. SessionMetaStoreClientProxy.getValidWriteIdList
+  // cf. SessionHiveMetaStoreClient.getValidWriteIdList
   private String getValidWriteIdList(String dbName, String tblName) {
     try {
       final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);
