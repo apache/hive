@@ -1,4 +1,4 @@
---! qt:database:oracle:q_test_country_table_with_schema.oracle.sql
+--! qt:database:oracle:qdb:q_test_country_table_with_schema.oracle.sql
 -- Oracle does not allow explicitly the creation of different namespaces/schemas in the same database. This can be
 -- achieved by creating different users where each user is associated with a schema having the same name.
 
@@ -12,7 +12,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "ORACLE",
     "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
-    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//${system:hive.test.database.qdb.host}:${system:hive.test.database.qdb.port}/XEPDB1",
     "hive.sql.dbcp.username" = "bob",
     "hive.sql.dbcp.password" = "bobpass",
     "hive.sql.schema" = "BOB",
@@ -28,7 +28,7 @@ CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "ORACLE",
         "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
-        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//${system:hive.test.database.qdb.host}:${system:hive.test.database.qdb.port}/XEPDB1",
         "hive.sql.dbcp.username" = "bob",
         "hive.sql.dbcp.password" = "bobpass",
         "hive.sql.table" = "COUNTRY"
@@ -43,7 +43,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "ORACLE",
     "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
-    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//${system:hive.test.database.qdb.host}:${system:hive.test.database.qdb.port}/XEPDB1",
     "hive.sql.dbcp.username" = "bob",
     "hive.sql.dbcp.password" = "bobpass",
     "hive.sql.schema" = "ALICE",
