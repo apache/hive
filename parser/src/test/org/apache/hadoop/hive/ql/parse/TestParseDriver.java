@@ -333,6 +333,7 @@ public class TestParseDriver {
   @Test
   public void testParseDropScheduledQuery() throws Exception {
     parseDriver.parse("drop scheduled query asd");
+    parseDriver.parse("drop scheduled query if exists asd");
   }
 
 }

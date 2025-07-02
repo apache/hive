@@ -1745,9 +1745,10 @@ createScheduledQueryStatement
 dropScheduledQueryStatement
 @init { pushMsg("drop scheduled query statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_SCHEDULED KW_QUERY name=identifier
+    : KW_DROP KW_SCHEDULED KW_QUERY ifExists? name=identifier
     -> ^(TOK_DROP_SCHEDULED_QUERY
             $name
+            ifExists?
         )
     ;
 
