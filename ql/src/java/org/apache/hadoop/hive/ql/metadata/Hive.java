@@ -5997,6 +5997,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveMetaException
    *           if a working client can't be created
    */
+  @SuppressWarnings("squid:S2095")
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
@@ -6021,6 +6022,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           conf,
           new Class[] {Configuration.class, IMetaStoreClient.class},
           new Object[] {conf, clientWithHook},
+          metaCallTimeMap,
           SynchronizedMetaStoreClientProxy.class.getName()
       );
     }
