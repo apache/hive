@@ -156,6 +156,10 @@ public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy {
 
   private volatile Warehouse wh = null;
 
+  public static SessionHiveMetaStoreClient newClient(Configuration conf, IMetaStoreClient delegate) {
+    return new SessionHiveMetaStoreClient(conf, delegate);
+  }
+
   public SessionHiveMetaStoreClient(Configuration conf, IMetaStoreClient delegate) {
     super(delegate, conf);
   }

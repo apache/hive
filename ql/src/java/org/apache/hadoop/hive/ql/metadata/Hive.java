@@ -6010,13 +6010,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, allowEmbedded);
-    IMetaStoreClient clientWithLocalCache = new HiveMetaStoreClientWithLocalCache(conf, thriftClient);
-    IMetaStoreClient sessionLevelClient = new SessionHiveMetaStoreClient(conf, clientWithLocalCache);
-    IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClientProxy(conf, hookLoader, sessionLevelClient);
+    IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
+    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
+    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
+    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClientProxy.newClient(conf, hookLoader, sessionLevelClient);
 
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return new SynchronizedMetaStoreClientProxy(conf, clientWithHook);
+      return SynchronizedMetaStoreClientProxy.newClient(conf, clientWithHook);
     } else {
       return RetryingMetaStoreClient.getProxy(
           conf,

@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -89,8 +88,11 @@ public class HiveMetaStoreClientWithLocalCache extends BaseMetaStoreClientProxy 
   private static HashMap<Class<?>, ObjectEstimator> sizeEstimator = null;
   private static String cacheObjName = null;
 
-  public HiveMetaStoreClientWithLocalCache(Configuration conf, IMetaStoreClient delegate)
-      throws MetaException {
+  public static HiveMetaStoreClientWithLocalCache newClient(Configuration conf, IMetaStoreClient delegate) {
+    return new HiveMetaStoreClientWithLocalCache(conf, delegate);
+  }
+
+  public HiveMetaStoreClientWithLocalCache(Configuration conf, IMetaStoreClient delegate) {
     super(delegate, conf);
   }
 

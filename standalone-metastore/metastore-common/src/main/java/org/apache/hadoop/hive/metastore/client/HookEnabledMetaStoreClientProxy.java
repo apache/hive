@@ -21,64 +21,33 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
-import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableIterable;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsRequest;
-import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsResponse;
-import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
-import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionsRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.FilterUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
@@ -86,43 +55,19 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 
 public class HookEnabledMetaStoreClientProxy extends BaseMetaStoreClientProxy {
   private final HiveMetaHookLoader hookLoader;
-  private final MetaStoreFilterHook filterHook;
-  private final boolean isClientFilterEnabled;
 
   private static final Logger LOG = LoggerFactory.getLogger(HookEnabledMetaStoreClientProxy.class);
+
+  public static HookEnabledMetaStoreClientProxy newClient(Configuration conf,
+      @Nullable HiveMetaHookLoader hookLoader, IMetaStoreClient delegate) {
+    return new HookEnabledMetaStoreClientProxy(conf, hookLoader, delegate);
+  }
 
   public HookEnabledMetaStoreClientProxy(Configuration conf, @Nullable HiveMetaHookLoader hookLoader,
       IMetaStoreClient delegate) {
     super(delegate, conf);
 
     this.hookLoader = hookLoader;
-
-    filterHook = loadFilterHooks();
-    isClientFilterEnabled = getIfClientFilterEnabled();
-  }
-
-  private MetaStoreFilterHook loadFilterHooks() throws IllegalStateException {
-    Class<? extends MetaStoreFilterHook> authProviderClass =
-        MetastoreConf.getClass(
-            conf,
-            MetastoreConf.ConfVars.FILTER_HOOK, DefaultMetaStoreFilterHookImpl.class,
-            MetaStoreFilterHook.class);
-    String msg = "Unable to create instance of " + authProviderClass.getName() + ": ";
-    try {
-      Constructor<? extends MetaStoreFilterHook> constructor =
-          authProviderClass.getConstructor(Configuration.class);
-      return constructor.newInstance(conf);
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException |
-          IllegalArgumentException | InvocationTargetException e) {
-      throw new IllegalStateException(msg + e.getMessage(), e);
-    }
-  }
-
-  private boolean getIfClientFilterEnabled() {
-    boolean isEnabled =
-        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FILTER_ENABLED);
-    LOG.info("HMS client filtering is " + (isEnabled ? "enabled." : "disabled."));
-    return isEnabled;
   }
 
   private HiveMetaHook getHook(Table tbl) throws MetaException {
@@ -156,37 +101,6 @@ public class HookEnabledMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         hook.rollbackAlterTable(new_tbl, envContext);
       }
     }
-  }
-
-  @Override
-  public Catalog getCatalog(String catName) throws TException {
-    Catalog catalog = delegate.getCatalog(catName);
-    return catalog == null ?
-        null : FilterUtils.filterCatalogIfEnabled(isClientFilterEnabled, filterHook, catalog);
-  }
-
-  @Override
-  public List<String> getCatalogs() throws TException {
-    List<String> catalogs = delegate.getCatalogs();
-    return catalogs == null ?
-        null : FilterUtils.filterCatalogNamesIfEnabled(isClientFilterEnabled, filterHook, catalogs);
-  }
-
-  @Override
-  public List<Partition> add_partitions(List<Partition> parts, boolean ifNotExists, boolean needResults)
-      throws TException {
-    List<Partition> partitions = delegate.add_partitions(parts, ifNotExists, needResults);
-    if (needResults) {
-      return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, partitions);
-    } else {
-      return null;
-    }
-  }
-
-  @Override
-  public List<String> getAllDataConnectorNames() throws TException {
-    List<String> connectorNames = delegate.getAllDataConnectorNames();
-    return FilterUtils.filterDataConnectorsIfEnabled(isClientFilterEnabled, filterHook, connectorNames);
   }
 
   @Override
@@ -458,202 +372,12 @@ public class HookEnabledMetaStoreClientProxy extends BaseMetaStoreClientProxy {
         deleteData, context);
   }
 
-  @Override
-  public List<String> getDatabases(String catName, String databasePattern) throws TException {
-    List<String> databases = delegate.getDatabases(catName, databasePattern);
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, databases);
-  }
-
-  @Override
-  public List<String> getAllDatabases(String catName) throws TException {
-    List<String> databases = delegate.getAllDatabases(catName);
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, databases);
-  }
-
-  @Override
-  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException {
-    GetDatabaseObjectsResponse response = delegate.get_databases_req(request);
-    response.setDatabases(FilterUtils.filterDatabaseObjectsIfEnabled(
-        isClientFilterEnabled, filterHook, response.getDatabases()));
-    return response;
-  }
-
-  @Override
-  public List<Partition> listPartitions(String catName, String db_name, String tbl_name,
-      int max_parts) throws TException {
-    List<Partition> parts = delegate.listPartitions(catName, db_name, tbl_name, max_parts);
-    return HiveMetaStoreClientUtils.deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
-  }
-
-  @Override
-  public PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName,
-      int maxParts) throws TException {
-    List<PartitionSpec> partitionSpecs =
-        delegate.listPartitionSpecs(catName, dbName, tableName, maxParts).toPartitionSpec();
-    partitionSpecs =
-        FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs);
-    return PartitionSpecProxy.Factory.get(partitionSpecs);
-  }
-
-  @Override
-  public List<Partition> listPartitions(String catName, String db_name, String tbl_name,
-      List<String> part_vals, int max_parts) throws TException {
-    List<Partition> parts = delegate.listPartitions(catName, db_name, tbl_name, part_vals, max_parts);
-    return HiveMetaStoreClientUtils.deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
-  }
-
-  @Override
-  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
-      throws TException {
-    GetPartitionsPsWithAuthResponse res = delegate.listPartitionsWithAuthInfoRequest(req);
-    List<Partition> parts = HiveMetaStoreClientUtils.deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));
-    res.setPartitions(parts);
-    return res;
-  }
-
-  @Override
-  public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
-      int maxParts, String userName, List<String> groupNames) throws TException {
-    List<Partition> parts = delegate.listPartitionsWithAuthInfo(
-        catName, dbName, tableName, maxParts, userName, groupNames);
-    return HiveMetaStoreClientUtils.deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
-  }
-
-  @Override
-  public List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
-      List<String> partialPvals, int maxParts, String userName, List<String> groupNames) throws TException {
-
-    List<Partition> parts = delegate.listPartitionsWithAuthInfo(catName, dbName, tableName, partialPvals,
-        maxParts, userName, groupNames);
-    return HiveMetaStoreClientUtils.deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
-  }
-
-  @Override
-  public List<Partition> listPartitionsByFilter(String catName, String db_name, String tbl_name,
-      String filter, int max_parts) throws TException {
-    List<Partition> parts = delegate.listPartitionsByFilter(catName, db_name, tbl_name, filter, max_parts);
-    return HiveMetaStoreClientUtils.deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
-  }
-
-  @Override
-  public PartitionSpecProxy listPartitionSpecsByFilter(String catName, String db_name, String tbl_name,
-      String filter, int max_parts) throws TException {
-    List<PartitionSpec> partitionSpecs =
-        delegate.listPartitionSpecsByFilter(catName, db_name, tbl_name, filter, max_parts)
-            .toPartitionSpec();
-    return PartitionSpecProxy.Factory.get(
-        FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs));
-  }
-
-  @Override
-  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
-      throws TException {
-    // to ensure that result never contains any unfiltered partitions.
-    List<PartitionSpec> tempList = new ArrayList<>();
-    boolean r = delegate.listPartitionsSpecByExpr(req, tempList);
-
-    result.addAll(FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, tempList));
-
-    return r;
-  }
-
-  @Override
-  public Database getDatabase(String catalogName, String databaseName) throws TException {
-    Database d = delegate.getDatabase(catalogName, databaseName);
-    return HiveMetaStoreClientUtils.deepCopy(
-        FilterUtils.filterDbIfEnabled(isClientFilterEnabled, filterHook, d));
-  }
-
-  @Override
-  public GetPartitionResponse getPartitionRequest(GetPartitionRequest req) throws TException {
-    GetPartitionResponse res = delegate.getPartitionRequest(req);
-    res.setPartition(HiveMetaStoreClientUtils.deepCopy(
-        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, res.getPartition())));
-    return res;
-  }
-
-  @Override
-  public Partition getPartition(String catName, String dbName, String tblName, List<String> partVals)
-      throws TException {
-    Partition part = delegate.getPartition(catName, dbName, tblName, partVals);
-    return HiveMetaStoreClientUtils.deepCopy(
-        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, part));
-  }
-
-  @Override
-  public PartitionsResponse getPartitionsRequest(PartitionsRequest req) throws TException {
-    PartitionsResponse res = delegate.getPartitionsRequest(req);
-    List<Partition> parts = HiveMetaStoreClientUtils.deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));
-    res.setPartitions(parts);
-    return res;
-  }
-
-  @Override
-  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
-      throws TException {
-    checkDbAndTableFilters(getDefaultCatalog(conf), req.getDb_name(), req.getTbl_name());
-    List<Partition> parts = delegate.getPartitionsByNames(req).getPartitions();
-    GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
-    res.setPartitions(HiveMetaStoreClientUtils.deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(
-        isClientFilterEnabled, filterHook, parts)));
-    return res;
-  }
-
-  @Override
-  public PartitionValuesResponse listPartitionValues(PartitionValuesRequest request) throws TException {
-    if (!request.isSetCatName()) {
-      request.setCatName(getDefaultCatalog(conf));
-    }
-
-    String catName = request.getCatName();
-    String dbName = request.getDbName();
-    String tblName = request.getTblName();
-
-    checkDbAndTableFilters(catName, dbName, tblName);
-    return delegate.listPartitionValues(request);
-  }
-
-  /**
-   * Check if the current user has access to a given database and table name. Throw
-   * NoSuchObjectException if user has no access. When the db or table is filtered out, we don't need
-   * to even fetch the partitions. Therefore this check ensures table-level security and
-   * could improve performance when filtering partitions.
-   *
-   * @param catName the catalog name
-   * @param dbName  the database name
-   * @param tblName the table name contained in the database
-   * @throws NoSuchObjectException if the database or table is filtered out
-   */
-  private void checkDbAndTableFilters(final String catName, final String dbName, final String tblName)
-      throws NoSuchObjectException, MetaException {
-
-    // HIVE-20776 causes view access regression
-    // Therefore, do not do filtering here. Call following function only to check
-    // if dbName and tblName is valid
-    FilterUtils.checkDbAndTableFilters(false, filterHook, catName, dbName, tblName);
-  }
-
-  @Override
-  public Partition getPartitionWithAuthInfo(String catName, String dbName, String tableName,
-      List<String> pvals, String userName, List<String> groupNames) throws TException {
-    Partition p = delegate.getPartitionWithAuthInfo(catName, dbName, tableName, pvals, userName, groupNames);
-    return HiveMetaStoreClientUtils.deepCopy(
-        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
-  }
 
   @Override
   public Table getTable(GetTableRequest getTableRequest) throws TException {
     Table t = delegate.getTable(getTableRequest);
     executePostGetTableHook(t);
-    return HiveMetaStoreClientUtils.deepCopy(
-        FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+    return t;
   }
 
   private void executePostGetTableHook(Table t) throws MetaException {
@@ -670,126 +394,7 @@ public class HookEnabledMetaStoreClientProxy extends BaseMetaStoreClientProxy {
     for (Table tbl : tabs) {
       executePostGetTableHook(tbl);
     }
-    return HiveMetaStoreClientUtils.deepCopyTables(
-        FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
-  }
-
-  @Override
-  public List<String> listTableNamesByFilter(String catName, String dbName, String filter,
-      int maxTables) throws TException {
-    List<String> tableNames = delegate.listTableNamesByFilter(catName, dbName, filter, maxTables);
-    return FilterUtils.filterTableNamesIfEnabled(
-        isClientFilterEnabled, filterHook, catName, dbName, tableNames);
-  }
-
-  @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern) throws TException {
-    List<String> tables = delegate.getTables(catName, dbName, tablePattern);
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
-  }
-
-  @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern,
-      TableType tableType) throws TException {
-    List<String> tables = delegate.getTables(catName, dbName, tablePattern, tableType);
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
-  }
-
-  @Override
-  public List<Table> getAllMaterializedViewObjectsForRewriting() throws TException {
-    try {
-      List<Table> views = delegate.getAllMaterializedViewObjectsForRewriting();
-      return FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, views);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
-  }
-
-  @Override
-  public List<String> getMaterializedViewsForRewriting(String catName, String dbname)
-      throws MetaException {
-    try {
-      List<String> views = delegate.getMaterializedViewsForRewriting(catName, dbname);
-      return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbname, views);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
-  }
-
-  @Override
-  public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
-      List<String> tableTypes) throws TException {
-    List<TableMeta> tableMetas = delegate.getTableMeta(catName, dbPatterns, tablePatterns, tableTypes);
-    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, tableMetas);
-  }
-
-  @Override
-  public List<String> getAllTables(String catName, String dbName) throws TException {
-    List<String> tableNames = delegate.getAllTables(catName, dbName);
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tableNames);
-  }
-
-  @Override
-  public boolean tableExists(String catName, String dbName, String tableName) throws TException {
-    try {
-      Table table = getTable(catName, dbName, tableName);
-      return FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, table) != null;
-    } catch (NoSuchObjectException e) {
-      return false;
-    }
-  }
-
-  @Override
-  public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
-      throws TException {
-    GetPartitionNamesPsResponse res = delegate.listPartitionNamesRequest(req);
-    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-    List<String> partNames = FilterUtils.filterPartitionNamesIfEnabled(
-        isClientFilterEnabled, filterHook, catName, req.getDbName(),
-        req.getTblName(), res.getNames());
-    res.setNames(partNames);
-    return res;
-  }
-
-  @Override
-  public List<String> listPartitionNames(String catName, String dbName, String tableName, int maxParts)
-      throws TException {
-    List<String> partNames = delegate.listPartitionNames(catName, dbName, tableName, maxParts);
-    return FilterUtils.filterPartitionNamesIfEnabled(
-        isClientFilterEnabled, filterHook, catName, dbName, tableName, partNames);
-  }
-
-  @Override
-  public List<String> listPartitionNames(PartitionsByExprRequest req) throws TException {
-    return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, req.getCatName(),
-        req.getDbName(), req.getTblName(), delegate.listPartitionNames(req));
-  }
-
-  @Override
-  public Partition getPartition(String catName, String dbName, String tblName, String name)
-      throws TException {
-    Partition p = delegate.getPartition(catName, dbName, tblName, name);
-    return HiveMetaStoreClientUtils.deepCopy(
-        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
-  }
-
-  @Override
-  public ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
-    ShowCompactResponse response = delegate.showCompactions(request);
-    response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
-        filterHook, getDefaultCatalog(conf), response.getCompacts()));
-    return response;
-  }
-
-  @Override
-  public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
-      GetLatestCommittedCompactionInfoRequest request)
-      throws TException {
-    GetLatestCommittedCompactionInfoResponse response = delegate.getLatestCommittedCompactionInfo(request);
-    return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isClientFilterEnabled, filterHook,
-        getDefaultCatalog(conf), request.getDbname(), request.getTablename(), response);
+    return tabs;
   }
 
   @Override

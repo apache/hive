@@ -27,6 +27,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
+import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslHelper;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -37,6 +39,7 @@ import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
+import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -66,6 +69,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -123,6 +127,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   private Random rng;
   private String tokenStrForm;
   private final boolean localMetaStore;
+  private final boolean isClientFilterEnabled;
+  private final MetaStoreFilterHook filterHook;
   private final URIResolverHook uriResolverHook;
   private final int fileMetadataBatchSize;
 
@@ -148,12 +154,20 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(ThriftHiveMetaStoreClient.class);
 
+  public static ThriftHiveMetaStoreClient newClient(Configuration conf, Boolean allowEmbedded)
+      throws MetaException {
+    return new ThriftHiveMetaStoreClient(conf, allowEmbedded);
+  }
+
   public ThriftHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
     super(conf);
     version =
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST) ? TEST_VERSION : DEFAULT_VERSION;
     uriResolverHook = loadUriResolverHook();
     fileMetadataBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
+
+    filterHook = loadFilterHooks();
+    isClientFilterEnabled = getIfClientFilterEnabled();
 
     if ((MetastoreConf.get(conf, "hive.metastore.client.capabilities")) != null) {
       String[] capabilities = MetastoreConf.get(conf, "hive.metastore.client.capabilities").split(",");
@@ -378,6 +392,30 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     URI tmp = metastoreUris[0];
     metastoreUris[0] = metastoreUris[index];
     metastoreUris[index] = tmp;
+  }
+
+  private MetaStoreFilterHook loadFilterHooks() throws IllegalStateException {
+    Class<? extends MetaStoreFilterHook> authProviderClass =
+        MetastoreConf.getClass(
+            conf,
+            MetastoreConf.ConfVars.FILTER_HOOK, DefaultMetaStoreFilterHookImpl.class,
+            MetaStoreFilterHook.class);
+    String msg = "Unable to create instance of " + authProviderClass.getName() + ": ";
+    try {
+      Constructor<? extends MetaStoreFilterHook> constructor =
+          authProviderClass.getConstructor(Configuration.class);
+      return constructor.newInstance(conf);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException |
+             IllegalArgumentException | InvocationTargetException e) {
+      throw new IllegalStateException(msg + e.getMessage(), e);
+    }
+  }
+
+  private boolean getIfClientFilterEnabled() {
+    boolean isEnabled =
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FILTER_ENABLED);
+    LOG.info("HMS client filtering is " + (isEnabled ? "enabled." : "disabled."));
+    return isEnabled;
   }
 
   @VisibleForTesting
@@ -923,13 +961,21 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public Catalog getCatalog(String catName) throws TException {
     GetCatalogResponse rsp = client.get_catalog(new GetCatalogRequest(catName));
-    return rsp == null ? null : rsp.getCatalog();
+    if (rsp == null || rsp.getCatalog() == null) {
+      return null;
+    } else {
+      return FilterUtils.filterCatalogIfEnabled(isClientFilterEnabled, filterHook, rsp.getCatalog());
+    }
   }
 
   @Override
   public List<String> getCatalogs() throws TException {
     GetCatalogsResponse rsp = client.get_catalogs();
-    return rsp == null ? null : rsp.getNames();
+    if (rsp == null || rsp.getNames() == null) {
+      return null;
+    } else {
+      return FilterUtils.filterCatalogNamesIfEnabled(isClientFilterEnabled, filterHook, rsp.getNames());
+    }
   }
 
   @Override
@@ -1016,7 +1062,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       if (skipColumnSchemaForPartition) {
         new_parts.forEach(partition -> partition.getSd().setCols(result.getPartitionColSchema()));
       }
-      return new_parts;
+      return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, new_parts);
     }
     return null;
   }
@@ -1270,7 +1316,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
    */
   @Override
   public List<String> getAllDataConnectorNames() throws MetaException, TException {
-    return client.get_dataconnectors();
+    return FilterUtils.filterDataConnectorsIfEnabled(
+        isClientFilterEnabled, filterHook, client.get_dataconnectors());
   }
 
   /**
@@ -1696,12 +1743,14 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   @Override
   public List<String> getDatabases(String catName, String databasePattern) throws TException {
-    return client.get_databases(prependCatalogToDbName(catName, databasePattern, conf));
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook,
+        client.get_databases(prependCatalogToDbName(catName, databasePattern, conf)));
   }
 
   @Override
   public List<String> getAllDatabases(String catName) throws TException {
-    return client.get_databases(prependCatalogToDbName(catName, null, conf));
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook,
+        client.get_databases(prependCatalogToDbName(catName, null, conf)));
   }
 
   @Override
@@ -1710,7 +1759,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       request.setCatalogName(getDefaultCatalog(conf));
     }
 
-    return client.get_databases_req(request);
+    GetDatabaseObjectsResponse response = client.get_databases_req(request);
+    response.setDatabases(FilterUtils.filterDatabaseObjectsIfEnabled(
+        isClientFilterEnabled, filterHook, response.getDatabases()));
+    return response;
   }
 
   @Override
@@ -1726,7 +1778,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     req.setCatName(catName);
     req.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(max_parts));
     List<Partition> parts = client.get_partitions_req(req).getPartitions();
-    return HiveMetaStoreClientUtils.deepCopyPartitions(parts);
+    return HiveMetaStoreClientUtils.deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook,
+            HiveMetaStoreClientUtils.deepCopyPartitions(parts)));
   }
 
   @Override
@@ -1734,6 +1788,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       int maxParts) throws TException {
     List<PartitionSpec> partitionSpecs =
         client.get_partitions_pspec(prependCatalogToDbName(catName, dbName, conf), tableName, maxParts);
+    partitionSpecs =
+        FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs);
     return PartitionSpecProxy.Factory.get(partitionSpecs);
   }
 
@@ -1751,7 +1807,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     req.setPartVals(part_vals);
     req.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(max_parts));
     List<Partition> parts = client.get_partitions_ps_with_auth_req(req).getPartitions();
-    return HiveMetaStoreClientUtils.deepCopyPartitions(parts);
+    return HiveMetaStoreClientUtils.deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook,
+            HiveMetaStoreClientUtils.deepCopyPartitions(parts)));
   }
 
   @Override
@@ -1766,7 +1824,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     req.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(req.getMaxParts()));
     GetPartitionsPsWithAuthResponse res = client.get_partitions_ps_with_auth_req(
         createThriftPartitionsReq(GetPartitionsPsWithAuthRequest.class, conf, req));
-    List<Partition> parts = HiveMetaStoreClientUtils.deepCopyPartitions(res.getPartitions());
+    List<Partition> parts = HiveMetaStoreClientUtils.deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));
     res.setPartitions(parts);
     return res;
   }
@@ -1791,7 +1850,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       req.setGroupNames(groupNames);
       List<Partition> partsList = client.get_partitions_ps_with_auth_req(req).getPartitions();
 
-      return HiveMetaStoreClientUtils.deepCopyPartitions(partsList);
+      return HiveMetaStoreClientUtils.deepCopyPartitions(
+          FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, partsList));
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -1811,7 +1871,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       List<Partition> parts = listPartitionsWithAuthInfoInternal(
           catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
 
-      return HiveMetaStoreClientUtils.deepCopyPartitions(parts);
+      return HiveMetaStoreClientUtils.deepCopyPartitions(
+          FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -1848,7 +1909,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     req.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(max_parts));
     // TODO should we add capabilities here as well as it returns Partition objects
     List<Partition> parts = client.get_partitions_by_filter_req(req);
-    return HiveMetaStoreClientUtils.deepCopyPartitions(parts);
+    return HiveMetaStoreClientUtils.deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
   }
 
   @Override
@@ -1858,7 +1920,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     List<PartitionSpec> partitionSpecs =
         client.get_part_specs_by_filter(prependCatalogToDbName(catName, db_name, conf), tbl_name, filter,
             max_parts);
-    return PartitionSpecProxy.Factory.get(partitionSpecs);
+    return PartitionSpecProxy.Factory.get(
+        FilterUtils.filterPartitionSpecsIfEnabled(isClientFilterEnabled, filterHook, partitionSpecs));
   }
 
   private PartitionsByExprResult getPartitionsByExprInternal(PartitionsByExprRequest req) throws TException {
@@ -1899,7 +1962,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
       assert r != null;
 
-      result.addAll(r.getPartitionsSpec());
+      result.addAll(FilterUtils.filterPartitionSpecsIfEnabled(
+          isClientFilterEnabled, filterHook, r.getPartitionsSpec()));
 
       return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
     } finally {
@@ -1930,7 +1994,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       }
       Database d = client.get_database_req(request);
 
-      return HiveMetaStoreClientUtils.deepCopy(d);
+      return HiveMetaStoreClientUtils.deepCopy(
+          FilterUtils.filterDbIfEnabled(isClientFilterEnabled, filterHook, d));
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -1945,7 +2010,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       req.setValidWriteIdList(HiveMetaStoreClientUtils.getValidWriteIdList(req.getDbName(), req.getTblName(), conf));
     }
     GetPartitionResponse res = client.get_partition_req(req);
-    res.setPartition(HiveMetaStoreClientUtils.deepCopy(res.getPartition()));
+    res.setPartition(HiveMetaStoreClientUtils.deepCopy(
+        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, res.getPartition())));
     return res;
   }
 
@@ -1958,7 +2024,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     GetPartitionRequest getPartitionRequest = new GetPartitionRequest(dbName, tblName, partVals);
     getPartitionRequest.setCatName(catName);
     GetPartitionResponse res = client.get_partition_req(getPartitionRequest);
-    return HiveMetaStoreClientUtils.deepCopy(res.getPartition());
+    return HiveMetaStoreClientUtils.deepCopy(
+        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, res.getPartition()));
   }
 
   @Override
@@ -1968,7 +2035,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     }
     PartitionsResponse res =
         client.get_partitions_req(createThriftPartitionsReq(PartitionsRequest.class, conf, req));
-    List<Partition> parts = HiveMetaStoreClientUtils.deepCopyPartitions(res.getPartitions());
+    List<Partition> parts = HiveMetaStoreClientUtils.deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, res.getPartitions()));
     res.setPartitions(parts);
     return res;
   }
@@ -1985,7 +2053,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         createThriftPartitionsReq(GetPartitionsByNamesRequest.class, conf, req)).getPartitions();
 
     GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();
-    res.setPartitions(HiveMetaStoreClientUtils.deepCopyPartitions(parts));
+    res.setPartitions(HiveMetaStoreClientUtils.deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts)));
     return res;
   }
 
@@ -1999,6 +2068,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     String dbName = request.getDbName();
     String tblName = request.getTblName();
 
+    // HIVE-20776 causes view access regression
+    // Therefore, do not do filtering here. Call following function only to check
+    // if dbName and tblName is valid
+    FilterUtils.checkDbAndTableFilters(false, filterHook, catName, dbName, tblName);
+
     return client.get_partition_values(request);
   }
 
@@ -2008,7 +2082,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       List<String> groupNames) throws TException {
     Partition p = client.get_partition_with_auth(prependCatalogToDbName(catName, dbName, conf), tableName,
         pvals, userName, groupNames);
-    return HiveMetaStoreClientUtils.deepCopy(p);
+    return HiveMetaStoreClientUtils.deepCopy(
+        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
   }
 
   /**
@@ -2044,7 +2119,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       if (processorIdentifier != null)
         getTableRequest.setProcessorIdentifier(processorIdentifier);
 
-      return client.get_table_req(getTableRequest).getTable();
+      Table t = client.get_table_req(getTableRequest).getTable();
+      return HiveMetaStoreClientUtils.deepCopy(
+          FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
@@ -2063,7 +2140,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     req.setProjectionSpec(projectionsSpec);
-    return client.get_table_objects_by_name_req(req).getTables();
+    List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
+    return HiveMetaStoreClientUtils.deepCopyTables(
+        FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
 
   @Override
@@ -2085,7 +2164,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     List<String> tableNames =
         client.get_table_names_by_filter(prependCatalogToDbName(catName, dbName, conf), filter,
             HiveMetaStoreClientUtils.shrinkMaxtoShort(maxTables));
-    return tableNames;
+    return FilterUtils.filterTableNamesIfEnabled(
+        isClientFilterEnabled, filterHook, catName, dbName, tableNames);
   }
 
   /**
@@ -2142,7 +2222,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
       }
     }
-    return tables;
+    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
   }
 
   @Override
@@ -2151,7 +2231,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     List<String> tables =
         client.get_tables_by_type(prependCatalogToDbName(catName, dbName, conf), tablePattern,
             tableType.toString());
-    return tables;
+    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
   }
 
   /**
@@ -2174,7 +2254,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public List<Table> getAllMaterializedViewObjectsForRewriting() throws TException {
     try {
-      return client.get_all_materialized_view_objects_for_rewriting();
+      List<Table> views =  client.get_all_materialized_view_objects_for_rewriting();
+      return FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, views);
     } catch (Exception e) {
       MetaStoreUtils.throwMetaException(e);
     }
@@ -2185,7 +2266,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   public List<String> getMaterializedViewsForRewriting(String catName, String dbname)
       throws MetaException {
     try {
-      return client.get_materialized_views_for_rewriting(prependCatalogToDbName(catName, dbname, conf));
+      List<String> views =  client.get_materialized_views_for_rewriting(prependCatalogToDbName(catName, dbname, conf));
+      return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbname, views);
     } catch (Exception e) {
       MetaStoreUtils.throwMetaException(e);
     }
@@ -2195,13 +2277,15 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
       List<String> tableTypes) throws TException {
-    return client.get_table_meta(prependCatalogToDbName(catName, dbPatterns, conf),
+    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(catName, dbPatterns, conf),
         tablePatterns, tableTypes);
+    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, tableMetas);
   }
 
   @Override
   public List<String> getAllTables(String catName, String dbName) throws TException {
-    return client.get_all_tables(prependCatalogToDbName(catName, dbName, conf));
+    List<String> tableNames = client.get_all_tables(prependCatalogToDbName(catName, dbName, conf));
+    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tableNames);
   }
 
   @Override
@@ -2211,7 +2295,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       req.setCatName(catName);
       req.setCapabilities(version);
       Table table = client.get_table_req(req).getTable();
-      return table != null;
+      return FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, table) != null;
     } catch (NoSuchObjectException e) {
       return false;
     }
@@ -2226,7 +2310,12 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     if (req.getCatName() == null) {
       req.setCatName(getDefaultCatalog(conf));
     }
-    return client.get_partition_names_ps_req(req);
+    GetPartitionNamesPsResponse res = client.get_partition_names_ps_req(req);
+    List<String> partNames = FilterUtils.filterPartitionNamesIfEnabled(
+        isClientFilterEnabled, filterHook, req.getCatName(), req.getDbName(),
+        req.getTblName(), res.getNames());
+    res.setNames(partNames);
+    return res;
   }
 
   @Override
@@ -2238,12 +2327,16 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     PartitionsRequest partitionReq = new PartitionsRequest(dbName, tableName);
     partitionReq.setCatName(catName);
     partitionReq.setMaxParts(HiveMetaStoreClientUtils.shrinkMaxtoShort(maxParts));
-    return client.fetch_partition_names_req(partitionReq);
+    List<String> partNames = client.fetch_partition_names_req(partitionReq);
+    return FilterUtils.filterPartitionNamesIfEnabled(
+        isClientFilterEnabled, filterHook, catName, dbName, tableName, partNames);
   }
 
   @Override
   public List<String> listPartitionNames(PartitionsByExprRequest req) throws TException {
-    return client.get_partition_names_req(req);
+    List<String> partNames = client.get_partition_names_req(req);
+    return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, req.getCatName(),
+        req.getDbName(), req.getTblName(), partNames);
   }
 
   @Override
@@ -2585,7 +2678,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     appendPartitionRequest.setCatalogName(getDefaultCatalog(conf));
     appendPartitionRequest.setEnvironmentContext(envContext);
     Partition p = client.append_partition_req(appendPartitionRequest);
-    return HiveMetaStoreClientUtils.deepCopy(p);
+    return HiveMetaStoreClientUtils.deepCopy(
+        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
   }
 
   public boolean dropPartitionByName(String dbName, String tableName, String partName,
@@ -3088,7 +3182,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override public ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
-    return client.show_compact(request);
+    ShowCompactResponse response = client.show_compact(request);
+    response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
+        filterHook, getDefaultCatalog(conf), response.getCompacts()));
+    return response;
   }
 
   @Override
@@ -3100,7 +3197,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
       GetLatestCommittedCompactionInfoRequest request) throws TException {
-    return client.get_latest_committed_compaction_info(request);
+    GetLatestCommittedCompactionInfoResponse response = client.get_latest_committed_compaction_info(request);
+    return FilterUtils.filterCommittedCompactionInfoStructIfEnabled(isClientFilterEnabled, filterHook,
+        getDefaultCatalog(conf), request.getDbname(), request.getTablename(), response);
   }
 
   @Override

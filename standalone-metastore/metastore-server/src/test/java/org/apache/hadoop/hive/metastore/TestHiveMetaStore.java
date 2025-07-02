@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClientProxy;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -2753,7 +2754,7 @@ public abstract class TestHiveMetaStore {
   }
 
   /**
-   * Tests {@link HiveMetaStoreClient#newSynchronizedClient}.  Does not
+   * Tests {@link SynchronizedMetaStoreClientProxy#newSynchronizedClient}.  Does not
    * actually test multithreading, but does verify that the proxy
    * at least works correctly.
    */
@@ -2762,7 +2763,7 @@ public abstract class TestHiveMetaStore {
     int currentNumberOfDbs = client.getAllDatabases().size();
 
     IMetaStoreClient synchronizedClient =
-      HiveMetaStoreClient.newSynchronizedClient(client);
+        SynchronizedMetaStoreClientProxy.newSynchronizedClient(client);
     List<String> databases = synchronizedClient.getAllDatabases();
     assertEquals(currentNumberOfDbs, databases.size());
   }
