@@ -77,7 +77,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
         GzipJSONMessageEncoder.class.getCanonicalName());
     overrides.put(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, "false");
     overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
-    overrides.put(HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET.varname, "false");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
     internalBeforeClassSetupExclusiveReplica(overrides, overrides, TestReplicationScenarios.class);
@@ -1096,7 +1095,6 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     if (addDistCpConfigs) {
       confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'");
       confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'");
-      confList.add("'" + HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET.varname + "'='false'");
       confList.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
               + UserGroupInformation.getCurrentUser().getUserName() + "'");
     }

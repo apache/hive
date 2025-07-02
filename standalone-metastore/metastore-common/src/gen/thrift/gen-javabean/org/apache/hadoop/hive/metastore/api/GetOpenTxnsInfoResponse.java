@@ -419,14 +419,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // OPEN_TXNS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list790 = iprot.readListBegin();
-                struct.open_txns = new java.util.ArrayList<TxnInfo>(_list790.size);
-                @org.apache.thrift.annotation.Nullable TxnInfo _elem791;
-                for (int _i792 = 0; _i792 < _list790.size; ++_i792)
+                org.apache.thrift.protocol.TList _list780 = iprot.readListBegin();
+                struct.open_txns = new java.util.ArrayList<TxnInfo>(_list780.size);
+                @org.apache.thrift.annotation.Nullable TxnInfo _elem781;
+                for (int _i782 = 0; _i782 < _list780.size; ++_i782)
                 {
-                  _elem791 = new TxnInfo();
-                  _elem791.read(iprot);
-                  struct.open_txns.add(_elem791);
+                  _elem781 = new TxnInfo();
+                  _elem781.read(iprot);
+                  struct.open_txns.add(_elem781);
                 }
                 iprot.readListEnd();
               }
@@ -455,9 +455,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(OPEN_TXNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.open_txns.size()));
-          for (TxnInfo _iter793 : struct.open_txns)
+          for (TxnInfo _iter783 : struct.open_txns)
           {
-            _iter793.write(oprot);
+            _iter783.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -483,9 +483,9 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeI64(struct.txn_high_water_mark);
       {
         oprot.writeI32(struct.open_txns.size());
-        for (TxnInfo _iter794 : struct.open_txns)
+        for (TxnInfo _iter784 : struct.open_txns)
         {
-          _iter794.write(oprot);
+          _iter784.write(oprot);
         }
       }
     }
@@ -496,14 +496,14 @@ package org.apache.hadoop.hive.metastore.api;
       struct.txn_high_water_mark = iprot.readI64();
       struct.setTxn_high_water_markIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list795 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.open_txns = new java.util.ArrayList<TxnInfo>(_list795.size);
-        @org.apache.thrift.annotation.Nullable TxnInfo _elem796;
-        for (int _i797 = 0; _i797 < _list795.size; ++_i797)
+        org.apache.thrift.protocol.TList _list785 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.open_txns = new java.util.ArrayList<TxnInfo>(_list785.size);
+        @org.apache.thrift.annotation.Nullable TxnInfo _elem786;
+        for (int _i787 = 0; _i787 < _list785.size; ++_i787)
         {
-          _elem796 = new TxnInfo();
-          _elem796.read(iprot);
-          struct.open_txns.add(_elem796);
+          _elem786 = new TxnInfo();
+          _elem786.read(iprot);
+          struct.open_txns.add(_elem786);
         }
       }
       struct.setOpen_txnsIsSet(true);

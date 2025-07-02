@@ -120,16 +120,16 @@ class ThriftHiveMetastore_exchange_partition_args
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->partitionSpecs = array();
-                        $_size1637 = 0;
-                        $_ktype1638 = 0;
-                        $_vtype1639 = 0;
-                        $xfer += $input->readMapBegin($_ktype1638, $_vtype1639, $_size1637);
-                        for ($_i1641 = 0; $_i1641 < $_size1637; ++$_i1641) {
-                            $key1642 = '';
-                            $val1643 = '';
-                            $xfer += $input->readString($key1642);
-                            $xfer += $input->readString($val1643);
-                            $this->partitionSpecs[$key1642] = $val1643;
+                        $_size1642 = 0;
+                        $_ktype1643 = 0;
+                        $_vtype1644 = 0;
+                        $xfer += $input->readMapBegin($_ktype1643, $_vtype1644, $_size1642);
+                        for ($_i1646 = 0; $_i1646 < $_size1642; ++$_i1646) {
+                            $key1647 = '';
+                            $val1648 = '';
+                            $xfer += $input->readString($key1647);
+                            $xfer += $input->readString($val1648);
+                            $this->partitionSpecs[$key1647] = $val1648;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -184,9 +184,9 @@ class ThriftHiveMetastore_exchange_partition_args
             }
             $xfer += $output->writeFieldBegin('partitionSpecs', TType::MAP, 1);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->partitionSpecs));
-            foreach ($this->partitionSpecs as $kiter1644 => $viter1645) {
-                $xfer += $output->writeString($kiter1644);
-                $xfer += $output->writeString($viter1645);
+            foreach ($this->partitionSpecs as $kiter1649 => $viter1650) {
+                $xfer += $output->writeString($kiter1649);
+                $xfer += $output->writeString($viter1650);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

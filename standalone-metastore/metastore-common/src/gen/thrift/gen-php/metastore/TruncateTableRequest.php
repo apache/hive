@@ -143,13 +143,13 @@ class TruncateTableRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->partNames = array();
-                        $_size163 = 0;
-                        $_etype166 = 0;
-                        $xfer += $input->readListBegin($_etype166, $_size163);
-                        for ($_i167 = 0; $_i167 < $_size163; ++$_i167) {
-                            $elem168 = null;
-                            $xfer += $input->readString($elem168);
-                            $this->partNames []= $elem168;
+                        $_size154 = 0;
+                        $_etype157 = 0;
+                        $xfer += $input->readListBegin($_etype157, $_size154);
+                        for ($_i158 = 0; $_i158 < $_size154; ++$_i158) {
+                            $elem159 = null;
+                            $xfer += $input->readString($elem159);
+                            $this->partNames []= $elem159;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -208,8 +208,8 @@ class TruncateTableRequest
             }
             $xfer += $output->writeFieldBegin('partNames', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->partNames));
-            foreach ($this->partNames as $iter169) {
-                $xfer += $output->writeString($iter169);
+            foreach ($this->partNames as $iter160) {
+                $xfer += $output->writeString($iter160);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

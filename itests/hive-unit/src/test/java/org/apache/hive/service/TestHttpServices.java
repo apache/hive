@@ -20,11 +20,11 @@ package org.apache.hive.service;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.Header;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.Header;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -83,7 +83,7 @@ public class TestHttpServices {
       HttpGet request = new HttpGet(miniHS2);
 
       try (CloseableHttpResponse response = httpClient.execute(request)) {
-        for (Header header : response.getHeaders()) {
+        for (Header header : response.getAllHeaders()) {
           Assert.assertNotEquals("x-powered-by", header.getName().toLowerCase());
           Assert.assertNotEquals("server", header.getName().toLowerCase());
         }

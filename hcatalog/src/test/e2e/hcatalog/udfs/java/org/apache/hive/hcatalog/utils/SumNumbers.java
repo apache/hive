@@ -150,7 +150,7 @@ public class SumNumbers {
       System.err.println("Usage: hadoop jar sumnumbers <serveruri> <output dir> <-libjars hive-hcat jar>\n" +
         "The <tab|ctrla> argument controls the output delimiter.\n" +
         "The hcat jar location should be specified as file://<full path to jar>\n");
-      System.exit(2);
+      ExitUtil.terminate(2);
     }
     String serverUri = otherArgs[0];
     String tableName = NUMBERS_TABLE_NAME;
@@ -175,7 +175,7 @@ public class SumNumbers {
     job.setOutputKeyClass(LongWritable.class);
     job.setOutputValueClass(Text.class);
     FileOutputFormat.setOutputPath(job, new Path(outputDir));
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
+    ExitUtil.terminate(job.waitForCompletion(true) ? 0 : 1);
   }
 
   public static class ArrayWritable implements Writable {

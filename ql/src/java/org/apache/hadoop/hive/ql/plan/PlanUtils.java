@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.conf.Constants.JDBC_PASSWORD;
+import static org.apache.hadoop.hive.conf.Constants.JDBC_USERNAME;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
 import java.io.IOException;
@@ -365,9 +368,9 @@ public final class PlanUtils {
     return ret;
   }
 
-  private static TableDesc getTableDesc(DDLDescWithTableProperties crtDdlDesc, String cols, String colTypes, 
+  private static TableDesc getTableDesc(DDLDescWithTableProperties crtDdlDesc, String cols, String colTypes,
       String separatorCode) {
-    
+
     // Resolve storage handler (if any)
     HiveStorageHandler storageHandler = null;
     try {
@@ -389,7 +392,7 @@ public final class PlanUtils {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Unable to load SerDe class: " + serdeClass, e);
     }
-    
+
     TableDesc ret = getTableDesc(
         serdeClass, separatorCode, cols, colTypes, crtDdlDesc.getPartCols(), false);
 
@@ -399,7 +402,7 @@ public final class PlanUtils {
     if (crtDdlDesc.getStorageHandler() != null) {
       properties.setProperty(
           hive_metastoreConstants.META_TABLE_STORAGE, crtDdlDesc.getStorageHandler());
-      
+
       if (isNotBlank(crtDdlDesc.getLocation())) {
         properties.setProperty(
             hive_metastoreConstants.META_TABLE_LOCATION, crtDdlDesc.getLocation());
@@ -853,7 +856,7 @@ public final class PlanUtils {
 
     try {
       HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(
-          SessionState.getSessionConf(), 
+          SessionState.getSessionConf(),
           tableDesc.getProperties().getProperty(hive_metastoreConstants.META_TABLE_STORAGE));
       if (storageHandler != null) {
         Map<String, String> jobProperties = new LinkedHashMap<>();
@@ -1130,7 +1133,11 @@ public final class PlanUtils {
     return LazySimpleSerDe.class;
   }
 
-  private static final String[] FILTER_OUT_FROM_EXPLAIN = {hive_metastoreConstants.TABLE_IS_CTAS};
+  private static final String[] FILTER_OUT_FROM_EXPLAIN = {
+          TABLE_IS_CTAS,
+          JDBC_USERNAME,
+          JDBC_PASSWORD
+  };
 
   /**
    * Get a Map of table or partition properties to be used in explain extended output.

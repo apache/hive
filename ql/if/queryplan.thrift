@@ -111,8 +111,7 @@ enum StageType {
   RANGER_LOAD,
   RANGER_DENY,
   ATLAS_DUMP,
-  ATLAS_LOAD,
-  CLEAR_DANGLING_TXNS
+  ATLAS_LOAD
 }
 
 struct Stage {

@@ -135,7 +135,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL;
@@ -814,12 +813,11 @@ public class TestReplicationScenarios {
     run("DROP TABLE " + dbName + ".ptned", driver);
 
     advanceDumpDir();
-    String withClause = " WITH ('" + HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET + "'='false')";
-    run("REPL DUMP " + dbName + withClause, driver);
+    run("REPL DUMP " + dbName, driver);
     String postDropReplDumpLocn = getResult(0,0, driver);
     String postDropReplDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
-    assert(run("REPL LOAD " + dbName + " INTO " + replDbName + withClause, true, driverMirror));
+    assert(run("REPL LOAD " + dbName + " INTO " + replDbName, true, driverMirror));
 
     verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
     verifyIfTableNotExist(replDbName, "ptned", metaStoreClientMirror);
@@ -830,7 +828,6 @@ public class TestReplicationScenarios {
   public void testBootstrapWithConcurrentDropPartition() throws IOException {
     String name = testName.getMethodName();
     String dbName = createDB(name, driver);
-    String withClause = " WITH ('" + HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET + "'='false')";
     String replDbName = dbName + "_dupe";
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
@@ -863,7 +860,7 @@ public class TestReplicationScenarios {
     InjectableBehaviourObjectStore.setListPartitionNamesBehaviour(listPartitionNamesNuller);
     try {
       // None of the partitions will be dumped as the partitions list was empty
-      run("REPL DUMP " + dbName + withClause, driver);
+      run("REPL DUMP " + dbName, driver);
       listPartitionNamesNuller.assertInjectionsPerformed(true, false);
     } finally {
       InjectableBehaviourObjectStore.resetListPartitionNamesBehaviour(); // reset the behaviour
@@ -872,7 +869,7 @@ public class TestReplicationScenarios {
     String replDumpLocn = getResult(0, 0, driver);
     String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + " INTO " + replDbName + withClause, driverMirror);
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
 
     // All partitions should miss in target as it was marked virtually as dropped
     verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", empty, driverMirror);
@@ -885,11 +882,11 @@ public class TestReplicationScenarios {
     run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=2)", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + withClause, driver);
+    run("REPL DUMP " + dbName, driver);
     String postDropReplDumpLocn = getResult(0,0,driver);
     String postDropReplDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
-    assert(run("REPL LOAD " + dbName + " INTO " + replDbName + withClause, true, driverMirror));
+    assert(run("REPL LOAD " + dbName + " INTO " + replDbName, true, driverMirror));
 
     verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("1")), metaStoreClientMirror);
     verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("2")), metaStoreClientMirror);
@@ -1158,8 +1155,8 @@ public class TestReplicationScenarios {
 
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
-    List<String> withClause = Arrays.asList("'" + HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET.varname + "'='false'");
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName, withClause);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -1191,8 +1188,7 @@ public class TestReplicationScenarios {
 
     // Perform REPL-DUMP/LOAD
     // Set approx load tasks to a low value to trigger REPL_LOAD execution multiple times
-    List<String> replApproxTasksClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'",
-             "'" + HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET.varname + "'='false'");
+    List<String> replApproxTasksClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'");
     Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName, replApproxTasksClause);
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
     Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);

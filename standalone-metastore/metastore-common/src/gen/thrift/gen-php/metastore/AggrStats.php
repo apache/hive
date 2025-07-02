@@ -93,14 +93,14 @@ class AggrStats
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->colStats = array();
-                        $_size404 = 0;
-                        $_etype407 = 0;
-                        $xfer += $input->readListBegin($_etype407, $_size404);
-                        for ($_i408 = 0; $_i408 < $_size404; ++$_i408) {
-                            $elem409 = null;
-                            $elem409 = new \metastore\ColumnStatisticsObj();
-                            $xfer += $elem409->read($input);
-                            $this->colStats []= $elem409;
+                        $_size395 = 0;
+                        $_etype398 = 0;
+                        $xfer += $input->readListBegin($_etype398, $_size395);
+                        for ($_i399 = 0; $_i399 < $_size395; ++$_i399) {
+                            $elem400 = null;
+                            $elem400 = new \metastore\ColumnStatisticsObj();
+                            $xfer += $elem400->read($input);
+                            $this->colStats []= $elem400;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -141,8 +141,8 @@ class AggrStats
             }
             $xfer += $output->writeFieldBegin('colStats', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->colStats));
-            foreach ($this->colStats as $iter410) {
-                $xfer += $iter410->write($output);
+            foreach ($this->colStats as $iter401) {
+                $xfer += $iter401->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

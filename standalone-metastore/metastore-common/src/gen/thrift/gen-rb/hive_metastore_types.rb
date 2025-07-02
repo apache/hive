@@ -256,8 +256,6 @@ class FieldSchema; end
 
 class EnvironmentContext; end
 
-class ReplayedTxnsForPolicyResult; end
-
 class SQLPrimaryKey; end
 
 class SQLForeignKey; end
@@ -962,22 +960,6 @@ class EnvironmentContext
 
   FIELDS = {
     PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class ReplayedTxnsForPolicyResult
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  REPLTXNMAPENTRY = 1
-
-  FIELDS = {
-    REPLTXNMAPENTRY => {:type => ::Thrift::Types::MAP, :name => 'replTxnMapEntry', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
   def struct_fields; FIELDS; end
@@ -5400,6 +5382,7 @@ class FireEventRequest
   PARTITIONVALS = 5
   CATNAME = 6
   TBLPARAMS = 7
+  BATCHPARTITIONVALSFORREFRESH = 8
 
   FIELDS = {
     SUCCESSFUL => {:type => ::Thrift::Types::BOOL, :name => 'successful'},
@@ -5408,7 +5391,8 @@ class FireEventRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
     PARTITIONVALS => {:type => ::Thrift::Types::LIST, :name => 'partitionVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TBLPARAMS => {:type => ::Thrift::Types::MAP, :name => 'tblParams', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
+    TBLPARAMS => {:type => ::Thrift::Types::MAP, :name => 'tblParams', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
+    BATCHPARTITIONVALSFORREFRESH => {:type => ::Thrift::Types::LIST, :name => 'batchPartitionValsForRefresh', :element => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

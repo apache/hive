@@ -950,11 +950,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("commit_txn\n");
   }
 
-  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) {
-    // Your implementation goes here
-    printf("get_replayed_txns_for_policy\n");
-  }
-
   int64_t get_latest_txnid_in_conflict(const int64_t txnId) {
     // Your implementation goes here
     printf("get_latest_txnid_in_conflict\n");

@@ -52,9 +52,6 @@ struct FieldSchema {
 struct EnvironmentContext {
   1: map<string, string> properties
 }
-struct ReplayedTxnsForPolicyResult {
-        1: map<string, string> replTxnMapEntry
-        }
 
 struct SQLPrimaryKey {
   1: string table_db,    // table schema
@@ -1580,6 +1577,8 @@ struct FireEventRequest {
     5: optional list<string> partitionVals,
     6: optional string catName,
     7: optional map<string, string> tblParams,
+    // To keep the backward compatibility, batch partition vals for reload event is used
+    8: optional list<list<string>> batchPartitionValsForRefresh
 }
 
 struct FireEventResponse {
@@ -3164,7 +3163,6 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
-  ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(1: string policyName) throws (1: MetaException o1)
   i64 get_latest_txnid_in_conflict(1:i64 txnId) throws (1:MetaException o1)
   void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)

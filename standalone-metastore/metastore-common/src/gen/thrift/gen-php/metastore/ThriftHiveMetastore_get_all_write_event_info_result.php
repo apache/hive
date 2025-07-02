@@ -82,14 +82,14 @@ class ThriftHiveMetastore_get_all_write_event_info_result
                 case 0:
                     if ($ftype == TType::LST) {
                         $this->success = array();
-                        $_size1978 = 0;
-                        $_etype1981 = 0;
-                        $xfer += $input->readListBegin($_etype1981, $_size1978);
-                        for ($_i1982 = 0; $_i1982 < $_size1978; ++$_i1982) {
-                            $elem1983 = null;
-                            $elem1983 = new \metastore\WriteEventInfo();
-                            $xfer += $elem1983->read($input);
-                            $this->success []= $elem1983;
+                        $_size1983 = 0;
+                        $_etype1986 = 0;
+                        $xfer += $input->readListBegin($_etype1986, $_size1983);
+                        for ($_i1987 = 0; $_i1987 < $_size1983; ++$_i1987) {
+                            $elem1988 = null;
+                            $elem1988 = new \metastore\WriteEventInfo();
+                            $xfer += $elem1988->read($input);
+                            $this->success []= $elem1988;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -124,8 +124,8 @@ class ThriftHiveMetastore_get_all_write_event_info_result
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
             $output->writeListBegin(TType::STRUCT, count($this->success));
-            foreach ($this->success as $iter1984) {
-                $xfer += $iter1984->write($output);
+            foreach ($this->success as $iter1989) {
+                $xfer += $iter1989->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

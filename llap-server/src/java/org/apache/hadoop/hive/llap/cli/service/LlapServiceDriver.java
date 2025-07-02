@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.llap.cli.LlapSliderUtils;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapConstants;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.service.client.ServiceClient;
@@ -396,6 +397,6 @@ public class LlapServiceDriver {
       LOG.info("LLAP service driver finished");
     }
     LOG.debug("Completed processing - exiting with " + ret);
-    System.exit(ret);
+    ExitUtil.terminate(ret);
   }
 }

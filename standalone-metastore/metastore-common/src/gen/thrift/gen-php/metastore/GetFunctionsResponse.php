@@ -85,13 +85,13 @@ class GetFunctionsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->function_names = array();
-                        $_size1115 = 0;
-                        $_etype1118 = 0;
-                        $xfer += $input->readListBegin($_etype1118, $_size1115);
-                        for ($_i1119 = 0; $_i1119 < $_size1115; ++$_i1119) {
-                            $elem1120 = null;
-                            $xfer += $input->readString($elem1120);
-                            $this->function_names []= $elem1120;
+                        $_size1120 = 0;
+                        $_etype1123 = 0;
+                        $xfer += $input->readListBegin($_etype1123, $_size1120);
+                        for ($_i1124 = 0; $_i1124 < $_size1120; ++$_i1124) {
+                            $elem1125 = null;
+                            $xfer += $input->readString($elem1125);
+                            $this->function_names []= $elem1125;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -101,14 +101,14 @@ class GetFunctionsResponse
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->functions = array();
-                        $_size1121 = 0;
-                        $_etype1124 = 0;
-                        $xfer += $input->readListBegin($_etype1124, $_size1121);
-                        for ($_i1125 = 0; $_i1125 < $_size1121; ++$_i1125) {
-                            $elem1126 = null;
-                            $elem1126 = new \metastore\Function();
-                            $xfer += $elem1126->read($input);
-                            $this->functions []= $elem1126;
+                        $_size1126 = 0;
+                        $_etype1129 = 0;
+                        $xfer += $input->readListBegin($_etype1129, $_size1126);
+                        for ($_i1130 = 0; $_i1130 < $_size1126; ++$_i1130) {
+                            $elem1131 = null;
+                            $elem1131 = new \metastore\Function();
+                            $xfer += $elem1131->read($input);
+                            $this->functions []= $elem1131;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -135,8 +135,8 @@ class GetFunctionsResponse
             }
             $xfer += $output->writeFieldBegin('function_names', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->function_names));
-            foreach ($this->function_names as $iter1127) {
-                $xfer += $output->writeString($iter1127);
+            foreach ($this->function_names as $iter1132) {
+                $xfer += $output->writeString($iter1132);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -147,8 +147,8 @@ class GetFunctionsResponse
             }
             $xfer += $output->writeFieldBegin('functions', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->functions));
-            foreach ($this->functions as $iter1128) {
-                $xfer += $iter1128->write($output);
+            foreach ($this->functions as $iter1133) {
+                $xfer += $iter1133->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

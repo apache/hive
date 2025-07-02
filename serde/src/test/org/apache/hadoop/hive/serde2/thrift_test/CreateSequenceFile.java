@@ -34,6 +34,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -54,7 +55,7 @@ public final class CreateSequenceFile {
 
   public static void usage() {
     System.out.println("Usage: CreateSequenceFile <output_sequencefile>");
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   /**

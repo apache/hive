@@ -33,6 +33,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.util.ExitUtil;
 
 /**
  * Utility to test query and data retrieval via the LLAP input format.
@@ -131,7 +132,7 @@ public class LlapDump {
           printRow(value);
         }
       }
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
   }
 

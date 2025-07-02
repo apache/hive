@@ -69,14 +69,14 @@ class GetPartitionsPsWithAuthResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size1383 = 0;
-                        $_etype1386 = 0;
-                        $xfer += $input->readListBegin($_etype1386, $_size1383);
-                        for ($_i1387 = 0; $_i1387 < $_size1383; ++$_i1387) {
-                            $elem1388 = null;
-                            $elem1388 = new \metastore\Partition();
-                            $xfer += $elem1388->read($input);
-                            $this->partitions []= $elem1388;
+                        $_size1388 = 0;
+                        $_etype1391 = 0;
+                        $xfer += $input->readListBegin($_etype1391, $_size1388);
+                        for ($_i1392 = 0; $_i1392 < $_size1388; ++$_i1392) {
+                            $elem1393 = null;
+                            $elem1393 = new \metastore\Partition();
+                            $xfer += $elem1393->read($input);
+                            $this->partitions []= $elem1393;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class GetPartitionsPsWithAuthResponse
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter1389) {
-                $xfer += $iter1389->write($output);
+            foreach ($this->partitions as $iter1394) {
+                $xfer += $iter1394->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

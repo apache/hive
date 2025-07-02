@@ -69,14 +69,14 @@ class DropPartitionsResult
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size604 = 0;
-                        $_etype607 = 0;
-                        $xfer += $input->readListBegin($_etype607, $_size604);
-                        for ($_i608 = 0; $_i608 < $_size604; ++$_i608) {
-                            $elem609 = null;
-                            $elem609 = new \metastore\Partition();
-                            $xfer += $elem609->read($input);
-                            $this->partitions []= $elem609;
+                        $_size595 = 0;
+                        $_etype598 = 0;
+                        $xfer += $input->readListBegin($_etype598, $_size595);
+                        for ($_i599 = 0; $_i599 < $_size595; ++$_i599) {
+                            $elem600 = null;
+                            $elem600 = new \metastore\Partition();
+                            $xfer += $elem600->read($input);
+                            $this->partitions []= $elem600;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class DropPartitionsResult
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter610) {
-                $xfer += $iter610->write($output);
+            foreach ($this->partitions as $iter601) {
+                $xfer += $iter601->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

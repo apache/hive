@@ -69,14 +69,14 @@ class PrivilegeBag
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->privileges = array();
-                        $_size108 = 0;
-                        $_etype111 = 0;
-                        $xfer += $input->readListBegin($_etype111, $_size108);
-                        for ($_i112 = 0; $_i112 < $_size108; ++$_i112) {
-                            $elem113 = null;
-                            $elem113 = new \metastore\HiveObjectPrivilege();
-                            $xfer += $elem113->read($input);
-                            $this->privileges []= $elem113;
+                        $_size99 = 0;
+                        $_etype102 = 0;
+                        $xfer += $input->readListBegin($_etype102, $_size99);
+                        for ($_i103 = 0; $_i103 < $_size99; ++$_i103) {
+                            $elem104 = null;
+                            $elem104 = new \metastore\HiveObjectPrivilege();
+                            $xfer += $elem104->read($input);
+                            $this->privileges []= $elem104;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class PrivilegeBag
             }
             $xfer += $output->writeFieldBegin('privileges', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->privileges));
-            foreach ($this->privileges as $iter114) {
-                $xfer += $iter114->write($output);
+            foreach ($this->privileges as $iter105) {
+                $xfer += $iter105->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

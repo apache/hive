@@ -2473,6 +2473,7 @@ message FireListenerEventRequest {
   repeated string partition_vals = 5;
   string cat_name = 6;
   map<string, string> tblParams = 7;
+  repeated StringList batch_partition_vals_for_refresh = 8;
 }
 
 message FireListenerEventResponse {

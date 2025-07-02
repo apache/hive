@@ -1447,12 +1447,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function commit_txn(\metastore\CommitTxnRequest $rqst);
     /**
-     * @param string $policyName
-     * @return \metastore\ReplayedTxnsForPolicyResult
-     * @throws \metastore\MetaException
-     */
-    public function get_replayed_txns_for_policy($policyName);
-    /**
      * @param int $txnId
      * @return int
      * @throws \metastore\MetaException
