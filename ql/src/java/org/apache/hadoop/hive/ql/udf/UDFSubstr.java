@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-import static java.util.Arrays.copyOfRange;
+import java.nio.charset.StandardCharsets;
 
 /**
  * UDFSubstr.
@@ -97,26 +98,55 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return r;
     }
 
-    byte[] utf8String = t.toString().getBytes();
-    StringSubstrColStartLen.populateSubstrOffsets(utf8String, 0, utf8String.length, adjustStartPos(pos), len, index);
+    StringSubstrColStartLen.populateSubstrOffsets(t.getBytes(), 0, t.getLength(), adjustStartPos(pos), len, index);
     if (index[0] == -1) {
       return r;
     }
 
-    r.set(new String(utf8String, index[0], index[1]));
+    r.set(new String(t.getBytes(), index[0], index[1], StandardCharsets.UTF_8));
     return r;
   }
+
+  private int[] makeIndex(int pos, int len, int inputLen) {
+    if ((Math.abs(pos) > inputLen)) {
+      return null;
+    }
+
+    int start, end;
+
+    if (pos > 0) {
+      start = pos - 1;
+    } else if (pos < 0) {
+      start = inputLen + pos;
+    } else {
+      start = 0;
+    }
+
+    if ((inputLen - start) < len) {
+      end = inputLen;
+    } else {
+      end = start + len;
+    }
+    index[0] = start;
+    index[1] = end;
+    return index;
+  }
+
+  private final IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
+
+  //Even though we are using longs, substr can only deal with ints, so we use
+  // the maximum int value as the maxValue
+  private final LongWritable maxLongValue = new LongWritable(Integer.MAX_VALUE);
 
   private Text evaluateInternal(Text t, int pos) {
     r.clear();
 
-    byte[] utf8String = t.toString().getBytes();
-    int offset = StringSubstrColStart.getSubstrStartOffset(utf8String, 0, utf8String.length, adjustStartPos(pos));
+    int offset = StringSubstrColStart.getSubstrStartOffset(t.getBytes(), 0, t.getLength(), adjustStartPos(pos));
     if (offset == -1) {
       return r;
     }
 
-    r.set(new String(utf8String, offset, utf8String.length - offset));
+    r.set(new String(t.getBytes(), offset, t.getLength() - offset, StandardCharsets.UTF_8));
     return r;
   }
 
@@ -171,44 +201,25 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
   }
 
   private BytesWritable evaluateInternal(BytesWritable bw, int pos, int len) {
+
     if (len <= 0) {
       return new BytesWritable();
     }
 
-    // Even though we are using longs, substr can only deal with ints, so we use
-    // the maximum int value as the maxValue
-    StringSubstrColStartLen.populateSubstrOffsets(bw.getBytes(), 0, bw.getLength(), adjustStartPos(pos), len, index);
-    if (index[0] == -1) {
+    int[] index = makeIndex(pos, len, bw.getLength());
+    if (index == null) {
       return new BytesWritable();
     }
 
-    return new BytesWritable(copyOfRange(bw.getBytes(), index[0], index[0] + index[1]));
-  }
-
-  private BytesWritable evaluateInternal(BytesWritable bw, int pos) {
-    // Even though we are using longs, substr can only deal with ints, so we use
-    // the maximum int value as the maxValue
-    int offset = StringSubstrColStart.getSubstrStartOffset(bw.getBytes(), 0, bw.getLength(), adjustStartPos(pos));
-    if (offset == -1) {
-      return new BytesWritable();
-    }
-
-    return new BytesWritable(copyOfRange(bw.getBytes(), offset, bw.getLength()));
+    return new BytesWritable(Arrays.copyOfRange(bw.getBytes(), index[0], index[1]));
   }
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos){
-    if ((bw == null) || (pos == null)) {
-      return null;
-    }
-    return evaluateInternal(bw, pos.get());
+    return evaluate(bw, pos, maxValue);
   }
 
   public BytesWritable evaluate(BytesWritable bw, LongWritable pos){
-    if ((bw == null) || (pos == null)) {
-      return null;
-    }
-
-    return evaluateInternal(bw, (int) pos.get());
+    return evaluate(bw, pos, maxLongValue);
   }
 
   @Override
