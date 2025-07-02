@@ -1,4 +1,4 @@
---! qt:database:mariadb:q_test_country_table_with_schema.mariadb.sql
+--! qt:database:mariadb:qdb:q_test_country_table_with_schema.mariadb.sql
 
 -- In MariaDB (and MySQL) CREATE SCHEMA is a synonym to CREATE DATABASE so the use of hive.sql.schema is not required.
 -- A MariaDB table can be uniquely identified by including the database/schema name in the JDBC URL and specifying the
@@ -18,9 +18,9 @@ CREATE EXTERNAL TABLE country_0 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "MYSQL",
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
-        "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/bob",
-        "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.jdbc.url" = "jdbc:mariadb://${system:hive.test.database.qdb.host}:${system:hive.test.database.qdb.port}/bob",
+        "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+        "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
         "hive.sql.table" = "country");
 
 EXPLAIN CBO SELECT COUNT(*) FROM country_0;
@@ -33,9 +33,9 @@ CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "MYSQL",
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
-        "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/bob",
-        "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.jdbc.url" = "jdbc:mariadb://${system:hive.test.database.qdb.host}:${system:hive.test.database.qdb.port}/bob",
+        "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+        "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
         "hive.sql.schema" = "bob",
         "hive.sql.table" = "country");
 
@@ -47,9 +47,9 @@ CREATE EXTERNAL TABLE country_2 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "MYSQL",
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
-        "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/alice",
-        "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.jdbc.url" = "jdbc:mariadb://${system:hive.test.database.qdb.host}:${system:hive.test.database.qdb.port}/alice",
+        "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+        "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
         "hive.sql.table" = "country");
 
 EXPLAIN CBO SELECT COUNT(*) FROM country_2;
@@ -62,9 +62,9 @@ CREATE EXTERNAL TABLE country_3 (id int, name varchar(20))
     TBLPROPERTIES (
         "hive.sql.database.type" = "MYSQL",
         "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
-        "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/bob",
-        "hive.sql.dbcp.username" = "root",
-        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.jdbc.url" = "jdbc:mariadb://${system:hive.test.database.qdb.host}:${system:hive.test.database.qdb.port}/bob",
+        "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+        "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
         "hive.sql.schema" = "alice",
         "hive.sql.table" = "country");
 
