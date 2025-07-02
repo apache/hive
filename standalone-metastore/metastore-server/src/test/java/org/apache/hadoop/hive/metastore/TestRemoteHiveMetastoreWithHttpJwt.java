@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import com.github.stefanbirkner.systemlambda.SystemLambda;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -121,7 +121,7 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
         TimeUnit.MINUTES.toMillis(5));
 
-    SystemLambda.withEnvironmentVariable("HMS_JWT", validJwtToken).execute(() -> {
+    new EnvironmentVariables("HMS_JWT", validJwtToken).execute(() -> {
       String dbName = ("valid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
       try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
         Database createdDb = new Database();
@@ -139,7 +139,7 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
         TimeUnit.MILLISECONDS.toMillis(2));
 
-    SystemLambda.withEnvironmentVariable("HMS_JWT", validJwtToken).execute(() -> {
+    new EnvironmentVariables("HMS_JWT", validJwtToken).execute(() -> {
       Thread.sleep(TimeUnit.MILLISECONDS.toMillis(3));
       try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
         String dbName = ("expired_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
@@ -155,7 +155,7 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     String jwtToken = generateJWT(USER_1, jwtUnauthorizedKeyFile.toPath(),
         TimeUnit.MINUTES.toMillis(2));
 
-    SystemLambda.withEnvironmentVariable("HMS_JWT", jwtToken).execute(() -> {
+    new EnvironmentVariables("HMS_JWT", jwtToken).execute(() -> {
       try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
         String dbName = ("invalid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
         Database createdDb = new Database();

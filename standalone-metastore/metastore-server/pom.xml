@@ -436,9 +436,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.stefanbirkner</groupId>
-      <artifactId>system-lambda</artifactId>
-      <version>1.2.1</version>
+      <groupId>uk.org.webcompere</groupId>
+      <artifactId>system-stubs-core</artifactId>
+      <version>2.1.8</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
