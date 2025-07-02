@@ -47,6 +47,7 @@ services:
                      -Djavax.jdo.option.ConnectionUserName=hive
                      -Djavax.jdo.option.ConnectionPassword=password'
     ports:
+        - '9001:9001'
         - '9083:9083'
     volumes:
         - warehouse:/opt/hive/data/warehouse
