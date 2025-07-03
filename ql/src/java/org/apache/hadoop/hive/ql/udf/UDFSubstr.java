@@ -103,7 +103,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return r;
     }
 
-    r.set(new String(t.getBytes(), index[0], index[1], StandardCharsets.UTF_8));
+    r.set(t.getBytes(), index[0], index[1]);
     return r;
   }
 
@@ -146,7 +146,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return r;
     }
 
-    r.set(new String(t.getBytes(), offset, t.getLength() - offset, StandardCharsets.UTF_8));
+    r.set(t.getBytes(), offset, t.getLength() - offset);
     return r;
   }
 
