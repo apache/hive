@@ -52,7 +52,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 /**
  * A thread safe time expired cache for HiveMetaStoreClient
  */
-class HiveClientCache {
+public class HiveClientCache {
   public final static int DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS = 2 * 60;
   public final static int DEFAULT_HIVE_CACHE_INITIAL_CAPACITY = 50;
   public final static int DEFAULT_HIVE_CACHE_MAX_CAPACITY = 50;
@@ -107,7 +107,7 @@ class HiveClientCache {
   /**
    * @param timeout the length of time in seconds after a client is created that it should be automatically removed
    */
-  private HiveClientCache(final int timeout, final int initialCapacity, final int maxCapacity, final boolean enableStats) {
+  protected HiveClientCache(final int timeout, final int initialCapacity, final int maxCapacity, final boolean enableStats) {
     this.timeout = timeout;
     this.enableStats = enableStats;
 

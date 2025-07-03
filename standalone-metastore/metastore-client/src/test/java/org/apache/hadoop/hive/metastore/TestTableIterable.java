@@ -23,9 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -42,7 +40,6 @@ import static org.mockito.Mockito.when;
 /**
  * Unit tests for TableIterable.
  */
-@Category(MetastoreUnitTest.class)
 public class TestTableIterable  {
 
   @Test
@@ -71,6 +68,5 @@ public class TestTableIterable  {
 
     verify(msc).getTableObjectsByName("dummy", Arrays.asList("a", "b", "c"));
     verify(msc).getTableObjectsByName("dummy", Arrays.asList("d", "e", "f"));
-
   }
 }

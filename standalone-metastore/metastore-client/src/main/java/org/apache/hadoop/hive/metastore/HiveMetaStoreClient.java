@@ -28,10 +28,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
-import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.builder.HiveMetaStoreClientBuilder;
 import org.apache.thrift.TException;
 
 import java.util.List;
@@ -73,9 +72,11 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
 
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
       ThriftHiveMetaStoreClient thriftClient) {
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, thriftClient);
-    IMetaStoreClient synchronizedClient = SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
-    return synchronizedClient;
+    return new HiveMetaStoreClientBuilder(conf)
+       .client(thriftClient)
+       .withHooks(hookLoader)
+       .threadSafe()
+       .build();
   }
 
   // methods for test
