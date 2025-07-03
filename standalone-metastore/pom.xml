@@ -27,9 +27,10 @@
   <inceptionYear>2008</inceptionYear>
   <modules>
     <module>metastore-common</module>
+    <module>metastore-client</module>
     <module>metastore-server</module>
-    <module>metastore-tools</module>
     <module>metastore-rest-catalog</module>
+    <module>metastore-tools</module>
   </modules>
   <properties>
     <hive.version>4.2.0-SNAPSHOT</hive.version>

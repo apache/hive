@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
@@ -140,7 +139,7 @@ final class HMSClient implements AutoCloseable {
    */
   private void getClient(@Nullable URI uri)
       throws TException, IOException, InterruptedException, URISyntaxException, LoginException {
-    Configuration conf = new HiveConf();
+    Configuration conf = MetastoreConf.newMetastoreConf();
     addResource(conf, HIVE_SITE);
     if (uri != null) {
       conf.set(METASTORE_URI, uri.toString());
