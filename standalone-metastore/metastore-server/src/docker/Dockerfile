@@ -46,7 +46,7 @@ RUN tar -xzvf /opt/hadoop-$HADOOP_VERSION.tar.gz -C /opt/ && \
     rm -rf /opt/hadoop-$HADOOP_VERSION/share/doc/* && \
     tar -xzvf /opt/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz -C /opt/
 
-FROM eclipse-temurin:17.0.12_7-jre-ubi9-minimal AS run
+FROM eclipse-temurin:21.0.3_9-jre-ubi9-minimal AS run
 
 ARG HADOOP_VERSION
 ARG HIVE_VERSION

@@ -66,8 +66,8 @@
     <standalone-metastore.version>4.2.0-SNAPSHOT</standalone-metastore.version>
     <hive.version.shortname>4.2.0</hive.version.shortname>
     <!-- Build Properties -->
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <hive.path.to.root>.</hive.path.to.root>
