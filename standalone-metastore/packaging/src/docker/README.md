@@ -51,7 +51,7 @@ The `build.sh` provides ways to build the image against specified version of the
 
 ##### Build from source
 ```shell
-mvn clean install -DskipTests -Pdocker
+mvn clean package -DskipTests -Pdocker
 ```
 ##### Build with specified version
 There are some arguments to specify the component version:

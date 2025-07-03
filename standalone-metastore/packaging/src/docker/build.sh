@@ -77,7 +77,7 @@ if [ ! -f "$CACHE_DIR/$HADOOP_FILE_NAME" ]; then
 fi
 
 if [ -n "$HIVE_VERSION" ]; then
-  HIVE_FILE_NAME="apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz"
+  HIVE_FILE_NAME="hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz"
   if [ ! -f "$CACHE_DIR/$HIVE_FILE_NAME" ]; then
     HIVE_URL=${HIVE_URL:-"https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/$HIVE_FILE_NAME"}
     echo "Downloading Hive Metastore from $HIVE_URL..."
@@ -90,7 +90,7 @@ if [ -n "$HIVE_VERSION" ]; then
   cp "$CACHE_DIR/$HIVE_FILE_NAME" "$WORK_DIR"
 else
   HIVE_VERSION=$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)
-  HIVE_TAR="$SOURCE_DIR/packaging/target/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz"
+  HIVE_TAR="$SOURCE_DIR/packaging/target/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz"
   if  ls "$HIVE_TAR" || mvn -f "$SOURCE_DIR/pom.xml" clean package -DskipTests -Pdist; then
     cp "$HIVE_TAR" "$WORK_DIR/"
   else

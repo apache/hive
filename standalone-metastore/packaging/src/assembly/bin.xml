@@ -29,7 +29,7 @@
     <format>tar.gz</format>
   </formats>
 
-  <baseDirectory>apache-${project.parent.artifactId}-server-${project.version}-bin</baseDirectory>
+  <baseDirectory>${project.parent.artifactId}-${project.version}-bin</baseDirectory>
 
   <dependencySets>
     <dependencySet>

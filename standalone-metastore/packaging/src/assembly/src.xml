@@ -28,7 +28,7 @@
     <format>tar.gz</format>
   </formats>
 
-  <baseDirectory>apache-${project.parent.artifactId}-server-${project.version}-src</baseDirectory>
+  <baseDirectory>${project.parent.artifactId}-${project.version}-src</baseDirectory>
 
   <fileSets>
     <fileSet>

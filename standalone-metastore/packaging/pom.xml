@@ -38,7 +38,7 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <finalName>apache-${project.parent.artifactId}-server-${project.version}</finalName>
+                  <finalName>${project.parent.artifactId}-${project.version}</finalName>
                   <descriptors>
                     <descriptor>src/assembly/bin.xml</descriptor>
                     <descriptor>src/assembly/src.xml</descriptor>
@@ -158,8 +158,7 @@
             <artifactId>exec-maven-plugin</artifactId>
             <executions>
               <execution>
-                <id>build-docker-image</id>
-                <phase>install</phase>
+                <phase>package</phase>
                 <goals>
                   <goal>exec</goal>
                 </goals>
