@@ -105,6 +105,7 @@
         <include>shims/**/*</include>
         <include>storage-api/**/*</include>
         <include>standalone-metastore/metastore-common/**/*</include>
+        <include>standalone-metastore/metastore-client/**/*</include>
         <include>standalone-metastore/metastore-server/**/*</include>
         <include>standalone-metastore/metastore-tools/**/*</include>
         <include>standalone-metastore/metastore-rest-catalog/**/*</include>

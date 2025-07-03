@@ -43,6 +43,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveClientCache;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -79,6 +80,9 @@ import org.apache.hive.hcatalog.mapreduce.StorerInfo;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.metastore.HiveClientCache.*;
+import static org.apache.hive.hcatalog.common.HCatConstants.*;
 
 public class HCatUtil {
 
@@ -566,7 +570,16 @@ public class HCatUtil {
     if (hiveClientCache == null) {
       synchronized (IMetaStoreClient.class) {
         if (hiveClientCache == null) {
-          hiveClientCache = new HiveClientCache(hiveConf);
+          hiveClientCache = new HiveClientCache(
+              hiveConf.getInt(
+                  HCAT_HIVE_CLIENT_EXPIRY_TIME, DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS),
+              hiveConf.getInt(
+                  HCAT_HIVE_CLIENT_CACHE_INITIAL_CAPACITY, DEFAULT_HIVE_CACHE_INITIAL_CAPACITY),
+              hiveConf.getInt(
+                  HCAT_HIVE_CLIENT_CACHE_MAX_CAPACITY, DEFAULT_HIVE_CACHE_MAX_CAPACITY),
+              hiveConf.getBoolean(
+                  HCAT_HIVE_CLIENT_CACHE_STATS_ENABLED, DEFAULT_HIVE_CLIENT_CACHE_STATS_ENABLED)) {
+          };
         }
       }
     }

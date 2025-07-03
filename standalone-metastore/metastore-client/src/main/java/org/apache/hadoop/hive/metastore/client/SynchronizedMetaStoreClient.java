@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 
 import java.lang.reflect.InvocationHandler;
@@ -28,7 +29,7 @@ import java.lang.reflect.Proxy;
 
 /**
  * A synchronized wrapper for {@link IMetaStoreClient}.
- * The reflection logic originally comes from {@link org.apache.hadoop.hive.metastore.HiveMetaStoreClient}.
+ * The reflection logic originally comes from {@link HiveMetaStoreClient}.
  * This should be used by multi-thread applications unless all the underlying layers are thread-safe.
  */
 public class SynchronizedMetaStoreClient extends MetaStoreClientWrapper implements IMetaStoreClient {

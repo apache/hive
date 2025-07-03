@@ -124,9 +124,7 @@ import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
-import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
-import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
-import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.builder.HiveMetaStoreClientBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
@@ -139,7 +137,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -697,7 +694,7 @@ public class Hive implements AutoCloseable {
    * @param name
    * @throws NoSuchObjectException
    * @throws HiveException
-   * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
+   * @see HiveMetaStoreClient#dropDatabase(java.lang.String)
    */
   public void dropDatabase(String name) throws HiveException, NoSuchObjectException {
     dropDatabase(name, true, false, false);
@@ -1024,7 +1021,7 @@ public class Hive implements AutoCloseable {
    * @param name
    * @throws NoSuchObjectException
    * @throws HiveException
-   * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDataConnector(java.lang.String, boolean, boolean)
+   * @see HiveMetaStoreClient#dropDataConnector(java.lang.String, boolean, boolean)
    */
   public void dropDataConnector(String name, boolean ifNotExists) throws HiveException, NoSuchObjectException {
     dropDataConnector(name, ifNotExists, true);
@@ -6004,22 +6001,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
-    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
-    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
+    HiveMetaStoreClientBuilder msClientBuilder = new HiveMetaStoreClientBuilder(conf)
+        .newThriftClient(allowEmbedded)
+        .enhanceWith(client ->
+            HiveMetaStoreClientWithLocalCache.newClient(conf, client))
+        .enhanceWith(client ->
+            SessionHiveMetaStoreClient.newClient(conf, client))
+        .withHooks(hookLoader)
+        .threadSafe();
 
-    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
-    } else {
-      return RetryingMetaStoreClient.getProxy(
-          conf,
-          new Class[] {Configuration.class, IMetaStoreClient.class},
-          new Object[] {conf, clientWithHook},
-          metaCallTimeMap,
-          SynchronizedMetaStoreClient.class.getName()
-      );
+    if (!conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
+      msClientBuilder = msClientBuilder.withRetry(metaCallTimeMap);
     }
+    return msClientBuilder.build();
   }
 
   @Nullable
