@@ -51,7 +51,7 @@ FROM eclipse-temurin:21.0.3_9-jre-ubi9-minimal AS run
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 COPY --from=env /opt/hadoop-$HADOOP_VERSION /opt/hadoop
-COPY --from=env /opt/hive-standalone-metastore-$HIVE_VERSION-bin /opt/hive
+COPY --from=env /opt/apache-hive-metastore-$HIVE_VERSION-bin /opt/hive
 
 # Install dependencies
 RUN set -ex; \

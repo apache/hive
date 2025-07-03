@@ -28,7 +28,7 @@
     <format>tar.gz</format>
   </formats>
 
-  <baseDirectory>${project.parent.artifactId}-${project.version}-src</baseDirectory>
+  <baseDirectory>apache-hive-metastore-${project.version}-src</baseDirectory>
 
   <fileSets>
     <fileSet>

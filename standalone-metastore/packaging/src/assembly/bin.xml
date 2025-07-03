@@ -29,7 +29,7 @@
     <format>tar.gz</format>
   </formats>
 
-  <baseDirectory>${project.parent.artifactId}-${project.version}-bin</baseDirectory>
+  <baseDirectory>apache-hive-metastore-${project.version}-bin</baseDirectory>
 
   <dependencySets>
     <dependencySet>
