@@ -15,8 +15,6 @@
   <name>Hive Metastore Packaging</name>
   
   <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
