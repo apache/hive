@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -51,17 +52,6 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     this.hiveCatalog = catalog;
   }
 
-  public void invalidateTable(String dbName, String tableName) {
-    super.invalidateTable(TableIdentifier.of(dbName, tableName));
-  }
-
-  @Override
-  public void invalidateTable(TableIdentifier tableIdentifier) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Avoid invalidating table: {}", tableIdentifier);
-    }
-  }
-
   @Override
   public void createNamespace(Namespace nmspc, Map<String, String> map) {
     hiveCatalog.createNamespace(nmspc, map);
@@ -73,12 +63,37 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   }
 
   @Override
+  public Table loadTable(TableIdentifier identifier) {
+    TableIdentifier canonicalIdentifier = identifier.toLowerCase();
+    Table cachedTable = tableCache.getIfPresent(canonicalIdentifier);
+    if (cachedTable != null) {
+      String location = hiveCatalog.getTableLocation(canonicalIdentifier);
+      if (location == null) {
+        LOG.debug("Table {} has no location, returning cached table without location", canonicalIdentifier);
+      } else if (!location.equals(cachedTable.location())) {
+        LOG.debug("Cached table {} has a different location than the one in the catalog: {} != {}",
+                 canonicalIdentifier, cachedTable.location(), location);
+      } else {
+        LOG.debug("Returning cached table: {}", canonicalIdentifier);
+        return cachedTable;
+      }
+      // Invalidate the cached table if the location is different
+      tableCache.invalidate(cachedTable);
+    }
+    return super.loadTable(identifier);
+  }
+
+  @Override
   public Map<String, String> loadNamespaceMetadata(Namespace nmspc) throws NoSuchNamespaceException {
     return hiveCatalog.loadNamespaceMetadata(nmspc);
   }
 
   @Override
   public boolean dropNamespace(Namespace nmspc) throws NamespaceNotEmptyException {
+    List<TableIdentifier> tables = listTables(nmspc);
+    for (TableIdentifier ident : tables) {
+      invalidateTable(ident);
+    }
     return hiveCatalog.dropNamespace(nmspc);
   }
 
@@ -100,14 +115,6 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   @Override
   public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
     return hiveCatalog.buildTable(identifier, schema);
-  }
-
-
-  public void invalidateNamespace(String namespace) {
-    Namespace ns = Namespace.of(namespace);
-    for (TableIdentifier table : listTables(ns)) {
-      invalidateTable(table);
-    }
   }
 
   @Override
