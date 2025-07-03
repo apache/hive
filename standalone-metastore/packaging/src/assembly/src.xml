@@ -39,18 +39,25 @@
         <include>LICENSE*</include>
         <include>NOTICE*</include>
         <include>pom.xml</include>
+        <include>metastore-common/**/*</include>
+        <include>metastore-server/**/*</include>
+        <include>metastore-tools/**/*</include>
+        <include>metastore-rest-catalog/**/*</include>
+        <include>packaging/**/*</include>
+        <include>checkstyle/**/*</include>
+        <include>spotbugs/**/*</include>
       </includes>
-      <useDefaultExcludes>true</useDefaultExcludes>
-      <outputDirectory>/</outputDirectory>
-    </fileSet>
-    <fileSet>
-      <directory>${project.parent.basedir}</directory>
-      <useDefaultExcludes>true</useDefaultExcludes>
       <excludes>
         <exclude>**/*.log</exclude>
         <exclude>**/*.iml</exclude>
         <exclude>packaging/cache/**</exclude>
         <exclude>**/${project.build.directory}/**</exclude>
+        <exclude>**/dependency-reduced-pom.xml</exclude>
+        <exclude>**/target/**</exclude>
+        <exclude>**/.classpath</exclude>
+        <exclude>**/.project</exclude>
+        <exclude>**/.settings/**</exclude>
+        <exclude>**/*.jar</exclude>
       </excludes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
