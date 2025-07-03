@@ -18,11 +18,8 @@
  */
 package org.apache.iceberg.rest;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServlet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ServletSecurity;
@@ -36,23 +33,11 @@ import org.apache.iceberg.hive.HiveCatalog;
 
 /**
  * Catalog &amp; servlet factory.
+ * <p>This class is derivable on purpose; the factory class name is a configuration property, this class
+ * can serve as a base for specialization.</p>
  */
 public class HMSCatalogFactory {
  private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
-
-  /**
-   * Convenience soft reference to last catalog.
-   */
-  protected static final AtomicReference<Reference<Catalog>> catalogRef = new AtomicReference<>();
-
-  public static Catalog getLastCatalog() {
-    Reference<Catalog> soft = catalogRef.get();
-    return soft != null ? soft.get() : null;
-  }
-
-  protected static void setLastCatalog(Catalog catalog) {
-    catalogRef.set(new SoftReference<>(catalog));
-  }
 
   protected final Configuration configuration;
   protected final int port;
@@ -128,7 +113,6 @@ public class HMSCatalogFactory {
   protected HttpServlet createServlet() {
     if (port >= 0 && path != null && !path.isEmpty()) {
       Catalog actualCatalog = createCatalog();
-      setLastCatalog(actualCatalog);
       return createServlet(actualCatalog);
     }
     return null;
