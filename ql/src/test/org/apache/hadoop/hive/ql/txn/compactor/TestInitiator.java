@@ -1001,7 +1001,7 @@ public class TestInitiator extends CompactorTest {
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
     doThrow(new RuntimeException("This was thrown on purpose by testInitiatorFailure"))
-        .when(initiator).resolveTable(any());
+        .when(initiator).resolvePartition(any());
     initiator.run();
 
     // verify status of table compaction
@@ -1134,7 +1134,7 @@ public class TestInitiator extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
-    Mockito.verify(initiator, times(1)).resolveTable(Mockito.any());
+    Mockito.verify(initiator, times(2)).resolvePartition(Mockito.any());
   }
 
   private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {
