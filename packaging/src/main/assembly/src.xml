@@ -41,6 +41,7 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>**/thirdparty/**</exclude>
+        <exclude>packaging/cache/**</exclude>
         <exclude>standalone-metastore/metastore-common/src/gen/version/**</exclude>
         <exclude>standalone-metastore/metastore-server/src/gen/**</exclude>
         <exclude>common/src/gen/**</exclude>

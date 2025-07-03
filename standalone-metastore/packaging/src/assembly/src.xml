@@ -28,11 +28,11 @@
     <format>tar.gz</format>
   </formats>
 
-  <baseDirectory>apache-${project.artifactId}-${project.version}-src</baseDirectory>
+  <baseDirectory>apache-${project.parent.artifactId}-server-${project.version}-src</baseDirectory>
 
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}</directory>
+      <directory>${project.parent.basedir}</directory>
       <includes>
         <include>DEV-README</include>
         <include>README*</include>
@@ -41,15 +41,18 @@
         <include>pom.xml</include>
       </includes>
       <useDefaultExcludes>true</useDefaultExcludes>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>${project.basedir}</directory>
+      <directory>${project.parent.basedir}</directory>
       <useDefaultExcludes>true</useDefaultExcludes>
       <excludes>
         <exclude>**/*.log</exclude>
         <exclude>**/*.iml</exclude>
+        <exclude>packaging/cache/**</exclude>
         <exclude>**/${project.build.directory}/**</exclude>
       </excludes>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>
 </assembly>

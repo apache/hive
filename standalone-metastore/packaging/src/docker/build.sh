@@ -90,8 +90,8 @@ if [ -n "$HIVE_VERSION" ]; then
   cp "$CACHE_DIR/$HIVE_FILE_NAME" "$WORK_DIR"
 else
   HIVE_VERSION=$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)
-  HIVE_TAR="$SOURCE_DIR/metastore-server/target/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz"
-  if  ls "$HIVE_TAR" || mvn -f "$SOURCE_DIR/metastore-server/pom.xml" clean package -DskipTests -DallModules; then
+  HIVE_TAR="$SOURCE_DIR/packaging/target/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz"
+  if  ls "$HIVE_TAR" || mvn -f "$SOURCE_DIR/pom.xml" clean package -DskipTests -Pdist; then
     cp "$HIVE_TAR" "$WORK_DIR/"
   else
     echo "Failed to compile Hive Metastore project, exiting..."
@@ -100,9 +100,9 @@ else
 fi
 
 cp "$CACHE_DIR/hadoop-$HADOOP_VERSION.tar.gz" "$WORK_DIR/"
-cp -R "$SOURCE_DIR/metastore-server/src/docker/conf" "$WORK_DIR/"
-cp -R "$SOURCE_DIR/metastore-server/src/docker/entrypoint.sh" "$WORK_DIR/"
-cp    "$SOURCE_DIR/metastore-server/src/docker/Dockerfile" "$WORK_DIR/"
+cp -R "$SOURCE_DIR/packaging/src/docker/conf" "$WORK_DIR/"
+cp -R "$SOURCE_DIR/packaging/src/docker/entrypoint.sh" "$WORK_DIR/"
+cp    "$SOURCE_DIR/packaging/src/docker/Dockerfile" "$WORK_DIR/"
 docker build \
         "$WORK_DIR" \
         -f "$WORK_DIR/Dockerfile" \
