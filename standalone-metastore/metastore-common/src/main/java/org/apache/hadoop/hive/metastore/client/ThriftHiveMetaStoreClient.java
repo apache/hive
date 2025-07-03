@@ -2042,8 +2042,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req)
-      throws TException {
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
+    checkDbAndTableFilters(getDefaultCatalog(conf), req.getDb_name(), req.getTbl_name());
+
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
@@ -2068,10 +2069,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     String dbName = request.getDbName();
     String tblName = request.getTblName();
 
-    // HIVE-20776 causes view access regression
-    // Therefore, do not do filtering here. Call following function only to check
-    // if dbName and tblName is valid
-    FilterUtils.checkDbAndTableFilters(false, filterHook, catName, dbName, tblName);
+    checkDbAndTableFilters(catName, dbName, tblName);
 
     return client.get_partition_values(request);
   }
@@ -2181,8 +2179,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern)
-      throws TException {
+  public List<String> getTables(String catName, String dbName, String tablePattern) throws TException {
     if (tablePattern == null) {
       tablePattern = ".*";
     }
@@ -2208,7 +2205,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         req.setProcessorIdentifier(processorIdentifier);
       req.setProjectionSpec(projectionsSpec);
       List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
-      tableObjects = HiveMetaStoreClientUtils.deepCopyTables(tableObjects);
+      tableObjects = HiveMetaStoreClientUtils.deepCopyTables(
+          FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
       for (Table tbl : tableObjects) {
         tables.add(tbl.getTableName());
       }
@@ -2222,7 +2220,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
       }
     }
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
+    return tables;
   }
 
   @Override
@@ -2658,9 +2656,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public Partition getPartition(String catName, String dbName, String tblName, String name)
       throws TException {
-    Partition p = client.get_partition_by_name(prependCatalogToDbName(catName, dbName, conf), tblName,
-        name);
-    return HiveMetaStoreClientUtils.deepCopy(p);
+    Partition p = client.get_partition_by_name(prependCatalogToDbName(catName, dbName, conf), tblName, name);
+    return HiveMetaStoreClientUtils.deepCopy(
+        FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
   }
 
   public Partition appendPartitionByName(String dbName, String tableName, String partName)
@@ -2698,6 +2696,26 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     dropPartitionReq.setDeleteData(deleteData);
     dropPartitionReq.setEnvironmentContext(envContext);
     return client.drop_partition_req(dropPartitionReq);
+  }
+
+  /**
+   * Check if the current user has access to a given database and table name. Throw
+   * NoSuchObjectException if user has no access. When the db or table is filtered out, we don't need
+   * to even fetch the partitions. Therefore this check ensures table-level security and
+   * could improve performance when filtering partitions.
+   *
+   * @param catName the catalog name
+   * @param dbName  the database name
+   * @param tblName the table name contained in the database
+   * @throws NoSuchObjectException if the database or table is filtered out
+   */
+  private void checkDbAndTableFilters(final String catName, final String dbName, final String tblName)
+      throws NoSuchObjectException, MetaException {
+
+    // HIVE-20776 causes view access regression
+    // Therefore, do not do filtering here. Call following function only to check
+    // if dbName and tblName is valid
+    FilterUtils.checkDbAndTableFilters(false, filterHook, catName, dbName, tblName);
   }
 
   @Override

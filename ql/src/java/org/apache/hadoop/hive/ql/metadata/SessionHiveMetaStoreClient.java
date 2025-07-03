@@ -570,11 +570,10 @@ public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy {
 
   @Override
   public boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException {
-    assert result != null;
-
     if (isDefaultCatalog(req.getCatName())) {
       Table tmpTable = getTempTable(req.getDbName(), req.getTblName());
       if (tmpTable != null) {
+        assert result != null;
         result.addAll(getPartitionsForMaxParts(getPartitionedTempTable(tmpTable).listPartitionsByFilter(
             generateJDOFilter(tmpTable, req.getExpr(), req.getDefaultPartitionName())), req.getMaxParts()));
         return result.isEmpty();
@@ -609,11 +608,10 @@ public class SessionHiveMetaStoreClient extends BaseMetaStoreClientProxy {
   @Override
   public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
       throws TException {
-    assert result != null;
-
     if (isDefaultCatalog(req.getCatName())) {
       Table tmpTable = getTempTable(req.getDbName(), req.getTblName());
       if (tmpTable != null) {
+        assert result != null;
         result.addAll(
             MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(tmpTable,
                 getPartitionsForMaxParts(getPartitionedTempTable(tmpTable).listPartitionsByFilter(
