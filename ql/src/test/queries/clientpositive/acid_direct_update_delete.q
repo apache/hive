@@ -18,4 +18,13 @@ DELETE FROM test_update_bucketed WHERE id IN ('2', '11', '10');
 UPDATE test_update_bucketed SET value='New value2' WHERE id IN ('2','18', '19');
 SELECT * FROM test_update_bucketed;
 
+CREATE TABLE test_delete(id int) STORED AS ORC TBLPROPERTIES('transactional'='true');
+
+INSERT INTO test_delete SELECT id FROM test_update_bucketed WHERE id != 3 and id <=9;
+INSERT INTO test_delete SELECT id FROM test_update_bucketed WHERE id > 9;
+
+DELETE FROM test_delete WHERE id in (5, 13);
+SELECT * FROM test_delete;
+
 DROP TABLE IF EXISTS test_update_bucketed;
+DROP TABLE IF EXISTS test_delete;
