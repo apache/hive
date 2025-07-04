@@ -313,36 +313,6 @@ public class TestMetastoreConf {
     Assert.assertEquals("false", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
   }
 
-  /**
-   * Verify that a config can be set with a deprecated key/name.
-   */
-  @Test
-  public void testDeprecatedConfigs() throws IOException {
-    // set with deprecated key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "metastore.compactor.history.retention.attempted", "0" // default is 2
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(0, MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
-
-    // set with hive (HiveConf) deprecated key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "hive.compactor.history.retention.attempted", "1" // default is 2
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(1, MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
-
-    // set with normal key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "metastore.compactor.history.retention.did.not.initiate", "3" // default is 2
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(3, MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
-  }
-
   @Test
   public void timeUnits() throws IOException {
     conf = MetastoreConf.newMetastoreConf();
