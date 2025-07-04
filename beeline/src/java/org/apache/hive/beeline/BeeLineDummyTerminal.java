@@ -26,6 +26,9 @@ import org.jline.terminal.impl.DumbTerminal;
 
 /**
  * A Beeline implementation that always creates a DumbTerminal.
+ * This class resides in the production source code (not in tests) because Beeline can serve as a
+ * dummy terminal tool without real user interaction (e.g., HiveSchemaTool), not just in testing scenarios,
+ * although that is its primary use case.
  */
 public class BeeLineDummyTerminal extends BeeLine {
 
