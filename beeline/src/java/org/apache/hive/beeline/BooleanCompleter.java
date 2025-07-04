@@ -20,7 +20,7 @@ package org.apache.hive.beeline;
 import org.apache.hive.common.util.MatchingStringsCompleter;
 
 /**
- * JLine completor boolean value (true/false)
+ * JLine completer boolean value (true/false)
  */
 class BooleanCompleter extends MatchingStringsCompleter {
 

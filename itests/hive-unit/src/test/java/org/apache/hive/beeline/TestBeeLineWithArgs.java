@@ -26,9 +26,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -53,6 +51,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
+import org.jline.reader.LineReader;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -182,26 +181,28 @@ import org.junit.Test;
   }
 
   /*
-   * Creates a BeeLineDummyTerminal that simply quits after the init/script runs.
-   * Waits 500ms for the prompt to be printed.
+   * Creates a BeeLineDummyTerminalFromFile instance that skips the main execution code path
+   * if an init script has already run. Since this unit test class executes scripts in init (-i) or file (-f) mode,
+   * we can avoid using waiting hacks and simply return from execute() with the original init result.
    */
-  private static BeeLineDummyTerminal getBeeLineDummyTerminal() {
-    return new BeeLineDummyTerminal() {
+  private static BeeLineDummyTerminalFromFile getBeeLineDummyTerminal() {
+    return new BeeLineDummyTerminalFromFile() {
+      private int initResult = -1;
+
       @Override
-      protected int startListening() {
-        Thread taskThread = new Thread(() -> {
-          super.startListening();
-        });
-
-        taskThread.start();
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
+      int execute(LineReader reader, boolean exitOnError) {
+        String[] initFiles = getOpts().getInitFiles();
+        // short circuit the test execution, we're not interested in entering the interactive reader codepath
+        if (initFiles != null && initFiles.length != 0 && initResult != -1) {
+          return initResult;
         }
+        return super.execute(reader, exitOnError);
+      }
 
-        taskThread.interrupt();
-        return 0;
+      @Override
+      int runInit() {
+        this.initResult = super.runInit();
+        return initResult;
       }
     };
   }
@@ -992,6 +993,10 @@ import org.junit.Test;
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     final String SCRIPT_TEXT =
         "!close\n" +
+            // 3 line breaks mimic user input in the following sequence:
+            // 1. reconnect command
+            // 2. response to username prompt
+            // 3. response to password prompt
             "!reconnect\n\n\n" +
             "create table reconnecttest (d int);\nshow tables;\ndrop table reconnecttest;\n";
     final String EXPECTED_PATTERN = "reconnecttest";

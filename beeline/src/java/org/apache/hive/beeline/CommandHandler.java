@@ -71,7 +71,7 @@ interface CommandHandler {
 
 
   /**
-   * Returns the completors that can handle parameters.
+   * Returns the completers that can handle parameters.
    */
   public Completer[] getParameterCompleters();
 

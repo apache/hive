@@ -203,7 +203,7 @@ public class TestCliDriverMethods {
 
 
   @Test
-  public void testGetCommandCompletor() {
+  public void testGetCommandCompleter() {
     Completer[] completers = CliDriver.getCommandCompleter();
     assertEquals(2, completers.length);
     assertTrue(completers[0] instanceof ArgumentCompleter);

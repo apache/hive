@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLsI
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.DummyHiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessControllerWrapper;
 import org.apache.hive.beeline.BeeLine;
-import org.apache.hive.beeline.BeeLineDummyTerminal;
+import org.apache.hive.beeline.BeeLineDummyTerminalFromFile;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.OperationHandle;
@@ -299,7 +299,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     List<String> args = new ArrayList<String>(baseArgs);
     args.add("-f");
     args.add("../../standalone-metastore/metastore-server/src/main/sql/hive/hive-schema-" + hiveSchemaVer + ".hive.sql");
-    BeeLine beeLine = new BeeLineDummyTerminal();
+    BeeLine beeLine = new BeeLineDummyTerminalFromFile();
     int result = beeLine.begin(args.toArray(new String[] {}), null);
     beeLine.close();
     Assert.assertEquals(result, 0);

@@ -1103,19 +1103,18 @@ public class Commands {
       }
       String extra;
       //avoid NPE below if for some reason -e argument has multi-line command
-      if (beeLine.getCurrentReader() == null) {
+      if (beeLine.getLineReader() == null) {
         throw new RuntimeException("Console reader not initialized. This could happen when there "
             + "is a multi-line command using -e option and which requires further reading from console");
       }
 
       try {
         if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
-          extra = beeLine.getCurrentReader().readLine(null, mask);
+          extra = beeLine.getLineReader().readLine(null, mask);
         } else {
-          extra = beeLine.getCurrentReader().readLine(prompt.toString());
+          extra = beeLine.getLineReader().readLine(prompt.toString());
         }
       } catch (EndOfFileException t) {
-        beeLine.info("EndOfFileException caught in multiline Cmd");
         /*
          * If you're reading from a normal file (not from standard input or a terminal), JLine might raise an
          * EndOfFileException when it reaches the end of the file. JLine uses readLine() for reading input, and it
@@ -1726,7 +1725,7 @@ public class Commands {
    */
   private String readLineWithPrompt(String prompt, Character mask) {
     try {
-      return beeLine.getCurrentReader().readLine(prompt, mask);
+      return beeLine.getLineReader().readLine(prompt, mask);
     } catch (EndOfFileException e) {
       return e.getPartialLine();
     }

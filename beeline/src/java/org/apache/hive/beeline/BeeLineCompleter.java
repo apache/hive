@@ -30,7 +30,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
 /**
- * Completor for BeeLine. It dispatches to sub-completors based on the
+ * Completer for BeeLine. It dispatches to sub-completors based on the
  * current arguments.
  *
  */
@@ -49,7 +49,7 @@ class BeeLineCompleter implements Completer {
     if (line != null && line.line().startsWith(BeeLine.COMMAND_PREFIX)
         && !line.line().startsWith(BeeLine.COMMAND_PREFIX + "all")
         && !line.line().startsWith(BeeLine.COMMAND_PREFIX + "sql")) {
-       beeLine.getCommandCompletor().complete(reader, line, candidates);
+       beeLine.getCommandCompleter().complete(reader, line, candidates);
     } else {
       if (beeLine.getDatabaseConnection() != null && beeLine.getDatabaseConnection().getSQLCompleter() != null) {
          beeLine.getDatabaseConnection().getSQLCompleter().complete(reader, line, candidates);
