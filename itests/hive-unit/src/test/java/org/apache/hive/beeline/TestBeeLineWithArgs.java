@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringBufferInputStream;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
+import org.jline.reader.LineReader;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -187,6 +189,8 @@ import org.junit.Test;
    */
   private static BeeLineDummyTerminal getBeeLineDummyTerminal() {
     return new BeeLineDummyTerminal() {
+      private LineReader fileReader;
+
       @Override
       protected int startListening() {
         Thread taskThread = new Thread(() -> {
@@ -202,6 +206,25 @@ import org.junit.Test;
 
         taskThread.interrupt();
         return 0;
+      }
+
+      @Override
+      public LineReader getFileLineReader(InputStream inputStream) throws IOException {
+        this.fileReader = super.getFileLineReader(inputStream);
+        return this.fileReader;
+      }
+
+      /**
+       * This is needed because in this unit test class, there are scenarios involving connect/reconnect,
+       * where the password prompt is triggered. In these cases, the prompt is bypassed using a simple line break.
+       * Since the test class exclusively uses file-based script input, getLineReader should return the
+       * file reader created in getFileLineReader to correctly handle password prompts via '\n' control characters.
+       *
+       * @return the file reader created in getFileLineReader
+       */
+      @Override
+      LineReader getLineReader() {
+        return fileReader;
       }
     };
   }
@@ -992,6 +1015,10 @@ import org.junit.Test;
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     final String SCRIPT_TEXT =
         "!close\n" +
+            // 3 line breaks mimic user input in the following sequence:
+            // 1. reconnect command
+            // 2. response to username prompt
+            // 3. response to password prompt
             "!reconnect\n\n\n" +
             "create table reconnecttest (d int);\nshow tables;\ndrop table reconnecttest;\n";
     final String EXPECTED_PATTERN = "reconnecttest";

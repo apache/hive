@@ -161,7 +161,6 @@ public class BeeLine implements Closeable {
   private OutputFile recordOutputFile = null;
   private PrintStream outputStream = new PrintStream(System.out, true);
   private PrintStream errorStream = new PrintStream(System.err, true);
-  private LineReader currentReader;
   private LineReader lineReader;
   private List<String> batch = null;
   private final Reflector reflector = new Reflector(this);
@@ -1163,7 +1162,6 @@ public class BeeLine implements Closeable {
    * @return the return code of commands
    */
   protected int startListening() {
-    this.currentReader = lineReader;
     return execute(lineReader, false);
   }
 
@@ -1448,8 +1446,7 @@ public class BeeLine implements Closeable {
     Terminal terminal = buildTerminal(prepareInputStream(inputStream));
     builder.terminal(terminal);
 
-    this.currentReader = builder.build();
-    return currentReader;
+    return builder.build();
   }
 
   public void initializeLineReader(InputStream inputStream) throws IOException {
@@ -1481,7 +1478,6 @@ public class BeeLine implements Closeable {
     if (this.history != null) {
       this.history.attach(lineReader);
     }
-    this.currentReader = lineReader;
   }
 
   private void defaultParser(LineReaderBuilder builder) {
@@ -2556,10 +2552,6 @@ public class BeeLine implements Closeable {
 
   LineReader getLineReader() {
     return lineReader;
-  }
-
-  LineReader getCurrentReader(){
-    return currentReader;
   }
 
   List<String> getBatch() {
