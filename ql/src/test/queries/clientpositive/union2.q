@@ -10,3 +10,11 @@ explain
 
 select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                       select s2.key as key, s2.value as value from src s2) unionsrc;
+
+set hive.metastore.dml.events=true;
+create external table test_table1 (age int, name string) stored as orc;
+insert into test_table1 values (1, 'a'), (2, 'b');
+create external table test_table2 (age int, name string) stored as orc;
+insert into test_table2 select * from (select * from test_table1 union all select * from test_table1) abc where age=15;
+drop table test_table2;
+drop table test_table1;

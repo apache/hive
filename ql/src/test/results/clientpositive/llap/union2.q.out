@@ -103,3 +103,59 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1000
+PREHOOK: query: create external table test_table1 (age int, name string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: create external table test_table1 (age int, name string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1
+PREHOOK: query: insert into test_table1 values (1, 'a'), (2, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: insert into test_table1 values (1, 'a'), (2, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_table1
+POSTHOOK: Lineage: test_table1.age SCRIPT []
+POSTHOOK: Lineage: test_table1.name SCRIPT []
+PREHOOK: query: create external table test_table2 (age int, name string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: create external table test_table2 (age int, name string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table2
+PREHOOK: query: insert into test_table2 select * from (select * from test_table1 union all select * from test_table1) abc where age=15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: insert into test_table2 select * from (select * from test_table1 union all select * from test_table1) abc where age=15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Output: default@test_table2
+POSTHOOK: Lineage: test_table2.age SIMPLE []
+POSTHOOK: Lineage: test_table2.name EXPRESSION [(test_table1)test_table1.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: drop table test_table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: drop table test_table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table2
+PREHOOK: query: drop table test_table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: drop table test_table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1
