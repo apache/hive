@@ -134,12 +134,7 @@ public abstract class BaseMetaStoreClientProxy extends BaseMetaStoreClient {
   @Override
   public List<Table> getAllMaterializedViewObjectsForRewriting()
       throws MetaException, TException, UnknownDBException {
-    try {
-      return delegate.getAllMaterializedViewObjectsForRewriting();
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-      return null;
-    }
+    return delegate.getAllMaterializedViewObjectsForRewriting();
   }
 
   @Override
@@ -151,34 +146,19 @@ public abstract class BaseMetaStoreClientProxy extends BaseMetaStoreClient {
   @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
       throws MetaException, TException, UnknownDBException {
-    try {
-      return delegate.getMaterializedViewsForRewriting(catName, dbName);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-      return null;
-    }
+    return delegate.getMaterializedViewsForRewriting(catName, dbName);
   }
 
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
       List<String> tableTypes) throws MetaException, TException, UnknownDBException {
-    try {
-      return delegate.getTableMeta(catName, dbPatterns, tablePatterns, tableTypes);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-      return null;
-    }
+    return delegate.getTableMeta(catName, dbPatterns, tablePatterns, tableTypes);
   }
 
   @Override
   public List<String> getAllTables(String catName, String dbName)
       throws MetaException, TException, UnknownDBException {
-    try {
-      return delegate.getAllTables(catName, dbName);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-      return null;
-    }
+    return delegate.getAllTables(catName, dbName);
   }
 
   @Override
