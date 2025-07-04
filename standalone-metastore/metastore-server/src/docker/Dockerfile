@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ARG BUILD_ENV
+ARG BUILD_ENV=unarchive
 
-FROM ubuntu as unarchive
+FROM ubuntu AS unarchive
 ONBUILD COPY hadoop-*.tar.gz /opt
 ONBUILD COPY apache-hive-standalone-metastore-server-*-bin.tar.gz /opt
 
-FROM ubuntu as archive
+FROM ubuntu AS archive
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
@@ -29,7 +29,7 @@ ONBUILD RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERS
 ONBUILD RUN mv hadoop-$HADOOP_VERSION.tar.gz /opt && \
  mv apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz /opt
 
-FROM ubuntu as buildarchive
+FROM ubuntu AS buildarchive
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
@@ -37,7 +37,7 @@ ONBUILD RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERS
 ONBUILD COPY ./apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz /opt
 ONBUILD RUN mv hadoop-$HADOOP_VERSION.tar.gz /opt
 
-FROM ${BUILD_ENV} as env
+FROM ${BUILD_ENV} AS env
 RUN echo ${BUILD_ENV}
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
