@@ -127,7 +127,6 @@ docker build \
         "$WORK_DIR" \
         -f "$WORK_DIR/Dockerfile" \
         -t "$repo/hive:$HIVE_VERSION" \
-        --build-arg "BUILD_ENV=unarchive" \
         --build-arg "HIVE_VERSION=$HIVE_VERSION" \
         --build-arg "HADOOP_VERSION=$HADOOP_VERSION" \
         --build-arg "TEZ_VERSION=$TEZ_VERSION" \
