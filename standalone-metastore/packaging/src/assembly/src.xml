@@ -35,9 +35,8 @@
       <directory>${project.parent.basedir}</directory>
       <includes>
         <include>DEV-README</include>
-        <include>README*</include>
-        <include>LICENSE*</include>
-        <include>NOTICE*</include>
+        <include>LICENSE</include>
+        <include>NOTICE</include>
         <include>pom.xml</include>
         <include>metastore-common/**/*</include>
         <include>metastore-server/**/*</include>
@@ -58,6 +57,8 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>**/*.jar</exclude>
+        <exclude>metastore-common/src/gen/version/**</exclude>
+        <exclude>metastore-server/src/gen/**</exclude>
       </excludes>
       <outputDirectory>/</outputDirectory>
     </fileSet>

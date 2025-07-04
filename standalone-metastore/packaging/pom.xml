@@ -181,7 +181,7 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
-      <version>${hive.version}</version>
+      <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.hive</groupId>
@@ -192,13 +192,13 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
-      <version>${project.version}</version>
+      <version>${hive.version}</version>
       <classifier>core</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-iceberg-handler</artifactId>
-      <version>${project.version}</version>
+      <version>${hive.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.apache.hive</groupId>

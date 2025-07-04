@@ -66,7 +66,7 @@ mkdir -p "$CACHE_DIR"
 HADOOP_VERSION=${HADOOP_VERSION:-$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=hadoop.version -DforceStdout)}
 
 HADOOP_FILE_NAME="hadoop-$HADOOP_VERSION.tar.gz"
-HADOOP_URL=${HADOOP_URL:-"https://downloads.apache.org/hadoop/core/hadoop-$HADOOP_VERSION/$HADOOP_FILE_NAME"}
+HADOOP_URL=${HADOOP_URL:-"https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/$HADOOP_FILE_NAME"}
 if [ ! -f "$CACHE_DIR/$HADOOP_FILE_NAME" ]; then
   echo "Downloading Hadoop from $HADOOP_URL..."
   if ! curl --fail -L "$HADOOP_URL" -o "$CACHE_DIR/$HADOOP_FILE_NAME.tmp"; then

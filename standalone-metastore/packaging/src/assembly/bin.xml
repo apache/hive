@@ -116,6 +116,23 @@
       </includes>
       <outputDirectory>conf</outputDirectory>
     </fileSet>
+
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources</directory>
+      <includes>
+        <include>/LICENSE</include>
+        <include>/licenses.xml</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources/licenses</directory>
+      <includes>
+        <include>/*</include>
+      </includes>
+      <outputDirectory>licenses</outputDirectory>
+    </fileSet>
+
   </fileSets>
 
   <files>
