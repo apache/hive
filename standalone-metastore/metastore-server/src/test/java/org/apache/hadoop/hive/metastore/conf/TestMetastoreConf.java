@@ -321,26 +321,26 @@ public class TestMetastoreConf {
     // set with deprecated key
     createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
         "hive.test.str", "hivedefault",
-        "this.is.the.metastore.deprecated.name", "1" // default is 0
+        "metastore.compactor.history.retention.attempted", "0" // default is 2
     ));
     conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(1, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+    Assert.assertEquals(0, MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
 
     // set with hive (HiveConf) deprecated key
     createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
         "hive.test.str", "hivedefault",
-        "this.is.the.hive.deprecated.name", "2" // default is 0
+        "hive.compactor.history.retention.attempted", "1" // default is 2
     ));
     conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(2, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+    Assert.assertEquals(1, MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
 
     // set with normal key
     createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
         "hive.test.str", "hivedefault",
-        "test.deprecated", "3" // default is 0
+        "metastore.compactor.history.retention.did.not.initiate", "3" // default is 2
     ));
     conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(3, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
+    Assert.assertEquals(3, MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
   }
 
   @Test
