@@ -2189,44 +2189,38 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       db = getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
-    try {
-      if (MetaStoreUtils.isDatabaseRemote(db)) {
-        // TODO: remote database does not support list table names by pattern yet.
-        // This branch can be removed once it's supported.
-        GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
-        projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
-        GetTablesRequest req = new GetTablesRequest(dbName);
-        req.setCatName(catName);
-        req.setCapabilities(version);
-        req.setTblNames(null);
-        req.setTablesPattern(tablePattern);
-        if (processorCapabilities != null)
-          req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
-        if (processorIdentifier != null)
-          req.setProcessorIdentifier(processorIdentifier);
-        req.setProjectionSpec(projectionsSpec);
-        List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
-        tableObjects = HiveMetaStoreClientUtils.deepCopyTables(
-            FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
-        for (Table tbl : tableObjects) {
-          tables.add(tbl.getTableName());
-        }
-      } else {
-        // This trick handles pattern for both string regex and wildcards ('*' and '|').
-        // We need unify the pattern definition, see HIVE-28297 for details.
-        String[] patterns = tablePattern.split("\\|");
-        for (String pattern : patterns) {
-          pattern = "(?i)" + pattern.replaceAll("(?<!\\.)\\*", ".*");
-          String filter =
-              String.format("%s like \"%s\"", hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME, pattern);
-          tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
-        }
+    if (MetaStoreUtils.isDatabaseRemote(db)) {
+      // TODO: remote database does not support list table names by pattern yet.
+      // This branch can be removed once it's supported.
+      GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
+      projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
+      GetTablesRequest req = new GetTablesRequest(dbName);
+      req.setCatName(catName);
+      req.setCapabilities(version);
+      req.setTblNames(null);
+      req.setTablesPattern(tablePattern);
+      if (processorCapabilities != null)
+        req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
+      if (processorIdentifier != null)
+        req.setProcessorIdentifier(processorIdentifier);
+      req.setProjectionSpec(projectionsSpec);
+      List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
+      tableObjects = HiveMetaStoreClientUtils.deepCopyTables(
+          FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
+      for (Table tbl : tableObjects) {
+        tables.add(tbl.getTableName());
       }
-      return tables;
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
+    } else {
+      // This trick handles pattern for both string regex and wildcards ('*' and '|').
+      // We need unify the pattern definition, see HIVE-28297 for details.
+      String[] patterns = tablePattern.split("\\|");
+      for (String pattern : patterns) {
+        pattern = "(?i)" + pattern.replaceAll("(?<!\\.)\\*", ".*");
+        String filter = String.format("%s like \"%s\"", hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME, pattern);
+        tables.addAll(listTableNamesByFilter(catName, dbName, filter, (short) -1));
+      }
     }
-    return null;
+    return tables;
   }
 
   @Override
@@ -2281,26 +2275,15 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
       List<String> tableTypes) throws TException {
-    try {
-      List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(catName, dbPatterns, conf),
-          tablePatterns, tableTypes);
-      return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, tableMetas);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
+    List<TableMeta> tableMetas = client.get_table_meta(prependCatalogToDbName(catName, dbPatterns, conf),
+        tablePatterns, tableTypes);
+    return FilterUtils.filterTableMetasIfEnabled(isClientFilterEnabled, filterHook, tableMetas);
   }
 
   @Override
   public List<String> getAllTables(String catName, String dbName) throws TException {
-    try {
-      List<String> tableNames = client.get_all_tables(prependCatalogToDbName(catName, dbName, conf));
-      return FilterUtils.filterTableNamesIfEnabled(
-          isClientFilterEnabled, filterHook, catName, dbName, tableNames);
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-    }
-    return null;
+    List<String> tableNames = client.get_all_tables(prependCatalogToDbName(catName, dbName, conf));
+    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tableNames);
   }
 
   @Override

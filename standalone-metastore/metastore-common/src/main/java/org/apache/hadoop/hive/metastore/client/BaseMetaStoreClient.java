@@ -73,13 +73,23 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
   @Override
   public final List<String> getTables(String dbName, String tablePattern)
       throws MetaException, TException, UnknownDBException {
-    return getTables(getDefaultCatalog(conf), dbName, tablePattern);
+    try {
+      return getTables(getDefaultCatalog(conf), dbName, tablePattern);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override
   public final List<String> getTables(String dbName, String tablePattern, TableType tableType)
       throws MetaException, TException, UnknownDBException {
-    return getTables(getDefaultCatalog(conf), dbName, tablePattern, tableType);
+    try {
+      return getTables(getDefaultCatalog(conf), dbName, tablePattern, tableType);
+    } catch (Exception e) {
+      MetaStoreUtils.throwMetaException(e);
+      return null;
+    }
   }
 
   @Override

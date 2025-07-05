@@ -761,7 +761,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Assert.assertFalse("Table not exists", client.tableExists(catName, dbName, "non_existing_table"));
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = UnknownDBException.class)
   public void getTablesBogusCatalog() throws TException {
     client.getTables("nosuch", DEFAULT_DATABASE_NAME, "*_to_find_*");
   }
