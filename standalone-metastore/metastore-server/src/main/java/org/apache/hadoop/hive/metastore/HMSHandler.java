@@ -7424,6 +7424,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           }
         }
       }
+      // on the table level, partially delete(update) table level parameter COLUMN_STATS_ACCURATE
+      if (colNames == null || colNames.isEmpty()){
+        // remove all column names in parameter COLUMN_STATS_ACCURATE
+        StatsSetupConst.clearColumnStatsState(table.getParameters());
+      } else {
+        // remove the deleted column names in parameter COLUMN_STATS_ACCURATE
+        StatsSetupConst.removeColumnStatsState(table.getParameters(), colNames);
+      }
+      rawStore.alterTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, table, null);
       committed = rawStore.commitTransaction();
     } finally {
       if (!committed) {
