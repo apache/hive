@@ -1,4 +1,4 @@
---!qt:database:oracle:q_test_country_table.sql
+--!qt:database:oracle:qdb:q_test_country_table.sql
 CREATE EXTERNAL TABLE country
 (
     id int,
@@ -8,7 +8,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "ORACLE", 
     "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
-    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url}",
     "hive.sql.dbcp.username" = "SYS as SYSDBA",
     "hive.sql.dbcp.password" = "oracle",
     "hive.sql.table" = "COUNTRY"

@@ -1,4 +1,4 @@
---!qt:database:postgres:q_test_author_book_tables.sql
+--!qt:database:postgres:qdb:q_test_author_book_tables.sql
 
 CREATE EXTERNAL TABLE book
 (
@@ -11,9 +11,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
     "hive.sql.table" = "book"
 );
 
@@ -26,9 +26,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
     "hive.sql.table" = "author"
 );
 
