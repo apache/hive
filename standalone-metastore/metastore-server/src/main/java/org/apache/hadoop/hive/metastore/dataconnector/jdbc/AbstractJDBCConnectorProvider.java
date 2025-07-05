@@ -105,7 +105,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     }
 
     try {
-      warehouse = new Warehouse(MetastoreConf.newMetastoreConf());
+      warehouse = Warehouse.create(MetastoreConf.newMetastoreConf());
     } catch (MetaException e) { /* ignore */ }
 
     try {

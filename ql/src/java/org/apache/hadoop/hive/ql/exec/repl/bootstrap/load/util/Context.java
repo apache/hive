@@ -45,7 +45,7 @@ public class Context {
     this.dumpDirectory = dumpDirectory;
     this.hiveConf = hiveConf;
     this.hiveDb = hiveDb;
-    this.warehouse = new Warehouse(hiveConf);
+    this.warehouse = Warehouse.create(hiveConf);
     this.pathInfo = new PathInfo(hiveConf);
     sessionStateLineageState = lineageState;
     this.nestedContext = nestedContext;

@@ -108,7 +108,7 @@ public class TestMetaStoreMultipleEncryptionZones {
   }
 
   private static void initReplChangeManager() throws Exception{
-    warehouse = new Warehouse(hiveConf);
+    warehouse = Warehouse.create(hiveConf);
     warehouseFs = warehouse.getWhRoot().getFileSystem(hiveConf);
     fs = new Path(cmroot).getFileSystem(hiveConf);
     fs.mkdirs(warehouse.getWhRoot());
@@ -1261,7 +1261,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
     String cmrootCmClearer = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootClearer";
     hiveConfCmClearer.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmrootCmClearer);
-    Warehouse warehouseCmClearer = new Warehouse(hiveConfCmClearer);
+    Warehouse warehouseCmClearer = Warehouse.create(hiveConfCmClearer);
     FileSystem cmfs = new Path(cmrootCmClearer).getFileSystem(hiveConfCmClearer);
     cmfs.mkdirs(warehouseCmClearer.getWhRoot());
 
@@ -1367,7 +1367,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
     String cmRootAclPermissions = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmRootAclPermissions";
     hiveConfAclPermissions.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmRootAclPermissions);
-    Warehouse warehouseCmPermissions = new Warehouse(hiveConfAclPermissions);
+    Warehouse warehouseCmPermissions = Warehouse.create(hiveConfAclPermissions);
     FileSystem cmfs = new Path(cmRootAclPermissions).getFileSystem(hiveConfAclPermissions);
     cmfs.mkdirs(warehouseCmPermissions.getWhRoot());
 
@@ -1516,7 +1516,7 @@ public class TestMetaStoreMultipleEncryptionZones {
     //Create cm in encrypted zone
     EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
     ReplChangeManager.resetReplChangeManagerInstance();
-    Warehouse warehouseEncrypted = new Warehouse(encryptedHiveConf);
+    Warehouse warehouseEncrypted = Warehouse.create(encryptedHiveConf);
     FileSystem warehouseFsEncrypted = warehouseEncrypted.getWhRoot().getFileSystem(encryptedHiveConf);
     FileSystem fsCmEncrypted = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
     fsCmEncrypted.mkdirs(warehouseEncrypted.getWhRoot());
@@ -1583,7 +1583,7 @@ public class TestMetaStoreMultipleEncryptionZones {
       ReplChangeManager.resetReplChangeManagerInstance();
       boolean exceptionThrown = false;
       try {
-        new Warehouse(encryptedHiveConf);
+        Warehouse.create(encryptedHiveConf);
       } catch (MetaException e) {
         exceptionThrown = true;
         assertTrue(e.getMessage().contains("should not be encrypted"));
@@ -1620,7 +1620,7 @@ public class TestMetaStoreMultipleEncryptionZones {
       ReplChangeManager.resetReplChangeManagerInstance();
       boolean exceptionThrown = false;
       try {
-        new Warehouse(encryptedHiveConf);
+        Warehouse.create(encryptedHiveConf);
       } catch (MetaException e) {
         exceptionThrown = true;
         assertTrue(e.getMessage().contains("should be absolute"));
