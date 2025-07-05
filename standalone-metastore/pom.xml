@@ -30,6 +30,7 @@
     <module>metastore-server</module>
     <module>metastore-tools</module>
     <module>metastore-rest-catalog</module>
+    <module>packaging</module>
   </modules>
   <properties>
     <hive.version>4.1.0</hive.version>
@@ -544,29 +545,6 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>assemble</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <finalName>apache-${project.artifactId}-${project.version}</finalName>
-              <formats>
-                <format>tar.gz</format>
-              </formats>
-              <descriptors>
-                <descriptor>src/assembly/src.xml</descriptor>
-              </descriptors>
-              <tarLongFileMode>posix</tarLongFileMode>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>

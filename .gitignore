@@ -27,3 +27,4 @@ kafka-handler/src/test/gen
 dependency-reduced-pom.xml
 **/.mvn/.develocity*
 packaging/cache
+standalone-metastore/packaging/cache
