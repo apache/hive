@@ -669,6 +669,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
     ctxHandler.setSecurityHandler(securityHandler);
   }
+
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
    *
@@ -683,6 +684,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
+    // If we start an Iceberg REST catalog, we need to listen to events to maintain its consistency.
     isMetaStoreRemote = true;
     String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
     boolean isHttpTransport = transportMode.equalsIgnoreCase("http");
