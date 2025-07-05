@@ -10945,6 +10945,21 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(String policyName)  {
+    Exception ex = null;
+    try{
+      startFunction("get_replayed_txns_for_policy");
+      return getTxnHandler().getReplayedTxnsForPolicy(policyName);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_replayed_txns_for_policy", ex == null, ex);
+    }
+  }
+
+  @Override
   public void scheduled_query_progress(ScheduledQueryProgressInfo info) throws MetaException, TException {
     startFunction("scheduled_query_poll");
     Exception ex = null;
