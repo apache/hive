@@ -17,18 +17,33 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
+
+import java.io.IOException;
+
 /**
  * JUnit TestRule for Postgres.
  */
 public class Postgres extends DatabaseRule {
-  @Override
-  public String getDockerImageName() {
-    return "postgres:11.6";
+  protected final PostgreSQLContainer<?> container;
+
+  public Postgres() {
+    this(DockerImageName.parse("postgres:11.4"));
+  }
+
+  protected Postgres(DockerImageName dockerImageName) {
+   this.container = new PostgreSQLContainer<>(dockerImageName);
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
-    return buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=" + getDbRootPassword(), "-d");
+  public void before() throws IOException, InterruptedException {
+    container.start();
+  }
+
+  @Override
+  public void after() {
+    container.stop();
   }
 
   @Override
@@ -38,33 +53,27 @@ public class Postgres extends DatabaseRule {
 
   @Override
   public String getDbRootUser() {
-    return "postgres";
+    return container.getUsername();
   }
 
   @Override
   public String getDbRootPassword() {
-    return "its-a-secret";
+    return container.getPassword();
   }
 
   @Override
   public String getJdbcDriver() {
-    return org.postgresql.Driver.class.getName();
+    return container.getDriverClassName();
   }
 
   @Override
-  public String getJdbcUrl(String hostAddress) {
-    return "jdbc:postgresql://" + hostAddress + ":5432/" + HIVE_DB;
+  public String getJdbcUrl() {
+    return container.withDatabaseName(HIVE_DB).getJdbcUrl();
   }
 
   @Override
-  public String getInitialJdbcUrl(String hostAddress) {
-    return "jdbc:postgresql://" + hostAddress + ":5432/postgres";
-  }
-
-  @Override
-  public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout.contains("database system is ready to accept connections") &&
-        pr.stderr.contains("database system is ready to accept connections");
+  public String getInitialJdbcUrl() {
+    return container.withDatabaseName("postgres").getJdbcUrl();
   }
 
   @Override
