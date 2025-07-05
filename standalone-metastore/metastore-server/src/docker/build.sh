@@ -66,7 +66,7 @@ mkdir -p "$CACHE_DIR"
 HADOOP_VERSION=${HADOOP_VERSION:-$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=hadoop.version -DforceStdout)}
 
 HADOOP_FILE_NAME="hadoop-$HADOOP_VERSION.tar.gz"
-HADOOP_URL=${HADOOP_URL:-"https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/$HADOOP_FILE_NAME"}
+HADOOP_URL=${HADOOP_URL:-"https://downloads.apache.org/hadoop/core/hadoop-$HADOOP_VERSION/$HADOOP_FILE_NAME"}
 if [ ! -f "$CACHE_DIR/$HADOOP_FILE_NAME" ]; then
   echo "Downloading Hadoop from $HADOOP_URL..."
   if ! curl --fail -L "$HADOOP_URL" -o "$CACHE_DIR/$HADOOP_FILE_NAME.tmp"; then
@@ -79,7 +79,7 @@ fi
 if [ -n "$HIVE_VERSION" ]; then
   HIVE_FILE_NAME="apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz"
   if [ ! -f "$CACHE_DIR/$HIVE_FILE_NAME" ]; then
-    HIVE_URL=${HIVE_URL:-"https://archive.apache.org/dist/hive/hive-standalone-metastore-server-$HIVE_VERSION/$HIVE_FILE_NAME"}
+    HIVE_URL=${HIVE_URL:-"https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/$HIVE_FILE_NAME"}
     echo "Downloading Hive Metastore from $HIVE_URL..."
     if ! curl --fail -L "$HIVE_URL" -o "$CACHE_DIR/$HIVE_FILE_NAME.tmp"; then
       echo "Failed to download Hive Metastore, exiting..."
@@ -91,7 +91,7 @@ if [ -n "$HIVE_VERSION" ]; then
 else
   HIVE_VERSION=$(mvn -f "$SOURCE_DIR/pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)
   HIVE_TAR="$SOURCE_DIR/metastore-server/target/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz"
-  if  ls "$HIVE_TAR" || mvn -f "$SOURCE_DIR/pom.xml" clean package -DskipTests; then
+  if  ls "$HIVE_TAR" || mvn -f "$SOURCE_DIR/metastore-server/pom.xml" clean package -DskipTests -DallModules; then
     cp "$HIVE_TAR" "$WORK_DIR/"
   else
     echo "Failed to compile Hive Metastore project, exiting..."
