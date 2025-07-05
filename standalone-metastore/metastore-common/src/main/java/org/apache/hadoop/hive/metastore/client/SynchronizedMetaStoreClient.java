@@ -31,12 +31,12 @@ import java.lang.reflect.Proxy;
  * The reflection logic originally comes from {@link org.apache.hadoop.hive.metastore.HiveMetaStoreClient}.
  * This should be used by multi-thread applications unless all the underlying layers are thread-safe.
  */
-public class SynchronizedMetaStoreClientProxy extends BaseMetaStoreClientProxy implements IMetaStoreClient {
-  public static SynchronizedMetaStoreClientProxy newClient(Configuration conf, IMetaStoreClient delegate) {
-    return new SynchronizedMetaStoreClientProxy(conf, delegate);
+public class SynchronizedMetaStoreClient extends MetaStoreClientProxy implements IMetaStoreClient {
+  public static SynchronizedMetaStoreClient newClient(Configuration conf, IMetaStoreClient delegate) {
+    return new SynchronizedMetaStoreClient(conf, delegate);
   }
 
-  public SynchronizedMetaStoreClientProxy(Configuration conf, IMetaStoreClient delegate) {
+  public SynchronizedMetaStoreClient(Configuration conf, IMetaStoreClient delegate) {
     super(newSynchronizedClient(delegate), conf);
   }
 

@@ -53,17 +53,17 @@ import java.util.List;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
-public class HookEnabledMetaStoreClientProxy extends BaseMetaStoreClientProxy {
+public class HookEnabledMetaStoreClient extends MetaStoreClientProxy {
   private final HiveMetaHookLoader hookLoader;
 
-  private static final Logger LOG = LoggerFactory.getLogger(HookEnabledMetaStoreClientProxy.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HookEnabledMetaStoreClient.class);
 
-  public static HookEnabledMetaStoreClientProxy newClient(Configuration conf,
-      @Nullable HiveMetaHookLoader hookLoader, IMetaStoreClient delegate) {
-    return new HookEnabledMetaStoreClientProxy(conf, hookLoader, delegate);
+  public static HookEnabledMetaStoreClient newClient(Configuration conf, @Nullable HiveMetaHookLoader hookLoader,
+      IMetaStoreClient delegate) {
+    return new HookEnabledMetaStoreClient(conf, hookLoader, delegate);
   }
 
-  public HookEnabledMetaStoreClientProxy(Configuration conf, @Nullable HiveMetaHookLoader hookLoader,
+  public HookEnabledMetaStoreClient(Configuration conf, @Nullable HiveMetaHookLoader hookLoader,
       IMetaStoreClient delegate) {
     super(delegate, conf);
 

@@ -28,9 +28,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClientProxy;
-import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClientProxy;
-import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.MetaStoreClientProxy;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.thrift.TException;
 
@@ -46,7 +46,7 @@ import java.util.Map;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMetaStoreClient, AutoCloseable {
+public class HiveMetaStoreClient extends MetaStoreClientProxy implements IMetaStoreClient, AutoCloseable {
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
 
@@ -73,8 +73,8 @@ public class HiveMetaStoreClient extends BaseMetaStoreClientProxy implements IMe
 
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
       ThriftHiveMetaStoreClient thriftClient) {
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClientProxy.newClient(conf, hookLoader, thriftClient);
-    IMetaStoreClient synchronizedClient = SynchronizedMetaStoreClientProxy.newClient(conf, clientWithHook);
+    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, thriftClient);
+    IMetaStoreClient synchronizedClient = SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
     return synchronizedClient;
   }
 

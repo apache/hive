@@ -36,11 +36,11 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
-public abstract class BaseMetaStoreClientProxy extends BaseMetaStoreClient {
+public abstract class MetaStoreClientProxy extends BaseMetaStoreClient {
 
   protected final IMetaStoreClient delegate;
 
-  public BaseMetaStoreClientProxy(IMetaStoreClient delegate, Configuration conf) {
+  public MetaStoreClientProxy(IMetaStoreClient delegate, Configuration conf) {
     super(conf);
     this.delegate = delegate;
   }
