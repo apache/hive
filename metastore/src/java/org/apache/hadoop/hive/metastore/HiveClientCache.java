@@ -52,7 +52,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 /**
  * A thread safe time expired cache for HiveMetaStoreClient
  */
-class HiveClientCache {
+public class HiveClientCache {
   public final static int DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS = 2 * 60;
   public final static int DEFAULT_HIVE_CACHE_INITIAL_CAPACITY = 50;
   public final static int DEFAULT_HIVE_CACHE_MAX_CAPACITY = 50;
@@ -107,7 +107,7 @@ class HiveClientCache {
   /**
    * @param timeout the length of time in seconds after a client is created that it should be automatically removed
    */
-  private HiveClientCache(final int timeout, final int initialCapacity, final int maxCapacity, final boolean enableStats) {
+  protected HiveClientCache(final int timeout, final int initialCapacity, final int maxCapacity, final boolean enableStats) {
     this.timeout = timeout;
     this.enableStats = enableStats;
 
@@ -219,7 +219,7 @@ class HiveClientCache {
   /**
    * Note: This doesn't check if they are being used or not, meant only to be called during shutdown etc.
    */
-  void closeAllClientsQuietly() {
+  public void closeAllClientsQuietly() {
     try {
       ConcurrentMap<HiveClientCacheKey, ICacheableMetaStoreClient> elements = hiveCache.asMap();
       for (ICacheableMetaStoreClient cacheableHiveMetaStoreClient : elements.values()) {
@@ -393,7 +393,7 @@ class HiveClientCache {
   /**
    * Add # of current users on HiveMetaStoreClient, so that the client can be cleaned when no one is using it.
    */
-  static class CacheableHiveMetaStoreClient extends HiveMetaStoreClient implements ICacheableMetaStoreClient {
+  public static class CacheableHiveMetaStoreClient extends HiveMetaStoreClient implements ICacheableMetaStoreClient {
 
     private final AtomicInteger users = new AtomicInteger(0);
     private volatile boolean expiredFromCache = false;
