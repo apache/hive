@@ -226,6 +226,7 @@
     <janino.version>3.1.12</janino.version>
     <datasketches.version>2.0.0</datasketches.version>
     <spotbugs.version>4.8.6</spotbugs.version>
+    <uuid-creator.version>6.1.1</uuid-creator.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
     <aws-java-sdk.version>1.12.720</aws-java-sdk.version>
@@ -300,6 +301,11 @@
         <groupId>com.esotericsoftware.kryo</groupId>
         <artifactId>kryo5</artifactId>
         <version>${kryo.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.f4b6a3</groupId>
+        <artifactId>uuid-creator</artifactId>
+        <version>${uuid-creator.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
