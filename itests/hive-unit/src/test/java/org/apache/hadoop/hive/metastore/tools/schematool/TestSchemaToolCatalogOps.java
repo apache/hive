@@ -505,7 +505,7 @@ public class TestSchemaToolCatalogOps {
         for (String tblName : tblNames) {
           client.dropTable(catName, dbName, tblName);
         }
-        client.dropDatabase(catName, dbName);
+        client.dropDatabase(catName, dbName, true, false, false);
       }
       client.dropCatalog(catName);
     }

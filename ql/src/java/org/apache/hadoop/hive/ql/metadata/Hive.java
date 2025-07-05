@@ -124,6 +124,8 @@ import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
@@ -5994,6 +5996,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveMetaException
    *           if a working client can't be created
    */
+  @SuppressWarnings("squid:S2095")
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
@@ -6006,11 +6009,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
+    IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
+    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
+    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
+    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
+
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
+      return org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
     } else {
-      return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
-          SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+      return RetryingMetaStoreClient.getProxy(
+          conf,
+          new Class[] {Configuration.class, IMetaStoreClient.class},
+          new Object[] {conf, clientWithHook},
+          metaCallTimeMap,
+          org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient.class.getName()
+      );
     }
   }
 
@@ -6113,11 +6126,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
           t = t.getCause();
         }
         throw ex;
-      }
-      String metaStoreUris = conf.getVar(HiveConf.ConfVars.METASTORE_URIS);
-      if (!org.apache.commons.lang3.StringUtils.isEmpty(metaStoreUris)) {
-        // get a synchronized wrapper if the meta store is remote.
-        metaStoreClient = HiveMetaStoreClient.newSynchronizedClient(metaStoreClient);
       }
     }
     return metaStoreClient;

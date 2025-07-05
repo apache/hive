@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -287,8 +288,19 @@ public class TestFilterHooks {
 
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
-    client.compact2(DBNAME1, TAB1, null, CompactionType.MAJOR, new HashMap<>());
-    client.compact2(DBNAME1, TAB2, "name=value1", CompactionType.MINOR, new HashMap<>());
+
+    CompactionRequest tbl1CompactionRequest = new CompactionRequest();
+    tbl1CompactionRequest.setDbname(DBNAME1);
+    tbl1CompactionRequest.setTablename(TAB1);
+    tbl1CompactionRequest.setType(CompactionType.MAJOR);
+    client.compact2(tbl1CompactionRequest);
+
+    CompactionRequest tbl2CompactionRequest = new CompactionRequest();
+    tbl2CompactionRequest.setDbname(DBNAME1);
+    tbl2CompactionRequest.setTablename(TAB2);
+    tbl2CompactionRequest.setType(CompactionType.MINOR);
+    tbl2CompactionRequest.setPartitionname("name=value1");
+    client.compact2(tbl2CompactionRequest);
   }
 
   /**

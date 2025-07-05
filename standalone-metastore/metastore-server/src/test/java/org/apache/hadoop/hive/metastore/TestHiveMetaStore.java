@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -2753,7 +2754,7 @@ public abstract class TestHiveMetaStore {
   }
 
   /**
-   * Tests {@link HiveMetaStoreClient#newSynchronizedClient}.  Does not
+   * Tests {@link SynchronizedMetaStoreClient#newSynchronizedClient}.  Does not
    * actually test multithreading, but does verify that the proxy
    * at least works correctly.
    */
@@ -2761,8 +2762,7 @@ public abstract class TestHiveMetaStore {
   public void testSynchronized() throws Exception {
     int currentNumberOfDbs = client.getAllDatabases().size();
 
-    IMetaStoreClient synchronizedClient =
-      HiveMetaStoreClient.newSynchronizedClient(client);
+    IMetaStoreClient synchronizedClient = SynchronizedMetaStoreClient.newSynchronizedClient(client);
     List<String> databases = synchronizedClient.getAllDatabases();
     assertEquals(currentNumberOfDbs, databases.size());
   }
@@ -3519,7 +3519,7 @@ public abstract class TestHiveMetaStore {
     nonClosingClient.getAllDatabases();
     // Drop connection without calling close. HMS thread deleteContext
     // will trigger cleanup
-    nonClosingClient.getTTransport().close();
+    nonClosingClient.getThriftClient().getTTransport().close();
 
     MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after transport close", () -> {
       Set<JDOPersistenceManager> objectsAfterDroppedConnection = new HashSet<>(getJDOPersistenceManagerCache());
