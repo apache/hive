@@ -29,11 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvException;
+import java.io.BufferedReader;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +39,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
@@ -73,13 +71,17 @@ public class TestGenericUDFToUnixTimestampEvaluateStringString {
   }
 
   @Parameterized.Parameters(name = "('{0}','{1}'), zone={2}, parserLegacy={3}, resolverStyle={4}")
-  public static Collection<String[]> readInputs() throws IOException, CsvException {
-    CSVParser parser = new CSVParserBuilder().withSeparator(';').withIgnoreQuotations(true).build();
-    try (CSVReader reader = new CSVReaderBuilder(new InputStreamReader(
+  public static Collection<String[]> readInputs() throws IOException {
+    List<String[]> result = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(
         TestGenericUDFToUnixTimestampEvaluateStringString.class.getResourceAsStream(
-            "TestGenericUDFToUnixTimestampEvaluateStringString.csv"))).withCSVParser(parser).build()) {
-      return reader.readAll();
+            "TestGenericUDFToUnixTimestampEvaluateStringString.csv")))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        result.add(line.split(";"));
+      }
     }
+    return result;
   }
 
   @Test

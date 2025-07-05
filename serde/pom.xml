@@ -89,11 +89,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.opencsv</groupId>
-      <artifactId>opencsv</artifactId>
-      <version>${opencsv.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.parquet</groupId>
       <artifactId>parquet-hadoop-bundle</artifactId>
     </dependency>
