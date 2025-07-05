@@ -2355,14 +2355,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     client.alter_partitions_req(req);
   }
 
-  @Deprecated
-  @Override
-  public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
-      throws TException {
-    alter_partitions(
-        getDefaultCatalog(conf), dbName, tblName, newParts, new EnvironmentContext(), null, -1);
-  }
-
   @Override
   public void alter_partitions(String catName, String dbName, String tblName,
       List<Partition> newParts,

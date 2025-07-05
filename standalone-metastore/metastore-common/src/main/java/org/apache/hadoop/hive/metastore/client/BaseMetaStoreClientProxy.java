@@ -134,12 +134,7 @@ public abstract class BaseMetaStoreClientProxy extends BaseMetaStoreClient {
   @Override
   public List<Table> getAllMaterializedViewObjectsForRewriting()
       throws MetaException, TException, UnknownDBException {
-    try {
-      return delegate.getAllMaterializedViewObjectsForRewriting();
-    } catch (Exception e) {
-      MetaStoreUtils.throwMetaException(e);
-      return null;
-    }
+    return delegate.getAllMaterializedViewObjectsForRewriting();
   }
 
   @Override
@@ -528,12 +523,6 @@ public abstract class BaseMetaStoreClientProxy extends BaseMetaStoreClient {
       EnvironmentContext environmentContext, String writeIdList)
       throws InvalidOperationException, MetaException, TException {
     delegate.alter_partition(catName, dbName, tblName, newPart, environmentContext, writeIdList);
-  }
-
-  @Override
-  public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
-      throws InvalidOperationException, MetaException, TException {
-    alter_partitions(getDefaultCatalog(conf), dbName, tblName, newParts, null, null, -1);
   }
 
   @Override

@@ -581,6 +581,12 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public final void alter_partitions(String dbName, String tblName, List<Partition> newParts)
+          throws InvalidOperationException, MetaException, TException {
+    alter_partitions(getDefaultCatalog(conf), dbName, tblName, newParts, null, null, -1);
+  }
+
+  @Override
   public final void alter_partitions(String dbName, String tblName, List<Partition> newParts,
       EnvironmentContext environmentContext) throws InvalidOperationException, MetaException, TException {
     alter_partitions(getDefaultCatalog(conf), dbName, tblName, newParts, environmentContext, null, -1);
