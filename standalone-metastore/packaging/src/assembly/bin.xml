@@ -52,7 +52,7 @@
 
   <fileSets>
     <fileSet>
-      <directory>${project.basedir}</directory>
+      <directory>${project.parent.basedir}</directory>
       <excludes>
         <exclude>target/**</exclude>
         <exclude>.classpath</exclude>
@@ -71,7 +71,7 @@
 
     <fileSet>
       <fileMode>755</fileMode>
-      <directory>${project.basedir}/src/main/scripts</directory>
+      <directory>${project.parent.basedir}/metastore-server/src/main/scripts</directory>
       <includes>
         <include>base</include>
         <include>schematool</include>
@@ -83,7 +83,7 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.basedir}/src/main/sql</directory>
+      <directory>${project.parent.basedir}/metastore-server/src/main/sql</directory>
       <includes>
         <include>**/*</include>
       </includes>
@@ -91,7 +91,7 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.basedir}/src/gen/thrift/gen-php</directory>
+      <directory>${project.parent.basedir}/metastore-common/src/gen/thrift/gen-php</directory>
       <includes>
         <include>**/*</include>
       </includes>
@@ -99,7 +99,7 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.basedir}/src/gen/thrift/gen-py/hive_metastore</directory>
+      <directory>${project.parent.basedir}/metastore-common/src/gen/thrift/gen-py/hive_metastore</directory>
       <fileMode>755</fileMode>
        <includes>
         <include>**/*</include>
@@ -108,7 +108,7 @@
     </fileSet>
 
     <fileSet>
-      <directory>${project.basedir}/src/main/resources/</directory>
+      <directory>${project.parent.basedir}/metastore-server/src/main/resources/</directory>
       <fileMode>644</fileMode>
       <includes>
         <include>metastore-site.xml</include>
@@ -116,11 +116,28 @@
       </includes>
       <outputDirectory>conf</outputDirectory>
     </fileSet>
+
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources</directory>
+      <includes>
+        <include>/LICENSE</include>
+        <include>/licenses.xml</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources/licenses</directory>
+      <includes>
+        <include>/*</include>
+      </includes>
+      <outputDirectory>licenses</outputDirectory>
+    </fileSet>
+
   </fileSets>
 
   <files>
     <file>
-      <source>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</source>
+      <source>${project.parent.basedir}/metastore-server/target/generated-sources/conf/metastore-site.xml.template</source>
       <outputDirectory>conf</outputDirectory>
     </file>
   </files>

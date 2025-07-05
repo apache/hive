@@ -51,7 +51,7 @@ The `build.sh` provides ways to build the image against specified version of the
 
 ##### Build from source
 ```shell
-mvn clean install -DskipTests -DallModules -Pdocker
+mvn clean package -DskipTests -Pdocker
 ```
 ##### Build with specified version
 There are some arguments to specify the component version:
@@ -66,7 +66,7 @@ For example, the following command uses Hive 4.0.0 and Hadoop `hadoop.version` t
 ```shell
 ./build.sh -hive 4.0.0
 ```
-If the command does not specify the Hive version, it will use the local `apache-hive-standalone-metastore-${project.version}-bin.tar.gz`(will trigger a build if it doesn't exist),
+If the command does not specify the Hive version, it will use the local `hive-standalone-metastore-${project.version}-bin.tar.gz`(will trigger a build if it doesn't exist),
 together with Hadoop 3.1.0 to build the image,
 ```shell
 ./build.sh -hadoop 3.1.0
