@@ -70,6 +70,7 @@ import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkList
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkOpenTxns;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkPartitionManagement;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkRenameTable;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkStatisticsManagement;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkTableCreate;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkUpdatePartitionsStat;
 import static org.apache.hadoop.hive.metastore.tools.Util.getServerUri;
@@ -303,7 +304,9 @@ public class BenchmarkTool implements Runnable {
         .add("openTxn",
             () -> benchmarkOpenTxns(bench, bData, 1))
         .add("PartitionManagementTask",
-            () -> benchmarkPartitionManagement(bench, bData, 1));
+            () -> benchmarkPartitionManagement(bench, bData, 1))
+        .add("StatisticsManagementTask",
+            () -> benchmarkStatisticsManagement(bench, bData, 1));
 
     for (int howMany: instances) {
       suite.add("listTables" + '.' + howMany,
@@ -345,7 +348,9 @@ public class BenchmarkTool implements Runnable {
           .add("openTxns" + '.' + howMany,
               () -> benchmarkOpenTxns(bench, bData, howMany))
           .add("PartitionManagementTask" + "." + howMany,
-              () -> benchmarkPartitionManagement(bench, bData, howMany));
+              () -> benchmarkPartitionManagement(bench, bData, howMany))
+          .add("PartitionStatisticsTask" + "." + howMany,
+              () -> benchmarkStatisticsManagement(bench, bData, howMany));
     }
 
     List<String> toRun = suite.listMatching(matches, exclude);
