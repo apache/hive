@@ -6103,7 +6103,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (tmpPart.getSd() != null && tmpPart.getSd().getCols() != null && tmpPart.getSd().getCols().isEmpty()) {
           tmpPart.getSd().setCols(table.getSd().getCols());
         }
-        firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, null, tmpPart, this));
+        // old part values are same as new partition values here
+        firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, tmpPart.getValues(), tmpPart, this));
       }
       oldParts = alterHandler.alterPartitions(getMS(), wh, catName, db_name, tbl_name, new_parts,
           environmentContext, writeIdList, writeId, this);
