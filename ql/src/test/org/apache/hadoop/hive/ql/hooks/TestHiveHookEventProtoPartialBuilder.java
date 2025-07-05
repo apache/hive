@@ -21,13 +21,22 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
+import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.json.JSONObject;
 import org.junit.Test;
 
@@ -49,6 +58,15 @@ public class TestHiveHookEventProtoPartialBuilder {
     assertArrayEquals(event1.toByteArray(), event2.toByteArray());
   }
 
+  @Test
+  public void testOtherInfoQueryPlan() {
+    String stageIdRearrange = HiveConf.ConfVars.HIVE_STAGE_ID_REARRANGE.defaultStrVal;
+    HiveHookEvents.HiveHookEventProto event = buildIn2Steps(mock(JSONObject.class), getWork(), stageIdRearrange);
+    // Without HIVE-29012, OTHERINFO will have CONF initially i.e size is 1.
+    // With HIVE-29012, OTHERINFO should have QUERY as well i.e size is 2.
+    assert(event.getOtherInfo(1).hasKey());
+  }
+
   private HiveHookEvents.HiveHookEventProto buildWithOtherInfo(JSONObject json) {
     return HiveHookEvents.HiveHookEventProto
             .newBuilder()
@@ -66,6 +84,10 @@ public class TestHiveHookEventProtoPartialBuilder {
   }
 
   private HiveHookEvents.HiveHookEventProto buildIn2Steps(JSONObject json) {
+    return buildIn2Steps(json, null, null);
+  }
+
+  private HiveHookEvents.HiveHookEventProto buildIn2Steps(JSONObject json, ExplainWork work, String stageIdRearrange) {
     HiveHookEvents.HiveHookEventProto.Builder builder = HiveHookEvents.HiveHookEventProto
             .newBuilder()
             .setEventType(HiveProtoLoggingHook.EventType.QUERY_SUBMITTED.name())
@@ -77,6 +99,24 @@ public class TestHiveHookEventProtoPartialBuilder {
             .setExecutionMode(TEZ);
     Map<HiveProtoLoggingHook.OtherInfoType, JSONObject> otherInfo = new HashMap<>();
     otherInfo.put(HiveProtoLoggingHook.OtherInfoType.CONF, json);
-    return new HiveHookEventProtoPartialBuilder(builder, null, otherInfo, null, null).build();
+    return new HiveHookEventProtoPartialBuilder(builder, work, otherInfo, null, stageIdRearrange).build();
+  }
+
+  private ExplainWork getWork() {
+    CompilationOpContext cCtx = new CompilationOpContext();
+    TableScanOperator scanOp = new TableScanOperator(cCtx);
+
+    FetchWork taskWork = new FetchWork(mock(Path.class), mock(TableDesc.class));
+    taskWork.setSource(scanOp);
+
+    // Create a FetchTask with the FetchWork
+    FetchTask task = new FetchTask();
+    task.setWork(taskWork);
+
+    ExplainWork work = new ExplainWork();
+    work.setConfig(new ExplainConfiguration());
+    work.setRootTasks(List.of(task));
+
+    return work;
   }
 }
