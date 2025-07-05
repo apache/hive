@@ -151,6 +151,8 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <immutables.version>2.9.2</immutables.version>
+    <httpcomponents5.core.version>5.3</httpcomponents5.core.version>
+    <httpcomponents5.client.version>5.3</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.16.1</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
@@ -607,6 +609,21 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
         <version>${httpcomponents.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.client5</groupId>
+        <artifactId>httpclient5</artifactId>
+        <version>${httpcomponents5.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5</artifactId>
+        <version>${httpcomponents5.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents.core5</groupId>
+        <artifactId>httpcore5-h2</artifactId>
+        <version>${httpcomponents5.core.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.velocity</groupId>
