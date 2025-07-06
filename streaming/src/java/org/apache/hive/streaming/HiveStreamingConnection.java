@@ -690,7 +690,7 @@ public class HiveStreamingConnection implements StreamingConnection {
         getHeatbeatMSC().close();
         try {
           // Close the HMS that is used for addWriteNotificationLog
-          Hive.get(conf).getSynchronizedMSC().close();
+          Hive.get(conf).getMSC().close();
         } catch (Exception e) {
           LOG.warn("Error while closing HMS connection", e);
         }
