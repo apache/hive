@@ -22,7 +22,7 @@
 <Configuration status="info" strict="true" name="datanucleus">
 
   <Properties>
-    <Property name="dnFilename">datanucleus.log</Property>
+    <Property name="dnFilename">target/datanucleus.log</Property>
   </Properties>
 
   <Appenders>
