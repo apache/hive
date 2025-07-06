@@ -478,13 +478,7 @@ public class ReplChangeManager {
     public CMClearer(long secRetain, Configuration conf) {
       this.encryptionZones = encryptionZoneToCmrootMapping;
       this.secRetain = secRetain;
-      this.conf = conf;
-    }
-
-    CMClearer(Map<String, String> encryptionZones, long secRetain, Configuration conf) {
-      this.encryptionZones = encryptionZones;
-      this.secRetain = secRetain;
-      this.conf = conf;
+      this.conf = new Configuration(conf);
     }
 
     @Override

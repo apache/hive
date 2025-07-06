@@ -34,7 +34,7 @@ public class Metrics2Reporter implements CodahaleReporter {
   private final HadoopMetrics2Reporter reporter;
 
   public Metrics2Reporter(MetricRegistry registry, Configuration conf) {
-    this.conf = conf;
+    this.conf = new Configuration(conf);
     String applicationName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_HADOOP2_COMPONENT_NAME);
 
     reporter = HadoopMetrics2Reporter.forRegistry(registry)

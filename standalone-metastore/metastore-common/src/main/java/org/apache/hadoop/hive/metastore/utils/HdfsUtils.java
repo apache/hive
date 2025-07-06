@@ -243,8 +243,12 @@ public class HdfsUtils {
     private final FileStatus fileStatus;
     private final AclStatus aclStatus;
 
-    public HadoopFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException {
+    public HadoopFileStatus(FileStatus fileStatus, AclStatus aclStatus) {
+      this.fileStatus = fileStatus;
+      this.aclStatus = aclStatus;
+    }
 
+    public static HadoopFileStatus createInstance(Configuration conf, FileSystem fs, Path file) throws IOException {
       FileStatus fileStatus = fs.getFileStatus(file);
       AclStatus aclStatus = null;
       if (Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true")) {
@@ -253,15 +257,19 @@ public class HdfsUtils {
           aclStatus = fs.getAclStatus(file);
         } catch (Exception e) {
           LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
-              "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
           LOG.debug("The details are: " + e, e);
         }
-      }this.fileStatus = fileStatus;
-      this.aclStatus = aclStatus;
+      }
+      return new HadoopFileStatus(fileStatus, aclStatus);
     }
 
     public FileStatus getFileStatus() {
-      return fileStatus;
+      try {
+        return FileUtils.createNewFileStatus(fileStatus);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     List<AclEntry> getAclEntries() {

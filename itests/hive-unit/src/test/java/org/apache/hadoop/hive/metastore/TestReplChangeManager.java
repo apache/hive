@@ -104,7 +104,7 @@ public class TestReplChangeManager {
     permCmroot = "hdfs://" + permDdfs.getNameNode().getHostAndPort() + "/cmroot";
     permhiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, permCmroot);
     permhiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    permWarehouse = new Warehouse(permhiveConf);
+    permWarehouse = Warehouse.create(permhiveConf);
   }
 
   private static void internalSetUp() throws Exception {
@@ -116,7 +116,7 @@ public class TestReplChangeManager {
     cmroot = "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/cmroot";
     hiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmroot);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    warehouse = new Warehouse(hiveConf);
+    warehouse = Warehouse.create(hiveConf);
     fs = new Path(cmroot).getFileSystem(hiveConf);
   }
 

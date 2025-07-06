@@ -30,4 +30,163 @@
     <Match>
         <Class name="~org.apache.hadoop.hive.metastore.grpc.*" />
     </Match>
-  </FindBugsFilter>
+    <Match>
+        <Class name="org.apache.hadoop.hive.common.ZKDeRegisterWatcher"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.common.metrics.common.MetricsFactory"/>
+        <Method name="getInstance"/>
+        <Bug pattern="MS_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter"/>
+        <Method name="build"/>
+        <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.HiveMetaStoreClient"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.LockComponentBuilder"/>
+        <Method name="build"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.LockRequestBuilder"/>
+        <Method name="build"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.ReplChangeManager"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.ReplChangeManager$FileInfo"/>
+        <Method name="getSrcFs"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.ReplChangeManager$FileInfo"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.RetryingMetaStoreClient"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.TableIterable"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.ldap.Query"/>
+        <Method name="getControls"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.ldap.Query"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.ldap.SearchResultHandler"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.partition.spec.CompositePartitionSpecProxy$Iterator"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.partition.spec.PartitionListComposingSpecProxy$Iterator"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy$SimplePartitionWrapperIterator"/>
+        <Method name="getCurrent"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy$SimplePartitionWrapperIterator"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecWithSharedSDProxy"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.properties.Digester"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.properties.PropertyMap"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.properties.PropertySchema"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge$Server"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge$Server"/>
+        <Method name="setSecretManager"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.security.TFilterTransport"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.security.TUGIAssumingTransport"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.utils.FileUtils$RemoteIteratorWithFilter"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.utils.HdfsUtils$HadoopFileStatus"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.utils.TableFetcher$Builder"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="org.apache.hadoop.hive.metastore.conf.MetastoreConf"/>
+        <Method name="&lt;init&gt;" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Class name="org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter"/>
+    </Match>
+</FindBugsFilter>
