@@ -3471,14 +3471,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     WriteNotificationLogBatchRequest rqst = new WriteNotificationLogBatchRequest(tbl.getCatName(), tbl.getDbName(),
             tbl.getTableName(), requestList);
     try {
-      get(conf).getMSC().addWriteNotificationLogInBatch(rqst);
+      Hive.get(conf).getMSC().addWriteNotificationLogInBatch(rqst);
     } catch (TApplicationException e) {
       int type = e.getType();
       if (type == TApplicationException.UNKNOWN_METHOD || type == TApplicationException.WRONG_METHOD_NAME) {
         // For older HMS, if the batch API is not supported, fall back to older API.
         LOG.info("addWriteNotificationLogInBatch failed with ", e);
         for (WriteNotificationLogRequest request : requestList) {
-          get(conf).getMSC().addWriteNotificationLog(request);
+          Hive.get(conf).getMSC().addWriteNotificationLog(request);
         }
         supported = false;
       } else {
@@ -3914,7 +3914,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     rqst.setPartitionVals(partitionVals);
 
     if (requestList == null) {
-      get(conf).getMSC().addWriteNotificationLog(rqst);
+      Hive.get(conf).getMSC().addWriteNotificationLog(rqst);
     } else {
       requestList.add(rqst);
     }
