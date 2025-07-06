@@ -587,7 +587,8 @@ public class HCatClientHMSImpl extends HCatClient {
     ExprNodeGenericFuncDesc partitionExpression = new ExpressionBuilder(table, partitionSpec).build();
     Pair<Integer, byte[]> serializedPartitionExpression = Pair.of(partitionSpec.size(),
             SerializationUtilities.serializeObjectWithTypeInformation(partitionExpression));
-    hmsClient.dropPartitions(table.getDbName(), table.getTableName(), Arrays.asList(serializedPartitionExpression),
+    hmsClient.dropPartitions(table.getCatName(), table.getDbName(), table.getTableName(),
+        Arrays.asList(serializedPartitionExpression),
         deleteData && !isExternal(table),  // Delete data?
         ifExists,                          // Fail if table doesn't exist?
         false);                            // Need results back?
