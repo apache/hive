@@ -383,7 +383,7 @@ public class OpTraitsRulesProcFactory {
     // For bucket columns
     // If the projected columns are compatible with the bucketing requirement, put them in the bucket cols
     // else, add empty list.
-    public void putConvertedColNamesForBucket(
+    private void putConvertedColNamesForBucket(
         List<List<String>> parentColNamesList, List<CustomBucketFunction> parentBucketFunctions, SelectOperator selOp,
         List<List<String>> newBucketColNamesList, List<CustomBucketFunction> newBucketFunctions) {
       Preconditions.checkState(parentColNamesList.size() == parentBucketFunctions.size());
