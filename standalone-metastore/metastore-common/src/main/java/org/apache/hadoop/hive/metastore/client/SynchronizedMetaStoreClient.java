@@ -50,7 +50,7 @@ public class SynchronizedMetaStoreClient extends MetaStoreClientProxy implements
    */
   public static IMetaStoreClient newSynchronizedClient(IMetaStoreClient client) {
     return (IMetaStoreClient) Proxy.newProxyInstance(
-        ThriftHiveMetaStoreClient.class.getClassLoader(),
+        SynchronizedMetaStoreClient.class.getClassLoader(),
         new Class[]{IMetaStoreClient.class},
         new SynchronizedHandler(client));
   }
