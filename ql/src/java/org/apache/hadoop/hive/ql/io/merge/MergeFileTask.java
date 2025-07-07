@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.merge;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +48,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -118,7 +118,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
 
       String jobName = null;
       if (noName && this.getQueryPlan() != null) {
-        int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
+        int maxlen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
         jobName = Utilities.abbreviate(this.getQueryPlan().getQueryStr(),
             maxlen - 6);
       }
@@ -137,30 +137,30 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       Utilities.setMapWork(job, work, ctx.getMRTmpPath(), true);
 
       // remove pwd from conf file so that job tracker doesn't show this logs
-      String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTORE_PWD);
+      String pwd = MetastoreConf.getVar(job, MetastoreConf.ConfVars.PWD);
       if (pwd != null) {
-        HiveConf.setVar(job, HiveConf.ConfVars.METASTORE_PWD, "HIVE");
+        MetastoreConf.setVar(job, MetastoreConf.ConfVars.PWD, "HIVE");
       }
 
       // submit the job
-      JobClient jc = new JobClient(job);
+      try (JobClient jc = new JobClient(job)) {
+        // There is no need for @MergeFileTask to add extra jars.
 
-      // There is no need for Mergefile Task to add extra jars.
+        // Make this client wait if job tracker is not behaving well.
+        Throttle.checkJobTracker(job, LOG);
 
-      // make this client wait if job trcker is not behaving well.
-      Throttle.checkJobTracker(job, LOG);
-
-      // Finally SUBMIT the JOB!
-      rj = jc.submitJob(job);
-      this.jobID = rj.getJobID();
-      returnVal = jobExecHelper.progress(rj, jc, ctx);
+        // Finally SUBMIT the JOB!
+        rj = jc.submitJob(job);
+        this.jobID = rj.getID().toString();
+        returnVal = jobExecHelper.progress(rj, jc, ctx);
+      }
       success = (returnVal == 0);
 
     } catch (Exception e) {
       setException(e);
       String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
       if (rj != null) {
-        mesg = "Ended Job = " + rj.getJobID() + mesg;
+        mesg = "Ended Job = " + rj.getID() + mesg;
       } else {
         mesg = "Job Submission failed" + mesg;
       }
@@ -233,7 +233,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
   }
 
   @Override
-  public void logPlanProgress(SessionState ss) throws IOException {
+  public void logPlanProgress(SessionState ss) {
     // no op
   }
 }
