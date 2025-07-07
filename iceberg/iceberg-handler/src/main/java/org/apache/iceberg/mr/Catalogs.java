@@ -71,6 +71,8 @@ public final class Catalogs {
   public static final String SNAPSHOT_REF = "snapshot_ref";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
+  private static final String REST_CATALOG_TYPE = "rest";
+
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
               InputFormatConfig.CATALOG_NAME);
@@ -255,7 +257,8 @@ public final class Catalogs {
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName) {
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
+    String keyPrefix = REST_CATALOG_TYPE.equals(catalogType) ?
+        InputFormatConfig.CATALOG_REST_CONFIG_PREFIX : InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
     conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
         catalogProperties.putIfAbsent(
@@ -267,7 +270,9 @@ public final class Catalogs {
                 config.getValue());
       }
     });
-
+    if (REST_CATALOG_TYPE.equals(catalogType)) {
+      catalogProperties.put("type", "rest");
+    }
     return catalogProperties;
   }
 
@@ -290,7 +295,8 @@ public final class Catalogs {
         return catalogType;
       }
     } else {
-      String catalogType = conf.get(CatalogUtil.ICEBERG_CATALOG_TYPE);
+      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey(
+          "", CatalogUtil.ICEBERG_CATALOG_TYPE));
       if (catalogType != null && catalogType.equals(LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {

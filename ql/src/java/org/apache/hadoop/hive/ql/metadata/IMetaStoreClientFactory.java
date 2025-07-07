@@ -34,13 +34,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class IMetaStoreClientFactory {
 
-  public static final String REST_METASTORE_TYPE = "rest";
+  public static final String CONNECTOR_NAME = "iceberg";
 
   public static IMetaStoreClient create(HiveConf hiveConf, boolean allowEmbedded,
       ConcurrentHashMap<String, Long> metaCallTimeMap, HiveMetaHookLoader hookLoader)  throws MetaException {
 
-        if (REST_METASTORE_TYPE.equals(hiveConf.get("metastore.type", "hms"))) {
-          return getHiveIcebergRESTCatalog(hiveConf, hookLoader);
+        if (CONNECTOR_NAME.equals(hiveConf.get("connector.name", "hms"))) {
+          return getHiveIcebergRESTCatalogClient(hiveConf, hookLoader);
         }
         IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(hiveConf, allowEmbedded);
         IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(hiveConf, thriftClient);
@@ -59,7 +59,7 @@ public class IMetaStoreClientFactory {
           );
         }
   }
-  private static IMetaStoreClient getHiveIcebergRESTCatalog(HiveConf conf, HiveMetaHookLoader hookLoader) throws
+  private static IMetaStoreClient getHiveIcebergRESTCatalogClient(HiveConf conf, HiveMetaHookLoader hookLoader) throws
       MetaException {
     try {
       Class<? extends IMetaStoreClient> handlerClass =

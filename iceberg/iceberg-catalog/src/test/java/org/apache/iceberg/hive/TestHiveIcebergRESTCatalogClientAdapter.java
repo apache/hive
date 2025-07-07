@@ -62,9 +62,8 @@ public class TestHiveIcebergRESTCatalogClientAdapter {
   @BeforeAll
   public static void before() throws MetaException {
     Configuration configuration = new Configuration();
-    configuration.set("iceberg.catalog", "rest");
-    configuration.set("iceberg.catalog.rest.type", "rest");
-    configuration.set("iceberg.catalog.rest.uri", "http://localhost");
+    configuration.set("iceberg.catalog.type", "rest");
+    configuration.set("iceberg.rest-catalog.uri", "http://localhost");
     catalogUtilMockedStatic = Mockito.mockStatic(CatalogUtil.class);
     restCatalog = Mockito.mock(RESTCatalog.class);
     catalogUtilMockedStatic.when(() -> CatalogUtil.buildIcebergCatalog(any(), any(), any())).thenReturn(restCatalog);

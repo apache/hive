@@ -61,7 +61,6 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.catalog.Namespace;
-import org.apache.iceberg.catalog.SessionCatalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -77,14 +76,15 @@ public class HiveIcebergRESTCatalogClientAdapter implements IMetaStoreClient {
   public static final String NAMESPACE_SEPARATOR = ".";
   public static final String NAME = "name";
   public static final String LOCATION = "location";
-  public static final String CATALOG_NAME = "iceberg.catalog";
+  public static final String ICEBERG_CATALOG_TYPE = "iceberg.catalog.default_iceberg.type";
   public static final String DB_OWNER = "owner";
   public static final String DB_OWNER_TYPE = "ownerType";
   public static final String DEFAULT_INPUT_FORMAT_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergInputFormat";
   public static final String DEFAULT_OUTPUT_FORMAT_CLASS
       = "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat";
   public static final String DEFAULT_SERDE_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergSerDe";
-  public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
+  public static final String CATALOG_CONFIG_PREFIX = "iceberg.rest-catalog.";
+  public static final String WAREHOUSE = "warehouse";
   private final Configuration conf;
   private RESTCatalog restCatalog;
   private final HiveMetaHookLoader hookLoader;
@@ -99,31 +99,31 @@ public class HiveIcebergRESTCatalogClientAdapter implements IMetaStoreClient {
   }
 
   @Override
-  public void reconnect() throws MetaException {
-    SessionCatalog.SessionContext context = SessionCatalog.SessionContext.createEmpty();
-    String catalogName = conf.get(CATALOG_NAME);
-    Map<String, String> properties = getCatalogPropertiesFromConf(conf, catalogName);
-    restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catalogName, properties, conf);
+  public void reconnect()  {
+    Map<String, String> properties = getCatalogPropertiesFromConf(conf);
+    String catalogName = properties.get(WAREHOUSE);
+    restCatalog = new RESTCatalog();
     restCatalog.initialize(catalogName, properties);
   }
 
   @Override
   public void close() {
     try {
-      restCatalog.close();
+      if (restCatalog != null) {
+        restCatalog.close();
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private static Map<String, String> getCatalogPropertiesFromConf(
-      Configuration conf, String catalogName) {
+      Configuration conf) {
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = CATALOG_CONFIG_PREFIX + catalogName;
     conf.forEach(config -> {
-      if (config.getKey().startsWith(keyPrefix)) {
+      if (config.getKey().startsWith(CATALOG_CONFIG_PREFIX)) {
         catalogProperties.put(
-            config.getKey().substring(keyPrefix.length() + 1),
+            config.getKey().substring(CATALOG_CONFIG_PREFIX.length()),
             config.getValue());
       }
     });
@@ -273,7 +273,7 @@ public class HiveIcebergRESTCatalogClientAdapter implements IMetaStoreClient {
     TableMetadata metadata = ((BaseTable) icebergTable).operations().current();
     HMSTablePropertyHelper.updateHmsTableForIcebergTable(metadata.metadataFileLocation(), hiveTable,
         metadata, null, true, maxHiveTablePropertySize, null);
-    hiveTable.getParameters().put(CATALOG_NAME, CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
+    hiveTable.getParameters().put(ICEBERG_CATALOG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
     hiveTable.setTableName(getTableName(icebergTable));
     hiveTable.setDbName(getDbName(icebergTable));
     StorageDescriptor storageDescriptor = new StorageDescriptor();
