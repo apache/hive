@@ -815,8 +815,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // If the table is not managed by Hive catalog then the location should be set
-    if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
+    // If the table is not managed by Hive or Hadoop catalog, then the location should be set
+    if (!Catalogs.hiveCatalog(conf, catalogProperties) && !Catalogs.hadoopCatalog(conf, catalogProperties)) {
       Preconditions.checkArgument(hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null,
           "Table location not set");
     }
