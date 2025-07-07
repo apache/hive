@@ -70,6 +70,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -431,7 +432,7 @@ public class TestRCFile {
     String usage = "Usage: RCFile " + "[-count N]" + " file";
     if (args.length == 0) {
       System.err.println(usage);
-      System.exit(-1);
+      ExitUtil.terminate(-1);
     }
 
     try {
@@ -448,7 +449,7 @@ public class TestRCFile {
 
       if (file == null) {
         System.err.println(usage);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
 
       LOG.info("count = " + count);

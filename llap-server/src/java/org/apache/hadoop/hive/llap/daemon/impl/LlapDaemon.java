@@ -654,7 +654,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       if (llapDaemon != null) {
         llapDaemon.shutdown();
       }
-      System.exit(-1);
+      ExitUtil.terminate(-1);
     }
   }
 

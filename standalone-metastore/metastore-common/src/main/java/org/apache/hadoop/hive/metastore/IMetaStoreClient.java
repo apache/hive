@@ -575,21 +575,9 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId, boolean deleteData) throws TException;
-  /**
-   * Truncate the table/partitions in the DEFAULT database.
-   * @param catName catalog name
-   * @param dbName
-   *          The db to which the table to be truncate belongs to
-   * @param tableName
-   *          The table to truncate
-   * @param partNames
-   *          List of partitions to truncate. NULL will truncate the whole table/all partitions
-   * @throws MetaException Failure in the RDBMS or storage
-   * @throws TException Thrift transport exception
-   */
-  @Deprecated
-  void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
-      throws MetaException, TException;
+
+  void truncateTable(String catName, String dbName, String tableName, String ref, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData, EnvironmentContext context) throws TException;
 
   /**
    * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
@@ -702,21 +690,6 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   @Deprecated
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
-
-  /**
-   * Get a table object.
-   * @deprecated use getTable(GetTableRequest getTableRequest)
-   * @param catName catalog the table is in.
-   * @param dbName database the table is in.
-   * @param tableName table name.
-   * @param validWriteIdList applicable snapshot
-   * @return table object.
-   * @throws MetaException Something went wrong, usually in the RDBMS.
-   * @throws TException general thrift error.
-   */
-  @Deprecated
-  Table getTable(String catName, String dbName, String tableName,
-                        String validWriteIdList) throws TException;
 
   /**
    * Get a table object.
@@ -1464,6 +1437,14 @@ public interface IMetaStoreClient extends AutoCloseable {
       throws TException;
 
   /**
+   * Get list of partitions matching specified serialized expression
+   * @param req PartitionsByExprRequest object
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   * @throws TException thrift transport error or error executing the filter.
+   */
+  boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException;
+
+  /**
    * List partitions, fetching the authorization information along with the partitions.
    * @param dbName database name
    * @param tableName table name
@@ -1521,23 +1502,6 @@ public interface IMetaStoreClient extends AutoCloseable {
   @Deprecated
   List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitions
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
-   */
-  @Deprecated
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names)
-      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1871,45 +1835,6 @@ public interface IMetaStoreClient extends AutoCloseable {
   }
 
   void dropDatabase(DropDatabaseRequest req) throws TException;
-  
-  /**
-   * Drop a database.  Equivalent to
-   * {@link #dropDatabase(String, String, boolean, boolean, boolean)} with cascade = false.
-   * @param catName Catalog name.  This can be null, in which case
-   *                {@link Warehouse#DEFAULT_CATALOG_NAME} will be assumed.
-   * @param dbName database name.
-   * @param deleteData whether to drop the underlying HDFS directory.
-   * @param ignoreUnknownDb whether to ignore an attempt to drop a non-existant database
-   * @throws NoSuchObjectException No database of this name exists in the specified catalog and
-   * ignoreUnknownDb is false.
-   * @throws InvalidOperationException The database contains objects and cascade is false.
-   * @throws MetaException something went wrong, usually either in the RDBMS or storage.
-   * @throws TException general thrift error.
-   */
-  @Deprecated
-  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-    dropDatabase(catName, dbName, deleteData, ignoreUnknownDb, false);
-  }
-
-  /**
-   * Drop a database.  Equivalent to
-   * {@link #dropDatabase(String, String, boolean, boolean, boolean)} with deleteData =
-   * true, ignoreUnknownDb = false, cascade = false.
-   * @param catName Catalog name.  This can be null, in which case
-   *                {@link Warehouse#DEFAULT_CATALOG_NAME} will be assumed.
-   * @param dbName database name.
-   * @throws NoSuchObjectException No database of this name exists in the specified catalog and
-   * ignoreUnknownDb is false.
-   * @throws InvalidOperationException The database contains objects and cascade is false.
-   * @throws MetaException something went wrong, usually either in the RDBMS or storage.
-   * @throws TException general thrift error.
-   */
-  default void dropDatabase(String catName, String dbName)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-    dropDatabase(catName, dbName, true, false, false);
-  }
-
 
   /**
    * Alter a database.
@@ -2102,30 +2027,6 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Drop partitions based on an expression.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param partExprs I don't understand this fully, so can't completely explain it.  The second
-   *                  half of the object pair is an expression used to determine which partitions
-   *                  to drop.  The first half has something to do with archive level, but I
-   *                  don't understand what.  I'm also not sure what happens if you pass multiple
-   *                  expressions.
-   * @param deleteData whether to delete the data as well as the metadata.
-   * @param ifExists if true, it is not an error if no partitions match the expression(s).
-   * @param needResults if true, the list of deleted partitions will be returned, if not, null
-   *                    will be returned.
-   * @return list of deleted partitions.
-   * @throws NoSuchObjectException No partition matches the expression(s), and ifExists was false.
-   * @throws MetaException error access the RDBMS or storage.
-   * @throws TException Thrift transport error.
-   * @deprecated Use {@link #dropPartitions(String, String, String, List, boolean, boolean, boolean)}
-   */
-  @Deprecated
-  List<Partition> dropPartitions(String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
-      boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Drop partitions based on an expression.
    * @param catName catalog name.
    * @param dbName database name.
    * @param tblName table name.
@@ -2187,6 +2088,10 @@ public interface IMetaStoreClient extends AutoCloseable {
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException;
 
+  List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+      throws NoSuchObjectException, MetaException, TException;
+
   /**
    * Drop a partition.
    * @param db_name database name.
@@ -2236,28 +2141,6 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   void alter_partition(String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, MetaException, TException;
-
-  /**
-   * updates a partition to new partition
-   * @param catName catalog name
-   * @param dbName
-   *          database of the old partition
-   * @param tblName
-   *          table name of the old partition
-   * @param newPart
-   *          new partition
-   * @throws InvalidOperationException
-   *           if the old partition does not exist
-   * @throws MetaException
-   *           if error in updating metadata
-   * @throws TException
-   *           if error in communicating with metastore server
-   */
-  @Deprecated
-  default void alter_partition(String catName, String dbName, String tblName, Partition newPart)
-      throws InvalidOperationException, MetaException, TException {
-    alter_partition(catName, dbName, tblName, newPart, null);
-  }
 
   /**
    * updates a partition to new partition
@@ -2350,29 +2233,6 @@ public interface IMetaStoreClient extends AutoCloseable {
                         EnvironmentContext environmentContext,
                         String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException;
-
-  /**
-   * updates a list of partitions
-   * @param catName catalog name.
-   * @param dbName
-   *          database of the old partition
-   * @param tblName
-   *          table name of the old partition
-   * @param newParts
-   *          list of partitions
-   * @throws InvalidOperationException
-   *           if the old partition does not exist
-   * @throws MetaException
-   *           if error in updating metadata
-   * @throws TException
-   *           if error in communicating with metastore server
-   */
-  @Deprecated
-  default void alter_partitions(String catName, String dbName, String tblName,
-                                List<Partition> newParts)
-      throws InvalidOperationException, MetaException, TException {
-    alter_partitions(catName, dbName, tblName, newParts, new EnvironmentContext(),  null, -1);
-  }
 
   /**
    * updates a list of partitions
@@ -2677,6 +2537,7 @@ public interface IMetaStoreClient extends AutoCloseable {
       List<String> partNames, List<String> colNames,
       String engine, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
+
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
    * all columns in a partition.
@@ -3496,14 +3357,6 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Show all currently held and waiting locks.
-   * @return List of currently held and waiting locks.
-   * @throws TException
-   */
-  @Deprecated
-  ShowLocksResponse showLocks() throws TException;
-
-  /**
-   * Show all currently held and waiting locks.
    * @param showLocksRequest SHOW LOCK request
    * @return List of currently held and waiting locks.
    * @throws TException
@@ -3545,51 +3398,6 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   HeartbeatTxnRangeResponse heartbeatTxnRange(long min, long max) throws TException;
-
-  /**
-   * Send a request to compact a table or partition.  This will not block until the compaction is
-   * complete.  It will instead put a request on the queue for that table or partition to be
-   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
-   * refer to valid objects.  It is assumed this has already been done by the caller.
-   * @param dbname Name of the database the table is in.  If null, this will be assumed to be
-   *               'default'.
-   * @param tableName Name of the table to be compacted.  This cannot be null.  If partitionName
-   *                  is null, this must be a non-partitioned table.
-   * @param partitionName Name of the partition to be compacted
-   * @param type Whether this is a major or minor compaction.
-   * @throws TException
-   * @deprecated use {@link #compact2(CompactionRequest)}
-   */
-  @Deprecated
-  void compact(String dbname, String tableName, String partitionName,  CompactionType type)
-      throws TException;
-
-  /**
-   * @deprecated use {@link #compact2(CompactionRequest)}
-   */
-  @Deprecated
-  void compact(String dbname, String tableName, String partitionName, CompactionType type,
-               Map<String, String> tblproperties) throws TException;
-  /**
-   * Send a request to compact a table or partition.  This will not block until the compaction is
-   * complete.  It will instead put a request on the queue for that table or partition to be
-   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
-   * refer to valid objects.  It is assumed this has already been done by the caller.  At most one
-   * Compaction can be scheduled/running for any given resource at a time.
-   * @param dbname Name of the database the table is in.  If null, this will be assumed to be
-   *               'default'.
-   * @param tableName Name of the table to be compacted.  This cannot be null.  If partitionName
-   *                  is null, this must be a non-partitioned table.
-   * @param partitionName Name of the partition to be compacted
-   * @param type Whether this is a major or minor compaction.
-   * @param tblproperties the list of tblproperties to override for this compact. Can be null.
-   * @return id of newly scheduled compaction or id/state of one which is already scheduled/running
-   * @throws TException
-   * @deprecated use {@link #compact2(CompactionRequest)}
-   */
-  @Deprecated
-  CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
-                              Map<String, String> tblproperties) throws TException;
 
   /**
    * Send a request to compact a table or partition.  This will not block until the compaction is
@@ -3643,12 +3451,6 @@ public interface IMetaStoreClient extends AutoCloseable {
   GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(GetLatestCommittedCompactionInfoRequest request)
     throws TException;
 
-  /**
-   * @deprecated in Hive 1.3.0/2.1.0 - will be removed in 2 releases
-   */
-  @Deprecated
-  void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName, List<String> partNames)
-    throws TException;
   /**
    * Send a list of partitions to the metastore to indicate which partitions were loaded
    * dynamically.
@@ -3777,7 +3579,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
-    IncompatibleMetastoreException(String message) {
+    public IncompatibleMetastoreException(String message) {
       super(message);
     }
   }
@@ -4311,18 +4113,6 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Get the next compaction job to do.
-   * @param workerId id of the worker requesting.
-   * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
-   * @throws MetaException
-   * @throws TException
-   * @deprecated Use
-   *     {@link IMetaStoreClient#findNextCompact(org.apache.hadoop.hive.metastore.api.FindNextCompactRequest)} instead
-   */
-  @Deprecated
-  OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException;
-
-  /**
-   * Get the next compaction job to do.
    * @param rqst Information about the worker id and version
    * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
    * @throws MetaException
@@ -4501,5 +4291,5 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
     throw new UnsupportedOperationException();
-  };
+  }
 }

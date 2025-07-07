@@ -18,12 +18,9 @@
 
 package org.apache.hive.common.util;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +45,7 @@ public class ReflectionUtil {
   //       not caching that many constructors.
   // Note that weakKeys causes "==" to be used for key compare; this will only work
   // for classes in the same classloader. Should be ok in this case.
-  private static final Cache<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE =
+  private static Cache<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE =
       CacheBuilder.newBuilder().expireAfterAccess(15, TimeUnit.MINUTES)
                                .concurrencyLevel(64)
                                .weakKeys().weakValues().build();
@@ -171,18 +168,6 @@ public class ReflectionUtil {
       fieldToChange.set(object, value);
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException("Cannot set field %s in object %s".formatted(field, object.getClass()));
-    }
-  }
-
-  public static void setStaticFinalFieldsModifiable(Field field) {
-    try {
-      field.setAccessible(true);
-      VarHandle modifiersHandle = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup())
-              .findVarHandle(Field.class, "modifiers", int.class);
-      int modifiers = field.getModifiers();
-      modifiersHandle.set(field, modifiers & ~Modifier.FINAL);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException("Cannot make static final field %s modifiable".formatted(field));
     }
   }
 

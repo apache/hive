@@ -97,6 +97,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -624,7 +625,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private static void printUsage() {
     System.err.println("ExecDriver -plan <plan-file> [-jobconffile <job conf file>]"
         + "[-files <file1>[,<file2>] ...]");
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   /**
@@ -789,7 +790,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     if (ret != 0) {
-      System.exit(ret);
+      ExitUtil.terminate(ret);
     }
   }
 

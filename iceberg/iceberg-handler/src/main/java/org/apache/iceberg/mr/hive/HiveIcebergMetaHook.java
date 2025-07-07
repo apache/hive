@@ -42,7 +42,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
@@ -53,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -1215,7 +1215,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     } catch (IOException e) {
       throw new MetaException(String.format("Error while fetching the partitions due to: %s", e));
     }
-    context.putToProperties(HiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
+    context.putToProperties(ThriftHiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
   }
 
   private static void validatePartitionSpec(SearchArgument sarg, PartitionSpec partitionSpec) {

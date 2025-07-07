@@ -501,7 +501,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       if (this.finalPaths[writerOffset] == null) {
         if (conf.isDirectInsert()) {
-          this.outPathsCommitted = Arrays.copyOf(outPathsCommitted, writerOffset + 1);
+          if (outPathsCommitted.length <= writerOffset) {
+            this.outPathsCommitted = Arrays.copyOf(outPathsCommitted, writerOffset + 1);
+          }
           this.finalPaths[writerOffset] = buildTmpPath();
           this.outPaths[writerOffset] = buildTmpPath();
         } else {

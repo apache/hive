@@ -30,6 +30,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,12 +167,12 @@ public class LlapStatusServiceCommandLine {
     } catch (Exception e) {
       LOGGER.error("Parsing the command line arguments failed", e);
       printUsage();
-      System.exit(ExitCode.INCORRECT_USAGE.getCode());
+      ExitUtil.terminate(ExitCode.INCORRECT_USAGE.getCode());
     }
 
     if (cl.isHelp()) {
       printUsage();
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
 
     return cl;

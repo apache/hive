@@ -124,6 +124,6 @@ public class WriteText extends Configured implements Tool {
 
   public static void main(String[] args) throws Exception {
     int exitCode = ToolRunner.run(new WriteText(), args);
-    System.exit(exitCode);
+    ExitUtil.terminate(exitCode);
   }
 }

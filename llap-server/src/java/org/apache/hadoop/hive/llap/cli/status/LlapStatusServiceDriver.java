@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
@@ -122,7 +123,7 @@ public class LlapStatusServiceDriver {
       statusServiceDriver = new LlapStatusServiceDriver();
     } catch (Throwable t) {
       logError(t);
-      System.exit(ExitCode.INTERNAL_ERROR.getCode());
+      ExitUtil.terminate(ExitCode.INTERNAL_ERROR.getCode());
     }
     return statusServiceDriver;
   }
@@ -653,7 +654,7 @@ public class LlapStatusServiceDriver {
     } catch (Exception e) {
       // ignore
     }
-    System.exit(ret.getCode());
+    ExitUtil.terminate(ret.getCode());
   }
 
   private static long maybeLogSummary(Clock clock, long lastSummaryLogTime, LlapStatusServiceDriver statusServiceDriver,

@@ -211,4 +211,17 @@ public class TestHivePreparedStatement {
     assertEquals("select * from table where value='\\'anyValue\\' or 1=1'",
         argument.getValue().getStatement());
   }
+
+  @Test
+  public void testColumnRegex() throws Exception {
+    String sql = "select `(col)?.` from x where a=?";
+    HivePreparedStatement ps = new HivePreparedStatement(connection, client, sessHandle, sql);
+    ps.setString(1, "asd");
+    ps.execute();
+
+    ArgumentCaptor<TExecuteStatementReq> argument =
+            ArgumentCaptor.forClass(TExecuteStatementReq.class);
+    verify(client).ExecuteStatement(argument.capture());
+    assertEquals("select `(col)?.` from x where a='asd'", argument.getValue().getStatement());
+  }
 }

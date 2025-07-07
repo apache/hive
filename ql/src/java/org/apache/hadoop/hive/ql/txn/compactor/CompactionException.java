@@ -91,4 +91,10 @@ public class CompactionException extends RuntimeException {
   }
 
   public String getRemoteErrorMsg() { return remoteErrorMsg; }
+
+  public CompactionException(Throwable throwable, String message, Object... args) {
+    super(String.format(message, args), throwable);
+    canonicalErrorMsg = ErrorMsg.GENERIC_ERROR;
+    remoteErrorMsg = null;
+  }
 }

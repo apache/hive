@@ -123,6 +123,8 @@ public abstract class TxnCommandsBaseForTests {
     hiveConf.set("tez.grouping.max-size", "10");
     hiveConf.set("tez.grouping.min-size", "1");
     databaseProduct = determineDatabaseProduct(DatabaseProduct.DERBY_NAME, hiveConf);
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
+        "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer");
   }
 
   void setUpInternal() throws Exception {
