@@ -129,10 +129,6 @@ public class MetastoreConf {
       keyToVars.put(var.hiveName, var);
     }
     Configuration.addDeprecations(new Configuration.DeprecationDelta[] {
-        new Configuration.DeprecationDelta("metastore.compactor.history.retention.attempted",
-            ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE.varname),
-        new Configuration.DeprecationDelta("hive.compactor.history.retention.attempted",
-            ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE.varname),
         new Configuration.DeprecationDelta("datanucleus.plugin.pluginRegistryBundleCheck",
             ConfVars.DATANUCLEUS_PLUGIN_REGISTRY_BUNDLE_CHECK.varname)});
   }
