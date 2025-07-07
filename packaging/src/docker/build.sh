@@ -85,7 +85,7 @@ if [ ! -f "$CACHE_DIR/$HADOOP_FILE_NAME" ]; then
 fi
 
 TEZ_FILE_NAME="apache-tez-$TEZ_VERSION-bin.tar.gz"
-TEZ_URL=${TEZ_URL:-"https://archive.apache.org/dist/tez/$TEZ_VERSION/$TEZ_FILE_NAME"}
+TEZ_URL=${TEZ_URL:-"https://downloads.apache.org/tez/$TEZ_VERSION/$TEZ_FILE_NAME"}
 if [ ! -f "$CACHE_DIR/$TEZ_FILE_NAME" ]; then
   echo "Downloading Tez from $TEZ_URL..."
   if ! curl --fail -L "$TEZ_URL" -o "$CACHE_DIR/$TEZ_FILE_NAME.tmp"; then
@@ -98,7 +98,7 @@ fi
 if [ -n "$HIVE_VERSION" ]; then
   HIVE_FILE_NAME="apache-hive-$HIVE_VERSION-bin.tar.gz"
   if [ ! -f "$CACHE_DIR/$HIVE_FILE_NAME" ]; then
-    HIVE_URL=${HIVE_URL:-"https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/$HIVE_FILE_NAME"}
+    HIVE_URL=${HIVE_URL:-"https://downloads.apache.org/hive/hive-$HIVE_VERSION/$HIVE_FILE_NAME"}
     echo "Downloading Hive from $HIVE_URL..."
     if ! curl --fail -L "$HIVE_URL" -o "$CACHE_DIR/$HIVE_FILE_NAME.tmp"; then
       echo "Failed to download Hive, exiting..."

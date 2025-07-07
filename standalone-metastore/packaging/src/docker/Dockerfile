@@ -18,23 +18,23 @@ ARG BUILD_ENV
 
 FROM ubuntu as unarchive
 ONBUILD COPY hadoop-*.tar.gz /opt
-ONBUILD COPY apache-hive-standalone-metastore-server-*-bin.tar.gz /opt
+ONBUILD COPY hive-standalone-metastore-*-bin.tar.gz /opt
 
 FROM ubuntu as archive
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
 ONBUILD RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
- wget https://archive.apache.org/dist/hive/hive-standalone-metastore-$HIVE_VERSION/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz
+ wget https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz
 ONBUILD RUN mv hadoop-$HADOOP_VERSION.tar.gz /opt && \
- mv apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz /opt
+ mv hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz /opt
 
 FROM ubuntu as buildarchive
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
 ONBUILD RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
-ONBUILD COPY ./apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz /opt
+ONBUILD COPY ./hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz /opt
 ONBUILD RUN mv hadoop-$HADOOP_VERSION.tar.gz /opt
 
 FROM ${BUILD_ENV} as env
@@ -44,7 +44,7 @@ ARG HIVE_VERSION
 
 RUN tar -xzvf /opt/hadoop-$HADOOP_VERSION.tar.gz -C /opt/ && \
     rm -rf /opt/hadoop-$HADOOP_VERSION/share/doc/* && \
-    tar -xzvf /opt/apache-hive-standalone-metastore-server-$HIVE_VERSION-bin.tar.gz -C /opt/
+    tar -xzvf /opt/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz -C /opt/
 
 FROM eclipse-temurin:17.0.12_7-jre-ubi9-minimal AS run
 

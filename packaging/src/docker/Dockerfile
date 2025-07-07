@@ -26,9 +26,9 @@ ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
-ONBUILD RUN wget https://archive.apache.org/dist/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
+ONBUILD RUN wget https://downloads.apache.org/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
  wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
- wget https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz
+ wget https://downloads.apache.org/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz
 ONBUILD RUN mv /apache-tez-$TEZ_VERSION-bin.tar.gz /opt && \
  mv hadoop-$HADOOP_VERSION.tar.gz /opt && \
  mv apache-hive-$HIVE_VERSION-bin.tar.gz /opt
@@ -38,7 +38,7 @@ ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
-ONBUILD RUN wget https://archive.apache.org/dist/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
+ONBUILD RUN wget https://downloads.apache.org/tez/$TEZ_VERSION/apache-tez-$TEZ_VERSION-bin.tar.gz && \
  wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
 ONBUILD COPY ./apache-hive-$HIVE_VERSION-bin.tar.gz /opt
 ONBUILD RUN mv /apache-tez-$TEZ_VERSION-bin.tar.gz /opt && \
