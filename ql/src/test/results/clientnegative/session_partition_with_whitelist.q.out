@@ -1,0 +1,20 @@
+metaconf:metastore.partition.name.whitelist.pattern=
+PREHOOK: query: create table t1 (id int) partitioned by (pcol string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (id int) partitioned by (pcol string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: alter table t1 add partition (pCol='2025-06-09')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 add partition (pCol='2025-06-09')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1@pcol=2025-06-09
+PREHOOK: query: alter table t1 add partition (pCol='2025-06-19')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@t1
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Partition value '2025-06-19' contains a character not matched by whitelist pattern '[^9]*'.  (configure with metastore.partition.name.whitelist.pattern))
