@@ -18,6 +18,7 @@
 
 package org.apache.hive.common.util;
 
+import com.google.common.base.Splitter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -37,9 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
-import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
@@ -1080,20 +1078,6 @@ public class HiveStringUtils {
     return false;
   }
 
-  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
-      Pattern partitionValidationPattern) {
-    if (partitionValidationPattern == null) {
-      return null;
-    }
-  
-    for (String partVal : partVals) {
-      if (!partitionValidationPattern.matcher(partVal).matches()) {
-        return partVal;
-      }
-    }
-  
-    return null;
-  }
 
   /**
    * Strip comments from a sql statement, tracking when the statement contains a string literal.

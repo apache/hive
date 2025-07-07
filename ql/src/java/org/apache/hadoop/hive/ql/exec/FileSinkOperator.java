@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorage
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,20 +39,17 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiFunction;
-
-import com.google.common.collect.Lists;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
@@ -92,14 +90,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyShim;
 import org.apache.hadoop.hive.shims.HadoopShims.StoragePolicyValue;
 import org.apache.hadoop.hive.shims.ShimLoader;
-
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
-
-import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1126,11 +1121,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
 
         String invalidPartitionVal;
-        if((invalidPartitionVal = HiveStringUtils.getPartitionValWithInvalidCharacter(dpVals, dpCtx.getWhiteListPattern()))!=null) {
-          throw new HiveFatalException("Partition value '" + invalidPartitionVal +
-              "' contains a character not matched by whitelist pattern '" +
-              dpCtx.getWhiteListPattern().toString() + "'.  " + "(configure with " +
-              HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+        if ((invalidPartitionVal =
+                MetaStoreServerUtils.getPartitionValWithInvalidCharacter(
+                    dpVals, dpCtx.getWhiteListPattern()))
+            != null) {
+          throw new HiveFatalException(
+              "Partition value '%s' contains a character not matched by whitelist pattern '%s'. (configure with %s)"
+                  .formatted(
+                      invalidPartitionVal,
+                      dpCtx.getWhiteListPattern().toString(),
+                      ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname));
         }
         fpaths = getDynOutPaths(dpVals, lbDirName);
         dynamicPartitionSpecs.add(fpaths.dpDirForCounters);
