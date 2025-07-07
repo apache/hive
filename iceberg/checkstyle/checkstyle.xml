@@ -135,6 +135,7 @@
                 org.apache.iceberg.SortDirection.*,
                 org.apache.iceberg.TableProperties.*,
                 org.apache.iceberg.SnapshotSummary.*,
+                org.apache.iceberg.mr.InputFormatConfig.*,
                 org.apache.iceberg.types.Type.*,
                 org.apache.iceberg.types.Types.NestedField.*,
                 org.apache.parquet.schema.OriginalType.*,
