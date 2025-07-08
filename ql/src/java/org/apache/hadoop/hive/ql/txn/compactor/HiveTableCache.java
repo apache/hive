@@ -39,7 +39,7 @@ public class HiveTableCache {
         try {
           return callable.call();
         } catch (Exception e) {
-          throw new RuntimeException(e);
+          throw new CompactionException(e);
         }
       });
     }

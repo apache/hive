@@ -198,7 +198,7 @@ Table Parameters:
 	compactor.threshold.min.input.files	1                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"value\",\"required\":false,\"type\":\"string\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"source\":\"COMPACTION\",\"added-data-files\":\"4\",\"deleted-data-files\":\"3\",\"added-records\":\"6\",\"deleted-records\":\"6\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"added-data-files\":\"4\",\"deleted-data-files\":\"3\",\"added-records\":\"6\",\"deleted-records\":\"6\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"7\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"key_bucket_8\",\"transform\":\"bucket[8]\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   

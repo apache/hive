@@ -112,11 +112,6 @@ public class IcebergTableUtil {
   public static final int SPEC_IDX = 1;
   public static final int PART_IDX = 0;
   private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
-  public static final String SNAPSHOT_SOURCE_PROP = "source";
-
-  public enum SnapshotSource {
-    COMPACTION
-  }
 
   private IcebergTableUtil() {
 

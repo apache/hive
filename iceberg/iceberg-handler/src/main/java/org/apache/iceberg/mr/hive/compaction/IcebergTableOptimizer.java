@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.apache.hadoop.hive.ql.txn.compactor.TableOptimizer;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.apache.iceberg.ContentFile;
+import org.apache.iceberg.DataOperations;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.io.FileIO;
@@ -214,7 +216,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
       List<Future<Set<String>>> futures = relevantSnapshots.stream()
           .map(snapshot -> executor.submit(() -> {
             FileIO io = icebergTable.io();
-            List<ContentFile> affectedFiles = FluentIterable.<ContentFile>concat(
+            List<ContentFile<?>> affectedFiles = FluentIterable.<ContentFile<?>>concat(
                     snapshot.addedDataFiles(io),
                     snapshot.removedDataFiles(io),
                     snapshot.addedDeleteFiles(io),
@@ -231,7 +233,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
       }
 
       return IcebergTableUtil.convertNameToMetastorePartition(hiveTable, modifiedPartitions);
-    } catch (Exception e) {
+    } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeMetaException(e, "Failed to find modified partitions in parallel");
     }
   }
@@ -257,6 +259,6 @@ public class IcebergTableOptimizer extends TableOptimizer {
     return StreamSupport.stream(icebergTable.snapshots().spliterator(), false)
         .filter(s -> pastSnapshotTimeMil == null || s.timestampMillis() > pastSnapshotTimeMil)
         .filter(s -> s.timestampMillis() <= currentSnapshot.timestampMillis())
-        .filter(s -> !s.summary().containsValue(IcebergTableUtil.SnapshotSource.COMPACTION.name()));
+        .filter(s -> !s.operation().equals(DataOperations.REPLACE));
   }
 }

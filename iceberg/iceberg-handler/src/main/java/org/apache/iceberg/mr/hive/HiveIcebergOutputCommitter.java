@@ -642,7 +642,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (snapshotId != null) {
       rewriteFiles.validateFromSnapshot(snapshotId);
     }
-    rewriteFiles.set(IcebergTableUtil.SNAPSHOT_SOURCE_PROP, IcebergTableUtil.SnapshotSource.COMPACTION.name());
     rewriteFiles.commit();
     LOG.info("Compaction commit took {} ms for table: {} partition: {} with {} file(s)",
         System.currentTimeMillis() - startTime, table, StringUtils.defaultString(partitionPath, "N/A"),
