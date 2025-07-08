@@ -912,9 +912,6 @@ public class HiveConf extends Configuration {
     HADOOP_NUM_REDUCERS("mapreduce.job.reduces", -1, "", true),
 
     // Metastore stuff. Be sure to update HiveConf.metaVars when you add something here!
-    METASTORE_CLIENT_FACTORY_CLASS("hive.metastore.client.factory.class",
-        "org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClientFactory",
-        "The name of the factory class that produces objects implementing the IMetaStoreClient interface."),
     METASTORE_DB_TYPE("hive.metastore.db.type", "DERBY", new StringSet("DERBY", "ORACLE", "MYSQL", "MSSQL", "POSTGRES"),
         "Type of database used by the metastore. Information schema & JDBCStorageHandler depend on it."),
     /**
