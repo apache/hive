@@ -21,12 +21,14 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,8 +51,10 @@ import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -58,6 +62,8 @@ import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.util.Sets;
+import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
@@ -106,6 +112,11 @@ public class IcebergTableUtil {
   public static final int SPEC_IDX = 1;
   public static final int PART_IDX = 0;
   private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
+  public static final String SNAPSHOT_SOURCE_PROP = "source";
+
+  public enum SnapshotSource {
+    COMPACTION
+  }
 
   private IcebergTableUtil() {
 
@@ -576,6 +587,31 @@ public class IcebergTableUtil {
         table.currentSnapshot().allManifests(table.io()).parallelStream()
             .map(ManifestFile::partitionSpecId)
             .anyMatch(id -> id != table.spec().specId());
+  }
+
+  public static <T extends ContentFile> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
+      Boolean latestSpecOnly) {
+    Set<String> partitions = Sets.newHashSet();
+    int tableSpecId = icebergTable.spec().specId();
+    for (T file : files) {
+      if (latestSpecOnly == null || Boolean.TRUE.equals(latestSpecOnly) && file.specId() == tableSpecId ||
+          Boolean.FALSE.equals(latestSpecOnly) && file.specId() != tableSpecId) {
+        String partName = icebergTable.specs().get(file.specId()).partitionToPath(file.partition());
+        partitions.add(partName);
+      }
+    }
+    return partitions;
+  }
+
+  public static List<Partition> convertNameToMetastorePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Collection<String> partNames) {
+    List<Partition> partitions = Lists.newArrayList();
+    for (String partName : partNames) {
+      Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+      Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+      partitions.add(new DummyPartition(hmsTable, partName, partSpecMap));
+    }
+    return partitions;
   }
 
   public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern,

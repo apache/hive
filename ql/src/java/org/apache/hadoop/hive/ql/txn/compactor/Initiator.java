@@ -213,15 +213,20 @@ public class Initiator extends MetaStoreCompactorThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
+    initExecutorService();
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
-            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
     optimizers = Arrays.stream(MetastoreConf.getTrimmedStringsVar(conf,
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS))
         .map(this::instantiateTableOptimizer).toList();
+  }
+  
+  @VisibleForTesting
+  protected void initExecutorService() {
+    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+        COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
   }
   
   private TableOptimizer instantiateTableOptimizer(String className) {
