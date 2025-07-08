@@ -737,8 +737,8 @@
         <configuration>
           <api>JDO</api>
           <verbose>false</verbose>
-          <log4jConfiguration>${basedir}/src/main/resources/datanucleus-log4j.properties
-          </log4jConfiguration>
+          <log4j2Configuration>${basedir}/src/main/resources/datanucleus-log4j2.xml
+          </log4j2Configuration>
           <metadataIncludes>**/*.jdo</metadataIncludes>
           <fork>false</fork>
         </configuration>
