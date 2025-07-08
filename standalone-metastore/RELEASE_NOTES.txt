@@ -1,0 +1,111 @@
+Release Notes - Hive Metastore - Version 4.1.0
+
+** Improvement
+    *[HIVE-29062] - Add standalone module for packaging the Metastore
+    *[HIVE-29042] - Performance degradation for add columns cascade after enabling directSQL
+    *[HIVE-29038] - Make catalog servlet parameters generic
+    *[HIVE-29019] - Test Hive Iceberg REST Catalog with the compatibility kit
+    *[HIVE-29018] - Build Iceberg REST Catalog with compiler version = 17
+    *[HIVE-29016] - Disable caching on the Iceberg REST Catalog
+    *[HIVE-28998] - Support Iceberg REST Catalog without authentication
+    *[HIVE-28995] - Add a space to debug log in HMSHandler#endFunction
+    *[HIVE-28990] - Collecting the non-native summary can be slow to raise the timeout
+    *[HIVE-28961] - Respect partition limit in alter_table_req for partitioned tables
+    *[HIVE-28957] - Enhance TestHiveMetaStoreAuthorizer to Validate HiveMetaStoreAuthorizer Internals
+    *[HIVE-28956] - Implement DirectSql for alter table add column cascade comand
+    *[HIVE-28953] - Remove HiveMetaStoreClientPreCatalog
+    *[HIVE-28930] - Implement a metastore service that expires iceberg table snapshots periodically
+    *[HIVE-28923] - Clean up dummy RawStores
+    *[HIVE-28921] - Add API and implementation for retrieving database objects with properties
+    *[HIVE-28841] - Rename hive.metastore.catalog.* to hive.metastore.iceberg.catalog.*
+    *[HIVE-28900] - Make the objectstore-secondary connection pool size configurable
+    *[HIVE-28898] - Include table ownership details in getTableMetas() for RangerHiveAuthorizer
+    *[HIVE-28372] - No need to update partitions stats when renaming table
+    *[HIVE-28371] - Optimize add partitions authorization in HiveMetaStore
+    *[HIVE-28352] - Schematool fails to upgradeSchema on dbType=hive
+    *[HIVE-28244] - Add SBOM for storage-api and standalone-metastore modules
+    *[HIVE-28205] - Implement direct sql for get_partitions_ps_with_auth api
+    *[HIVE-28200] - Improve get_partitions_by_filter/expr when partition limit enabled
+    *[HIVE-28154] - Throw friendly exception if the table does not support partition transform
+    *[HIVE-28100] - Fix Some Typos in CachedStore.
+    *[HIVE-28092] - Clean up invalid exception thrown in MetaStoreClient
+    *[HIVE-28091] - Remove invalid long datatype in ColumnStatsUpdateTask
+    *[HIVE-28062] - Optimize get_partitions_by_names in direct sql
+    *[HIVE-28677] - Implement direct sql for delete table/partition column stats
+    *[HIVE-28668] - Hive should send fewer partition events for truncate table operation
+    *[HIVE-28662] - Enable the dynamic leader election for HMS
+    *[HIVE-28604] - Allow HMS to configure the DataNucleus level 1 cache
+    *[HIVE-28568] - Enhance HMS meta summary for Iceberg tables
+    *[HIVE-28500] - ObjectStore's alterSchemaVersion should rollback TXN in a finally if it's open
+    *[HIVE-28460] - Determine the database type once the PersistenceManagerFactory created
+    *[HIVE-26537] - Deprecate older APIs in the HMS
+    *[HIVE-27746] - Hive Metastore should send single AlterPartitionEvent with list of partitions
+    *[HIVE-27725] - Remove redundant columns in TAB_COL_STATS and PART_COL_STATS
+
+
+** Bug
+    *[HIVE-29034] - ALTER PARTITION CHANGE COLUMN fails with Oracle backed Metastore
+    *[HIVE-29030] - Alter partition change column cannot use the direct sql
+    *[HIVE-29022] - Schematool fails while initializing hive schema
+    *[HIVE-29017] - Restore configuration metastore.initial.metadata.count.enabled to prevent metastore metrics startup queries
+    *[HIVE-29010] - Correct assignment of metastore object count metrics
+    *[HIVE-28973] - Docker: Metastore service fails to start unless --verbose is explicitly set
+    *[HIVE-28972] - HMS performace degradation post HIVE-28909 for alter query
+    *[HIVE-28971] - DirectSql for msck repair is failing because of wrong casting
+    *[HIVE-28993] - After datanucleus upgrade to 6.x as part of JDK 17 support, setting DATANUCLEUS_PLUGIN_REGISTRY_BUNDLE_CHECK does not work
+    *[HIVE-28913] - A delegation token must be issued for the proxy user while reconnecting to Metastore
+    *[HIVE-28912] - CAT_NAME of COMMIT_COMPACTION_EVENT is always NULL
+    *[HIVE-28909] - After DataNucleus upgrade to 6.0.8 for JDK17 compatibility, there are unnecessary update queries executing by DN
+    *[HIVE-28903] - Skip deleting archived path when drop partition/table
+    *[HIVE-28902] - Fix unknown column PARTITION_NAME in aggrStatsUseDB
+    *[HIVE-28857] - Fix logging for invalid partition path
+    *[HIVE-28840] - HMS Iceberg Catalog doesn't respect ICEBERG_CATALOG_SERVLET_AUTH
+    *[HIVE-28839] - Connection starvation in HMS if datanucleus value generation fails
+    *[HIVE-28824] - Metastore should also respect the max thrift message size
+    *[HIVE-28803] - WriteID is being set unintentionally from -1 to 0 during AlterPartitions operation
+    *[HIVE-28800] - Improve LongColumnStatsAggregator by preventing the overestimation of NDV
+    *[HIVE-28797] - Hive Delegation Token Renewal fails for any kerberos principal user other than hive user
+    *[HIVE-28795] - Missing double quotes in direct alter partitions
+    *[HIVE-28794] - Remove junit version from hive-metastore-tools/pom.xml to inherit version from parent pom
+    *[HIVE-28788] - ObjectStore failed to commit the transaction could lead to connection starvation
+    *[HIVE-28749] - The default hikaricp.leakDetectionThreshold is not valid
+    *[HIVE-28669] - Deadlock found when TxnStoreMutex trying to acquireLock
+    *[HIVE-28545] - Remove global lock on HMSHandler.getMSForConf which is prone to deadlock
+    *[HIVE-28487] - Outdated MetastoreSchemaTool class reference in schemaTool.sh
+    *[HIVE-28456] - ObjectStore updatePartitionColumnStatisticsInBatch can cause connection starvation
+    *[HIVE-28443] - Add ifExists field to dropCatalogRequest
+    *[HIVE-28442] - Inconsistency in schema on tables TAB_COL_STATS, PART_COL_STATS, KEY_CONSTRAINTS and SCHEDULED_QUERIES on SYSDB after upgrade from 3.1.0 to 4.1.0
+    *[HIVE-28338] - Client connection count is not correct in HiveMetaStore#close
+    *[HIVE-28291] - Fix Partition spec is incorrect in getPartitionsByFilter RPC
+    *[HIVE-28271] - DirectSql fails for AlterPartitions
+    *[HIVE-28270] - Fix missing partition paths bug on drop_database
+    *[HIVE-28260] - CreateTableEvent wrongly skips authorizing DFS_URI for managed table
+    *[HIVE-28239] - Fix bug on HMSHandler#checkLimitNumberOfPartitions
+    *[HIVE-28121] - Use direct SQL for transactional altering table parameter
+    *[HIVE-28042] - DigestMD5 token expired or does not exist error while opening a new connection to HMS
+    *[HIVE-27879] - Improve the test coverage on package.jdo
+    *[HIVE-21614] - Derby/Oracle does not support CLOB comparisons
+
+
+** New Feature
+    *[HIVE-28286] - Add filtering support for get_table_metas API in Hive metastore
+    *[HIVE-28146] - Add positive event type filter to the HMS notification fetch API
+    *[HIVE-28059] - Iceberg REST Catalog
+    *[HIVE-27829] - New command to display current connections on HS2 and HMS instances
+
+
+** Task
+    *[HIVE-28655] - Implement HMS Related Drop Stats Changes
+    *[HIVE-28204] - Remove some HMS obsolete scripts
+    *[HIVE-28144] - Remove overly verbose debug messages from MetastoreDirectSqlUtils
+
+
+** Test
+    *[HIVE-28949] - TestDbNotificationListener#createDatabase fails intermittently due to different createTime
+    *[HIVE-28929] - TestEmbeddedHiveMetaStore#testAlterTable fails while trying to create managed directory
+
+
+** Sub-task
+    *[HIVE-28350] - Drop remote database succeeds but fails while deleting data under
+    *[HIVE-28349] - SHOW TABLES with invalid connector, giving 0 results, instead of failing
+    *[HIVE-27275] - Provide docker image for HMS
