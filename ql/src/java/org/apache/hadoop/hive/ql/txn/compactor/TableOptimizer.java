@@ -216,4 +216,7 @@ public abstract class TableOptimizer {
   protected Database resolveDatabase(CompactionInfo ci) throws MetaException, NoSuchObjectException {
     return CompactorUtil.resolveDatabase(conf, ci.dbname);
   }
+
+  protected void invalidateCache() {
+  }
 }
