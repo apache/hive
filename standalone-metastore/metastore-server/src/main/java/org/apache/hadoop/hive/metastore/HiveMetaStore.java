@@ -673,7 +673,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
-    // If we start an Iceberg REST catalog, we need to listen to events to maintain its consistency.
     isMetaStoreRemote = true;
     if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
