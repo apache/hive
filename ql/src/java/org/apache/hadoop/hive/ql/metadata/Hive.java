@@ -124,8 +124,6 @@ import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
-import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
-import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
@@ -137,7 +135,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -252,7 +249,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.apache.thrift.TApplicationException;
@@ -5990,7 +5986,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws MetaException
    *           if a working client can't be created
    */
-  @SuppressWarnings("squid:S2095")
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
@@ -6003,43 +5998,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    IMetaStoreClient baseMetaStoreClient = createMetaStoreClientFactory(conf)
-        .createMetaStoreClient(conf, allowEmbedded);
-
-    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, baseMetaStoreClient);
-    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
-
-    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
-    } else {
-      return RetryingMetaStoreClient.getProxy(
-          conf,
-          new Class[] {Configuration.class, IMetaStoreClient.class},
-          new Object[] {conf, clientWithHook},
-          metaCallTimeMap,
-          SynchronizedMetaStoreClient.class.getName()
-      );
-    }
-  }
-
-  private static HiveMetaStoreClientFactory createMetaStoreClientFactory(HiveConf conf) throws
-          MetaException {
-    String metaStoreClientFactoryClassName = MetastoreConf.getVar(conf,
-        MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS);
-
-    try {
-      Class<? extends HiveMetaStoreClientFactory> factoryClass =
-              conf.getClassByName(metaStoreClientFactoryClassName)
-                      .asSubclass(HiveMetaStoreClientFactory.class);
-      return ReflectionUtils.newInstance(factoryClass, conf);
-    } catch (Exception e) {
-      String errorMessage = String.format(
-              "Unable to instantiate a metastore client factory %s due to: %s",
-              metaStoreClientFactoryClassName, e);
-      LOG.error(errorMessage, e);
-      throw new MetaException(errorMessage);
-    }
+    return HiveMetaStoreClientFactory.newClient(conf, hookLoader, allowEmbedded, metaCallTimeMap);
   }
 
   @Nullable
