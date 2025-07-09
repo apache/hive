@@ -21,27 +21,17 @@ package org.apache.hadoop.hive.ql.metadata;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 
 /**
- * Abstract factory that defines an interface for other factories that produce concrete
- * MetaStoreClient objects.
+ * Default MetaStoreClientFactory for Hive which produces ThriftHiveMetaStoreClient objects.
  *
  */
-public interface HiveMetaStoreClientFactory {
+public final class ThriftHiveMetaStoreClientFactory implements HiveMetaStoreClientFactory {
 
-  /**
-   * A method for producing IMetaStoreClient objects.
-   *
-   * The implementation returned by this method must throw a MetaException if allowEmbedded = true
-   * and it does not support embedded mode.
-   *
-   * @param conf
-   *          Hive Configuration.
-   * @param allowEmbedded
-   *          Flag indicating the implementation must run in-process, e.g. for unit testing or
-   *          "fast path".
-   * @return IMetaStoreClient An implementation of IMetaStoreClient.
-   * @throws MetaException if this method fails to create IMetaStoreClient
-   */
-  IMetaStoreClient createMetaStoreClient(HiveConf conf, boolean allowEmbedded) throws MetaException;
+  @Override
+  public IMetaStoreClient createMetaStoreClient(HiveConf conf, boolean allowEmbedded) throws MetaException {
+
+    return ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
+  }
 }

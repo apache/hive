@@ -130,7 +130,6 @@ import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -5986,7 +5985,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * File based store support is removed
    *
    * @returns a Meta Store Client
-   * @throws HiveMetaException
+   * @throws MetaException
    *           if a working client can't be created
    */
   @SuppressWarnings("squid:S2095")
