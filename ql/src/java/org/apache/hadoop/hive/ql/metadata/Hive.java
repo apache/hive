@@ -139,7 +139,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
-import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -6005,22 +6004,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    IMetaStoreClient metastoreClient = createMetaStoreClientFactory(conf)
+    IMetaStoreClient baseMetaStoreClient = createMetaStoreClientFactory(conf)
         .createMetaStoreClient(conf, hookLoader, allowEmbedded, metaCallTimeMap);
-    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
-    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
-
-    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
-    } else {
-      return RetryingMetaStoreClient.getProxy(
-          conf,
-          new Class[] {Configuration.class, IMetaStoreClient.class},
-          new Object[] {conf, clientWithHook},
-          metaCallTimeMap,
-          SynchronizedMetaStoreClient.class.getName()
-      );
+    return baseMetaStoreClient;
   }
 
   private static HiveMetaStoreClientFactory createMetaStoreClientFactory(HiveConf conf) throws
