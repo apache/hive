@@ -28,15 +28,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -44,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -238,6 +244,61 @@ public class Msck {
           } catch (Exception e) {
             throw new MetastoreException(e);
           }
+        }
+
+        // Generate small files warnings only for partsNotInMs
+        try {
+          long threshold = HiveConf.getLongVar(getConf(), HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE);
+          Map<String, String> smallFilesStats = new TreeMap<>();
+          for (CheckResult.PartitionResult pr : partsNotInMs) {
+            List<String> statsVals;
+            try {
+              // parse the partition name into a few partition values
+              statsVals = Warehouse.makeValsFromName(pr.getPartitionName(), null);
+            } catch (MetaException me) {
+              // skip this partition if this somehow failed
+              continue;
+            }
+            Partition p;
+            try {
+              // the newly added partition should exist in metastore
+              p = getMsc().getPartition(table.getCatName(), table.getDbName(), table.getTableName(), statsVals);
+            } catch (NoSuchObjectException nsoe) {
+              // the partition is not actually added in metastore
+              continue;
+            }
+            Map<String, String> params = p.getParameters();
+            String ts = (params != null) ? params.get(StatsSetupConst.TOTAL_SIZE) : null;
+            String nf = (params != null) ? params.get(StatsSetupConst.NUM_FILES)  : null;
+            if (ts == null || nf == null) {
+              // No quick stats populated in HMS; skip warning for this partition
+              continue;
+            }
+            long totalSize;
+            long numFiles;
+            try {
+              totalSize = Long.parseLong(ts);
+              numFiles  = Long.parseLong(nf);
+            } catch (NumberFormatException ignore) {
+              // Malformed stats; skip this partition
+              continue;
+            }
+            // when average file size <= threshold, generate the small files warnings
+            if (numFiles > 1 && totalSize > 0) {
+              long avg = Math.floorDiv(totalSize, numFiles);
+              if (avg <= threshold) {
+                smallFilesStats.put(
+                        pr.getPartitionName(),
+                        "avgBytes=" + avg + ", partition total files=" + numFiles + ", totalBytes=" + totalSize
+                );
+              }
+            }
+          }
+          msckInfo.setSmallFilesStats(smallFilesStats.isEmpty() ? Collections.emptyMap() : smallFilesStats);
+        } catch (Throwable t) {
+          // the msck repair should continue whether small files warning succeed or not
+          LOG.warn("MSCK small-files post-add check failed: {}", t.toString());
+          msckInfo.setSmallFilesStats(Collections.emptyMap());
         }
 
         if (msckInfo.isDropPartitions() && (!partsNotInFs.isEmpty() || !expiredPartitions.isEmpty())) {

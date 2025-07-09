@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -140,6 +141,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     protected Partish partish;
     protected Object result;
     protected LogHelper console;
+    protected HiveConf conf;
 
     public static Function<StatCollector, String> SIMPLE_NAME_FUNCTION =
         sc -> String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
@@ -148,6 +150,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
     protected void init(HiveConf conf, LogHelper console) throws IOException {
       this.console = console;
+      this.conf = conf;
     }
 
     protected final boolean isValid() {
@@ -181,6 +184,35 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         }
         parameters.putAll(basicStatistics);
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+        try {
+          String ts = parameters.get(StatsSetupConst.TOTAL_SIZE);
+          String nf = parameters.get(StatsSetupConst.NUM_FILES);
+          if (ts != null && nf != null) {
+            long totalSize = Long.parseLong(ts);
+            long numFiles  = Long.parseLong(nf);
+            if (numFiles > 1 && totalSize > 0) {
+              long threshold = conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE);
+              long avg = totalSize / Math.max(1L, numFiles);
+              if (avg <= threshold) {
+                String who = (partish.getPartition() == null)
+                        ? ("table " + partish.getTable().getFullyQualifiedName())
+                        : ("partition " + partish.getPartition().getName());
+
+                LOG.info("[ANALYZE][NOSCAN] Small files detected: {} avgBytes={}, files={}, totalBytes={}",
+                        who, avg, numFiles, totalSize);
+
+                SessionState ss = SessionState.get();
+                if (ss != null && ss.getConsole() != null) {
+                  ss.getConsole().printInfo(String.format(
+                          "[ANALYZE][NOSCAN] Small files detected: %s (avgBytes=%d, files=%d, totalBytes=%d)",
+                          who, avg, numFiles, totalSize));
+                }
+              }
+            }
+          }
+        } catch (Throwable t) {
+          LOG.warn("[ANALYZE][NOSCAN] Small files check (storage handler) failed: {}", t.toString());
+        }
         String msg = partish.getSimpleName() + " stats: [" + toString(parameters) + ']';
         LOG.debug(msg);
         console.printInfo(msg);
@@ -293,6 +325,28 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
         parameters.put(StatsSetupConst.NUM_ERASURE_CODED_FILES, String.valueOf(numErasureCodedFiles));
 
+        try {
+          if (numFiles > 1 && fileSize > 0) {
+            long threshold = conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE);
+            long avg = fileSize / Math.max(1L, numFiles);
+            String who = (partish.getPartition() == null)
+                    ? ("table " + partish.getTable().getFullyQualifiedName())
+                    : ("partition " + partish.getPartition().getName());
+            if (avg <= threshold) {
+              LOG.warn("[ANALYZE][NOSCAN] Small files detected: {} avgBytes={}, files={}, totalBytes={}",
+                      who, avg, numFiles, fileSize);
+
+              SessionState ss = SessionState.get();
+              if (ss != null && ss.getConsole() != null) {
+                ss.getConsole().printInfo(String.format(
+                        "[ANALYZE][NOSCAN] Small files detected: %s (avgBytes=%d, files=%d, totalBytes=%d)",
+                        who, avg, numFiles, fileSize));
+              }
+            }
+          }
+        } catch (Throwable t) {
+          LOG.warn("[ANALYZE][NOSCAN] Small files check (footer) failed: {}", t.toString());
+        }
         if (partish.getPartition() != null) {
           result = new Partition(partish.getTable(), partish.getPartition().getTPartition());
         } else {
@@ -307,7 +361,6 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".", "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
       }
     }
-
   }
 
   private Collection<Partition> getPartitions(Table table) {
