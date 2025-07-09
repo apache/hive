@@ -23,26 +23,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.io.CharStreams;
-import org.apache.iceberg.rest.HMSCatalogAdapter.HTTPMethod;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
+import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 import org.apache.iceberg.rest.responses.ErrorResponse;
 import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Original @ https://github.com/apache/iceberg/blob/1.6.x/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java
+ * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogServlet.java">RESTCatalogServlet.java</a>
  * The RESTCatalogServlet provides a servlet implementation used in combination with a
  * RESTCatalogAdaptor to proxy the REST Spec to any Catalog implementation.
  */
@@ -82,8 +80,6 @@ public class HMSCatalogServlet extends HttpServlet {
               context.path(),
               context.queryParams(),
               context.body(),
-              context.route().responseClass(),
-              context.headers(),
               handle(response));
 
       if (responseBody != null) {
@@ -96,7 +92,7 @@ public class HMSCatalogServlet extends HttpServlet {
     }
   }
 
-  protected Consumer<ErrorResponse> handle(HttpServletResponse response) {
+  private Consumer<ErrorResponse> handle(HttpServletResponse response) {
     return errorResponse -> {
       response.setStatus(errorResponse.code());
       try {
@@ -109,9 +105,7 @@ public class HMSCatalogServlet extends HttpServlet {
 
   public static class ServletRequestContext {
     private HTTPMethod method;
-    private Route route;
     private String path;
-    private Map<String, String> headers;
     private Map<String, String> queryParams;
     private Object body;
 
@@ -123,15 +117,11 @@ public class HMSCatalogServlet extends HttpServlet {
 
     private ServletRequestContext(
         HTTPMethod method,
-        Route route,
         String path,
-        Map<String, String> headers,
         Map<String, String> queryParams,
         Object body) {
       this.method = method;
-      this.route = route;
       this.path = path;
-      this.headers = headers;
       this.queryParams = queryParams;
       this.body = body;
     }
@@ -171,27 +161,16 @@ public class HMSCatalogServlet extends HttpServlet {
       Map<String, String> queryParams =
           request.getParameterMap().entrySet().stream()
               .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()[0]));
-      Map<String, String> headers =
-          Collections.list(request.getHeaderNames()).stream()
-              .collect(Collectors.toMap(Function.identity(), request::getHeader));
 
-      return new ServletRequestContext(method, route, path, headers, queryParams, requestBody);
+      return new ServletRequestContext(method, path, queryParams, requestBody);
     }
 
     HTTPMethod method() {
       return method;
     }
 
-    Route route() {
-      return route;
-    }
-
     public String path() {
       return path;
-    }
-
-    public Map<String, String> headers() {
-      return headers;
     }
 
     public Map<String, String> queryParams() {

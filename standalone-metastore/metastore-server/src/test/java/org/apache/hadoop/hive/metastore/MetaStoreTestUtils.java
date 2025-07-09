@@ -99,7 +99,7 @@ public class MetaStoreTestUtils {
   public static void close(final int port){
     Thread thread = map.get(port);
     if(thread != null){
-      thread.stop();
+      thread.interrupt();
     }
   }
 

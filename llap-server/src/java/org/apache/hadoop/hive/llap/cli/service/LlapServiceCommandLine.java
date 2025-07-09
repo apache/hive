@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.log.LogHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils.TraditionalBinaryPrefix;
 
 @SuppressWarnings("static-access")
@@ -337,12 +339,12 @@ class LlapServiceCommandLine {
     } catch (Exception e) {
       LOG.error("Parsing the command line arguments failed", e);
       printUsage();
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
 
     if (cl.isHelp) {
       printUsage();
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
 
     return cl;

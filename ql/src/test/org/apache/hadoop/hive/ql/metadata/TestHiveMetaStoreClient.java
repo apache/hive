@@ -36,6 +36,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.thrift.TException;
 
 import java.util.HashMap;
@@ -62,10 +66,17 @@ import static org.junit.Assert.assertNotNull;
  *  As we support more APIs, we should add them here with appropriate test cases.
  *
  */
-public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache implements IMetaStoreClient {
+public class TestHiveMetaStoreClient extends MetaStoreClientWrapper {
+
+  private static IMetaStoreClient createUnderlyingClient(Configuration conf) throws MetaException {
+    IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, true);
+    IMetaStoreClient clientWithLocalCache = new HiveMetaStoreClientWithLocalCache(conf, thriftClient);
+    IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClient(conf, null, clientWithLocalCache);
+    return new SynchronizedMetaStoreClient(conf, clientWithHook);
+  }
 
   public TestHiveMetaStoreClient(Configuration conf) throws MetaException {
-    super(conf);
+    super(createUnderlyingClient(conf), conf);
   }
 
   public GetPartitionResponse getPartitionRequest(GetPartitionRequest req) {
@@ -96,15 +107,6 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
     return false;
   }
 
-  public Table getTable(String dbName, String tableName, boolean getColumnStats, String engine)
-      throws TException {
-    GetTableRequest getTableRequest = new GetTableRequest( dbName, tableName);
-    getTableRequest.setGetColumnStats(getColumnStats);
-    getTableRequest.setEngine(engine);
-    return getTable(getTableRequest);
-
-  }
-
   public Table getTable(GetTableRequest getTableRequest) throws TException {
     Table tTable = new Table();
     tTable.setDbName(getTableRequest.getDbName());
@@ -123,7 +125,7 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
     return tTable;
   }
 
-  public GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest req) {
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) {
     assertNotNull(req.getId());
     assertNotNull(req.getValidWriteIdList());
     GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();

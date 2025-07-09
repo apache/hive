@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -434,7 +435,7 @@ public class ReplicationMigrationTool implements Tool {
     ReplicationMigrationTool inst = new ReplicationMigrationTool();
     inst.setConf(conf);
     int result = ToolRunner.run(inst, args);
-    System.exit(result);
+    ExitUtil.terminate(result);
   }
 
   /**

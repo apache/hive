@@ -141,6 +141,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
   private List<String> splitSqlStatement(String sql) {
     List<String> parts = new ArrayList<>();
     int apCount = 0;
+    int backTicksCount = 0;
     int off = 0;
     boolean skip = false;
 
@@ -157,8 +158,11 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
       case '\\':
         skip = true;
         break;
+      case '`':
+        backTicksCount++;
+        break;
       case '?':
-        if ((apCount & 1) == 0) {
+        if ((apCount & 1) == 0 && (backTicksCount & 1) == 0) {
           parts.add(sql.substring(off,i));
           off=i+1;
         }

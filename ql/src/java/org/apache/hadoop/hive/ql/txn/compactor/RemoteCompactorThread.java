@@ -19,19 +19,11 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.thrift.TException;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * Compactor thread that can run outside the metastore. It will
@@ -59,25 +51,5 @@ public class RemoteCompactorThread extends CompactorThread {
 
   @Override Table resolveTable(CompactionInfo ci) throws MetaException {
     return RemoteCompactorUtil.resolveTable(conf, msc, ci);
-  }
-
-  @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
-    try {
-      Database database = msc.getDatabase(getDefaultCatalog(conf), dbName);
-      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
-      return ReplUtils.isFirstIncPending(database.getParameters());
-    } catch (NoSuchObjectException e) {
-      LOG.info("Unable to find database " + dbName);
-      return true;
-    }
-  }
-
-  @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
-    return RemoteCompactorUtil.getPartitionsByNames(msc, ci.dbname, ci.tableName, ci.tableName);
-  }
-
-  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
-    return CompactorUtil.resolvePartition(conf, msc, ci.dbname, ci.tableName, ci.partName, 
-        CompactorUtil.METADATA_FETCH_MODE.REMOTE);
   }
 }

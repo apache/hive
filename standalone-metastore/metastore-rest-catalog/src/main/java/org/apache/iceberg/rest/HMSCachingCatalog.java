@@ -29,44 +29,43 @@ import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
+import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.view.View;
+import org.apache.iceberg.view.ViewBuilder;
 
 
 /**
  * Class that wraps an Iceberg Catalog to cache tables.
- * @param <CATALOG> the catalog class
  */
-public class HMSCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> extends CachingCatalog implements SupportsNamespaces {
-  protected final CATALOG nsCatalog;
+public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
+  private final HiveCatalog hiveCatalog;
   
-  public HMSCachingCatalog(CATALOG catalog, long expiration) {
+  public HMSCachingCatalog(HiveCatalog catalog, long expiration) {
     super(catalog, true, expiration, Ticker.systemTicker());
-    nsCatalog = catalog;
-  }
-
-  public CATALOG hmsUnwrap() {
-    return nsCatalog;
+    this.hiveCatalog = catalog;
   }
 
   @Override
   public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
-    return nsCatalog.buildTable(identifier, schema);
+    return hiveCatalog.buildTable(identifier, schema);
   }
 
   @Override
   public void createNamespace(Namespace nmspc, Map<String, String> map) {
-    nsCatalog.createNamespace(nmspc, map);
+    hiveCatalog.createNamespace(nmspc, map);
   }
 
   @Override
   public List<Namespace> listNamespaces(Namespace nmspc) throws NoSuchNamespaceException {
-    return nsCatalog.listNamespaces(nmspc);
+    return hiveCatalog.listNamespaces(nmspc);
   }
 
   @Override
   public Map<String, String> loadNamespaceMetadata(Namespace nmspc) throws NoSuchNamespaceException {
-    return nsCatalog.loadNamespaceMetadata(nmspc);
+    return hiveCatalog.loadNamespaceMetadata(nmspc);
   }
 
   @Override
@@ -75,17 +74,61 @@ public class HMSCachingCatalog<CATALOG extends Catalog & SupportsNamespaces> ext
     for (TableIdentifier ident : tables) {
       invalidateTable(ident);
     }
-    return nsCatalog.dropNamespace(nmspc);
+    return hiveCatalog.dropNamespace(nmspc);
   }
 
   @Override
   public boolean setProperties(Namespace nmspc, Map<String, String> map) throws NoSuchNamespaceException {
-    return nsCatalog.setProperties(nmspc, map);
+    return hiveCatalog.setProperties(nmspc, map);
   }
 
   @Override
   public boolean removeProperties(Namespace nmspc, Set<String> set) throws NoSuchNamespaceException {
-    return nsCatalog.removeProperties(nmspc, set);
+    return hiveCatalog.removeProperties(nmspc, set);
   }
-  
+
+  @Override
+  public boolean namespaceExists(Namespace namespace) {
+    return hiveCatalog.namespaceExists(namespace);
+  }
+
+  @Override
+  public List<TableIdentifier> listViews(Namespace namespace) {
+    return hiveCatalog.listViews(namespace);
+  }
+
+  @Override
+  public View loadView(TableIdentifier identifier) {
+    return hiveCatalog.loadView(identifier);
+  }
+
+  @Override
+  public boolean viewExists(TableIdentifier identifier) {
+    return hiveCatalog.viewExists(identifier);
+  }
+
+  @Override
+  public ViewBuilder buildView(TableIdentifier identifier) {
+    return hiveCatalog.buildView(identifier);
+  }
+
+  @Override
+  public boolean dropView(TableIdentifier identifier) {
+    return hiveCatalog.dropView(identifier);
+  }
+
+  @Override
+  public void renameView(TableIdentifier from, TableIdentifier to) {
+    hiveCatalog.renameView(from, to);
+  }
+
+  @Override
+  public void invalidateView(TableIdentifier identifier) {
+    hiveCatalog.invalidateView(identifier);
+  }
+
+  @Override
+  public void initialize(String name, Map<String, String> properties) {
+    hiveCatalog.initialize(name, properties);
+  }
 }

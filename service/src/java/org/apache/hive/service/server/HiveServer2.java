@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.Ref;
@@ -1206,7 +1207,7 @@ public class HiveServer2 extends CompositeService {
   private static void startHiveServer2() throws Throwable {
     long attempts = 0, maxAttempts = 1;
     while (true) {
-      LOG.info("Starting HiveServer2");
+      LOG.info("Starting HiveServer2. PID is: {}", ProcessHandle.current().pid());
       HiveConf hiveConf = new HiveConf();
       maxAttempts = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS);
       long retrySleepIntervalMs = hiveConf
@@ -1393,7 +1394,7 @@ public class HiveServer2 extends CompositeService {
       oprocResponse.getServerOptionsExecutor().execute();
     } catch (LogInitializationException e) {
       LOG.error("Error initializing log: " + e.getMessage(), e);
-      System.exit(-1);
+      ExitUtil.terminate(-1);
     }
   }
 
@@ -1523,7 +1524,7 @@ public class HiveServer2 extends CompositeService {
         // Error out & exit - we were not able to parse the args successfully
         System.err.println("Error starting HiveServer2 with given arguments: ");
         System.err.println(e.getMessage());
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
       // Default executor, when no option is specified
       return new ServerOptionsProcessorResponse(new StartOptionExecutor());
@@ -1571,7 +1572,7 @@ public class HiveServer2 extends CompositeService {
     @Override
     public void execute() {
       new HelpFormatter().printHelp(serverName, options);
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
   }
 
@@ -1586,7 +1587,7 @@ public class HiveServer2 extends CompositeService {
         startHiveServer2();
       } catch (Throwable t) {
         LOG.error("Error starting HiveServer2", t);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
     }
   }
@@ -1611,9 +1612,9 @@ public class HiveServer2 extends CompositeService {
             + " from ZooKeeper", e);
         System.out.println("Error deregistering HiveServer2 instances for version: " + versionNumber
             + " from ZooKeeper." + e);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
   }
 
@@ -1643,7 +1644,7 @@ public class HiveServer2 extends CompositeService {
         if (hs2Instances.isEmpty()) {
           LOG.error("No HiveServer2 instances are running in HA mode");
           System.err.println("No HiveServer2 instances are running in HA mode");
-          System.exit(-1);
+          ExitUtil.terminate(-1);
         }
         HiveServer2Instance targetInstance = null;
         for (HiveServer2Instance instance : hs2Instances) {
@@ -1656,19 +1657,19 @@ public class HiveServer2 extends CompositeService {
         if (targetInstance == null) {
           LOG.error("Cannot find any HiveServer2 instance with workerIdentity: " + workerIdentity);
           System.err.println("Cannot find any HiveServer2 instance with workerIdentity: " + workerIdentity);
-          System.exit(-1);
+          ExitUtil.terminate(-1);
         }
         // only one HS2 instance available (cannot failover)
         if (hs2Instances.size() == 1) {
           LOG.error("Only one HiveServer2 instance running in thefail cluster. Cannot failover: " + workerIdentity);
           System.err.println("Only one HiveServer2 instance running in the cluster. Cannot failover: " + workerIdentity);
-          System.exit(-1);
+          ExitUtil.terminate(-1);
         }
         // matched HS2 instance is not leader
         if (!targetInstance.isLeader()) {
           LOG.error("HiveServer2 instance (workerIdentity: " + workerIdentity + ") is not a leader. Cannot failover");
           System.err.println("HiveServer2 instance (workerIdentity: " + workerIdentity + ") is not a leader. Cannot failover");
-          System.exit(-1);
+          ExitUtil.terminate(-1);
         }
 
         String webPort = targetInstance.getProperties().get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname);
@@ -1676,7 +1677,7 @@ public class HiveServer2 extends CompositeService {
         if (StringUtils.isEmpty(webPort)) {
           LOG.error("Unable to determine web port for instance: " + workerIdentity);
           System.err.println("Unable to determine web port for instance: " + workerIdentity);
-          System.exit(-1);
+          ExitUtil.terminate(-1);
         }
 
         // invoke DELETE /leader endpoint for failover
@@ -1707,7 +1708,7 @@ public class HiveServer2 extends CompositeService {
                 ". status code: " + statusCode + "error: " + response);
             System.err.println("Unable to failover HiveServer2 instance: " + workerIdentity +
                 ". status code: " + statusCode + " error: " + response);
-            System.exit(-1);
+            ExitUtil.terminate(-1);
           }
         } finally {
           if (httpResponse != null) {
@@ -1717,9 +1718,9 @@ public class HiveServer2 extends CompositeService {
       } catch (IOException e) {
         LOG.error("Error listing HiveServer2 HA instances from ZooKeeper", e);
         System.err.println("Error listing HiveServer2 HA instances from ZooKeeper" + e);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
   }
 
@@ -1735,9 +1736,9 @@ public class HiveServer2 extends CompositeService {
       } catch (IOException e) {
         LOG.error("Error listing HiveServer2 HA instances from ZooKeeper", e);
         System.err.println("Error listing HiveServer2 HA instances from ZooKeeper" + e);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
   }
 }

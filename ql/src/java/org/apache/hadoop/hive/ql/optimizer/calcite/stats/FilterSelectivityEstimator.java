@@ -35,6 +35,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
@@ -107,7 +108,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
     case SEARCH:
-      return new SearchTransformer<>(rexBuilder, call).transform().accept(this);
+      return new SearchTransformer<>(rexBuilder, call, RexUnknownAs.FALSE).transform().accept(this);
     case OR: {
       selectivity = computeDisjunctionSelectivity(call);
       break;

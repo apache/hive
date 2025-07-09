@@ -1016,6 +1016,12 @@ ddlStatement
     | createTableStatement
     | dropTableStatement
     | truncateTableStatement
+    | (KW_CREATE KW_OR KW_REPLACE KW_BRANCH) => createOrReplaceBranchStatement
+    | (KW_CREATE KW_OR KW_REPLACE KW_TAG) => createOrReplaceTagStatement
+    | createBranchStatement
+    | dropBranchStatement
+    | createTagStatement
+    | dropTagStatement
     | alterStatement
     | descStatement
     | showStatement
@@ -1739,9 +1745,10 @@ createScheduledQueryStatement
 dropScheduledQueryStatement
 @init { pushMsg("drop scheduled query statement", state); }
 @after { popMsg(state); }
-    : KW_DROP KW_SCHEDULED KW_QUERY name=identifier
+    : KW_DROP KW_SCHEDULED KW_QUERY ifExists? name=identifier
     -> ^(TOK_DROP_SCHEDULED_QUERY
             $name
+            ifExists?
         )
     ;
 
