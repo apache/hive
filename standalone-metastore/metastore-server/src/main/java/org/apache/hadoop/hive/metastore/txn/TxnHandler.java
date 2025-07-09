@@ -123,6 +123,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -133,7 +134,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
-import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -520,7 +520,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (transactionalListeners != null) {
       //Find the write details for this transaction.
       //Doing it here before the metadata tables are updated below.
-      txnWriteDetails = getWriteIdsForTxnID(rqst.getTxnid());
+      txnWriteDetails = getWriteIdsMappingForTxns(Set.of(rqst.getTxnid()));
     }
     TxnType txnType = new AbortTxnFunction(rqst).execute(jdbcResource); 
     if (txnType != null) {
@@ -534,10 +534,10 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                                        List<TxnWriteDetails> txnWriteDetails, List<TransactionalMetaStoreEventListener> transactionalListeners) throws MetaException {
     List<Long> writeIds = txnWriteDetails.stream()
             .map(TxnWriteDetails::getWriteId)
-            .collect(Collectors.toList());
+            .toList();
     List<String> databases = txnWriteDetails.stream()
             .map(TxnWriteDetails::getDbName)
-            .collect(Collectors.toList());
+            .toList();
     ListenerEvent txnEvent;
     if (eventType.equals(EventMessage.EventType.ABORT_TXN)) {
       txnEvent = new AbortTxnEvent(txnId, txnType, null, databases, writeIds);
@@ -560,8 +560,10 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (transactionalListeners != null) {
       //Find the write details for this transaction.
       //Doing it here before the metadata tables are updated below.
-      for(Long txnId : txnIds)
-        txnWriteDetailsMap.put(txnId, getWriteIdsForTxnID(txnId));
+      List<TxnWriteDetails> txnWriteDetails = getWriteIdsMappingForTxns(new HashSet<>(txnIds));
+      txnWriteDetailsMap.putAll(txnWriteDetails.stream()
+                                               .collect(Collectors.groupingBy(TxnWriteDetails::getTxnId)));
+
     }
 
     List<String> queries = new ArrayList<>();
@@ -595,8 +597,8 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       if (transactionalListeners != null) {
         for (Long txnId : txnIds) {
-          notifyCommitOrAbortEvent(txnId,EventMessage.EventType.ABORT_TXN,
-                  nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY), dbConn, txnWriteDetailsMap.get(txnId), transactionalListeners);
+          notifyCommitOrAbortEvent(txnId, EventMessage.EventType.ABORT_TXN,
+                  nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY), dbConn, txnWriteDetailsMap.getOrDefault(txnId, new ArrayList<>()), transactionalListeners);
         }
       }
     } catch (SQLException e) {
@@ -826,7 +828,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (CollectionUtils.isEmpty(lockInfos)) {
       throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
     }
-    LockInfo lockInfo = lockInfos.get(0);
+    LockInfo lockInfo = lockInfos.getFirst();
     if (lockInfo.getTxnId() > 0) {
       new HeartbeatTxnFunction(lockInfo.getTxnId()).execute(jdbcResource);
     } else {
@@ -1138,7 +1140,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       jdbcResource.getJdbcTemplate().query("SELECT 1 FROM \"" + tableName + "\"",
           new MapSqlParameterSource(), ResultSet::next);
     } catch (DataAccessException e) {
-      LOG.debug("Catching sql exception in " + tableName + " check", e);
+        LOG.debug("Catching sql exception in {} check", tableName, e);
       if (e.getCause() instanceof SQLException) {
         if (dbProduct.isTableNotExistsError(e)) {
           return false;
@@ -1154,42 +1156,21 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Returns the databases updated by txnId.
-   * Queries TXN_TO_WRITE_ID using txnId.
+   * Returns the TxnWriteDetails updated by txnIds.
+   * Queries TXN_TO_WRITE_ID using txnIds.
    *
-   * @param txnId
-   * @throws MetaException
+   * @param txnIds Transaction IDs for which write IDs are requested.
+   * @throws MetaException throws MetaException
    */
-  private List<String> getTxnDbsUpdated(long txnId) throws MetaException {
+  private List<TxnWriteDetails> getWriteIdsMappingForTxns(Set<Long> txnIds) throws MetaException {
     try {
       return sqlRetryHandler.executeWithRetry(
-          new SqlRetryCallProperties().withCallerId("GetTxnDbsUpdatedHandler"),
-          () -> jdbcResource.execute(new GetTxnDbsUpdatedHandler(txnId)));
+              new SqlRetryCallProperties().withCallerId("GetWriteIdsMappingForTxnIdsHandler"),
+              () -> jdbcResource.execute(new GetWriteIdsMappingForTxnIdsHandler(txnIds)));
     } catch (MetaException e) {
       throw e;
     } catch (TException e) {
       throw new MetaException(e.getMessage());
     }
   }
-
-  /**
-   * Returns the databases and writeID updated by txnId.
-   * Queries TXN_TO_WRITE_ID using txnId.
-   *
-   * @param txnId Transaction ID for which write IDs are requested.
-   * @throws MetaException
-   */
-  public List<TxnWriteDetails> getWriteIdsForTxnID(long txnId) throws MetaException {
-    try {
-      return sqlRetryHandler.executeWithRetry(
-              new SqlRetryCallProperties().withCallerId("GetWriteIdsForTxnIDHandler"),
-              () -> jdbcResource.execute(new GetWriteIdsForTxnIDHandler(txnId)));
-    } catch (MetaException e) {
-      throw e;
-    } catch (TException e) {
-      throw new MetaException(e.getMessage());
-    }
-  }
-
-
 }

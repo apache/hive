@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.queries;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.txn.entities.TxnWriteDetails;
 import org.apache.hadoop.hive.metastore.txn.jdbc.QueryHandler;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -26,37 +27,36 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-/**
- * Returns the databases updated by txnId.
- * Queries TXN_TO_WRITE_ID using txnId.
- */
-public class GetTxnDbsUpdatedHandler implements QueryHandler<List<String>> {
-  
-  private final long txnId;
+public class GetWriteIdsMappingForTxnIdsHandler  implements QueryHandler<List<TxnWriteDetails>> {
 
-  public GetTxnDbsUpdatedHandler(long txnId) {
-    this.txnId = txnId;
-  }
+    private final Set<Long> txnIds;
 
-  @Override
-  public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT DISTINCT \"T2W_DATABASE\" FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\" WHERE \"T2W_TXNID\" = :txnId";
-  }
-
-  @Override
-  public SqlParameterSource getQueryParameters() {
-    return new MapSqlParameterSource().addValue("txnId", txnId);
-  }
-
-  @Override
-  public List<String> extractData(ResultSet rs) throws SQLException, DataAccessException {
-    List<String> dbsUpdated = new ArrayList<>();
-    while (rs.next()) {
-      dbsUpdated.add(rs.getString(1));
+    public GetWriteIdsMappingForTxnIdsHandler(Set<Long> txnIds) {
+        this.txnIds= txnIds;
     }
-    return dbsUpdated;
-  }
+
+    @Override
+    public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
+        return "SELECT DISTINCT \"T2W_TXNID\", \"T2W_DATABASE\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\" WHERE \"T2W_TXNID\" IN (:txnIds)";
+    }
+
+    @Override
+    public SqlParameterSource getQueryParameters() {
+        return new MapSqlParameterSource().addValue("txnIds", txnIds, Types.BIGINT);
+    }
+
+    @Override
+    public List<TxnWriteDetails> extractData(ResultSet rs) throws SQLException, DataAccessException {
+        List<TxnWriteDetails> dbsUpdated = new ArrayList<>();
+        while (rs.next()) {
+            TxnWriteDetails entry = new TxnWriteDetails(rs.getLong(1), rs.getString(2), rs.getLong(3));
+            dbsUpdated.add(entry);
+        }
+        return dbsUpdated;
+    }
 }
