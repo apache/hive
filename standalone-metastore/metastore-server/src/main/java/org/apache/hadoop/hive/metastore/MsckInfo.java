@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.metastore;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Metadata related to Msck.
  */
@@ -32,6 +35,8 @@ public class MsckInfo {
   private final boolean addPartitions;
   private final boolean dropPartitions;
   private final long partitionExpirySeconds;
+
+  private Map<String, String> smallFilesStats = new HashMap<>();
 
   public MsckInfo(String catalogName, String dbName, String tableName, byte[] filterExp, String resFile,
                   boolean repairPartitions, boolean addPartitions,
@@ -81,5 +86,11 @@ public class MsckInfo {
 
   public long getPartitionExpirySeconds() {
     return partitionExpirySeconds;
+  }
+
+  public Map<String, String> getSmallFilesStats() { return smallFilesStats; }
+
+  public void setSmallFilesStats(Map<String, String> smallFilesStats){
+    this.smallFilesStats = smallFilesStats;
   }
 }
