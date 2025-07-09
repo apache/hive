@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
@@ -1082,29 +1083,24 @@ public class TestHive {
   }
 
   @Test
-  public void testLoadingHiveMetaStoreClientFactory() throws Throwable {
-    String factoryClassName = ThriftHiveMetaStoreClientFactory.class.getName();
+  public void testLoadingIMetaStoreClient() throws Throwable {
+    String clientClassName = ThriftHiveMetaStoreClient.class.getName();
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
-    // Make sure we instantiate the embedded version
-    // so the implementation chosen is SessionHiveMetaStoreClient, not a retryable version of it.
-    conf.setBoolVar(ConfVars.METASTORE_FASTPATH, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_CLASS, clientClassName);
     // The current object was constructed in setUp() before we got here
     // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
     Hive.closeCurrent();
     Hive hive = Hive.get(conf);
     IMetaStoreClient tmp = hive.getMSC();
     assertNotNull("getMSC() failed.", tmp);
-    assertThat("Invalid default client implementation created.", tmp,
-        instanceOf(SessionHiveMetaStoreClient.class));
   }
 
   @Test
-  public void testLoadingInvalidHiveMetaStoreClientFactory() throws Throwable {
+  public void testLoadingInvalidIMetaStoreClient() throws Throwable {
     // Intentionally invalid class
-    String factoryClassName = String.class.getName();
+    String clientClassName = String.class.getName();
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_CLASS, clientClassName);
     // The current object was constructed in setUp() before we got here
     // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
     Hive.closeCurrent();

@@ -250,7 +250,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.apache.thrift.TApplicationException;
@@ -5988,7 +5987,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws MetaException
    *           if a working client can't be created
    */
-  @SuppressWarnings("squid:S2095")
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {

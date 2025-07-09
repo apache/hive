@@ -18,30 +18,63 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ExceptionHandler;
+import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Abstract factory that defines an interface for other factories that produce concrete
- * MetaStoreClient objects.
- *
+ * A factory class creating a MetaStoreClient specified in a given configuration.
  */
-public interface HiveMetaStoreClientFactory {
+public class HiveMetaStoreClientFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClientFactory.class);
 
-  /**
-   * A method for producing IMetaStoreClient objects.
-   *
-   * The implementation returned by this method must throw a MetaException if allowEmbedded = true
-   * and it does not support embedded mode.
-   *
-   * @param conf
-   *          Hive Configuration.
-   * @param allowEmbedded
-   *          Flag indicating the implementation must run in-process, e.g. for unit testing or
-   *          "fast path".
-   * @return IMetaStoreClient An implementation of IMetaStoreClient.
-   * @throws MetaException if this method fails to create IMetaStoreClient
-   */
-  IMetaStoreClient createMetaStoreClient(HiveConf conf, boolean allowEmbedded) throws MetaException;
+  public static IMetaStoreClient newClient(HiveConf conf, HiveMetaHookLoader hookLoader,
+      boolean allowEmbedded, ConcurrentHashMap<String, Long> metaCallTimeMap) throws MetaException {
+    String mscClassName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_CLASS);
+    LOG.info("Using {} as a base MetaStoreClient", mscClassName);
+    Class<? extends IMetaStoreClient> mscClass = JavaUtils.getClass(mscClassName, IMetaStoreClient.class);
+
+    IMetaStoreClient baseMetaStoreClient = null;
+    try {
+      baseMetaStoreClient = JavaUtils.newInstance(mscClass,
+          new Class[]{Configuration.class, boolean.class},
+          new Object[]{conf, allowEmbedded});
+    } catch (Throwable t) {
+      // Reflection by JavaUtils will throw RuntimeException, try to get real MetaException here.
+      Throwable rootCause = ExceptionUtils.getRootCause(t);
+      if (rootCause instanceof Exception) {
+        throw ExceptionHandler.newMetaException((Exception) rootCause);
+      }
+      throw t;
+    }
+
+    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, baseMetaStoreClient);
+    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
+    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
+
+    if (conf.getBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH)) {
+      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
+    } else {
+      return RetryingMetaStoreClient.getProxy(
+          conf,
+          new Class[] {Configuration.class, IMetaStoreClient.class},
+          new Object[] {conf, clientWithHook},
+          metaCallTimeMap,
+          SynchronizedMetaStoreClient.class.getName()
+      );
+    }
+  }
 }
