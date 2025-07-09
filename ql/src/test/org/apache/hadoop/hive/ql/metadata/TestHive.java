@@ -1083,7 +1083,7 @@ public class TestHive {
 
   @Test
   public void testLoadingHiveMetaStoreClientFactory() throws Throwable {
-    String factoryClassName = SessionHiveMetaStoreClientFactory.class.getName();
+    String factoryClassName = ThriftHiveMetaStoreClientFactory.class.getName();
     HiveConf conf = new HiveConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_FACTORY_CLASS, factoryClassName);
     // Make sure we instantiate the embedded version

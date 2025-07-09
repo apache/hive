@@ -131,7 +131,6 @@ import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -5988,7 +5987,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * File based store support is removed
    *
    * @returns a Meta Store Client
-   * @throws HiveMetaException
+   * @throws MetaException
    *           if a working client can't be created
    */
   @SuppressWarnings("squid:S2095")
@@ -6005,8 +6004,23 @@ private void constructOneLBLocationMap(FileStatus fSta,
     };
 
     IMetaStoreClient baseMetaStoreClient = createMetaStoreClientFactory(conf)
-        .createMetaStoreClient(conf, hookLoader, allowEmbedded, metaCallTimeMap);
-    return baseMetaStoreClient;
+        .createMetaStoreClient(conf, allowEmbedded);
+
+    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, baseMetaStoreClient);
+    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
+    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
+
+    if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
+      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
+    } else {
+      return RetryingMetaStoreClient.getProxy(
+          conf,
+          new Class[] {Configuration.class, IMetaStoreClient.class},
+          new Object[] {conf, clientWithHook},
+          metaCallTimeMap,
+          SynchronizedMetaStoreClient.class.getName()
+      );
+    }
   }
 
   private static HiveMetaStoreClientFactory createMetaStoreClientFactory(HiveConf conf) throws
