@@ -18,14 +18,20 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Default MetaStoreClientFactory for Hive which produces SessionHiveMetaStoreClient objects.
@@ -35,18 +41,27 @@ public final class SessionHiveMetaStoreClientFactory implements HiveMetaStoreCli
 
   @Override
   public IMetaStoreClient createMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader,
-      boolean allowEmbedded,
-      ConcurrentHashMap<String, Long> metaCallTimeMap) throws MetaException {
+      boolean allowEmbedded, ConcurrentHashMap<String, Long> metaCallTimeMap) throws MetaException {
 
     checkNotNull(conf, "conf cannot be null!");
     checkNotNull(hookLoader, "hookLoader cannot be null!");
     checkNotNull(metaCallTimeMap, "metaCallTimeMap cannot be null!");
 
+    IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
+    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
+    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
+    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
+
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
-      return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
+      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
     } else {
-      return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
-          SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+      return RetryingMetaStoreClient.getProxy(
+          conf,
+          new Class[] {Configuration.class, IMetaStoreClient.class},
+          new Object[] {conf, clientWithHook},
+          metaCallTimeMap,
+          SynchronizedMetaStoreClient.class.getName()
+      );
     }
   }
 }
