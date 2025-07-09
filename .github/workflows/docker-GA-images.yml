@@ -46,10 +46,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: 'Set up JDK 21'
+      - name: 'Set up JDK 17'
         uses: actions/setup-java@v1
         with:
-          java-version: 21
+          java-version: 17
 
       - name: Hive version
         run:  echo "HIVE_VERSION=${{ github.event.inputs.hiveVersion }}"  >> $GITHUB_ENV
@@ -108,10 +108,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: 'Set up JDK 21'
+      - name: 'Set up JDK 17'
         uses: actions/setup-java@v1
         with:
-          java-version: 21
+          java-version: 17
 
       - name: Hive version
         run: echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
