@@ -93,6 +93,7 @@ public class HiveConf extends Configuration {
   private static URL hiveDefaultURL = null;
   private static URL hiveSiteURL = null;
   private static URL hivemetastoreSiteUrl = null;
+  private static URL newMetastoreSiteUrl = null;
   private static URL hiveServer2SiteUrl = null;
 
   private static byte[] confVarByteArray = null;
@@ -198,8 +199,9 @@ public class HiveConf extends Configuration {
 
     // Look for hive-site.xml on the CLASSPATH and log its location if found.
     hiveSiteURL = findConfigFile(classLoader, "hive-site.xml", true);
-    hivemetastoreSiteUrl = findConfigFile(classLoader, "metastore-site.xml", false);
-    hiveServer2SiteUrl = findConfigFile(classLoader, "hiveserver2-site.xml", false);
+    hivemetastoreSiteUrl = findConfigFile(classLoader, "hivemetastore-site.xml", true);
+    hiveServer2SiteUrl = findConfigFile(classLoader, "hiveserver2-site.xml", true);
+    newMetastoreSiteUrl = findConfigFile(classLoader, "metastore-site.xml", true);
 
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
@@ -6617,15 +6619,20 @@ public class HiveConf extends Configuration {
       setLoadMetastoreConfig(true);
     }
 
-    // load metastore-site.xml if this is metastore and file exists
-    if (isLoadMetastoreConfig() && hivemetastoreSiteUrl != null) {
-      addResource(hivemetastoreSiteUrl);
+    // load the legacy hivemetastore-site.xml and metastore-site.xml if this is metastore and file exists
+    if (isLoadMetastoreConfig()) {
+      if (hivemetastoreSiteUrl != null) {
+        addResource(hivemetastoreSiteUrl);
+      }
+      if (newMetastoreSiteUrl != null) {
+        addResource(newMetastoreSiteUrl);
+      }
     }
 
     // load hiveserver2-site.xml if this is hiveserver2 and file exists
     // metastore can be embedded within hiveserver2, in such cases
     // the conf params in hiveserver2-site.xml will override whats defined
-    // in metastore-site.xml
+    // in hivemetastore-site.xml/metastore-site.xml
     if (isLoadHiveServer2Config()) {
       // set the hardcoded value first, so anything in hiveserver2-site.xml can override it
       set(ConfVars.METASTORE_CLIENT_CAPABILITIES.varname, "EXTWRITE,EXTREAD,HIVEBUCKET2,HIVEFULLACIDREAD,"
@@ -7026,7 +7033,7 @@ public class HiveConf extends Configuration {
   }
 
   public static void setHivemetastoreSiteUrl(URL location) {
-    hivemetastoreSiteUrl = location;
+    newMetastoreSiteUrl = location;
   }
 
   public static URL getHiveSiteLocation() {
@@ -7034,7 +7041,7 @@ public class HiveConf extends Configuration {
   }
 
   public static URL getMetastoreSiteLocation() {
-    return hivemetastoreSiteUrl;
+    return newMetastoreSiteUrl;
   }
 
   public static URL getHiveServer2SiteLocation() {
