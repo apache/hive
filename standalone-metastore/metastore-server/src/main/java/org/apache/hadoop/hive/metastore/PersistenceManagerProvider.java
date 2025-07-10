@@ -653,7 +653,6 @@ public class PersistenceManagerProvider {
             LOG.warn("Exception retry limit reached, not retrying any longer.", e);
           } else {
             LOG.debug("Non-retriable exception.", e);
-            break;
           }
           ex = e;
         }
