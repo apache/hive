@@ -92,6 +92,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetTablesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.createThriftPartitionsReq;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
@@ -2131,13 +2132,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public List<Table> getTables(String catName, String dbName, List<String> tableNames,
       GetProjectionsSpec projectionsSpec) throws TException {
-    GetTablesRequest req = new GetTablesRequest(dbName);
-    req.setCatName(catName);
-    req.setTblNames(tableNames);
-    req.setCapabilities(version);
-    if (processorCapabilities != null)
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    req.setProjectionSpec(projectionsSpec);
+    GetTablesRequest req = convertToGetTablesRequest(catName, dbName, null, tableNames, version, projectionsSpec, null,
+        (processorCapabilities != null) ? Arrays.asList(processorCapabilities) : null);
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
     return HiveMetaStoreClientUtils.deepCopyTables(
         FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
@@ -2179,7 +2175,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern) throws TException {
+  public List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
+      throws TException {
+    if (tableType != null) {
+      List<String> tables =
+          client.get_tables_by_type(prependCatalogToDbName(catName, dbName, conf), tablePattern, tableType.toString());
+      return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
+    }
     if (tablePattern == null) {
       tablePattern = ".*";
     }
@@ -2194,16 +2196,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       // This branch can be removed once it's supported.
       GetProjectionsSpec projectionsSpec = new GetProjectionsSpec();
       projectionsSpec.setFieldList(Arrays.asList("dbName", "tableName", "owner", "ownerType"));
-      GetTablesRequest req = new GetTablesRequest(dbName);
-      req.setCatName(catName);
-      req.setCapabilities(version);
-      req.setTblNames(null);
-      req.setTablesPattern(tablePattern);
-      if (processorCapabilities != null)
-        req.setProcessorCapabilities(Arrays.asList(processorCapabilities));
-      if (processorIdentifier != null)
-        req.setProcessorIdentifier(processorIdentifier);
-      req.setProjectionSpec(projectionsSpec);
+      GetTablesRequest req =
+          convertToGetTablesRequest(catName, dbName, tablePattern, null, version, projectionsSpec, null,
+              (processorCapabilities != null ? Arrays.asList(processorCapabilities) : null));
       List<Table> tableObjects = client.get_table_objects_by_name_req(req).getTables();
       tableObjects = HiveMetaStoreClientUtils.deepCopyTables(
           FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tableObjects));
@@ -2221,15 +2216,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       }
     }
     return tables;
-  }
-
-  @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern,
-      TableType tableType) throws TException {
-    List<String> tables =
-        client.get_tables_by_type(prependCatalogToDbName(catName, dbName, conf), tablePattern,
-            tableType.toString());
-    return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbName, tables);
   }
 
   /**

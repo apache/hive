@@ -64,9 +64,9 @@ public class TestClientPoolImpl {
     HiveMetaStoreClient hmsClient = Mockito.mock(HiveMetaStoreClient.class);
     Mockito.doReturn(hmsClient).when(clients).newClient();
     Mockito.doThrow(new MetaException("Another meta exception"))
-      .when(hmsClient).getTables(Mockito.anyString(), Mockito.anyString());
+      .when(hmsClient).getTables(Mockito.anyString(), Mockito.anyString(), Mockito.isNull());
     AssertHelpers.assertThrows("Should throw exception", MetaException.class,
-        "Another meta exception", () -> clients.run(client -> client.getTables("default", "t")));
+        "Another meta exception", () -> clients.run(client -> client.getTables("default", "t", null)));
   }
 
   @Test

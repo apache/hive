@@ -147,7 +147,7 @@ public class HiveMetaStoreChecker {
         // no table specified, check all tables and all partitions.
         List<String> tables = new ArrayList<>();
         try{
-          tables = getMsc().getTables(catName, dbName, ".*");
+          tables = getMsc().getTables(catName, dbName, ".*", null);
         }catch(UnknownDBException ex){
           //ignore database exception.
         }

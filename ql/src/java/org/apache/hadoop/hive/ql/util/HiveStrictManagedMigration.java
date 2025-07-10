@@ -763,7 +763,7 @@ public class HiveStrictManagedMigration {
       // If control file content is present we ask for all table names first, then remove those we don't care about
       String tableRegex = controlConfig == null ? runOptions.tableRegex : ".*";
       if (runOptions.tableType == null) {
-        tableNames = hms.get().getTables(dbName, tableRegex);
+        tableNames = hms.get().getTables(dbName, tableRegex, null);
         LOG.debug("found {} tables in {}", tableNames.size(), dbName);
       } else {
         tableNames = hms.get().getTables(dbName, tableRegex, runOptions.tableType);

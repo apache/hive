@@ -173,7 +173,7 @@ public class HCatClientHMSImpl extends HCatClient {
                         String tablePattern) throws HCatException {
     List<String> tableNames = null;
     try {
-      tableNames = hmsClient.getTables(checkDB(dbName), tablePattern);
+      tableNames = hmsClient.getTables(checkDB(dbName), tablePattern, null);
     } catch (MetaException e) {
       throw new HCatException("MetaException while fetching table names. " + e.getMessage(), e);
     } catch (UnknownDBException e) {

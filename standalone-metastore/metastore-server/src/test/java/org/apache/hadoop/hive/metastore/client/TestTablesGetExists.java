@@ -255,25 +255,25 @@ public class TestTablesGetExists extends MetaStoreClientTest {
   @Test
   public void testGetTables() throws Exception {
     // Find tables which name contains _to_find_ in the default database
-    List<String> tables = client.getTables(DEFAULT_DATABASE, "*_to_find_*");
+    List<String> tables = client.getTables(DEFAULT_DATABASE, "*_to_find_*", null);
     Assert.assertEquals("All tables size", 2, tables.size());
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[2].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[3].getTableName()));
 
     // Find tables which name contains _to_find_ or _hidden_ in the default database
-    tables = client.getTables(DEFAULT_DATABASE, "*_to_find_*|*_hidden_*");
+    tables = client.getTables(DEFAULT_DATABASE, "*_to_find_*|*_hidden_*", null);
     Assert.assertEquals("All tables size", 3, tables.size());
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[2].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[3].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[4].getTableName()));
 
     // Find table which name contains _to_find_ in the dummy database
-    tables = client.getTables(OTHER_DATABASE, "*_to_find_*");
+    tables = client.getTables(OTHER_DATABASE, "*_to_find_*", null);
     Assert.assertEquals("Found functions size", 1, tables.size());
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[6].getTableName()));
 
     // Find tables by using the wildcard sign "*"
-    tables = client.getTables(DEFAULT_DATABASE, "*");
+    tables = client.getTables(DEFAULT_DATABASE, "*", null);
     Assert.assertEquals("All tables size", 5, tables.size());
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[0].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[1].getTableName()));
@@ -281,26 +281,26 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[3].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[4].getTableName()));
 
-    tables = client.getTables(OTHER_DATABASE, "*");
+    tables = client.getTables(OTHER_DATABASE, "*", null);
     Assert.assertEquals("All tables size", 2, tables.size());
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[5].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[6].getTableName()));
 
     // Look for tables but do not find any
-    tables = client.getTables(DEFAULT_DATABASE, "*_not_such_function_*");
+    tables = client.getTables(DEFAULT_DATABASE, "*_not_such_function_*", null);
     Assert.assertEquals("No such table size", 0, tables.size());
 
     // Look for tables without pattern
-    tables = client.getTables(DEFAULT_DATABASE, (String)null);
+    tables = client.getTables(DEFAULT_DATABASE, (String) null, null);
     Assert.assertEquals("No such functions size", 5, tables.size());
 
     // Look for tables with empty pattern
-    tables = client.getTables(DEFAULT_DATABASE, "");
+    tables = client.getTables(DEFAULT_DATABASE, "", null);
     Assert.assertEquals("No such functions size", 0, tables.size());
 
     // No such database
     try {
-      tables = client.getTables("no_such_database", OTHER_DATABASE);
+      tables = client.getTables("no_such_database", OTHER_DATABASE, null);
     }catch (MetaException exception) {
       // Ignoring Expected exception
     }
@@ -309,7 +309,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
   @Test
   public void testGetTablesCaseInsensitive() throws Exception {
     // Check case insensitive search
-    List<String> tables = client.getTables(DEFAULT_DATABASE, "*_tO_FiND*");
+    List<String> tables = client.getTables(DEFAULT_DATABASE, "*_tO_FiND*", null);
     Assert.assertEquals("Found tables size", 2, tables.size());
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[2].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[3].getTableName()));
@@ -317,7 +317,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
 
   @Test(expected = MetaException.class)
   public void testGetTablesNullDatabase() throws Exception {
-    client.getTables(null, "*_tO_FiND*");
+    client.getTables(null, "*_tO_FiND*", null);
   }
 
   @Test
@@ -749,11 +749,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
           .create(client, metaStore.getConf());
     }
 
-    Set<String> tables = new HashSet<>(client.getTables(catName, dbName, "*e_in_other_*"));
+    Set<String> tables = new HashSet<>(client.getTables(catName, dbName, "*e_in_other_*", null));
     Assert.assertEquals(4, tables.size());
     for (String tableName : tableNames) Assert.assertTrue(tables.contains(tableName));
 
-    List<String> fetchedNames = client.getTables(catName, dbName, "*_3");
+    List<String> fetchedNames = client.getTables(catName, dbName, "*_3", null);
     Assert.assertEquals(1, fetchedNames.size());
     Assert.assertEquals(tableNames[3], fetchedNames.get(0));
 
@@ -763,7 +763,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
 
   @Test(expected = UnknownDBException.class)
   public void getTablesBogusCatalog() throws TException {
-    client.getTables("nosuch", DEFAULT_DATABASE_NAME, "*_to_find_*");
+    client.getTables("nosuch", DEFAULT_DATABASE_NAME, "*_to_find_*", null);
   }
 
   @Test

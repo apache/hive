@@ -439,13 +439,13 @@ public abstract class NonCatCallsWithCatalog {
       client.createTable(table);
     }
 
-    Set<String> tables = new HashSet<>(client.getTables(dbName, "*e_in_other_*"));
+    Set<String> tables = new HashSet<>(client.getTables(dbName, "*e_in_other_*", null));
     Assert.assertEquals(4, tables.size());
     for (String tableName : tableNames) {
       Assert.assertTrue(tables.contains(tableName));
     }
 
-    List<String> fetchedNames = client.getTables(dbName, "*_3");
+    List<String> fetchedNames = client.getTables(dbName, "*_3", null);
     Assert.assertEquals(1, fetchedNames.size());
     Assert.assertEquals(tableNames[3], fetchedNames.get(0));
 

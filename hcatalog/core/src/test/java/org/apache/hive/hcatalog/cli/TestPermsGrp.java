@@ -245,7 +245,7 @@ public class TestPermsGrp {
 
   private void silentDropDatabase(String dbName) throws MetaException, TException {
     try {
-      for (String tableName : msc.getTables(dbName, "*")) {
+      for (String tableName : msc.getTables(dbName, "*", null)) {
         msc.dropTable(dbName, tableName);
       }
 

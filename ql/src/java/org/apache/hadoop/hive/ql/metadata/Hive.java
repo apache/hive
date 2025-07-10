@@ -1989,9 +1989,9 @@ public class Hive implements AutoCloseable {
         }
       } else {
         if (pattern != null) {
-          result = getMSC().getTables(dbName, pattern);
+          result = getMSC().getTables(dbName, pattern, null);
         } else {
-          result = getMSC().getTables(dbName, ".*");
+          result = getMSC().getTables(dbName, ".*", null);
         }
       }
       return result;
