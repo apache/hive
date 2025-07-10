@@ -30,8 +30,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 
 public class LazyBinaryColumnarStruct extends ColumnarStructBase {
 
-  public LazyBinaryColumnarStruct(ObjectInspector oi, List<Integer> notSkippedColumnIDs) {
+  private final boolean legacyConversionEnabled;
+
+  public LazyBinaryColumnarStruct(ObjectInspector oi, List<Integer> notSkippedColumnIDs, boolean legacyConversionEnabled) {
     super(oi, notSkippedColumnIDs);
+    this.legacyConversionEnabled = legacyConversionEnabled;
   }
 
   @Override
@@ -55,6 +58,6 @@ public class LazyBinaryColumnarStruct extends ColumnarStructBase {
 
   @Override
   protected LazyObjectBase createLazyObjectBase(ObjectInspector objectInspector) {
-    return LazyBinaryFactory.createLazyBinaryObject(objectInspector);
+    return LazyBinaryFactory.createLazyBinaryObject(objectInspector, legacyConversionEnabled);
   }
 }
