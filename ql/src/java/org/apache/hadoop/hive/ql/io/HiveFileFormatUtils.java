@@ -130,10 +130,6 @@ public final class HiveFileFormatUtils {
           .build();
     }
 
-    public Set<Class<? extends InputFormat>> registeredClasses() {
-      return inputFormatCheckerMap.keySet();
-    }
-
     public Set<Class<? extends InputFormat>> registeredTextClasses() {
       return textInputFormatCheckerMap.keySet();
     }
@@ -179,7 +175,6 @@ public final class HiveFileFormatUtils {
    *
    * Note: an empty set of files is considered compliant.
    */
-  @SuppressWarnings("unchecked")
   public static boolean checkInputFormat(FileSystem fs, HiveConf conf,
       Class<? extends InputFormat> inputFormatCls, List<FileStatus> files)
       throws HiveException {
@@ -202,7 +197,7 @@ public final class HiveFileFormatUtils {
           .getInputFormatCheckerInstance(checkerCls);
       try {
         if (checkerInstance == null) {
-          checkerInstance = checkerCls.newInstance();
+          checkerInstance = checkerCls.getDeclaredConstructor().newInstance();
           FileChecker.getInstance().putInputFormatCheckerInstance(checkerCls, checkerInstance);
         }
         return checkerInstance.validateInput(fs, conf, files);
@@ -213,7 +208,6 @@ public final class HiveFileFormatUtils {
     return true;
   }
 
-  @SuppressWarnings("unchecked")
   private static boolean checkTextInputFormat(FileSystem fs, HiveConf conf,
       List<FileStatus> files) throws HiveException {
     List<FileStatus> files2 = new LinkedList<>(files);
@@ -270,13 +264,13 @@ public final class HiveFileFormatUtils {
       if (isCompressed) {
         jc_output = new JobConf(jc);
         String codecStr = conf.getCompressCodec();
-        if (codecStr != null && !codecStr.trim().equals("")) {
+        if (codecStr != null && !codecStr.trim().isEmpty()) {
           Class<? extends CompressionCodec> codec = 
               JavaUtils.loadClass(codecStr);
           FileOutputFormat.setOutputCompressorClass(jc_output, codec);
         }
         String type = conf.getCompressType();
-        if (type != null && !type.trim().equals("")) {
+        if (type != null && !type.trim().isEmpty()) {
           CompressionType style = CompressionType.valueOf(type);
           SequenceFileOutputFormat.setOutputCompressionType(jc, style);
         }
@@ -288,28 +282,21 @@ public final class HiveFileFormatUtils {
     }
   }
 
-  public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, TableDesc tableDesc)
-      throws HiveException {
+  public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, TableDesc tableDesc) {
     return getHiveOutputFormat(conf, tableDesc.getOutputFileFormatClass());
   }
 
-  public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, PartitionDesc partDesc)
-      throws HiveException {
+  public static HiveOutputFormat<?, ?> getHiveOutputFormat(Configuration conf, PartitionDesc partDesc) {
     return getHiveOutputFormat(conf, partDesc.getOutputFileFormatClass());
   }
 
   private static HiveOutputFormat<?, ?> getHiveOutputFormat(
-      Configuration conf, Class<? extends OutputFormat> outputClass) throws HiveException {
+      Configuration conf, Class<? extends OutputFormat> outputClass) {
     OutputFormat<?, ?> outputFormat = ReflectionUtil.newInstance(outputClass, conf);
     if (!(outputFormat instanceof HiveOutputFormat)) {
       outputFormat = new HivePassThroughOutputFormat(outputFormat);
     }
     return (HiveOutputFormat<?, ?>) outputFormat;
-  }
-
-  public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket, FileSinkDesc conf,
-      Path outPath, ObjectInspector inspector, Reporter reporter, int rowIdColNum) throws HiveException, IOException {
-    return getAcidRecordUpdater(jc, tableInfo, bucket, conf, outPath, inspector, reporter, rowIdColNum, null);
   }
 
   public static RecordUpdater getAcidRecordUpdater(JobConf jc, TableDesc tableInfo, int bucket,
@@ -320,7 +307,7 @@ public final class HiveFileFormatUtils {
     HiveOutputFormat<?, ?> hiveOutputFormat = getHiveOutputFormat(jc, tableInfo);
     AcidOutputFormat<?, ?> acidOutputFormat = null;
     if (hiveOutputFormat instanceof AcidOutputFormat) {
-      acidOutputFormat = (AcidOutputFormat)hiveOutputFormat;
+      acidOutputFormat = (AcidOutputFormat) hiveOutputFormat;
     } else {
       throw new HiveException("Unable to create RecordUpdater for HiveOutputFormat that does not " +
           "implement AcidOutputFormat");
@@ -360,37 +347,26 @@ public final class HiveFileFormatUtils {
   }
 
   public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
-      Map<Map<Path, T>, Map<Path, T>> cacheMap) throws IOException {
+      Map<Path, Path> cacheMap) throws IOException {
     return getFromPathRecursively(pathToPartitionInfo, dir, cacheMap, false);
   }
 
   public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
-      Map<Map<Path, T>, Map<Path, T>> cacheMap, boolean ignoreSchema) throws IOException {
+      Map<Path, Path> cacheMap, boolean ignoreSchema) throws IOException {
     return getFromPathRecursively(pathToPartitionInfo, dir, cacheMap, ignoreSchema, false);
   }
 
   public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
-      Map<Map<Path, T>, Map<Path, T>> cacheMap, boolean ignoreSchema, boolean ifPresent)
+      Map<Path, Path> cacheMap, boolean ignoreSchema, boolean ifPresent)
           throws IOException {
     T part = getFromPath(pathToPartitionInfo, dir);
 
     if (part == null
         && (ignoreSchema
-            || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim().equals(""))
+            || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim().isEmpty())
             || FileUtils.pathsContainNoScheme(pathToPartitionInfo.keySet()))) {
 
-      Map<Path, T> newPathToPartitionInfo = null;
-      if (cacheMap != null) {
-        newPathToPartitionInfo = cacheMap.get(pathToPartitionInfo);
-      }
-
-      if (newPathToPartitionInfo == null) { // still null
-        newPathToPartitionInfo = populateNewT(pathToPartitionInfo);
-
-        if (cacheMap != null) {
-          cacheMap.put(pathToPartitionInfo, newPathToPartitionInfo);
-        }
-      }
+      Map<Path, T> newPathToPartitionInfo = populateNewT(pathToPartitionInfo, cacheMap);
       part = getFromPath(newPathToPartitionInfo, dir);
     }
     if (part != null || ifPresent) {
@@ -401,13 +377,21 @@ public final class HiveFileFormatUtils {
     }
   }
 
-  private static <T> Map<Path, T> populateNewT(Map<Path, T> pathToPartitionInfo) {
-    Map<Path, T> newPathToPartitionInfo = new HashMap<>();
-    for (Map.Entry<Path, T> entry: pathToPartitionInfo.entrySet()) {
-      T partDesc = entry.getValue();
-      Path pathOnly = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
+  private static <T> Map<Path, T> populateNewT(Map<Path, T> pathToPartitionInfo,
+      Map<Path, Path> cacheMap) {
+    Map<Path, T> newPathToPartitionInfo = new HashMap<>(pathToPartitionInfo.size());
+
+    pathToPartitionInfo.forEach((originalPath, partDesc) -> {
+      Path pathOnly = cacheMap != null ?
+        cacheMap.get(originalPath) : null;
+      if (pathOnly == null) {
+        pathOnly = Path.getPathWithoutSchemeAndAuthority(originalPath);
+        if (cacheMap != null) {
+          cacheMap.put(originalPath, pathOnly);
+        }
+      }
       newPathToPartitionInfo.put(pathOnly, partDesc);
-    }
+    });
     return newPathToPartitionInfo;
   }
 
@@ -416,9 +400,9 @@ public final class HiveFileFormatUtils {
     
     // We first do exact match, and then do prefix matching. The latter is due to input dir
     // could be /dir/ds='2001-02-21'/part-03 where part-03 is not part of partition
-    Path path = FileUtils.getParentRegardlessOfScheme(dir,pathToPartitionInfo.keySet());
+    Path path = FileUtils.getParentRegardlessOfScheme(dir, pathToPartitionInfo.keySet());
     
-    if(path == null) {
+    if (path == null) {
       // FIXME: old implementation returned null; exception maybe?
       return null;
     }
@@ -427,10 +411,7 @@ public final class HiveFileFormatUtils {
 
   private static boolean foundAlias(Map<Path, List<String>> pathToAliases, Path path) {
     List<String> aliases = pathToAliases.get(path);
-    if ((aliases == null) || (aliases.isEmpty())) {
-      return false;
-    }
-    return true;
+    return (aliases != null) && !aliases.isEmpty();
   }
 
   private static Path getMatchingPath(Map<Path, List<String>> pathToAliases, Path dir) {
@@ -467,7 +448,7 @@ public final class HiveFileFormatUtils {
    **/
   public static List<Operator<? extends OperatorDesc>> doGetWorksFromPath(Map<Path, List<String>> pathToAliases,
       Map<String, Operator<? extends OperatorDesc>> aliasToWork, Path dir) {
-    List<Operator<? extends OperatorDesc>> opList = new ArrayList<Operator<? extends OperatorDesc>>();
+    List<Operator<? extends OperatorDesc>> opList = new ArrayList<>();
 
     List<String> aliases = doGetAliasesFromPath(pathToAliases, dir);
     for (String alias : aliases) {
