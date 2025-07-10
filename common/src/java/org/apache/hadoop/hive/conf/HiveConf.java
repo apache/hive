@@ -92,8 +92,8 @@ public class HiveConf extends Configuration {
   private static boolean loadHiveServer2Config = false;
   private static URL hiveDefaultURL = null;
   private static URL hiveSiteURL = null;
-  private static URL hivemetastoreSiteUrl = null;
-  private static URL newMetastoreSiteUrl = null;
+  private static URL hiveMetastoreSiteUrl = null;
+  private static URL metastoreSiteUrl = null;
   private static URL hiveServer2SiteUrl = null;
 
   private static byte[] confVarByteArray = null;
@@ -199,9 +199,9 @@ public class HiveConf extends Configuration {
 
     // Look for hive-site.xml on the CLASSPATH and log its location if found.
     hiveSiteURL = findConfigFile(classLoader, "hive-site.xml", true);
-    hivemetastoreSiteUrl = findConfigFile(classLoader, "hivemetastore-site.xml", true);
+    hiveMetastoreSiteUrl = findConfigFile(classLoader, "hivemetastore-site.xml", true);
     hiveServer2SiteUrl = findConfigFile(classLoader, "hiveserver2-site.xml", true);
-    newMetastoreSiteUrl = findConfigFile(classLoader, "metastore-site.xml", true);
+    metastoreSiteUrl = findConfigFile(classLoader, "metastore-site.xml", true);
 
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
@@ -6621,11 +6621,11 @@ public class HiveConf extends Configuration {
 
     // load the legacy hivemetastore-site.xml and metastore-site.xml if this is metastore and file exists
     if (isLoadMetastoreConfig()) {
-      if (hivemetastoreSiteUrl != null) {
-        addResource(hivemetastoreSiteUrl);
+      if (hiveMetastoreSiteUrl != null) {
+        addResource(hiveMetastoreSiteUrl);
       }
-      if (newMetastoreSiteUrl != null) {
-        addResource(newMetastoreSiteUrl);
+      if (metastoreSiteUrl != null) {
+        addResource(metastoreSiteUrl);
       }
     }
 
@@ -7033,7 +7033,7 @@ public class HiveConf extends Configuration {
   }
 
   public static void setHivemetastoreSiteUrl(URL location) {
-    newMetastoreSiteUrl = location;
+    metastoreSiteUrl = location;
   }
 
   public static URL getHiveSiteLocation() {
@@ -7041,7 +7041,7 @@ public class HiveConf extends Configuration {
   }
 
   public static URL getMetastoreSiteLocation() {
-    return newMetastoreSiteUrl;
+    return metastoreSiteUrl;
   }
 
   public static URL getHiveServer2SiteLocation() {
