@@ -16,24 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.metadata;
+package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.ExceptionHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
-import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A factory class creating a MetaStoreClient specified in a given configuration.
@@ -41,8 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HiveMetaStoreClientFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClientFactory.class);
 
-  public static IMetaStoreClient newClient(HiveConf conf, HiveMetaHookLoader hookLoader,
-      boolean allowEmbedded, ConcurrentHashMap<String, Long> metaCallTimeMap) throws MetaException {
+  public static IMetaStoreClient newClient(Configuration conf, boolean allowEmbedded) throws MetaException {
     String mscClassName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_CLASS);
     LOG.info("Using {} as a base MetaStoreClient", mscClassName);
     Class<? extends IMetaStoreClient> mscClass = JavaUtils.getClass(mscClassName, IMetaStoreClient.class);
@@ -55,26 +46,13 @@ public class HiveMetaStoreClientFactory {
     } catch (Throwable t) {
       // Reflection by JavaUtils will throw RuntimeException, try to get real MetaException here.
       Throwable rootCause = ExceptionUtils.getRootCause(t);
-      if (rootCause instanceof Exception) {
-        throw ExceptionHandler.newMetaException((Exception) rootCause);
+      if (rootCause instanceof MetaException) {
+        throw (MetaException) rootCause;
+      } else {
+        throw new MetaException(rootCause.getMessage());
       }
-      throw t;
     }
 
-    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, baseMetaStoreClient);
-    IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
-
-    if (conf.getBoolVar(HiveConf.ConfVars.METASTORE_FASTPATH)) {
-      return SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
-    } else {
-      return RetryingMetaStoreClient.getProxy(
-          conf,
-          new Class[] {Configuration.class, IMetaStoreClient.class},
-          new Object[] {conf, clientWithHook},
-          metaCallTimeMap,
-          SynchronizedMetaStoreClient.class.getName()
-      );
-    }
+    return baseMetaStoreClient;
   }
 }

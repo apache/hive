@@ -125,6 +125,7 @@ import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.client.builder.HiveMetaStoreClientBuilder;
+import org.apache.hadoop.hive.metastore.client.HiveMetaStoreClientFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
@@ -136,6 +137,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -5987,6 +5989,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws MetaException
    *           if a working client can't be created
    */
+  @SuppressWarnings("squid:S2095")
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
@@ -5999,6 +6002,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
+    // SG:FIXME
     HiveMetaStoreClientBuilder msClientBuilder = new HiveMetaStoreClientBuilder(conf)
         .newThriftClient(allowEmbedded)
         .enhanceWith(client ->

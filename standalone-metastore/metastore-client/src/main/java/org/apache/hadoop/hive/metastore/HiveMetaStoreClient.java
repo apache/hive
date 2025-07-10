@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.client.HiveMetaStoreClientFactory;
 import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.HiveMetaStoreClientBuilder;
@@ -61,17 +62,22 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
 
   public HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
-    this(conf, hookLoader, new ThriftHiveMetaStoreClient(conf, allowEmbedded));
+    this(conf, hookLoader, HiveMetaStoreClientFactory.newClient(conf, allowEmbedded));
   }
 
   private HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader,
-      ThriftHiveMetaStoreClient thriftClient) {
-    super(createUnderlyingClient(conf, hookLoader, thriftClient), conf);
-    this.thriftClient = thriftClient;
+      IMetaStoreClient baseMetaStoreClient) {
+    super(createUnderlyingClient(conf, hookLoader, baseMetaStoreClient), conf);
+
+    if (baseMetaStoreClient instanceof ThriftHiveMetaStoreClient) {
+      this.thriftClient = (ThriftHiveMetaStoreClient) baseMetaStoreClient;
+    } else {
+      this.thriftClient = null;
+    }
   }
 
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
-      ThriftHiveMetaStoreClient thriftClient) {
+      IMetaStoreClient thriftClient) {
     return new HiveMetaStoreClientBuilder(conf)
        .client(thriftClient)
        .withHooks(hookLoader)
@@ -82,19 +88,35 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
   // methods for test
 
   public boolean createType(Type type) throws TException {
-    return thriftClient.createType(type);
+    if (thriftClient != null) {
+      return thriftClient.createType(type);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public boolean dropType(String type) throws TException {
-    return thriftClient.dropType(type);
+    if (thriftClient != null) {
+      return thriftClient.dropType(type);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public Type getType(String name) throws TException {
-    return thriftClient.getType(name);
+    if (thriftClient != null) {
+      return thriftClient.getType(name);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public Map<String, Type> getTypeAll(String name) throws TException {
-    return thriftClient.getTypeAll(name);
+    if (thriftClient != null) {
+      return thriftClient.getTypeAll(name);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public void createTable(Table tbl, EnvironmentContext envContext) throws TException {
@@ -107,56 +129,99 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
 
   public Table getTable(String catName, String dbName, String tableName,
       boolean getColumnStats, String engine) throws TException {
-    return thriftClient.getTable(catName, dbName, tableName, getColumnStats, engine);
+    if (thriftClient != null) {
+      return thriftClient.getTable(catName, dbName, tableName, getColumnStats, engine);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public void dropTable(String catName, String dbname, String name, boolean deleteData,
       boolean ignoreUnknownTab, EnvironmentContext envContext) throws TException {
-    thriftClient.dropTable(catName, dbname, name, deleteData, ignoreUnknownTab, envContext);
+    if (thriftClient != null) {
+      thriftClient.dropTable(catName, dbname, name, deleteData, ignoreUnknownTab, envContext);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public Partition add_partition(Partition new_part, EnvironmentContext envContext) throws TException {
-    return thriftClient.add_partition(new_part, envContext);
+    if (thriftClient != null) {
+      return thriftClient.add_partition(new_part, envContext);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public Partition appendPartition(String dbName, String tableName, List<String> partVals,
       EnvironmentContext ec) throws TException {
-    return thriftClient.appendPartition(dbName, tableName, partVals, ec);
+    if (thriftClient != null) {
+      return thriftClient.appendPartition(dbName, tableName, partVals, ec);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public Partition appendPartitionByName(String dbName, String tableName, String partName) throws TException {
-    return thriftClient.appendPartitionByName(dbName, tableName, partName);
+    if (thriftClient != null) {
+      return thriftClient.appendPartitionByName(dbName, tableName, partName);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public Partition appendPartitionByName(String dbName, String tableName, String partName,
       EnvironmentContext envContext) throws TException {
-    return thriftClient.appendPartitionByName(dbName, tableName, partName, envContext);
+    if (thriftClient != null) {
+      return thriftClient.appendPartitionByName(dbName, tableName, partName, envContext);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
       EnvironmentContext env_context) throws TException {
-    return thriftClient.dropPartition(db_name, tbl_name, part_vals, env_context);
+    if (thriftClient != null) {
+      return thriftClient.dropPartition(db_name, tbl_name, part_vals, env_context);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public boolean dropPartition(String dbName, String tableName, String partName, boolean dropData,
       EnvironmentContext ec) throws TException {
-    return thriftClient.dropPartition(dbName, tableName, partName, dropData, ec);
+    if (thriftClient != null) {
+      return thriftClient.dropPartition(dbName, tableName, partName, dropData, ec);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public boolean dropPartition(String dbName, String tableName, List<String> partVals)
       throws TException {
-    return thriftClient.dropPartition(dbName, tableName, partVals);
+    if (thriftClient != null) {
+      return thriftClient.dropPartition(dbName, tableName, partVals);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public boolean dropPartitionByName(String dbName, String tableName, String partName,
       boolean deleteData) throws TException {
-    return thriftClient.dropPartitionByName(dbName, tableName, partName, deleteData);
+    if (thriftClient != null) {
+      return thriftClient.dropPartitionByName(dbName, tableName, partName, deleteData);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   public boolean dropPartitionByName(String dbName, String tableName, String partName,
       boolean deleteData, EnvironmentContext envContext) throws TException {
-    return thriftClient.dropPartitionByName(dbName, tableName, partName, deleteData, envContext);
-
+    if (thriftClient != null) {
+      return thriftClient.dropPartitionByName(dbName, tableName, partName, deleteData, envContext);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   @VisibleForTesting
