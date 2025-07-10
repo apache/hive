@@ -2171,13 +2171,6 @@ public class MetastoreConf {
       conf.addResource(hiveSiteURL);
     }
 
-    // Now add hivemetastore-site.xml.  Again we add this before our own config files so that the
-    // newer overrides the older.
-    hiveMetastoreSiteURL = findConfigFile(classLoader, "hivemetastore-site.xml");
-    if (hiveMetastoreSiteURL != null) {
-      conf.addResource(hiveMetastoreSiteURL);
-    }
-
     // Add in our conf file
     metastoreSiteURL = findConfigFile(classLoader, "metastore-site.xml");
     if (metastoreSiteURL !=  null) {

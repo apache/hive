@@ -55,7 +55,7 @@ public class TestRestrictedList {
         new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
     HiveConf.setHivemetastoreSiteUrl(
-        new URL("file://" + new File(confDir).toURI().getPath() + "/hivemetastore-site.xml"));
+        new URL("file://" + new File(confDir).toURI().getPath() + "/metastore-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
     hiveConf = new HiveConf();
