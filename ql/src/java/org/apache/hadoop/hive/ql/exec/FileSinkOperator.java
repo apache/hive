@@ -1126,11 +1126,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
 
         String invalidPartitionVal;
-        if((invalidPartitionVal = HiveStringUtils.getPartitionValWithInvalidCharacter(dpVals, dpCtx.getWhiteListPattern()))!=null) {
-          throw new HiveFatalException("Partition value '" + invalidPartitionVal +
-              "' contains a character not matched by whitelist pattern '" +
-              dpCtx.getWhiteListPattern().toString() + "'.  " + "(configure with " +
-              HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+        if ((invalidPartitionVal =
+                HiveStringUtils.getPartitionValWithInvalidCharacter(
+                    dpVals, dpCtx.getWhiteListPattern()))
+            != null) {
+          throw new HiveFatalException(
+              "Partition value '%s' contains a character not matched by whitelist pattern '%s'. (configure with %s)"
+                  .formatted(
+                      invalidPartitionVal,
+                      dpCtx.getWhiteListPattern().toString(),
+                      ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname));
         }
         fpaths = getDynOutPaths(dpVals, lbDirName);
         dynamicPartitionSpecs.add(fpaths.dpDirForCounters);

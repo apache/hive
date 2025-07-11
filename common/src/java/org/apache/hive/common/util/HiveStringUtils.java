@@ -1080,19 +1080,18 @@ public class HiveStringUtils {
     return false;
   }
 
-  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
-      Pattern partitionValidationPattern) {
-    if (partitionValidationPattern == null) {
-      return null;
+  public static String getPartitionValWithInvalidCharacter(
+      List<String> partVals, Pattern partitionValidationPattern) {
+    String result = null;
+    if (partitionValidationPattern != null) {
+      result =
+          partVals.stream()
+              .filter(partVal -> !partitionValidationPattern.matcher(partVal).matches())
+              .findFirst()
+              .orElse(null);
     }
-  
-    for (String partVal : partVals) {
-      if (!partitionValidationPattern.matcher(partVal).matches()) {
-        return partVal;
-      }
-    }
-  
-    return null;
+
+    return result;
   }
 
   /**
