@@ -267,6 +267,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       //for metastore process, all metastore call should be embedded metastore call.
       conf.set(ConfVars.THRIFT_URIS.getHiveName(), "");
+      conf.set(ConfVars.THRIFT_URIS.getVarname(), "");
 
       // Add shutdown hook.
       shutdownHookMgr.addShutdownHook(() -> {
