@@ -188,9 +188,9 @@ public class SplitGrouper {
       for (Path path : paths) {
         List<String> aliases = mapWork.getPathToAliases().get(path);
         if ((aliases != null) && (aliases.size() == 1)) {
-          Operator<? extends OperatorDesc> op = mapWork.getAliasToWork().get(aliases.getFirst());
+          Operator<? extends OperatorDesc> op = mapWork.getAliasToWork().get(aliases.get(0));
           if (op instanceof TableScanOperator tableScan) {
-            PartitionDesc partitionDesc = mapWork.getAliasToPartnInfo().get(aliases.getFirst());
+            PartitionDesc partitionDesc = mapWork.getAliasToPartnInfo().get(aliases.get(0));
             isMinorCompaction &= AcidUtils.isCompactionTable(partitionDesc.getTableDesc().getProperties());
             if (!tableScan.getConf().isTranscationalTable() && !isMinorCompaction) {
               String splitPath = getFirstSplitPath(splits);
