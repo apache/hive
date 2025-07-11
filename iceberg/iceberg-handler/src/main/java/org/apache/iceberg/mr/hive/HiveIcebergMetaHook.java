@@ -1120,7 +1120,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
     if ((icebergTbl == null || ((BaseTable) icebergTbl).operations().current().formatVersion() == 1) &&
         IcebergTableUtil.isV2Table(newProps)) {
-      List<String> writeModeList = Arrays.asList(DELETE_MODE, UPDATE_MODE, MERGE_MODE);
+      List<String> writeModeList = ImmutableList.of(DELETE_MODE, UPDATE_MODE, MERGE_MODE);
       writeModeList.stream()
           .filter(writeMode -> catalogProperties.get(writeMode) == null)
           .forEach(writeMode -> {

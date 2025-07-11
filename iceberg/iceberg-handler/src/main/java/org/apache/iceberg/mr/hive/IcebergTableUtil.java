@@ -76,7 +76,6 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionStatisticsFile;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.PartitionsTable;
-import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
@@ -104,17 +103,22 @@ import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.iceberg.RowLevelOperationMode.COPY_ON_WRITE;
+import static org.apache.iceberg.RowLevelOperationMode.MERGE_ON_READ;
+
 import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_NAME;
 import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE;
 
 public class IcebergTableUtil {
+  private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
+
+  public static final String SPEC_NOT_FOUND_IN_QUERY_STATE =
+      "Iceberg partition transform spec is not found in QueryState.";
 
   public static final int SPEC_IDX = 1;
   public static final int PART_IDX = 0;
-  private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
 
   private IcebergTableUtil() {
-
   }
 
   /**
@@ -253,7 +257,7 @@ public class IcebergTableUtil {
         .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionTransformSpecList == null) {
-      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
+      LOG.warn(SPEC_NOT_FOUND_IN_QUERY_STATE);
       return null;
     }
     PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
@@ -302,7 +306,7 @@ public class IcebergTableUtil {
         .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionTransformSpecList == null) {
-      LOG.warn("Iceberg partition transform spec is not found in QueryState.");
+      LOG.warn(SPEC_NOT_FOUND_IN_QUERY_STATE);
       return;
     }
     partitionTransformSpecList.forEach(spec -> {
@@ -401,27 +405,47 @@ public class IcebergTableUtil {
   }
 
   public static boolean isV2Table(Map<String, String> props) {
-    return props == null ||
-        "2".equals(props.get(TableProperties.FORMAT_VERSION)) || props.get(TableProperties.FORMAT_VERSION) == null;
+    return IcebergTableUtil.formatVersion(props) >= 2;
+  }
+
+  public static boolean isV2Table(BinaryOperator<String> props) {
+    return IcebergTableUtil.formatVersion(props) >= 2;
+  }
+
+  public static Integer formatVersion(Map<String, String> props) {
+    if (props == null) {
+      return 2; // default to V2
+    }
+    return IcebergTableUtil.formatVersion(props::getOrDefault);
+  }
+
+  private static Integer formatVersion(BinaryOperator<String> props) {
+    String version = props.apply(TableProperties.FORMAT_VERSION, null);
+    if (version == null) {
+      return 2; // default to V2
+    }
+    try {
+      return Integer.parseInt(version);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid format version: " + version, e);
+    }
+  }
+
+  private static String getWriteModeDefault(BinaryOperator<String> props) {
+    return (isV2Table(props) ? MERGE_ON_READ : COPY_ON_WRITE).modeName();
   }
 
   public static boolean isCopyOnWriteMode(Context.Operation operation, BinaryOperator<String> props) {
-    String mode = null;
-    switch (operation) {
-      case DELETE:
-        mode = props.apply(TableProperties.DELETE_MODE,
-            TableProperties.DELETE_MODE_DEFAULT);
-        break;
-      case UPDATE:
-        mode = props.apply(TableProperties.UPDATE_MODE,
-            TableProperties.UPDATE_MODE_DEFAULT);
-        break;
-      case MERGE:
-        mode = props.apply(TableProperties.MERGE_MODE,
-            TableProperties.MERGE_MODE_DEFAULT);
-        break;
-    }
-    return RowLevelOperationMode.COPY_ON_WRITE.modeName().equalsIgnoreCase(mode);
+    final String mode = switch (operation) {
+      case DELETE -> props.apply(
+          TableProperties.DELETE_MODE, getWriteModeDefault(props));
+      case UPDATE -> props.apply(
+          TableProperties.UPDATE_MODE, getWriteModeDefault(props));
+      case MERGE -> props.apply(
+          TableProperties.MERGE_MODE, getWriteModeDefault(props));
+      default -> null;
+    };
+    return COPY_ON_WRITE.modeName().equalsIgnoreCase(mode);
   }
 
   public static boolean isFanoutEnabled(Map<String, String> props) {
@@ -553,7 +577,7 @@ public class IcebergTableUtil {
         .filter(spec -> {
           List<String> specFieldNames = spec.fields().stream()
               .map(PartitionField::name)
-              .collect(Collectors.toList());
+              .toList();
           return specFieldNames.equals(fieldNames);
         })
         .findFirst() // Supposed to be only one matching spec

@@ -19,17 +19,27 @@
 
 package org.apache.iceberg.mr.hive.writer;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableScan;
 import org.apache.iceberg.deletes.DeleteGranularity;
+import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.ContentFileUtil;
+import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.PropertyUtil;
 
 import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
@@ -38,6 +48,7 @@ import static org.apache.iceberg.TableProperties.DELETE_DEFAULT_FILE_FORMAT;
 
 public class WriterBuilder {
   private final Table table;
+  private final Map<String, DeleteFileSet> rewritableDeletes;
   private final Context context;
   private String tableName;
   private TaskAttemptID attemptID;
@@ -54,6 +65,7 @@ public class WriterBuilder {
   private WriterBuilder(Table table) {
     this.table = table;
     this.context = new Context(table.properties());
+    this.rewritableDeletes = rewritableDeletes();
   }
 
   public static WriterBuilder builderFor(Table table) {
@@ -120,25 +132,67 @@ public class WriterBuilder {
 
     HiveIcebergWriter writer;
     boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, table.properties()::getOrDefault);
+
     if (isCOW) {
       writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, context);
     } else {
-      switch (operation) {
-        case DELETE:
-          writer = new HiveIcebergDeleteWriter(table, writerFactory, deleteFileFactory, context);
-          break;
-        case OTHER:
-          writer = new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
-          break;
-        default:
-          // Update and Merge should be splitted to inserts and deletes
-          throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
-            operation.name());
-      }
+      writer = switch (operation) {
+        case DELETE ->
+            new HiveIcebergDeleteWriter(table, rewritableDeletes, writerFactory, deleteFileFactory, context);
+        case OTHER ->
+            new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
+        default ->
+            // Update and Merge should be splitted to inserts and deletes
+            throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
+                operation.name());
+      };
     }
 
     WriterRegistry.registerWriter(attemptID, tableName, writer);
     return writer;
+  }
+
+  private Map<String, DeleteFileSet> rewritableDeletes() {
+    TableScan scan = table.newScan().caseSensitive(false).ignoreResiduals();
+    if (scan != null && shouldRewriteDeletes()) {
+      return rewritableDeletes(scan, context.useDVs());
+    }
+    return null;
+  }
+
+  private boolean shouldRewriteDeletes() {
+    // deletes must be rewritten when there are DVs and file-scoped deletes
+    return context.useDVs() || context.deleteGranularity() == DeleteGranularity.FILE;
+  }
+
+  private static Map<String, DeleteFileSet> rewritableDeletes(TableScan scan, boolean forDVs) {
+    Map<String, DeleteFileSet> rewritableDeletes = Maps.newHashMap();
+
+    try (CloseableIterable<FileScanTask> tasksIterable = scan.planFiles()) {
+      tasksIterable.forEach(task -> {
+        FileScanTask fileScanTask = task.asFileScanTask();
+
+        for (DeleteFile deleteFile : fileScanTask.deletes()) {
+          if (shouldRewrite(deleteFile, forDVs)) {
+            rewritableDeletes
+                .computeIfAbsent(fileScanTask.file().location(), ignored -> DeleteFileSet.create())
+                .add(deleteFile);
+          }
+        }
+      });
+    } catch (IOException e) {
+      throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
+    }
+    return rewritableDeletes;
+  }
+
+  // for DVs all position deletes must be rewritten
+  // for position deletes, only file-scoped deletes must be rewritten
+  private static boolean shouldRewrite(DeleteFile deleteFile, boolean forDVs) {
+    if (forDVs) {
+      return deleteFile.content() != FileContent.EQUALITY_DELETES;
+    }
+    return ContentFileUtil.isFileScoped(deleteFile);
   }
 
   static class Context {
@@ -152,26 +206,27 @@ public class WriterBuilder {
     private boolean inputOrdered;
     private boolean isMergeTask;
     private final boolean skipRowData;
+    private final boolean useDVs;
 
     Context(Map<String, String> properties) {
       String dataFileFormatName =
           properties.getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT);
       this.dataFileFormat = FileFormat.valueOf(dataFileFormatName.toUpperCase(Locale.ENGLISH));
 
-      this.targetDataFileSize = PropertyUtil.propertyAsLong(properties,
-          TableProperties.WRITE_TARGET_FILE_SIZE_BYTES, TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
-
       String deleteFileFormatName =
           properties.getOrDefault(DELETE_DEFAULT_FILE_FORMAT, dataFileFormatName);
       this.deleteFileFormat = FileFormat.valueOf(deleteFileFormatName.toUpperCase(Locale.ENGLISH));
 
+      this.targetDataFileSize = PropertyUtil.propertyAsLong(properties,
+          TableProperties.WRITE_TARGET_FILE_SIZE_BYTES, TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
       this.targetDeleteFileSize = PropertyUtil.propertyAsLong(properties,
           TableProperties.DELETE_TARGET_FILE_SIZE_BYTES, TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
 
-      this.skipRowData = PropertyUtil.propertyAsBoolean(properties,
-        ICEBERG_DELETE_SKIPROWDATA, ICEBERG_DELETE_SKIPROWDATA_DEFAULT);
-
       this.deleteGranularity = DeleteGranularity.PARTITION;
+      this.useDVs = IcebergTableUtil.formatVersion(properties) > 2;
+
+      this.skipRowData = useDVs || PropertyUtil.propertyAsBoolean(properties,
+          ICEBERG_DELETE_SKIPROWDATA, ICEBERG_DELETE_SKIPROWDATA_DEFAULT);
     }
 
     FileFormat dataFileFormat() {
@@ -208,6 +263,10 @@ public class WriterBuilder {
 
     boolean skipRowData() {
       return skipRowData;
+    }
+
+    public boolean useDVs() {
+      return useDVs;
     }
   }
 }
