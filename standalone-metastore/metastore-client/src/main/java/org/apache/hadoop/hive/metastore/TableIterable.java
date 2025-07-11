@@ -30,7 +30,6 @@ import org.apache.thrift.TException;
  * on the resulting Table objects. It batches the calls to
  * IMetaStoreClient.getTableObjectsByName to avoid OOM issues in HS2 (with
  * embedded metastore) or MetaStore server (if HS2 is using remote metastore).
- *
  */
 public class TableIterable implements Iterable<Table> {
 
@@ -38,50 +37,48 @@ public class TableIterable implements Iterable<Table> {
   public Iterator<Table> iterator() {
     return new Iterator<>() {
 
-        private final Iterator<String> tableNamesIter = tableNames.iterator();
-        private Iterator<org.apache.hadoop.hive.metastore.api.Table> batchIter = null;
+      private final Iterator<String> tableNamesIter = tableNames.iterator();
+      private Iterator<org.apache.hadoop.hive.metastore.api.Table> batchIter = null;
 
-        @Override
-        public boolean hasNext() {
-            return ((batchIter != null) && batchIter.hasNext()) || tableNamesIter.hasNext();
+      @Override
+      public boolean hasNext() {
+        return ((batchIter != null) && batchIter.hasNext()) || tableNamesIter.hasNext();
+      }
+
+      @Override
+      public Table next() {
+        if ((batchIter == null) || !batchIter.hasNext()) {
+          getNextBatch();
         }
+        return batchIter.next();
+      }
 
-        @Override
-        public Table next() {
-            if ((batchIter == null) || !batchIter.hasNext()) {
-                getNextBatch();
-            }
-            return batchIter.next();
+      private void getNextBatch() {
+        // get next batch of table names in this list
+        List<String> nameBatch = new ArrayList<>();
+        int batchCounter = 0;
+        while (batchCounter < batchSize && tableNamesIter.hasNext()) {
+          nameBatch.add(tableNamesIter.next());
+          batchCounter++;
         }
+        // get the Table objects for this batch of table names and get iterator
+        // on it
 
-        private void getNextBatch() {
-            // get next batch of table names in this list
-            List<String> nameBatch = new ArrayList<>();
-            int batchCounter = 0;
-            while (batchCounter < batchSize && tableNamesIter.hasNext()) {
-                nameBatch.add(tableNamesIter.next());
-                batchCounter++;
-            }
-            // get the Table objects for this batch of table names and get iterator
-            // on it
-
-            try {
-                if (catName != null) {
-                    batchIter = msc.getTableObjectsByName(catName, dbname, nameBatch).iterator();
-                } else {
-                    batchIter = msc.getTableObjectsByName(dbname, nameBatch).iterator();
-                }
-            } catch (TException e) {
-                throw new RuntimeException(e);
-            }
-
+        try {
+          if (catName != null) {
+            batchIter = msc.getTableObjectsByName(catName, dbname, nameBatch).iterator();
+          } else {
+            batchIter = msc.getTableObjectsByName(dbname, nameBatch).iterator();
+          }
+        } catch (TException e) {
+          throw new RuntimeException(e);
         }
+      }
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException(
-                    "TableIterable is a read-only iterable and remove() is unsupported");
-        }
+      @Override
+      public void remove() {
+        throw new IllegalStateException("TableIterable is a read-only iterable and remove() is unsupported");
+      }
     };
   }
 
@@ -96,15 +93,10 @@ public class TableIterable implements Iterable<Table> {
    * object,a db name and a table name list.
    */
   public TableIterable(IMetaStoreClient msc, String dbname, List<String> tableNames, int batchSize) {
-    this.msc = msc;
-    this.catName = null;
-    this.dbname = dbname;
-    this.tableNames = tableNames;
-    this.batchSize = batchSize;
+    this(msc, null, dbname, tableNames, batchSize);
   }
 
-  public TableIterable(IMetaStoreClient msc, String catName, String dbname, List<String>
-        tableNames, int batchSize) {
+  public TableIterable(IMetaStoreClient msc, String catName, String dbname, List<String> tableNames, int batchSize) {
     this.msc = msc;
     this.catName = catName;
     this.dbname = dbname;
