@@ -384,15 +384,7 @@ public class ObjectStore implements RawStore, Configurable {
     transactionStatus = TXN_STATUS.NO_STATE;
 
     initialize();
-
-    String partitionValidationRegex =
-        MetastoreConf.getVar(this.conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN);
-    if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
-      partitionValidationPattern = Pattern.compile(partitionValidationRegex);
-    } else {
-      partitionValidationPattern = null;
-    }
-
+    
     // Note, if metrics have not been initialized this will return null, which means we aren't
     // using metrics.  Thus we should always check whether this is non-null before using.
     MetricRegistry registry = Metrics.getRegistry();
@@ -2773,8 +2765,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private boolean isValidPartition(
       Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists) throws MetaException {
-    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
-        partitionValidationPattern);
+    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(), conf);
     boolean doesExist = doesPartitionExist(part.getCatName(),
         part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
     if (doesExist && !ifNotExists) {

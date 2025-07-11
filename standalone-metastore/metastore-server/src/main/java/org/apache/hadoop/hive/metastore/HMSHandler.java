@@ -520,14 +520,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return getConf().get(key, confVar.getDefaultVal().toString());
   }
 
-  private Pattern getPartitionValidationRegex() {
-    Configuration conf = HMSHandlerContext.getConfiguration().orElse(this.conf);
-    String partitionValidationRegex = MetastoreConf.getVar(conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN);
-    if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
-       return Pattern.compile(partitionValidationRegex);
-    }
-    return null;
-  }
+
 
   /**
    * Get a cached RawStore.
@@ -4048,7 +4041,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       part.setTableName(tableName);
       part.setValues(part_vals);
 
-      MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, getPartitionValidationRegex());
+      MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, getConf());
 
       tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
       if (tbl == null) {
@@ -4461,8 +4454,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void validatePartition(final Partition part, final String catName,
                                     final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd)
       throws MetaException, TException {
-    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
-        getPartitionValidationRegex());
+    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(), getConf());
     if (part.getDbName() == null || part.getTableName() == null) {
       throw new MetaException("The database and table name must be set in the partition.");
     }
@@ -6011,8 +6003,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, part_vals, new_part, this));
       if (part_vals != null && !part_vals.isEmpty()) {
-        MetaStoreServerUtils.validatePartitionNameCharacters(new_part.getValues(),
-            getPartitionValidationRegex());
+        MetaStoreServerUtils.validatePartitionNameCharacters(new_part.getValues(), getConf());
       }
 
       oldPart = alterHandler.alterPartition(getMS(), wh, catName, db_name, tbl_name,
@@ -8656,11 +8647,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       if (throw_exception) {
-        MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, getPartitionValidationRegex());
+        MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, getConf());
         ret = true;
       } else {
-        ret = MetaStoreServerUtils.partitionNameHasValidCharacters(part_vals,
-          getPartitionValidationRegex());
+        ret =
+            MetaStoreServerUtils.partitionNameHasValidCharacters(
+                part_vals, MetaStoreServerUtils.getPartitionValidationRegex(getConf()));
       }
     } catch (Exception e) {
       ex = e;
