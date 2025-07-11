@@ -78,8 +78,8 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
   }
 
   private static IMetaStoreClient createUnderlyingClient(Configuration conf, HiveMetaHookLoader hookLoader,
-      IMetaStoreClient thriftClient) {
-    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, thriftClient);
+      IMetaStoreClient baseMetaStoreClient) {
+    IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, baseMetaStoreClient);
     IMetaStoreClient synchronizedClient = SynchronizedMetaStoreClient.newClient(conf, clientWithHook);
     return synchronizedClient;
   }
