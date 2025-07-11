@@ -150,7 +150,7 @@ public class HiveTestEnvSetup extends ExternalResource {
       FileUtils.copyDirectory(new File(DATA_DIR + "/conf/tez"), confFolder);
 
       HiveConf.setHiveSiteLocation(new File(confFolder, "hive-site.xml").toURI().toURL());
-      HiveConf.setHivemetastoreSiteUrl(new File(confFolder, "hivemetastore-site.xml").toURI().toURL());
+      HiveConf.setMetastoreSiteLocation(new File(confFolder, "metastore-site.xml").toURI().toURL());
       // FIXME: hiveServer2SiteUrl is not settable?
 
       ctx.hiveConf = new HiveConf(IDriver.class);

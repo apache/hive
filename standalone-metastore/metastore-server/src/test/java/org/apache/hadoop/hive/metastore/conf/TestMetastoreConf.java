@@ -219,7 +219,7 @@ public class TestMetastoreConf {
 
   @Test
   public void readHiveMetastoreSiteWithHiveConfDir() throws IOException {
-    createConfFile("hivemetastore-site.xml", false, "HIVE_CONF_DIR", instaMap(
+    createConfFile("metastore-site.xml", false, "HIVE_CONF_DIR", instaMap(
         "test.double", "1.8"
     ));
     conf = MetastoreConf.newMetastoreConf();
@@ -229,7 +229,7 @@ public class TestMetastoreConf {
 
   @Test
   public void readHiveMetastoreSiteWithHiveHomeDir() throws IOException {
-    createConfFile("hivemetastore-site.xml", true, "HIVE_HOME", instaMap(
+    createConfFile("metastore-site.xml", true, "HIVE_HOME", instaMap(
         "test.bool", "false"
     ));
     conf = MetastoreConf.newMetastoreConf();
