@@ -135,8 +135,8 @@ def hdbPodTemplate(closure) {
         resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
-        resourceRequestEphemeralStorage: '10Gi',
-        resourceLimitEphemeralStorage: '20Gi',
+        resourceRequestEphemeralStorage: '15Gi',
+        resourceLimitEphemeralStorage: '30Gi',
         envVars: [
             envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2376'),
             envVar(key: 'DOCKER_TLS_VERIFY', value: '1'),
