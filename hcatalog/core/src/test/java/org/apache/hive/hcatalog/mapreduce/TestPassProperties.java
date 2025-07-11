@@ -114,7 +114,7 @@ public class TestPassProperties {
       assertTrue(((InvocationTargetException)e.getCause().getCause().getCause()).getTargetException().getMessage().contains(
           "Could not connect to meta store using any of the URIs provided"));
       assertTrue(e.getCause().getMessage().contains(
-          "Unable to instantiate org.apache.hive.hcatalog.common.HiveClientCache$CacheableHiveMetaStoreClient"));
+          "Unable to instantiate org.apache.hadoop.hive.metastore.HiveClientCache$CacheableHiveMetaStoreClient"));
     }
     assertTrue(caughtException);
   }
@@ -132,7 +132,7 @@ public class TestPassProperties {
   }
 
   private HCatSchema getSchema() throws HCatException {
-    HCatSchema schema = new HCatSchema(new ArrayList<HCatFieldSchema>());
+    HCatSchema schema = new HCatSchema(new ArrayList<>());
     schema.append(new HCatFieldSchema("a0", HCatFieldSchema.Type.INT,
         ""));
     schema.append(new HCatFieldSchema("a1",
@@ -141,6 +141,5 @@ public class TestPassProperties {
         HCatFieldSchema.Type.STRING, ""));
     return schema;
   }
-
 
 }
