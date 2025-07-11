@@ -39,11 +39,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -571,5 +573,14 @@ public class IcebergTableUtil {
         table.currentSnapshot().allManifests(table.io()).parallelStream()
             .map(ManifestFile::partitionSpecId)
             .anyMatch(id -> id != table.spec().specId());
+  }
+
+  public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern,
+      String tablePattern) {
+    return new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(
+            "EXTERNAL_TABLE")
+        .tableCondition(
+            hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "table_type like \"ICEBERG\" ")
+        .build();
   }
 }

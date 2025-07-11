@@ -38,13 +38,11 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.apache.hadoop.hive.ql.txn.compactor.TableOptimizer;
-import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.mr.hive.compaction.evaluator.CompactionEvaluator;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-import org.apache.thrift.TException;
 
 public class IcebergTableOptimizer extends TableOptimizer {
   private HiveMetaStoreClient client;
@@ -71,34 +69,21 @@ public class IcebergTableOptimizer extends TableOptimizer {
    * @param skipTables A {@link Set} of fully qualified table names to explicitly skip during the scan.
    * @return A {@link Set} of {@link CompactionInfo} objects representing tables and/or partitions
    * identified as eligible for compaction.
-   * @throws MetaException If an unrecoverable error occurs during Metastore communication or
    * during {@link SessionState} initialization.
    */
   @Override
   public Set<CompactionInfo> findPotentialCompactions(long lastChecked, ShowCompactResponse currentCompactions,
-      Set<String> skipDBs, Set<String> skipTables) throws MetaException {
+      Set<String> skipDBs, Set<String> skipTables) {
     Set<CompactionInfo> compactionTargets = Sets.newHashSet();
-    try {
-      SessionState sessionState = SessionState.get();
-      if (sessionState == null) {
-        sessionState = new SessionState(conf);
-        SessionState.start(sessionState);
-      }
-    } catch (Exception e) {
-      throw new MetaException(String.format("Error while finding compaction targets for Iceberg tables: %s",
-          e.getMessage()));
-    }
 
-    getDatabases().stream()
-        .filter(dbName -> !skipDBs.contains(dbName))
-        .flatMap(dbName -> getTables(dbName).stream()
-            .map(tableName -> TableName.getDbTable(dbName, tableName)))
-        .filter(qualifiedTableName -> !skipTables.contains(qualifiedTableName))
-        .map(qualifiedTableName -> Pair.of(qualifiedTableName, resolveMetastoreTable(qualifiedTableName)))
+    getTables().stream()
+        .filter(table -> !skipDBs.contains(table.getDb()))
+        .filter(table -> !skipTables.contains(table.getNotEmptyDbTable()))
+        .map(table -> Pair.of(table, resolveMetastoreTable(table.getNotEmptyDbTable())))
         .filter(tablePair -> MetaStoreUtils.isIcebergTable(tablePair.getValue().getParameters()))
         .filter(tablePair -> {
           long currentSnapshotId = Long.parseLong(tablePair.getValue().getParameters().get("current-snapshot-id"));
-          Long cachedSnapshotId = snapshotIdCache.get(tablePair.getKey());
+          Long cachedSnapshotId = snapshotIdCache.get(tablePair.getKey().getNotEmptyDbTable());
           return cachedSnapshotId == null || cachedSnapshotId != currentSnapshotId;
         })
         .forEach(tablePair -> {
@@ -116,25 +101,17 @@ public class IcebergTableOptimizer extends TableOptimizer {
                 currentCompactions, skipDBs, skipTables);
           }
 
-          snapshotIdCache.put(tablePair.getKey(), icebergTable.currentSnapshot().snapshotId());
+          snapshotIdCache.put(tablePair.getKey().getNotEmptyDbTable(), icebergTable.currentSnapshot().snapshotId());
         });
 
     return compactionTargets;
   }
 
-  private List<String> getDatabases() {
+  private List<org.apache.hadoop.hive.common.TableName> getTables() {
     try {
-      return client.getAllDatabases();
-    } catch (TException e) {
-      throw new RuntimeMetaException(e, "Error getting database names");
-    }
-  }
-
-  private List<String> getTables(String dbName) {
-    try {
-      return client.getAllTables(dbName);
-    } catch (TException e) {
-      throw new RuntimeMetaException(e, "Error getting table names of %s database", dbName);
+      return IcebergTableUtil.getTableFetcher(client, null, "*", null).getTables();
+    } catch (Exception e) {
+      throw new RuntimeMetaException(e, "Error getting table names");
     }
   }
 
@@ -157,7 +134,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
   }
 
   public void init() throws MetaException {
-    client = new HiveMetaStoreClient(conf);
+    client = new HiveMetaStoreClient(new HiveConf());
     snapshotIdCache = Maps.newConcurrentMap();
   }
 

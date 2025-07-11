@@ -30,16 +30,13 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +81,7 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
     try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
       // TODO: HIVE-28952 – modify TableFetcher to return HMS Table API objects directly,
       // avoiding the need for subsequent msc.getTable calls to fetch each matched table individually
-      List<TableName> tables = getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables();
+      List<TableName> tables = IcebergTableUtil.getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables();
 
       LOG.debug("{} candidate tables found", tables.size());
 
@@ -99,15 +96,6 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
     } catch (Exception e) {
       throw new RuntimeException("Error while getting tables from metastore", e);
     }
-  }
-
-  @VisibleForTesting
-  TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern, String tablePattern) {
-    return new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(
-            "EXTERNAL_TABLE")
-        .tableCondition(
-            hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "table_type like \"ICEBERG\" ")
-        .build();
   }
 
   private Table getIcebergTable(TableName tableName, IMetaStoreClient msc) {
