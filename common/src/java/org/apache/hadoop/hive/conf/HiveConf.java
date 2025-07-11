@@ -7032,12 +7032,21 @@ public class HiveConf extends Configuration {
     hiveSiteURL = location;
   }
 
+  /**
+   * @deprecated use setMetastoreSiteLocation(URL location)
+   * @param location the Metastore property source
+   */
+  @Deprecated
   public static void setHivemetastoreSiteUrl(URL location) {
-    metastoreSiteUrl = location;
+    setMetastoreSiteLocation(location);
   }
 
   public static URL getHiveSiteLocation() {
     return hiveSiteURL;
+  }
+
+  public static void setMetastoreSiteLocation(URL location) {
+    metastoreSiteUrl = location;
   }
 
   public static URL getMetastoreSiteLocation() {

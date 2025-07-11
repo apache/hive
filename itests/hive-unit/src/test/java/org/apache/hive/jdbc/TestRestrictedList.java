@@ -54,7 +54,7 @@ public class TestRestrictedList {
     HiveConf.setHiveSiteLocation(
         new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
-    HiveConf.setHivemetastoreSiteUrl(
+    HiveConf.setMetastoreSiteLocation(
         new URL("file://" + new File(confDir).toURI().getPath() + "/metastore-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
@@ -121,7 +121,7 @@ public class TestRestrictedList {
     if (miniHS2 != null && miniHS2.isStarted()) {
       miniHS2.stop();
     }
-    HiveConf.setHivemetastoreSiteUrl(oldHiveMetastoreSiteURL);
+    HiveConf.setMetastoreSiteLocation(oldHiveMetastoreSiteURL);
     HiveConf.setHiveSiteLocation(oldHiveSiteURL);
   }
 
