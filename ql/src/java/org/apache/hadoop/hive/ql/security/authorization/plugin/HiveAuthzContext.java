@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
@@ -27,7 +28,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
  * auditing and/or authorization.
  * It is an immutable class. Builder inner class is used instantiate it.
  */
-@LimitedPrivate(value = { "Apache Argus (incubating)" })
+@LimitedPrivate(value = {"Apache Argus (incubating)"})
 @Evolving
 public final class HiveAuthzContext {
 
@@ -35,6 +36,7 @@ public final class HiveAuthzContext {
     private String commandString;
     private List<String> forwardedAddresses;
     private String userIpAddress;
+    private Map<String, Object> clientConfig;
 
     /**
      * Get user's ip address. This is set only if the authorization api is
@@ -53,6 +55,7 @@ public final class HiveAuthzContext {
     public String getCommandString() {
       return commandString;
     }
+
     public void setCommandString(String commandString) {
       this.commandString = commandString;
     }
@@ -60,11 +63,20 @@ public final class HiveAuthzContext {
     public List<String> getForwardedAddresses() {
       return forwardedAddresses;
     }
+
     public void setForwardedAddresses(List<String> forwardedAddresses) {
       this.forwardedAddresses = forwardedAddresses;
     }
 
-    public HiveAuthzContext build(){
+    public Map<String, Object> getClientConfig() {
+      return clientConfig;
+    }
+
+    public void setClientConfig(Map<String, Object> clientConfig) {
+      this.clientConfig = clientConfig;
+    }
+
+    public HiveAuthzContext build() {
       return new HiveAuthzContext(this);
     }
   }
@@ -72,11 +84,13 @@ public final class HiveAuthzContext {
   private final String userIpAddress;
   private final String commandString;
   private final List<String> forwardedAddresses;
+  private final Map<String, Object> clientConfig;
 
   private HiveAuthzContext(Builder builder) {
     this.userIpAddress = builder.userIpAddress;
     this.commandString = builder.commandString;
     this.forwardedAddresses = builder.forwardedAddresses;
+    this.clientConfig = builder.clientConfig;
   }
 
   public String getIpAddress() {
@@ -91,9 +105,13 @@ public final class HiveAuthzContext {
     return forwardedAddresses;
   }
 
+  public Map<String, Object> getClientConfig() {
+    return clientConfig;
+  }
+
   @Override
   public String toString() {
-    return "QueryContext [commandString=" + commandString + ", forwardedAddresses=" + forwardedAddresses + "]";
+    return "QueryContext [commandString=" + commandString + ", forwardedAddresses=" + forwardedAddresses + ", clientConfig=" + clientConfig + "]";
   }
 
 }

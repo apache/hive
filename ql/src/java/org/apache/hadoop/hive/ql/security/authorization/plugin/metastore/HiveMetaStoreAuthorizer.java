@@ -79,6 +79,24 @@ import java.util.stream.Collectors;
 public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implements MetaStoreFilterHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreAuthorizer.class);
 
+  /**
+   * The client configuration.
+   */
+  private static final ThreadLocal<Map<String, Object>> cConfig = new ThreadLocal<Map<String, Object>>() {
+    @Override
+    protected Map<String, Object> initialValue() {
+      return null;
+    }
+  };
+
+  public static void setClientConfig(Map<String, Object> map) {
+    cConfig.set(map);
+  }
+
+  public static Map<String, Object> getClientConfig() {
+    return cConfig.get();
+  }
+
   private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
 
     @Override
@@ -317,6 +335,17 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
       List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
       HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      Map<String, Object> clientConfig = cConfig.get();
+      if (clientConfig != null) {
+        HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
+        builder.setClientConfig(clientConfig);
+        if (hiveAuthzContext != null) {
+          builder.setCommandString(hiveAuthzContext.getCommandString());
+          builder.setUserIpAddress(hiveAuthzContext.getIpAddress());
+          builder.setForwardedAddresses(hiveAuthzContext.getForwardedAddresses());
+        }
+        hiveAuthzContext = builder.build();
+      }
       List<HivePrivilegeObject> filteredHivePrivilegeObjects =
           hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
       if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
@@ -457,6 +486,17 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
       List<HivePrivilegeObject> hivePrivilegeObjects = hiveMetaStoreAuthzInfo.getInputHObjs();
       HiveAuthzContext hiveAuthzContext = hiveMetaStoreAuthzInfo.getHiveAuthzContext();
+      Map<String, Object> clientConfig = cConfig.get();
+      if (clientConfig != null) {
+        HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
+        builder.setClientConfig(clientConfig);
+        if (hiveAuthzContext != null) {
+          builder.setCommandString(hiveAuthzContext.getCommandString());
+          builder.setUserIpAddress(hiveAuthzContext.getIpAddress());
+          builder.setForwardedAddresses(hiveAuthzContext.getForwardedAddresses());
+        }
+        hiveAuthzContext = builder.build();
+      }
       List<HivePrivilegeObject> filteredHivePrivilegeObjects =
           hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
       if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
