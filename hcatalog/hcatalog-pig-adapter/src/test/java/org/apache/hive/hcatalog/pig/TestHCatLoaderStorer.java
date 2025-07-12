@@ -66,7 +66,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       dataDir.toURI().getPath() + "'", driver);
     AbstractHCatLoaderTest.dropTable(tblName2, driver);
     AbstractHCatLoaderTest.createTableDefaultDB(tblName2, "my_small_int smallint, " +
-            "my_tiny_int " + "tinyint", null, driver, "textfile");
+            "my_tiny_int " + "tinyint", null, driver, "textfile", false);
 
     LOG.debug("File=" + INPUT_FILE_NAME);
     TestHCatStorer.dumpFile(INPUT_FILE_NAME);
