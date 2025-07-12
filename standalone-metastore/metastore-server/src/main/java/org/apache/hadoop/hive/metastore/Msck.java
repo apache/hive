@@ -143,6 +143,7 @@ public class Msck {
       // accessed through getPartitionNotOnFS
       result = checker.checkMetastore(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName(),
         msckInfo.getFilterExp(), table);
+      msckInfo.setSmallFilesStats(result.getSmallFilesStats());
       Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       Set<CheckResult.PartitionResult> partsNotInFs = result.getPartitionsNotOnFs();
       Set<CheckResult.PartitionResult> expiredPartitions = result.getExpiredPartitions();
