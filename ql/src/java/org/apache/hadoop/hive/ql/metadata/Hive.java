@@ -124,15 +124,14 @@ import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.client.HiveMetaStoreClientFactory;
 import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
-import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -5988,7 +5987,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * File based store support is removed
    *
    * @returns a Meta Store Client
-   * @throws HiveMetaException
+   * @throws MetaException
    *           if a working client can't be created
    */
   @SuppressWarnings("squid:S2095")
@@ -6004,8 +6003,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    IMetaStoreClient thriftClient = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
-    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, thriftClient);
+    IMetaStoreClient baseMetaStoreClient = HiveMetaStoreClientFactory.newClient(conf, allowEmbedded);
+    IMetaStoreClient clientWithLocalCache = HiveMetaStoreClientWithLocalCache.newClient(conf, baseMetaStoreClient);
     IMetaStoreClient sessionLevelClient = SessionHiveMetaStoreClient.newClient(conf, clientWithLocalCache);
     IMetaStoreClient clientWithHook = HookEnabledMetaStoreClient.newClient(conf, hookLoader, sessionLevelClient);
 
