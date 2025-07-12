@@ -22,30 +22,19 @@
 
 <property>
   <name>hive.dummyparam.test.server.specific.config.override</name>
-  <value>from.hivemetastore-site.xml</value>
+  <value>from.metastore-site.xml</value>
   <description>Using dummy param to test server specific configuration</description>
 </property>
 
 <property>
   <name>hive.dummyparam.test.server.specific.config.metastoresite</name>
-  <value>from.hivemetastore-site.xml</value>
+  <value>from.metastore-site.xml</value>
   <description>Using dummy param to test server specific configuration</description>
-</property>
-
-<property>
-  <name>hive.conf.restricted.list</name>
-  <value>from.hivemetastore-site.xml</value>
-  <description>Using property defined in HiveConf.ConfVars to test System property overriding</description>
-</property>
-
-<property>
-  <name>metastore.metadata.transformer.class</name>
-  <value>  </value>
 </property>
 
 <property>
   <name>metastore.lock.sleep.between.retries</name>
   <value>2</value>
 </property>
-  
+
 </configuration>
