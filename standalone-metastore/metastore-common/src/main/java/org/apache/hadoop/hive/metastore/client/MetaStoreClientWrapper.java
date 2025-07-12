@@ -836,6 +836,11 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
+  public ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) throws TException{
+    return delegate.getReplayedTxnsForPolicy(replPolicy);
+  }
+
+  @Override
   public void commitTxnWithKeyValue(long txnid, long tableId, String key, String value)
       throws NoSuchTxnException, TxnAbortedException, TException {
     delegate.commitTxnWithKeyValue(txnid, tableId, key, value);

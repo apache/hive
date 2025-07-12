@@ -307,6 +307,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_all_packages(ListPackageRequest request)')
     print('  void drop_package(DropPackageRequest request)')
     print('   get_all_write_event_info(GetAllWriteEventInfoRequest request)')
+    print('  ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(string policyName)')
     print('  string getName()')
     print('  string getVersion()')
     print('  fb_status getStatus()')
@@ -2096,6 +2097,12 @@ elif cmd == 'get_all_write_event_info':
         print('get_all_write_event_info requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_all_write_event_info(eval(args[0]),))
+
+elif cmd == 'get_replayed_txns_for_policy':
+    if len(args) != 1:
+        print('get_replayed_txns_for_policy requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_replayed_txns_for_policy(args[0],))
 
 elif cmd == 'getName':
     if len(args) != 0:

@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
+import org.apache.hadoop.hive.metastore.api.ReplayedTxnsForPolicyResult;
 import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.SeedTxnIdRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -191,6 +192,11 @@ public interface TxnStore extends Configurable {
   @Transactional(POOL_TX)
   @RetrySemantics.ReadOnly
   List<Long> getOpenTxnForPolicy(List<Long> openTxnList, String replPolicy);
+
+  @SqlRetry
+  @Transactional(POOL_TX)
+  @RetrySemantics.ReadOnly
+  ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) throws MetaException;
 
   /**
    * Get the count for open transactions.

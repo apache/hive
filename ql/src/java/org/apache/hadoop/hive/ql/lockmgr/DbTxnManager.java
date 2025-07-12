@@ -603,6 +603,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public Map<String, String> getReplayedTxnsForPolicy(String replPolicy) throws LockException {
+      try {
+          return getMS().getReplayedTxnsForPolicy(replPolicy).getReplTxnMapEntry();
+      } catch (TException | LockException e) {
+        throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+      }
+  }
+
+  @Override
   public void rollbackTxn() throws LockException {
     if (!isTxnOpen()) {
       throw new RuntimeException("Attempt to rollback before opening a transaction");
