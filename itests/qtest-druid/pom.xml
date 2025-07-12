@@ -99,6 +99,10 @@
       <version>${druid.version}</version>
       <exclusions>
         <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs-client</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-servlet</artifactId>
         </exclusion>

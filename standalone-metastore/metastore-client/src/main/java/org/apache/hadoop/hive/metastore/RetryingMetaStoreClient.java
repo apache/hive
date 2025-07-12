@@ -29,8 +29,9 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -65,15 +66,21 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final UserGroupInformation ugi;
   private final int retryLimit;
   private final long retryDelaySeconds;
-  private final ConcurrentHashMap<String, Long> metaCallTimeMap;
+  private final Map<String, Long> metaCallTimeMap;
   private final long connectionLifeTimeInMillis;
   private long lastConnectionTime;
   private boolean localMetaStore;
 
 
   protected RetryingMetaStoreClient(Configuration conf, Class<?>[] constructorArgTypes,
-                                    Object[] constructorArgs, ConcurrentHashMap<String, Long> metaCallTimeMap,
-                                    Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
+      Object[] constructorArgs, Map<String, Long> metaCallTimeMap,
+      Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
+    this(conf, metaCallTimeMap, () ->
+        JavaUtils.newInstance(msClientClass, constructorArgTypes, constructorArgs));
+  }
+
+  protected RetryingMetaStoreClient(Configuration conf, Map<String, Long> metaCallTimeMap,
+        Supplier<? extends IMetaStoreClient> msClient) throws MetaException {
 
     this.ugi = getUGI();
 
@@ -93,9 +100,9 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
     SecurityUtils.reloginExpiringKeytabUser();
 
-    this.base = JavaUtils.newInstance(msClientClass, constructorArgTypes, constructorArgs);
+    this.base = msClient.get();
 
-    LOG.info("RetryingMetaStoreClient proxy=" + msClientClass + " ugi=" + this.ugi
+    LOG.info("RetryingMetaStoreClient proxy=" + base.getClass() + " ugi=" + this.ugi
         + " retries=" + this.retryLimit + " delay=" + this.retryDelaySeconds
         + " lifetime=" + this.connectionLifeTimeInMillis);
   }
@@ -114,7 +121,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   }
 
   public static IMetaStoreClient getProxy(Configuration hiveConf, HiveMetaHookLoader hookLoader,
-      ConcurrentHashMap<String, Long> metaCallTimeMap, String mscClassName, boolean allowEmbedded)
+      Map<String, Long> metaCallTimeMap, String mscClassName, boolean allowEmbedded)
           throws MetaException {
 
     return getProxy(hiveConf,
@@ -139,7 +146,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
    * Please use getProxy(HiveConf conf, HiveMetaHookLoader hookLoader) for external purpose.
    */
   public static IMetaStoreClient getProxy(Configuration hiveConf, Class<?>[] constructorArgTypes,
-      Object[] constructorArgs, ConcurrentHashMap<String, Long> metaCallTimeMap,
+      Object[] constructorArgs, Map<String, Long> metaCallTimeMap,
       String mscClassName) throws MetaException {
 
     @SuppressWarnings("unchecked")
@@ -149,8 +156,20 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     RetryingMetaStoreClient handler =
         new RetryingMetaStoreClient(hiveConf, constructorArgTypes, constructorArgs,
             metaCallTimeMap, baseClass);
+    return getProxy(baseClass.getInterfaces(), handler);
+  }
+
+  public static IMetaStoreClient getProxy(Configuration hiveConf, Map<String, Long> metaCallTimeMap,
+      IMetaStoreClient msClient) throws MetaException {
+    RetryingMetaStoreClient handler =
+        new RetryingMetaStoreClient(hiveConf, metaCallTimeMap, () -> msClient);
+    return getProxy(msClient.getClass().getInterfaces(), handler);
+  }
+
+  private static IMetaStoreClient getProxy(Class<?>[] interfaces,
+      RetryingMetaStoreClient handler) {
     return (IMetaStoreClient) Proxy.newProxyInstance(
-        RetryingMetaStoreClient.class.getClassLoader(), baseClass.getInterfaces(), handler);
+            RetryingMetaStoreClient.class.getClassLoader(), interfaces, handler);
   }
 
   @Override

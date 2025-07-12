@@ -46,7 +46,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-common</artifactId>
+      <artifactId>hive-standalone-metastore-client</artifactId>
       <version>${standalone-metastore.version}</version>
     </dependency>
     <dependency>
@@ -181,6 +181,12 @@
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${standalone-metastore.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- test inter-project -->

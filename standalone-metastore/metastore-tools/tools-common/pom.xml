@@ -30,19 +30,11 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hive-hcatalog-server-extensions</artifactId>
-    </dependency>
     <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-common</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
