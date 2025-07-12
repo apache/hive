@@ -217,6 +217,10 @@ import static org.apache.iceberg.SnapshotSummary.TOTAL_EQ_DELETES_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_FILE_SIZE_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_POS_DELETES_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_RECORDS_PROP;
+import static org.apache.iceberg.TableProperties.DELETE_MODE;
+import static org.apache.iceberg.TableProperties.FORMAT_VERSION;
+import static org.apache.iceberg.TableProperties.MERGE_MODE;
+import static org.apache.iceberg.TableProperties.UPDATE_MODE;
 
 public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
@@ -1641,6 +1645,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
       // serialize table object into config
       Table serializableTable = SerializableTable.copyOf(table);
+      // set table format-version and write-mode information from tableDesc
+      List<String> writeConfigList = ImmutableList.of(
+          FORMAT_VERSION, DELETE_MODE, UPDATE_MODE, MERGE_MODE);
+      if (IcebergTableUtil.isV2Table(props::getProperty)) {
+        writeConfigList.forEach(cfg -> serializableTable.properties().computeIfAbsent(cfg, props::getProperty));
+      }
       checkAndSkipIoConfigSerialization(configuration, serializableTable);
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
           SerializationUtil.serializeToBase64(serializableTable));
@@ -1949,7 +1959,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       Map<String, String> origParams) {
     // Preserve the format-version of the iceberg table and filter out rest.
     if (IcebergTableUtil.isV2Table(origParams)) {
-      tbl.getParameters().put(TableProperties.FORMAT_VERSION, "2");
+      tbl.getParameters().put(TableProperties.FORMAT_VERSION, IcebergTableUtil.formatVersion(origParams).toString());
       tbl.getParameters().put(TableProperties.DELETE_MODE, MERGE_ON_READ);
       tbl.getParameters().put(TableProperties.UPDATE_MODE, MERGE_ON_READ);
       tbl.getParameters().put(TableProperties.MERGE_MODE, MERGE_ON_READ);

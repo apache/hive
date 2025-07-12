@@ -132,6 +132,7 @@
                 org.apache.iceberg.IsolationLevel.*,
                 org.apache.iceberg.NullOrder.*,
                 org.apache.iceberg.MetadataTableType.*,
+                org.apache.iceberg.RowLevelOperationMode.*,
                 org.apache.iceberg.SortDirection.*,
                 org.apache.iceberg.TableProperties.*,
                 org.apache.iceberg.SnapshotSummary.*,
