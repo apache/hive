@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -51,14 +58,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import javax.annotation.Nullable;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
@@ -113,8 +113,6 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 /**
  * Utility methods used by Hive standalone metastore server.
@@ -255,15 +253,28 @@ public class MetaStoreServerUtils {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
   }
 
-  public static void validatePartitionNameCharacters(List<String> partVals,
-                                                     Pattern partitionValidationPattern) throws MetaException {
+  public static Pattern getPartitionValidationRegex(Configuration conf) {
+    String partitionValidationRegex =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN);
+    if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
+      return Pattern.compile(partitionValidationRegex);
+    }
+    return null;
+  }
 
-    String invalidPartitionVal = getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+  public static void validatePartitionNameCharacters(List<String> partVals, Configuration conf)
+      throws MetaException {
+
+    Pattern partitionValidationPattern = getPartitionValidationRegex(conf);
+    String invalidPartitionVal =
+        getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
     if (invalidPartitionVal != null) {
-      throw new MetaException("Partition value '" + invalidPartitionVal +
-          "' contains a character " + "not matched by whitelist pattern '" +
-          partitionValidationPattern.toString() + "'.  " + "(configure with " +
-          MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname() + ")");
+      throw new MetaException(
+          "Partition value '%s' contains a character not matched by whitelist pattern '%s'. (configure with %s)"
+              .formatted(
+                  invalidPartitionVal,
+                  partitionValidationPattern.toString(),
+                  MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname()));
     }
   }
 
