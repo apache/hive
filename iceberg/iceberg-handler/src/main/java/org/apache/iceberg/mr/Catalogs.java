@@ -206,6 +206,20 @@ public final class Catalogs {
     return getCatalogProperties(conf, catalogName).get(CatalogProperties.CATALOG_IMPL) == null;
   }
 
+  public static boolean hadoopCatalog(Configuration conf, Properties props) {
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+    String catalogType = getCatalogType(conf, catalogName);
+    if (catalogType != null) {
+      return CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP.equalsIgnoreCase(catalogType);
+    }
+    catalogType = getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
+    if (catalogType != null) {
+      return CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP.equalsIgnoreCase(catalogType);
+    }
+    return CatalogUtil.ICEBERG_CATALOG_HADOOP.equals(
+        getCatalogProperties(conf, catalogName).get(CatalogProperties.CATALOG_IMPL));
+  }
+
   /**
    * Register a table with the configured catalog if it does not exist.
    * @param conf a Hadoop conf

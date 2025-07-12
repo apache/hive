@@ -81,6 +81,7 @@ import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.apache.thrift.TException;
+import org.assertj.core.api.AbstractThrowableAssert;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -684,7 +685,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     if (!testTables.locationForCreateTableSQL(identifier).isEmpty()) {
       // Only test this if the location is required
-      Assertions.assertThatThrownBy(
+      AbstractThrowableAssert<?, ? extends Throwable> assertThatThrownBy = Assertions.assertThatCode(
           () ->
                   shell.executeStatement(
                           "CREATE EXTERNAL TABLE withShell2 " +
@@ -697,10 +698,16 @@ public class TestHiveIcebergStorageHandlerNoScan {
                                   InputFormatConfig.CATALOG_NAME +
                                   "'='" +
                                   testTables.catalogName() +
-                                  "')"))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageStartingWith("Failed to execute Hive query")
-          .hasMessageContaining("Table location not set");
+                                  "')"));
+      if (testTableType != TestTables.TestTableType.HADOOP_CATALOG) {
+        assertThatThrownBy
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageStartingWith("Failed to execute Hive query")
+            .hasMessageContaining("Table location not set");
+      } else {
+        assertThatThrownBy
+            .doesNotThrowAnyException();
+      }
     }
   }
 
