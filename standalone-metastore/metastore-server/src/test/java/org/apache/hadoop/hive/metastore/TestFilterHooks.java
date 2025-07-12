@@ -316,9 +316,9 @@ public class TestFilterHooks {
     creatEnv(conf);
 
     assertNotNull(client.getTable(DBNAME1, TAB1));
-    assertEquals(2, client.getTables(DBNAME1, "*").size());
+    assertEquals(2, client.getTables(DBNAME1, "*", null).size());
     assertEquals(2, client.getAllTables(DBNAME1).size());
-    assertEquals(1, client.getTables(DBNAME1, TAB2).size());
+    assertEquals(1, client.getTables(DBNAME1, TAB2, null).size());
     assertEquals(0, client.getAllTables(DBNAME2).size());
 
     assertNotNull(client.getDatabase(DBNAME1));
@@ -366,9 +366,9 @@ public class TestFilterHooks {
     creatEnv(conf);
 
     assertNotNull(client.getTable(DBNAME1, TAB1));
-    assertEquals(2, client.getTables(DBNAME1, "*").size());
+    assertEquals(2, client.getTables(DBNAME1, "*", null).size());
     assertEquals(2, client.getAllTables(DBNAME1).size());
-    assertEquals(1, client.getTables(DBNAME1, TAB2).size());
+    assertEquals(1, client.getTables(DBNAME1, TAB2, null).size());
     assertEquals(0, client.getAllTables(DBNAME2).size());
 
     assertNotNull(client.getDatabase(DBNAME1));
@@ -464,11 +464,10 @@ public class TestFilterHooks {
         // Excepted
       }
     }
-
-    assertEquals(0, client.getTables(DBNAME1, "*").size());
+    assertEquals(0, client.getTables(DBNAME1, "*", null).size());
     assertEquals(0, client.getTables(DBNAME1, "*", TableType.MANAGED_TABLE).size());
     assertEquals(0, client.getAllTables(DBNAME1).size());
-    assertEquals(0, client.getTables(DBNAME1, TAB2).size());
+    assertEquals(0, client.getTables(DBNAME1, TAB2, null).size());
   }
 
   protected void testFilterForPartition(boolean filterAtServer) throws Exception {

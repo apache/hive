@@ -98,7 +98,7 @@ public class TestMetastoreExpr {
 
   private static void silentDropDatabase(String dbName) throws TException {
     try {
-      for (String tableName : client.getTables(dbName, "*")) {
+      for (String tableName : client.getTables(dbName, "*", null)) {
         client.dropTable(dbName, tableName);
       }
       client.dropDatabase(dbName);

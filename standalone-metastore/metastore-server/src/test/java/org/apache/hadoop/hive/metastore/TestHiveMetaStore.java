@@ -474,7 +474,7 @@ public abstract class TestHiveMetaStore {
       client.dropPartition(dbName, tblName, part.getValues(), true);
       assertTrue(partPath + " still exists", fs.exists(partPath));
 
-      for (String tableName : client.getTables(dbName, "*")) {
+      for (String tableName : client.getTables(dbName, "*", null)) {
         client.dropTable(dbName, tableName);
       }
 
@@ -2381,7 +2381,7 @@ public abstract class TestHiveMetaStore {
 
   private static void silentDropDatabase(String dbName) throws TException {
     try {
-      for (String tableName : client.getTables(dbName, "*")) {
+      for (String tableName : client.getTables(dbName, "*", null)) {
         client.dropTable(dbName, tableName);
       }
       client.dropDatabase(dbName);

@@ -118,12 +118,6 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern)
-      throws MetaException, TException, UnknownDBException {
-    return delegate.getTables(catName, dbName, tablePattern);
-  }
-
-  @Override
   public List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
       throws MetaException, TException, UnknownDBException {
     return delegate.getTables(catName, dbName, tablePattern, tableType);

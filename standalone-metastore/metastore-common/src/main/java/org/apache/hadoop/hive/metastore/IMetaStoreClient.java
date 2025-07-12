@@ -191,34 +191,6 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Get the names of all tables in the specified database that satisfy the supplied
-   * table name pattern.
-   * @param dbName database name.
-   * @param tablePattern pattern for table name to conform to
-   * @return List of table names.
-   * @throws MetaException error fetching information from the RDBMS
-   * @throws TException thrift transport error
-   * @throws UnknownDBException indicated database to search in does not exist.
-   */
-  List<String> getTables(String dbName, String tablePattern)
-      throws MetaException, TException, UnknownDBException;
-
-  /**
-   * Get the names of all tables in the specified database that satisfy the supplied
-   * table name pattern.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tablePattern pattern for table name to conform to
-   * @return List of table names.
-   * @throws MetaException error fetching information from the RDBMS
-   * @throws TException general thrift error
-   * @throws UnknownDBException indicated database to search in does not exist.
-   */
-  List<String> getTables(String catName, String dbName, String tablePattern)
-      throws MetaException, TException, UnknownDBException;
-
-
-  /**
-   * Get the names of all tables in the specified database that satisfy the supplied
    * table name pattern and table type (MANAGED_TABLE || EXTERNAL_TABLE || VIRTUAL_VIEW)
    * @param dbName Name of the database to fetch tables in.
    * @param tablePattern pattern to match for table names.
