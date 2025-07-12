@@ -18,11 +18,9 @@
 package org.apache.hadoop.hive.metastore.txn.jdbc.functions;
 
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -33,8 +31,7 @@ import org.apache.hadoop.hive.metastore.txn.entities.TxnWriteDetails;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionContext;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
-import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetTxnDbsUpdatedHandler;
-import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetWriteIdsForTxnIDHandler;
+import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetWriteIdsMappingForTxnIdsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -46,6 +43,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnHandler.notifyCommitOrAbortEvent;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -131,10 +129,13 @@ public class PerformTimeoutsFunction implements TransactionalFunction<Void> {
             //todo: add TXNS.COMMENT filed and set it to 'aborted by system due to timeout'
             LOG.info("Aborted the following transactions due to timeout: {}", batchToAbort);
             if (transactionalListeners != null) {
+              List<TxnWriteDetails> txnWriteDetails = jdbcResource.execute(new GetWriteIdsMappingForTxnIdsHandler(batchToAbort.keySet()));
+              Map<Long, List<TxnWriteDetails>> txnWriteDetailsMap =
+                      txnWriteDetails.stream()
+                              .collect(Collectors.groupingBy(TxnWriteDetails::getTxnId));
               for (Map.Entry<Long, TxnType> txnEntry : batchToAbort.entrySet()) {
-                List<TxnWriteDetails> txnWriteDetails = jdbcResource.execute(new GetWriteIdsForTxnIDHandler(txnEntry.getKey()));
                 notifyCommitOrAbortEvent(txnEntry.getKey(), EventMessage.EventType.ABORT_TXN , txnEntry.getValue(),
-                        jdbcResource.getConnection(), txnWriteDetails, transactionalListeners);
+                        jdbcResource.getConnection(), txnWriteDetailsMap.getOrDefault(txnEntry.getKey(), new ArrayList<>()), transactionalListeners);
               }
               LOG.debug("Added Notifications for the transactions that are aborted due to timeout: {}", batchToAbort);
             }
