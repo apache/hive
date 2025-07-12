@@ -41,6 +41,13 @@ public class Decimal64ColumnVector extends LongColumnVector implements IDecimalC
     scratchHiveDecWritable = new HiveDecimalWritable();
   }
 
+  // Fill the vector entries with provided value
+  public void fill(HiveDecimal value) {
+    isRepeating = true;
+    isNull[0] = false;
+    set(0, value);
+  }
+
   /**
    * Set a Decimal64 field from a HiveDecimalWritable.
    *
