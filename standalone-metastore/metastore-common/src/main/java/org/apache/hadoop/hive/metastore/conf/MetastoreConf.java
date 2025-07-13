@@ -713,6 +713,7 @@ public class MetastoreConf {
             "Specify the maximum number of connections in the secondary connection pools (objectstore-secondary, objectstore-compactor-secondary).\n" +
                     "Same as datanucleus.connectionPool.maxPoolSize, but for the objectstore-secondary and objectstore-compactor-secondary pools. \n" +
                     "Values smaller than 2 are ignored."),
+    METASTORE_HIKARICP_MAX_LIFE_TIME("hive.hikaricp.max.life.time", "hive.hikaricp.max.life.time", 1500000, "use hikaricp pool max life time,default value is millisecond"),
     CONNECT_URL_HOOK("metastore.ds.connection.url.hook",
         "hive.metastore.ds.connection.url.hook", "",
         "Name of the hook to use for retrieving the JDO connection URL. If empty, the value in javax.jdo.option.ConnectionURL is used"),

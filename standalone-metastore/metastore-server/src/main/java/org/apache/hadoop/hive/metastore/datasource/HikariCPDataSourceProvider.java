@@ -22,6 +22,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
@@ -49,6 +50,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
+    long maxLifeTime = MetastoreConf.getLongVar(hdpConfig,
+            MetastoreConf.ConfVars.METASTORE_HIKARICP_MAX_LIFE_TIME);
 
     Properties properties = replacePrefix(DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
 
@@ -62,6 +65,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
+    config.setMaxLifetime(maxLifeTime);
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }
