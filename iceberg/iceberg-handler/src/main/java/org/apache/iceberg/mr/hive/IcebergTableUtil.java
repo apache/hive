@@ -95,6 +95,9 @@ import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_NAME;
+import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE;
+
 public class IcebergTableUtil {
 
   public static final int SPEC_IDX = 1;
@@ -562,4 +565,19 @@ public class IcebergTableUtil {
       return thread;
     });
   }
+
+  public static String defaultWarehouseLocation(TableIdentifier tableIdentifier,
+                                                Configuration conf, Properties catalogProperties) {
+    StringBuilder sb = new StringBuilder();
+    String warehouseLocation = conf.get(String.format(
+            CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
+    );
+    sb.append(warehouseLocation).append('/');
+    for (String level : tableIdentifier.namespace().levels()) {
+      sb.append(level).append('/');
+    }
+    sb.append(tableIdentifier.name());
+    return sb.toString();
+  }
+
 }
