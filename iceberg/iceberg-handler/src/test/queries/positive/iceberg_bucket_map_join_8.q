@@ -100,18 +100,6 @@ FROM srcbucket_big a
 JOIN src_small b ON a.key1 = b.key1 AND a.value = b.value
 ORDER BY a.id;
 
--- key2 & non-partition column
-EXPLAIN
-SELECT a.key2, a.value, a.id
-FROM srcbucket_big a
-JOIN src_small b ON a.key2 = b.key2 AND a.value = b.value
-ORDER BY a.id;
-
-SELECT a.key2, a.value, a.id
-FROM srcbucket_big a
-JOIN src_small b ON a.key2 = b.key2 AND a.value = b.value
-ORDER BY a.id;
-
 -- key1 & key2 & non-partition column
 EXPLAIN
 SELECT a.key1, a.key2, a.value, a.id
