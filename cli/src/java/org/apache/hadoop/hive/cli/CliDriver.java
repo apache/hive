@@ -396,7 +396,10 @@ public class CliDriver {
 
           // First, kill any running MR jobs
           HadoopJobExecHelper.killRunningJobs();
-          TezJobExecHelper.killRunningJobs();
+          //when engine is not tez,it will throw ClassNotFoundException: org.apache.tez.dag.DAG
+          if ("tez".equalsIgnoreCase(conf.get("hive.execution.engine"))) {
+            TezJobExecHelper.killRunningJobs();
+          }
           HiveInterruptUtils.interrupt();
         }
       });
