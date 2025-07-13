@@ -69,8 +69,10 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-6190] - redundant columns in metastore schema for stats
     * [HIVE-15540] - Impl `DatabaseMetaData#getURL()` and `DatabaseMetaData#getUserName()` for HiveServer2 JDBC Driver
     * [HIVE-21614] - Derby/Oracle does not support CLOB comparisons
+    * [HIVE-23708] - MergeFileTask.execute() need to close jobclient
     * [HIVE-23964] - SemanticException in query 30 while generating logical plan
     * [HIVE-24110] - NullPointerException occurs in some UDFs
+    * [HIVE-25351] - stddev(), stddev_pop() with CBO enable returning null
     * [HIVE-26018] - The result of UNIQUEJOIN on Hive on Tez is inconsistent with that of MR
     * [HIVE-26168] - EXPLAIN DDL command output is not deterministic
     * [HIVE-26339] - Vectorized LIKE UDF optimization
@@ -83,6 +85,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-27879] - Improve the test coverage on package.jdo
     * [HIVE-27882] - JDBC Standalone jar missing classes
     * [HIVE-27898] - For ICEBERG partitioned table, after turning on vectorisation-read, all non-partitioned columns may will be empty(location based table).
+    * [HIVE-27944] - Possible deadlock in HIVE-LLAP when reading  location-based Iceberg tables
     * [HIVE-27995] - Fix inconsistent behavior of LOAD DATA command for partitioned and non-partitioned tables
     * [HIVE-28006] - Materialized view with aggregate function incorrectly shows it allows incremental rebuild
     * [HIVE-28014] - to_unix_timestamp udf produces inconsistent results in different jdk versions
@@ -205,6 +208,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28725] - Sorting is performed when order by position is disabled when CBO is enabled
     * [HIVE-28732] - Sorted dynamic partition optimization does not apply hive.default.nulls.last
     * [HIVE-28733] - Sometimes hive logs are not rolled / deleted
+    * [HIVE-28744] - Fix the row count estimation for INT and BIGINT types
     * [HIVE-28749] - The default hikaricp.leakDetectionThreshold is not valid
     * [HIVE-28751] - Upgrade curator version from 5.2.0 to 5.7.1 to fix CVE-2023-2976
     * [HIVE-28765] - Iceberg: Incorrect partition statistics on time travel + partition evolution
@@ -214,6 +218,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28772] - Clear REPL_TXN_MAP table on DR when deleting replication policy
     * [HIVE-28777] - Content Security Policy breaks hive-site
     * [HIVE-28788] - ObjectStore failed to commit the transaction could lead to connection starvation
+    * [HIVE-28790] - ACID deletes are failing with ArrayIndexOutOfBoundsException when direct insert is enabled
     * [HIVE-28792] - Wrong results when query has function call with char parameter type in case expression
     * [HIVE-28794] - Remove junit version from hive-metastore-tools/pom.xml to inherit version from parent pom
     * [HIVE-28795] - Missing double quotes in direct alter partitions
@@ -276,6 +281,13 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-29022] - Schematool fails while initializing hive schema
     * [HIVE-29030] - Alter partition change column cannot use the direct sql
     * [HIVE-29034] - ALTER PARTITION CHANGE COLUMN fails with Oracle backed Metastore
+    * [HIVE-29067] - insert-select-union-all query fails while publishing InsertEvent if source query does not return output
+    * [HIVE-29069] - Query Failure while computing Range Partition Column stats on Numeric partition column types
+    * [HIVE-29078] - RuntimeException: Null when starting standalone HMS
+    * [HIVE-29080] - Query on Decimal column Partitioned table gives incorrect results with Vectorization ON
+    * [HIVE-29081] - CI fails intermittently cause some runs exceed ephemeral storage limits
+    * [HIVE-29083] - Iceberg: Unable to create table using HadoopCatalog
+    * [HIVE-29086] - Fix ClassNotFoundException: org.apache.tez.dag.DAG when engine is mr
 
 
 
@@ -440,6 +452,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28656] - Improve HPL/SQL tests
     * [HIVE-28662] - Enable the dynamic leader election for HMS
     * [HIVE-28665] - Iceberg: Upgrade iceberg version to 1.9.1
+    * [HIVE-28667] - Error initializing field trimmer instance when starting HS2
     * [HIVE-28668] - Hive should send fewer partition events for truncate table operation
     * [HIVE-28670] - [HiveACIDReplication] Show failed_admin status in all the latest replication history once error is hit
     * [HIVE-28671] - Upgrade MySQL connector jar version to 8.2.0
@@ -494,7 +507,6 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28964] - Refactor PlanUtils, remove duplicated code
     * [HIVE-28968] - In CI use dedicated project-local .m2 directory for storing maven artifacts
     * [HIVE-28969] - In CI, use shallow clone with limited depth to reduce .git directory size
-    * [HIVE-28975] - [HiveAcidReplication] Remove dangling txns from Target side post incremental replication
     * [HIVE-28986] - Upgrade to tez 0.10.5
     * [HIVE-28990] - Collecting the non-native summary can be slow to raise the timeout
     * [HIVE-28991] - Upgrade Avro to 1.12.0
@@ -503,12 +515,18 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28999] - Flaky Test: TestReExecuteKilledTezAMQueryPlugin.testKillQueryById
     * [HIVE-29001] - Remove duplicate mockito dependency in hive-common pom causing maven warnings
     * [HIVE-29002] - Upgrade parquet to 1.15.2 to be in sync with iceberg 1.9.1
+    * [HIVE-29004] - iceberg : after rename table ,execute add column will Restored the old location
+    * [HIVE-29007] - Fix NPE in TezSessionPoolManager
     * [HIVE-29011] - Update project README and Copyright year
     * [HIVE-29016] - Disable caching on the Iceberg REST Catalog
     * [HIVE-29018] - Build Iceberg REST Catalog with compiler version = 17
     * [HIVE-29019] - Test Hive Iceberg REST Catalog with the compatibility kit
-    * [HIVE-29038] - Conclude if we should consolidate authentication methods of REST
+    * [HIVE-29038] - Make catalog servlet parameters generic
     * [HIVE-29042] - Performance degradation for add columns cascade after enabling directSQL
+    * [HIVE-29062] - Add standalone module for packaging the Metastore
+    * [HIVE-29071] - Add release workflow for HMS docker image
+    * [HIVE-29087] - Add MAX_LIFE_TIME configuration for hikaricp connection pool
+    * [HIVE-29088] - Add a configuration option to skip corrupted ORC files
 
 ** Test
     * [HIVE-28142] - Fix flaky test - acid_bloom_filter_orc_file_dump
@@ -572,3 +590,4 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28905] - Update commit guidelines to not mention contributors and reviewers
     * [HIVE-28924] - Drop hive.optimize.join.disjunctive.transitive.predicates.pushdown and related logic
     * [HIVE-28948] - Drop obsolete ROWOFFSET virtual column and related code
+    * [HIVE-29044] - Prepare for Hive 4.1.0 Release
