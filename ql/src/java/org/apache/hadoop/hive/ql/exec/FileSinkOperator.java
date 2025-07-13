@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -64,10 +65,7 @@ import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -1119,19 +1117,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             dpVals.add(o.toString());
           }
         }
-
-        String invalidPartitionVal;
-        if ((invalidPartitionVal =
-                MetaStoreServerUtils.getPartitionValWithInvalidCharacter(
-                    dpVals, dpCtx.getWhiteListPattern()))
-            != null) {
-          throw new HiveFatalException(
-              "Partition value '%s' contains a character not matched by whitelist pattern '%s'. (configure with %s)"
-                  .formatted(
-                      invalidPartitionVal,
-                      dpCtx.getWhiteListPattern().toString(),
-                      ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname));
-        }
+       MetaStoreServerUtils.validatePartitionNameCharacters(dpVals, getConfiguration());
         fpaths = getDynOutPaths(dpVals, lbDirName);
         dynamicPartitionSpecs.add(fpaths.dpDirForCounters);
 
@@ -1241,6 +1227,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (SerDeException e) {
       closeWriters(true);
       throw new HiveException(e);
+    } catch (MetaException ex) {
+      throw new RuntimeException(ex);
     }
   }
 

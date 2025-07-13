@@ -17,4 +17,4 @@ POSTHOOK: Output: default@t1@pcol=2025-06-09
 PREHOOK: query: alter table t1 add partition (pCol='2025-06-19')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@t1
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Partition value '2025-06-19' contains a character not matched by whitelist pattern '[^9]*'. (configure with metastore.partition.name.whitelist.pattern))
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Partition value '2025-06-19' contains a character not matched by whitelist pattern '[^9]*'. Configure with hive.metastore.partition.name.whitelist.pattern for dynamic partitioning otherwise use metaconf:metastore.partition.name.whitelist.pattern)
