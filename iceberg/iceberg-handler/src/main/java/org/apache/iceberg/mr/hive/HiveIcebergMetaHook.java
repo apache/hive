@@ -242,16 +242,18 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
       // If not using HiveCatalog check for existing table
       try {
-
         this.icebergTable = IcebergTableUtil.getTable(conf, catalogProperties, true);
 
+        if (Catalogs.hadoopCatalog(conf, catalogProperties) && hmsTable.getSd() != null &&
+                hmsTable.getSd().getLocation() == null) {
+          hmsTable.getSd().setLocation(icebergTable.location());
+        }
         Preconditions.checkArgument(catalogProperties.getProperty(InputFormatConfig.TABLE_SCHEMA) == null,
             "Iceberg table already created - can not use provided schema");
         Preconditions.checkArgument(catalogProperties.getProperty(InputFormatConfig.PARTITION_SPEC) == null,
             "Iceberg table already created - can not use provided partition specification");
 
         LOG.info("Iceberg table already exists {}", icebergTable);
-
         return;
       } catch (NoSuchTableException nte) {
         // If the table does not exist we will create it below
@@ -815,10 +817,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // If the table is not managed by Hive catalog then the location should be set
+    // If the table is not managed by Hive or Hadoop catalog, then the location should be set
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
-      Preconditions.checkArgument(hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null,
-          "Table location not set");
+      String location = (hmsTable.getSd() != null) ? hmsTable.getSd().getLocation() : null;
+      if (location == null && Catalogs.hadoopCatalog(conf, catalogProperties)) {
+        location = IcebergTableUtil.defaultWarehouseLocation(
+            TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()),
+            conf, catalogProperties);
+        hmsTable.getSd().setLocation(location);
+      }
+      Preconditions.checkArgument(location != null, "Table location not set");
     }
 
     Map<String, String> hmsParams = hmsTable.getParameters();
