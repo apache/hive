@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.client.builder;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -30,6 +29,7 @@ import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class HiveMetaStoreClientBuilder {
@@ -38,8 +38,7 @@ public class HiveMetaStoreClientBuilder {
     private IMetaStoreClient client;
 
     public HiveMetaStoreClientBuilder(Configuration conf) {
-        Preconditions.checkNotNull(conf);
-        this.conf = conf;
+        this.conf = Objects.requireNonNull(conf);
     }
 
     public HiveMetaStoreClientBuilder newClient() throws MetaException {
@@ -78,7 +77,6 @@ public class HiveMetaStoreClientBuilder {
     }
 
     public IMetaStoreClient build() {
-        Preconditions.checkNotNull(conf);
-        return client;
+        return Objects.requireNonNull(client);
     }
 }

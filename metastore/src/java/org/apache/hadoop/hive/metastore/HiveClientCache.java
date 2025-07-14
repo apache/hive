@@ -107,7 +107,7 @@ public class HiveClientCache {
   /**
    * @param timeout the length of time in seconds after a client is created that it should be automatically removed
    */
-  protected HiveClientCache(final int timeout, final int initialCapacity, final int maxCapacity, final boolean enableStats) {
+  public HiveClientCache(final int timeout, final int initialCapacity, final int maxCapacity, final boolean enableStats) {
     this.timeout = timeout;
     this.enableStats = enableStats;
 
