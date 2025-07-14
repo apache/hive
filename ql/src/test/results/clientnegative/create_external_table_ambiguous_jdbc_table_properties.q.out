@@ -1,0 +1,1 @@
+FAILED: SemanticException Cannot specify both hive.sql.query and hive.sql.table for JDBC tables.

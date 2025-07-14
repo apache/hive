@@ -13875,6 +13875,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean isTemporaryTable, boolean isTransactional, boolean isManaged, String[] qualifiedTabName, boolean isTableTypeChanged) throws SemanticException {
     Map<String, String> retValue = Optional.ofNullable(tblProp).orElseGet(HashMap::new);
 
+    validateJDBCTablePropertiesAreNonAmbiguous(isExt, storageFormat, retValue);
+
     String paraString = HiveConf.getVar(conf, ConfVars.NEW_TABLE_DEFAULT_PARA);
     if (paraString != null && !paraString.isEmpty()) {
       for (String keyValuePair : paraString.split(",")) {
@@ -13936,6 +13938,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           getDefaultLocation(qualifiedTabName[0], qualifiedTabName[1], true));
     }
     return retValue;
+  }
+
+  static void validateJDBCTablePropertiesAreNonAmbiguous(
+      boolean isExt, StorageFormat storageFormat, Map<String, String> retValue) throws SemanticException {
+    // For external JDBC tables, user should not provide both hive.sql.query and hive.sql.table
+    if (storageFormat != null && storageFormat.getStorageHandler() != null && isExt &&
+        Constants.JDBC_HIVE_STORAGE_HANDLER_ID.equals(storageFormat.getStorageHandler()) &&
+        retValue.containsKey(Constants.JDBC_QUERY) && retValue.containsKey(Constants.JDBC_TABLE)) {
+
+      throw new SemanticException("Cannot specify both " + Constants.JDBC_QUERY
+          + " and " + Constants.JDBC_TABLE + " for JDBC tables.");
+    }
   }
 
   /**
