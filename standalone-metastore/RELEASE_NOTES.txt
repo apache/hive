@@ -1,6 +1,7 @@
 Release Notes - Hive Metastore - Version 4.1.0
 
 ** Improvement
+    *[HIVE-29071] - Add release workflow for HMS docker image
     *[HIVE-29062] - Add standalone module for packaging the Metastore
     *[HIVE-29042] - Performance degradation for add columns cascade after enabling directSQL
     *[HIVE-29038] - Make catalog servlet parameters generic
