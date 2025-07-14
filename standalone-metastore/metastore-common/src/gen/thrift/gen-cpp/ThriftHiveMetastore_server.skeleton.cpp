@@ -1435,6 +1435,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_all_write_event_info\n");
   }
 
+  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) {
+    // Your implementation goes here
+    printf("get_replayed_txns_for_policy\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

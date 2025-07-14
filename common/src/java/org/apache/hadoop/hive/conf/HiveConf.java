@@ -632,6 +632,8 @@ public class HiveConf extends Configuration {
     HIVE_REPL_FAILOVER_START("hive.repl.failover.start",false,
             "A replication policy level config to indicate if user wants to initiate fail-over " +
                     "to replicate the database in reverse direction."),
+    HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET("hive.repl.clear.dangling.txns.on.target", true,
+                                                    "Indicates whether to clear dangling transactions on the target during replication."),
     REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
       true,
       "This configuration will add a deny policy on the target database for all users except hive"
