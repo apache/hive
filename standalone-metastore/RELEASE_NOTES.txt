@@ -44,6 +44,7 @@ Release Notes - Hive Metastore - Version 4.1.0
 
 
 ** Bug
+    *[HIVE-29078] - RuntimeException: Null when starting standalone HMS
     *[HIVE-29034] - ALTER PARTITION CHANGE COLUMN fails with Oracle backed Metastore
     *[HIVE-29030] - Alter partition change column cannot use the direct sql
     *[HIVE-29022] - Schematool fails while initializing hive schema
