@@ -1638,9 +1638,42 @@ public class MetaStoreServerUtils {
     return result;
   }
 
+  public enum PartitionDataType {
+    TINYINT,
+    SMALLINT,
+    INT,
+    BIGINT,
+    FLOAT,
+    DOUBLE,
+    DECIMAL,
+    STRING,
+    UNKNOWN;
+
+    public static PartitionDataType fromTypeString(String type) {
+      if (type == null || type.isEmpty()){
+        return UNKNOWN;
+      }
+      String base = type.toLowerCase();
+      if (base.startsWith("decimal")){
+        return DECIMAL;
+      }
+      return switch (base) {
+        case "tinyint" -> TINYINT;
+        case "smallint" -> SMALLINT;
+        case "int" -> INT;
+        case "bigint" -> BIGINT;
+        case "float" -> FLOAT;
+        case "double" -> DOUBLE;
+        case "string" -> STRING;
+        default -> UNKNOWN;
+      };
+    }
+  }
+
   public static String getNormalisedPartitionValue(String partitionValue, String type,
       Configuration conf) {
-    if (!NumberUtils.isParsable(partitionValue) && !type.equalsIgnoreCase("string")
+    PartitionDataType dataType = PartitionDataType.fromTypeString(type);
+    if (!NumberUtils.isParsable(partitionValue) && dataType != PartitionDataType.STRING
             && Objects.equals(partitionValue, MetastoreConf.getVar(conf,
             MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) {
       return partitionValue;
@@ -1649,27 +1682,30 @@ public class MetaStoreServerUtils {
     LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
 
     try {
-      if (type.equalsIgnoreCase("tinyint")
-              || type.equalsIgnoreCase("smallint")
-              || type.equalsIgnoreCase("int")) {
-        return Integer.toString(Integer.parseInt(partitionValue));
-      } else if (type.equalsIgnoreCase("bigint")) {
-        return Long.toString(Long.parseLong(partitionValue));
-      } else if (type.equalsIgnoreCase("float")) {
-        return Float.toString(Float.parseFloat(partitionValue));
-      } else if (type.equalsIgnoreCase("double")) {
-        return Double.toString(Double.parseDouble(partitionValue));
-      } else if (type.startsWith("decimal")) {
-        // Decimal datatypes are stored like decimal(10,10)
-        return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+      switch (dataType) {
+        case TINYINT:
+        case SMALLINT:
+        case INT:
+          return Integer.toString(Integer.parseInt(partitionValue));
+        case BIGINT:
+          return Long.toString(Long.parseLong(partitionValue));
+        case FLOAT:
+          return Float.toString(Float.parseFloat(partitionValue));
+        case DOUBLE:
+          return Double.toString(Double.parseDouble(partitionValue));
+        case DECIMAL:
+          return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+        // STRING and UNKNOWN: fallthrough
+        default:
+          break;
       }
     } catch (NumberFormatException e) {
-      String mode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION);
-      if (Objects.equals(mode, "throw")) {
+      String validationMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION);
+      if (Objects.equals(validationMode, "throw")) {
         LOG.error("Exception occurred while processing the partition. Set hive.msck.path.validation=skip" +
                 "and retry the operation to skip the invalid partitions");
         throw e;
-      } else if (Objects.equals(mode, "skip")) {
+      } else if (Objects.equals(validationMode, "skip")) {
         // skips this partition and continues with next one
         return null;
       }
