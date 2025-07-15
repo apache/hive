@@ -74,7 +74,7 @@ public final class PartitionUtils {
     for (Entry<String, String> e : partitionSpec.entrySet()) {
       for (String s : reservedPartitionValues) {
         String value = e.getValue();
-        if (value != null && value.contains(s)) {
+        if (value != null && value.equals(s)) {
           throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
               "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
         }
