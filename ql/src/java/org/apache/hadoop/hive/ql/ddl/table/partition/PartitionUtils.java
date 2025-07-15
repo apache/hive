@@ -63,20 +63,28 @@ public final class PartitionUtils {
    */
   public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) throws SemanticException {
     Set<String> reservedPartitionValues = new HashSet<>();
+    Set<String> reservedSuffixPartitionValues = new HashSet<>();
     // Partition can't have this name
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
     // Partition value can't end in this suffix
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
+    reservedSuffixPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
+    reservedSuffixPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
+    reservedSuffixPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
 
     for (Entry<String, String> e : partitionSpec.entrySet()) {
+      String value = e.getValue();
       for (String s : reservedPartitionValues) {
-        String value = e.getValue();
         if (value != null && value.equals(s)) {
           throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-              "(User value: " + e.getValue() + " Reserved substring: " + s + ")"));
+                  "(User value: " + e.getValue() + " Reserved string: " + s + ")"));
+        }
+      }
+      for (String s : reservedSuffixPartitionValues) {
+        if (value != null && value.endsWith(s)) {
+          throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                  "(User value: " + e.getValue() + " Partition value cannot" +
+                          " end with Reserved substring: " + s + ")"));
         }
       }
     }
