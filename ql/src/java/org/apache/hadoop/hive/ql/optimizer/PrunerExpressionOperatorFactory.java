@@ -70,6 +70,7 @@ public abstract class PrunerExpressionOperatorFactory {
           if (!(child_nd instanceof ExprNodeConstantDesc
               && ((ExprNodeConstantDesc) child_nd).getValue() == null)) {
             isAllNull = false;
+            break;
           }
         }
         unknown = isAllNull;
@@ -83,6 +84,7 @@ public abstract class PrunerExpressionOperatorFactory {
           if (child_nd instanceof ExprNodeConstantDesc
               && ((ExprNodeConstantDesc) child_nd).getValue() == null) {
             unknown = true;
+            break;
           }
         }
       }
