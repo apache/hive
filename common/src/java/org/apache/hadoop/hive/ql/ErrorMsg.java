@@ -498,6 +498,7 @@ public enum ErrorMsg {
   ALTER_TABLE_COMPACTION_NON_PARTITIONED_COLUMN_NOT_ALLOWED(10443, "Filter expression can contain only partition columns."),
   CATALOG_ALREADY_EXISTS(10444, "Catalog {0} already exists", true),
   CATALOG_NOT_EXISTS(10445, "Catalog {0} does not exists:", true),
+  INVALID_SCHEDULED_QUERY(10446, "Scheduled query {0} does not exist", true),
 
   //========================== 20000 range starts here ========================//
 

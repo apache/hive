@@ -39,6 +39,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -596,8 +597,7 @@ public class StatsUtils {
     partCS.setCountDistint(numPartitions);
     partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
         ci.getObjectInspector(), partCS.getColumnType()));
-    partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(),
-        ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULT_PARTITION_NAME)));
+    partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(), ci.getType().getTypeName()));
     return partCS;
   }
 
@@ -610,7 +610,7 @@ public class StatsUtils {
   }
 
   private static Range getRangePartitionColumn(PartitionIterable partitions, String partColName,
-      String colType, String defaultPartName) {
+      String colType) {
     Range range = null;
     String partVal;
     String colTypeLowerCase = colType.toLowerCase();
@@ -622,7 +622,7 @@ public class StatsUtils {
       long max = Long.MIN_VALUE;
       for (Partition partition : partitions) {
         partVal = partition.getSpec().get(partColName);
-        if (!partVal.equals(defaultPartName)) {
+        if (NumberUtils.isCreatable(partVal)) {
           long value = Long.parseLong(partVal);
           min = Math.min(min, value);
           max = Math.max(max, value);
@@ -630,25 +630,14 @@ public class StatsUtils {
       }
       range = new Range(min, max);
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)
-        || colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+        || colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       double min = Double.MAX_VALUE;
       double max = Double.MIN_VALUE;
       for (Partition partition : partitions) {
         partVal = partition.getSpec().get(partColName);
-        if (!partVal.equals(defaultPartName)) {
+        if (NumberUtils.isCreatable(partVal)) {
           double value = Double.parseDouble(partVal);
-          min = Math.min(min, value);
-          max = Math.max(max, value);
-        }
-      }
-      range = new Range(min, max);
-    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
-      double min = Double.MAX_VALUE;
-      double max = Double.MIN_VALUE;
-      for (Partition partition : partitions) {
-        partVal = partition.getSpec().get(partColName);
-        if (!partVal.equals(defaultPartName)) {
-          double value = new BigDecimal(partVal).doubleValue();
           min = Math.min(min, value);
           max = Math.max(max, value);
         }

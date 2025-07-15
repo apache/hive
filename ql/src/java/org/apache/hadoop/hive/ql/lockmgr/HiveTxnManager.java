@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * An interface that allows Hive to manage transactions.  All classes
@@ -87,6 +88,8 @@ public interface HiveTxnManager {
    * @throws LockException in case of failure to abort the transaction.
    */
   void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException;
+
+ Map<String, String> getReplayedTxnsForPolicy(String replPolicy) throws LockException;
 
  /**
   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.

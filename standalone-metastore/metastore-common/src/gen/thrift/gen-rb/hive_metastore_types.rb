@@ -882,6 +882,8 @@ class GetAllWriteEventInfoRequest; end
 
 class DeleteColumnStatisticsRequest; end
 
+class ReplayedTxnsForPolicyResult; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -8414,6 +8416,22 @@ class DeleteColumnStatisticsRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tbl_name is unset!') unless @tbl_name
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ReplayedTxnsForPolicyResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  REPLTXNMAPENTRY = 1
+
+  FIELDS = {
+    REPLTXNMAPENTRY => {:type => ::Thrift::Types::MAP, :name => 'replTxnMapEntry', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -93,7 +93,7 @@ set -x
 export USER="`whoami`"
 export MAVEN_OPTS="-Xmx4G"
 export -n HIVE_CONF_DIR
-sw java 17 && . /etc/profile.d/java.sh
+sw java 21 && . /etc/profile.d/java.sh
 mkdir -p .m2/repository
 cp $SETTINGS .m2/settings.xml
 OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
@@ -120,7 +120,7 @@ def sonarAnalysis(args) {
       """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
 
       sh """#!/bin/bash -e
-      sw java 17 && . /etc/profile.d/java.sh
+      sw java 21 && . /etc/profile.d/java.sh
       export MAVEN_OPTS=-Xmx5G
       """+mvnCmd
   }
@@ -129,14 +129,14 @@ def sonarAnalysis(args) {
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
-    containerTemplate(name: 'hdb', image: 'wecharyu/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
+    containerTemplate(name: 'hdb', image: 'ayushtkn/hive-dev-box:executor', ttyEnabled: true, command: 'tini -- cat',
         alwaysPullImage: true,
         resourceRequestCpu: '1800m',
         resourceLimitCpu: '8000m',
         resourceRequestMemory: '6400Mi',
         resourceLimitMemory: '12000Mi',
-        resourceRequestEphemeralStorage: '10Gi',
-        resourceLimitEphemeralStorage: '20Gi',
+        resourceRequestEphemeralStorage: '15Gi',
+        resourceLimitEphemeralStorage: '30Gi',
         envVars: [
             envVar(key: 'DOCKER_HOST', value: 'tcp://localhost:2376'),
             envVar(key: 'DOCKER_TLS_VERIFY', value: '1'),
@@ -297,7 +297,7 @@ fi
         stage('init-metastore') {
            withEnv(["dbType=$dbType"]) {
              sh '''#!/bin/bash -e
-             sw java 17 && . /etc/profile.d/java.sh
+             sw java 21 && . /etc/profile.d/java.sh
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
@@ -407,7 +407,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
       }
       stage('Generate javadoc') {
           sh """#!/bin/bash -e
-          sw java 17 && . /etc/profile.d/java.sh
+          sw java 21 && . /etc/profile.d/java.sh
 mvn install javadoc:javadoc javadoc:aggregate -DskipTests -pl '!itests/hive-jmh,!itests/util'
 """
       }

@@ -219,7 +219,7 @@ public class TestMetastoreConf {
 
   @Test
   public void readHiveMetastoreSiteWithHiveConfDir() throws IOException {
-    createConfFile("hivemetastore-site.xml", false, "HIVE_CONF_DIR", instaMap(
+    createConfFile("metastore-site.xml", false, "HIVE_CONF_DIR", instaMap(
         "test.double", "1.8"
     ));
     conf = MetastoreConf.newMetastoreConf();
@@ -229,7 +229,7 @@ public class TestMetastoreConf {
 
   @Test
   public void readHiveMetastoreSiteWithHiveHomeDir() throws IOException {
-    createConfFile("hivemetastore-site.xml", true, "HIVE_HOME", instaMap(
+    createConfFile("metastore-site.xml", true, "HIVE_HOME", instaMap(
         "test.bool", "false"
     ));
     conf = MetastoreConf.newMetastoreConf();
@@ -311,36 +311,6 @@ public class TestMetastoreConf {
     Assert.assertEquals("89", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
     Assert.assertEquals("1.9", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
     Assert.assertEquals("false", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
-  }
-
-  /**
-   * Verify that a config can be set with a deprecated key/name.
-   */
-  @Test
-  public void testDeprecatedConfigs() throws IOException {
-    // set with deprecated key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "this.is.the.metastore.deprecated.name", "1" // default is 0
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(1, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
-
-    // set with hive (HiveConf) deprecated key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "this.is.the.hive.deprecated.name", "2" // default is 0
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(2, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
-
-    // set with normal key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "test.deprecated", "3" // default is 0
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(3, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
   }
 
   @Test

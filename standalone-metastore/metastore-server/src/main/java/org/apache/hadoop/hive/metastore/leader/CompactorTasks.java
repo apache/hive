@@ -99,7 +99,7 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
           MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
       HiveMetaStore.LOG.info("hive.metastore.runworker.in = {}",
           MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN));
-      HiveMetaStore.LOG.info("metastore.compactor.history.retention.attempted = {}",
+      HiveMetaStore.LOG.info("metastore.compactor.history.retention.did.not.initiate = {}",
           MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
       HiveMetaStore.LOG.info("metastore.compactor.history.retention.failed = {}",
           MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED));

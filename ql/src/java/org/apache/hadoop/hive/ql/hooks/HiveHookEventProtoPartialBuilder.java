@@ -24,6 +24,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.OtherInfoType;
@@ -80,7 +81,7 @@ public class HiveHookEventProtoPartialBuilder {
   }
 
   private JSONObject getExplainJSON(ExplainWork explainWork) throws Exception {
-    ExplainTask explain = (ExplainTask) TaskFactory.get(explainWork, null);
+    ExplainTask explain = (ExplainTask) TaskFactory.get(explainWork, new HiveConf());
     return explain.getJSONPlan(null, explainWork, stageIdRearrange);
   }
 }

@@ -84,7 +84,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-1.30413517E9
+1.3041352E9
 PREHOOK: query: select cast(t as double) from timestamp_3 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3
@@ -156,7 +156,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-1.30411008E9
+1.3041101E9
 PREHOOK: query: select cast(t as double) from timestamp_3 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3

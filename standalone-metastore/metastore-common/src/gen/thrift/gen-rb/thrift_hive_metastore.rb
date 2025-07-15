@@ -4698,6 +4698,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_write_event_info failed: unknown result')
     end
 
+    def get_replayed_txns_for_policy(policyName)
+      send_get_replayed_txns_for_policy(policyName)
+      return recv_get_replayed_txns_for_policy()
+    end
+
+    def send_get_replayed_txns_for_policy(policyName)
+      send_message('get_replayed_txns_for_policy', Get_replayed_txns_for_policy_args, :policyName => policyName)
+    end
+
+    def recv_get_replayed_txns_for_policy()
+      result = receive_message(Get_replayed_txns_for_policy_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_replayed_txns_for_policy failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -8218,6 +8234,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_all_write_event_info', seqid)
+    end
+
+    def process_get_replayed_txns_for_policy(seqid, iprot, oprot)
+      args = read_args(iprot, Get_replayed_txns_for_policy_args)
+      result = Get_replayed_txns_for_policy_result.new()
+      begin
+        result.success = @handler.get_replayed_txns_for_policy(args.policyName)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_replayed_txns_for_policy', seqid)
     end
 
   end
@@ -18524,6 +18551,40 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_replayed_txns_for_policy_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYNAME = 1
+
+    FIELDS = {
+      POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_replayed_txns_for_policy_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ReplayedTxnsForPolicyResult},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

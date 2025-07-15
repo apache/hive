@@ -252,9 +252,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     startupShutdownMessage(HiveMetaStore.class, args, LOG);
 
     try {
-      String msg = "Starting hive metastore on port " + cli.getPort();
+      String msg =
+          "Starting hive metastore on port %d. PID is %d"
+              .formatted(cli.getPort(), ProcessHandle.current().pid());
       LOG.info(msg);
-      if (cli.isVerbose()) {
+      if (isCliVerbose) {
         System.err.println(msg);
       }
 
@@ -265,6 +267,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       //for metastore process, all metastore call should be embedded metastore call.
       conf.set(ConfVars.THRIFT_URIS.getHiveName(), "");
+      conf.set(ConfVars.THRIFT_URIS.getVarname(), "");
 
       // Add shutdown hook.
       shutdownHookMgr.addShutdownHook(() -> {

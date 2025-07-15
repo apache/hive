@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
-import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -50,7 +49,7 @@ import org.apache.hadoop.hive.metastore.txn.jdbc.queries.FindTxnStateHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetCompactionInfoHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetHighWaterMarkHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetOpenTxnTypeAndLockHandler;
-import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetWriteIdsForTxnIDHandler;
+import org.apache.hadoop.hive.metastore.txn.jdbc.queries.GetWriteIdsMappingForTxnIdsHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.queries.TargetTxnIdListHandler;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.RollbackException;
@@ -71,6 +70,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -103,7 +103,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     List<TxnWriteDetails> txnWriteDetails = new ArrayList<>();
 
     if (!isHiveReplTxn) {
-      txnWriteDetails = jdbcResource.execute(new GetWriteIdsForTxnIDHandler(rqst.getTxnid()));
+      txnWriteDetails = jdbcResource.execute(new GetWriteIdsMappingForTxnIdsHandler(Set.of(rqst.getTxnid())));
 
     }
     // Get the current TXN
@@ -585,7 +585,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
   }
 
   /**
-   * Create Notifiaction Events on txn commit
+   * Create Notification Events on txn commit
    *
    * @param txnid committed txn
    * @param txnType transaction type

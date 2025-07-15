@@ -85,7 +85,7 @@ public class TestMetaStoreEventListenerWithOldConf {
     assertEquals(event.getOldValue(), metaConfVal);
     assertEquals(event.getNewValue(), "[test pattern modified]");
     // This should also trigger meta listener notification via TServerEventHandler#deleteContext
-    nonClosingClient.getTTransport().close();
+    nonClosingClient.getThriftClient().getTTransport().close();
 
     Thread.sleep(2 * 1000);
 

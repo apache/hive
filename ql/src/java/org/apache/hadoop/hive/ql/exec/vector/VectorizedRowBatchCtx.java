@@ -576,7 +576,7 @@ public class VectorizedRowBatchCtx {
           dv.isNull[0] = true;
           dv.isRepeating = true;
         } else {
-          dv.fill(((HiveDecimal) value).longValue());
+          dv.fill((HiveDecimal) value);
         }
       } else {
         DecimalColumnVector dv = (DecimalColumnVector) col;
