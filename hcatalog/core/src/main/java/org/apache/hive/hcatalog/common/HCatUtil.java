@@ -43,12 +43,12 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveClientCache;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -80,6 +80,9 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.HiveClientCache.*;
+import static org.apache.hive.hcatalog.common.HCatConstants.*;
+
 public class HCatUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatUtil.class);
@@ -95,12 +98,9 @@ public class HCatUtil {
   }
 
   public static boolean checkJobContextIfRunningFromBackend(JobContext j) {
-    if (j.getConfiguration().get("pig.job.converted.fetch", "").equals("") &&
-          j.getConfiguration().get("mapred.task.id", "").equals("") &&
-          !("true".equals(j.getConfiguration().get("pig.illustrating")))) {
-      return false;
-    }
-    return true;
+    return !j.getConfiguration().get("pig.job.converted.fetch", "").isEmpty()
+        || !j.getConfiguration().get("mapred.task.id", "").isEmpty()
+        || "true".equals(j.getConfiguration().get("pig.illustrating"));
   }
 
   public static String serialize(Serializable obj) throws IOException {
@@ -119,7 +119,7 @@ public class HCatUtil {
   }
 
   public static Object deserialize(String str) throws IOException {
-    if (str == null || str.length() == 0) {
+    if (str == null || str.isEmpty()) {
       return null;
     }
     try {
@@ -141,23 +141,11 @@ public class HCatUtil {
   }
 
   public static List<HCatFieldSchema> getHCatFieldSchemaList(
-    FieldSchema... fields) throws HCatException {
-    List<HCatFieldSchema> result = new ArrayList<HCatFieldSchema>(
-      fields.length);
-
-    for (FieldSchema f : fields) {
-      result.add(HCatSchemaUtils.getHCatFieldSchema(f));
-    }
-
-    return result;
-  }
-
-  public static List<HCatFieldSchema> getHCatFieldSchemaList(
     List<FieldSchema> fields) throws HCatException {
     if (fields == null) {
       return null;
     } else {
-      List<HCatFieldSchema> result = new ArrayList<HCatFieldSchema>();
+      List<HCatFieldSchema> result = new ArrayList<>();
       for (FieldSchema f : fields) {
         result.add(HCatSchemaUtils.getHCatFieldSchema(f));
       }
@@ -178,7 +166,7 @@ public class HCatUtil {
     if (hcatFields == null) {
       return null;
     } else {
-      List<FieldSchema> result = new ArrayList<FieldSchema>();
+      List<FieldSchema> result = new ArrayList<>();
       for (HCatFieldSchema f : hcatFields) {
         result.add(HCatSchemaUtils.getFieldSchema(f));
       }
@@ -187,14 +175,14 @@ public class HCatUtil {
   }
 
   public static Table getTable(IMetaStoreClient client, String dbName, String tableName)
-    throws NoSuchObjectException, TException, MetaException {
+      throws TException {
     return new Table(client.getTable(dbName, tableName));
   }
 
   public static HCatSchema getTableSchemaWithPtnCols(Table table) throws IOException {
     HCatSchema tableSchema = new HCatSchema(HCatUtil.getHCatFieldSchemaList(table.getCols()));
 
-    if (table.getPartitionKeys().size() != 0) {
+    if (!table.getPartitionKeys().isEmpty()) {
 
       // add partition keys to table schema
       // NOTE : this assumes that we do not ever have ptn keys as columns
@@ -214,8 +202,8 @@ public class HCatUtil {
    * @throws IOException
    */
   public static HCatSchema getPartitionColumns(Table table) throws IOException {
-    HCatSchema cols = new HCatSchema(new LinkedList<HCatFieldSchema>());
-    if (table.getPartitionKeys().size() != 0) {
+    HCatSchema cols = new HCatSchema(new LinkedList<>());
+    if (!table.getPartitionKeys().isEmpty()) {
       for (FieldSchema fs : table.getPartitionKeys()) {
         cols.append(HCatSchemaUtils.getHCatFieldSchema(fs));
       }
@@ -233,16 +221,16 @@ public class HCatUtil {
    * @return the list of newly added fields
    * @throws IOException Signals that an I/O exception has occurred.
    */
-  public static List<FieldSchema> validatePartitionSchema(Table table,
-                              HCatSchema partitionSchema) throws IOException {
-    Map<String, FieldSchema> partitionKeyMap = new HashMap<String, FieldSchema>();
+  public static List<FieldSchema> validatePartitionSchema(Table table, HCatSchema partitionSchema)
+      throws IOException {
+    Map<String, FieldSchema> partitionKeyMap = new HashMap<>();
 
     for (FieldSchema field : table.getPartitionKeys()) {
       partitionKeyMap.put(field.getName().toLowerCase(), field);
     }
 
     List<FieldSchema> tableCols = table.getCols();
-    List<FieldSchema> newFields = new ArrayList<FieldSchema>();
+    List<FieldSchema> newFields = new ArrayList<>();
 
     for (int i = 0; i < partitionSchema.getFields().size(); i++) {
 
@@ -314,15 +302,15 @@ public class HCatUtil {
       || (first == second)) {
       return true;
     }
-    switch (first) {
-    case READ_EXECUTE:
-      return ((second == FsAction.READ) || (second == FsAction.EXECUTE));
-    case READ_WRITE:
-      return ((second == FsAction.READ) || (second == FsAction.WRITE));
-    case WRITE_EXECUTE:
-      return ((second == FsAction.WRITE) || (second == FsAction.EXECUTE));
-    }
-    return false;
+    return switch (first) {
+      case READ_EXECUTE ->
+          ((second == FsAction.READ) || (second == FsAction.EXECUTE));
+      case READ_WRITE ->
+          ((second == FsAction.READ) || (second == FsAction.WRITE));
+      case WRITE_EXECUTE ->
+          ((second == FsAction.WRITE) || (second == FsAction.EXECUTE));
+      default -> false;
+    };
   }
 
   /**
@@ -335,33 +323,22 @@ public class HCatUtil {
    *         by execute permissions
    */
   public static boolean validateExecuteBitPresentIfReadOrWrite(FsAction perms) {
-    if ((perms == FsAction.READ) || (perms == FsAction.WRITE)
-      || (perms == FsAction.READ_WRITE)) {
-      return false;
-    }
-    return true;
+    return (perms != FsAction.READ) && (perms != FsAction.WRITE)
+        && (perms != FsAction.READ_WRITE);
   }
 
   public static Token<org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier> getJobTrackerDelegationToken(
-    Configuration conf, String userName) throws Exception {
-    // LOG.info("getJobTrackerDelegationToken("+conf+","+userName+")");
-    JobClient jcl = new JobClient(new JobConf(conf, HCatOutputFormat.class));
-    Token<org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier> t = jcl
-      .getDelegationToken(new Text(userName));
-    // LOG.info("got "+t);
-    return t;
-
-    // return null;
+        Configuration conf, String userName) throws Exception {
+    try (JobClient jcl = new JobClient(new JobConf(conf, HCatOutputFormat.class))) {
+      return jcl.getDelegationToken(new Text(userName));
+    }
   }
 
   public static Token<? extends AbstractDelegationTokenIdentifier> extractThriftToken(
-    String tokenStrForm, String tokenSignature) throws MetaException,
-    TException, IOException {
-    // LOG.info("extractThriftToken("+tokenStrForm+","+tokenSignature+")");
+      String tokenStrForm, String tokenSignature) throws IOException {
     Token<? extends AbstractDelegationTokenIdentifier> t = new Token<DelegationTokenIdentifier>();
     t.decodeFromUrlString(tokenStrForm);
     t.setService(new Text(tokenSignature));
-    // LOG.info("returning "+t);
     return t;
   }
 
@@ -404,11 +381,8 @@ public class HCatUtil {
    * @throws IOException
    */
   public static HiveStorageHandler getStorageHandler(Configuration conf,
-                             String storageHandler,
-                             String serDe,
-                             String inputFormat,
-                             String outputFormat)
-    throws IOException {
+      String storageHandler, String serDe, String inputFormat, String outputFormat)
+      throws IOException {
 
     if ((storageHandler == null) || (storageHandler.equals(FosterStorageHandler.class.getName()))) {
       try {
@@ -426,8 +400,7 @@ public class HCatUtil {
       Class<? extends HiveStorageHandler> handlerClass =
         (Class<? extends HiveStorageHandler>) Class
           .forName(storageHandler, true, Utilities.getSessionSpecifiedClassLoader());
-      return (HiveStorageHandler) ReflectionUtils.newInstance(
-        handlerClass, conf);
+      return ReflectionUtils.newInstance(handlerClass, conf);
     } catch (ClassNotFoundException e) {
       throw new IOException("Error in loading storage handler."
         + e.getMessage(), e);
@@ -437,9 +410,9 @@ public class HCatUtil {
   public static Pair<String, String> getDbAndTableName(String tableName) throws IOException {
     String[] dbTableNametokens = tableName.split("\\.");
     if (dbTableNametokens.length == 1) {
-      return new Pair<String, String>(Warehouse.DEFAULT_DATABASE_NAME, tableName);
+      return new Pair<>(Warehouse.DEFAULT_DATABASE_NAME, tableName);
     } else if (dbTableNametokens.length == 2) {
-      return new Pair<String, String>(dbTableNametokens[0], dbTableNametokens[1]);
+      return new Pair<>(dbTableNametokens[0], dbTableNametokens[1]);
     } else {
       throw new IOException("tableName expected in the form "
         + "<databasename>.<table name> or <table name>. Got " + tableName);
@@ -454,18 +427,18 @@ public class HCatUtil {
     TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
       storageHandler.getOutputFormatClass(),props);
     if (tableDesc.getJobProperties() == null) {
-      tableDesc.setJobProperties(new HashMap<String, String>());
+      tableDesc.setJobProperties(new HashMap<>());
     }
 
     Properties mytableProperties = tableDesc.getProperties();
     mytableProperties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,inputJobInfo.getDatabaseName()+ "." + inputJobInfo.getTableName());
 
-    Map<String, String> jobProperties = new HashMap<String, String>();
+    Map<String, String> jobProperties = new HashMap<>();
     try {
 
       Map<String, String> properties = tableDesc.getJobProperties();
       LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
-              properties.get(HCatConstants.HCAT_KEY_JOB_INFO));
+          properties.get(HCatConstants.HCAT_KEY_JOB_INFO));
       if (inputJobInfos == null) {
         inputJobInfos = new LinkedList<>();
       }
@@ -493,9 +466,9 @@ public class HCatUtil {
     Properties props = outputJobInfo.getTableInfo().getStorerInfo().getProperties();
     props.put(serdeConstants.SERIALIZATION_LIB,storageHandler.getSerDeClass().getName());
     TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
-      IgnoreKeyTextOutputFormat.class,props);
+        IgnoreKeyTextOutputFormat.class,props);
     if (tableDesc.getJobProperties() == null)
-      tableDesc.setJobProperties(new HashMap<String, String>());
+      tableDesc.setJobProperties(new HashMap<>());
     for (Map.Entry<String, String> el : conf) {
       tableDesc.getJobProperties().put(el.getKey(), el.getValue());
     }
@@ -505,7 +478,7 @@ public class HCatUtil {
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
         outputJobInfo.getDatabaseName()+ "." + outputJobInfo.getTableName());
 
-    Map<String, String> jobProperties = new HashMap<String, String>();
+    Map<String, String> jobProperties = new HashMap<>();
     try {
       tableDesc.getJobProperties().put(
         HCatConstants.HCAT_KEY_OUTPUT_INFO,
@@ -566,7 +539,15 @@ public class HCatUtil {
     if (hiveClientCache == null) {
       synchronized (IMetaStoreClient.class) {
         if (hiveClientCache == null) {
-          hiveClientCache = new HiveClientCache(hiveConf);
+          hiveClientCache = new HiveClientCache(
+              hiveConf.getInt(
+                  HCAT_HIVE_CLIENT_EXPIRY_TIME, DEFAULT_HIVE_CACHE_EXPIRY_TIME_SECONDS),
+              hiveConf.getInt(
+                  HCAT_HIVE_CLIENT_CACHE_INITIAL_CAPACITY, DEFAULT_HIVE_CACHE_INITIAL_CAPACITY),
+              hiveConf.getInt(
+                  HCAT_HIVE_CLIENT_CACHE_MAX_CAPACITY, DEFAULT_HIVE_CACHE_MAX_CAPACITY),
+              hiveConf.getBoolean(
+                  HCAT_HIVE_CLIENT_CACHE_STATS_ENABLED, DEFAULT_HIVE_CLIENT_CACHE_STATS_ENABLED));
         }
       }
     }
@@ -585,10 +566,9 @@ public class HCatUtil {
    * @param hiveConf The hive configuration
    * @return the client
    * @throws MetaException When HiveMetaStoreClient couldn't be created
-   * @throws IOException
    */
   @Deprecated
-  public static HiveMetaStoreClient getHiveClient(HiveConf hiveConf) throws MetaException, IOException {
+  public static HiveMetaStoreClient getHiveClient(HiveConf hiveConf) throws MetaException {
     LOG.warn("HCatUtil.getHiveClient is unsafe and can be a resource leak depending on HMSC "
         + "implementation and caching mechanism. Use HCatUtil.getHiveMetastoreClient instead.");
 
@@ -639,9 +619,7 @@ public class HCatUtil {
         }
       }
     }
-
     LOG.info("Configuration differences=" + difference);
-
     return difference;
   }
 
@@ -649,7 +627,6 @@ public class HCatUtil {
     throws IOException {
 
     HiveConf hiveConf = new HiveConf(conf, HCatUtil.class);
-
     //copy the hive conf into the job conf and restore it
     //in the backend context
     if (StringUtils.isBlank(conf.get(HCatConstants.HCAT_KEY_HIVE_CONF))) {
@@ -657,7 +634,6 @@ public class HCatUtil {
       LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " not set. Generating configuration differences.");
 
       Properties differences = getHiveSiteOverrides(conf);
-
       // Must set this key even if differences is empty otherwise client and AM will attempt
       // to set this multiple times.
       conf.set(HCatConstants.HCAT_KEY_HIVE_CONF, HCatUtil.serialize(differences));
@@ -679,24 +655,23 @@ public class HCatUtil {
     return hiveConf;
   }
 
-  public static HiveConf storePropertiesToHiveConf(Properties properties, HiveConf hiveConf)
-      throws IOException {
-    for (Map.Entry<Object, Object> prop : properties.entrySet()) {
-      if (prop.getValue() instanceof String) {
-        hiveConf.set((String) prop.getKey(), (String) prop.getValue());
-      } else if (prop.getValue() instanceof Integer) {
-        hiveConf.setInt((String) prop.getKey(), (Integer) prop.getValue());
-      } else if (prop.getValue() instanceof Boolean) {
-        hiveConf.setBoolean((String) prop.getKey(), (Boolean) prop.getValue());
-      } else if (prop.getValue() instanceof Long) {
-        hiveConf.setLong((String) prop.getKey(), (Long) prop.getValue());
-      } else if (prop.getValue() instanceof Float) {
-        hiveConf.setFloat((String) prop.getKey(), (Float) prop.getValue());
-      } else {
-        LOG.warn("Unsupported type: key=" + prop.getKey() + " value=" + prop.getValue());
+  public static void storePropertiesToHiveConf(Properties properties, HiveConf hiveConf) {
+    properties.forEach((key, value) -> {
+      switch (value) {
+        case String s ->
+            hiveConf.set((String) key, s);
+        case Integer i ->
+            hiveConf.setInt((String) key, i);
+        case Boolean b ->
+            hiveConf.setBoolean((String) key, b);
+        case Long l ->
+            hiveConf.setLong((String) key, l);
+        case Float v ->
+            hiveConf.setFloat((String) key, v);
+        case null, default ->
+            LOG.warn("Unsupported type: key=" + key + " value=" + value);
       }
-    }
-    return hiveConf;
+    });
   }
 
   public static JobConf getJobConfFromContext(JobContext jobContext) {
@@ -714,19 +689,15 @@ public class HCatUtil {
   // Retrieve settings in HiveConf that aren't also set in the JobConf.
   public static Map<String,String> getHCatKeyHiveConf(JobConf conf) {
     try {
-      Properties properties = null;
-
-      if (! StringUtils.isBlank(conf.get(HCatConstants.HCAT_KEY_HIVE_CONF))) {
+      Properties properties;
+      if (!StringUtils.isBlank(conf.get(HCatConstants.HCAT_KEY_HIVE_CONF))) {
         properties = (Properties) HCatUtil.deserialize(
             conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
-
         LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " is set. Using differences=" + properties);
       } else {
         LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " not set. Generating configuration differences.");
-
         properties = getHiveSiteOverrides(conf);
       }
-
       // This method may not be safe as it can throw an NPE if a key or value is null.
       return Maps.fromProperties(properties);
     }
@@ -744,9 +715,8 @@ public class HCatUtil {
 
   public static boolean isHadoop23() {
     String version = org.apache.hadoop.util.VersionInfo.getVersion();
-    if (version.matches("\\b0\\.23\\..+\\b")||version.matches("\\b2\\..*")||version.matches("\\b3\\..*"))
-      return true;
-    return false;
+    return version.matches("\\b0\\.23\\..+\\b")
+        || version.matches("\\b2\\..*") || version.matches("\\b3\\..*");
   }
   /**
    * Used by various tests to make sure the path is safe for Windows
@@ -767,7 +737,7 @@ public class HCatUtil {
    throws IOException {
 
     LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
-            conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
+        conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
 
     if (inputJobInfos == null) {
       inputJobInfos = new LinkedList<>();
@@ -777,14 +747,14 @@ public class HCatUtil {
   }
 
   public static LinkedList<InputJobInfo> getInputJobInfosFromConf(Configuration conf)
-          throws IOException {
+      throws IOException {
     LinkedList<InputJobInfo> inputJobInfos = (LinkedList<InputJobInfo>) HCatUtil.deserialize(
-            conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
+        conf.get(HCatConstants.HCAT_KEY_JOB_INFO));
     return inputJobInfos;
   }
 
   public static InputJobInfo getLastInputJobInfosFromConf(Configuration conf)
-          throws IOException {
+      throws IOException {
     LinkedList<InputJobInfo> inputJobInfos = getInputJobInfosFromConf(conf);
     if (inputJobInfos == null || inputJobInfos.isEmpty()) {
       return null;

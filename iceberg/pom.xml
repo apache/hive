@@ -147,7 +147,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
-        <artifactId>hive-standalone-metastore-common</artifactId>
+        <artifactId>hive-standalone-metastore-client</artifactId>
         <version>${standalone-metastore.version}</version>
       </dependency>
       <dependency>

@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.RetryingHMSHandler;
 import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
-import org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
@@ -456,7 +455,7 @@ public class TestMetastoreConf {
     Assert.assertEquals(MetastoreConf.DEFAULT_STORAGE_SCHEMA_READER_CLASS,
         DefaultStorageSchemaReader.class.getName());
     Assert.assertEquals(MetastoreConf.SERDE_STORAGE_SCHEMA_READER_CLASS,
-        SerDeStorageSchemaReader.class.getName());
+        "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
     Assert.assertEquals(MetastoreConf.HIVE_ALTER_HANDLE_CLASS,
         HiveAlterHandler.class.getName());
     Assert.assertEquals(MetastoreConf.MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,

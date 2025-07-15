@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.client;
+package org.apache.hadoop.hive.metastore.client.utils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
