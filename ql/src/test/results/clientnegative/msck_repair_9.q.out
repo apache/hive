@@ -1,0 +1,20 @@
+PREHOOK: query: DROP TABLE IF EXISTS tbl_int
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS tbl_int
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_int
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_int
+PREHOOK: query: MSCK REPAIR TABLE tbl_int
+PREHOOK: type: MSCK
+PREHOOK: Output: default@tbl_int
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. For input string: "random_partition"
