@@ -231,58 +231,23 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern) throws TException {
-    List<String> tableNames = delegate.getTables(catName, dbName, tablePattern);
+  public List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
+      throws TException {
+    List<String> tableNames = tableType != null ? delegate.getTables(dbName, tablePattern, tableType)
+        : delegate.getTables(catName, dbName, tablePattern, tableType);
 
     if (isDefaultCatalog(catName)) {
-      // May need to merge with list of temp tables
       dbName = dbName.toLowerCase();
       tablePattern = tablePattern.toLowerCase();
-      Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables =
-          getTempTablesForDatabase(dbName, tablePattern);
-      if (tables == null || tables.size() == 0) {
+      Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables = getTempTablesForDatabase(dbName, tablePattern);
+      if (tables == null || tables.isEmpty()) {
         return tableNames;
       }
       tablePattern = tablePattern.replaceAll("(?<!\\.)\\*", ".*");
       Pattern pattern = Pattern.compile(tablePattern);
       Matcher matcher = pattern.matcher("");
-      Set<String> combinedTableNames = new HashSet<String>();
-      for (String tableName : tables.keySet()) {
-        matcher.reset(tableName);
-        if (matcher.matches()) {
-          combinedTableNames.add(tableName);
-        }
-      }
-
-      // Combine/sort temp and normal table results
-      combinedTableNames.addAll(tableNames);
-      tableNames = new ArrayList<String>(combinedTableNames);
-      Collections.sort(tableNames);
-    }
-
-    return tableNames;
-  }
-
-  @Override
-  public List<String> getTables(String catName, String dbname, String tablePattern, TableType tableType)
-      throws TException {
-    List<String> tableNames = delegate.getTables(dbname, tablePattern, tableType);
-
-    if (isDefaultCatalog(catName)) {
+      Set<String> combinedTableNames = new HashSet<>(tableNames);
       if (tableType == TableType.MANAGED_TABLE || tableType == TableType.EXTERNAL_TABLE) {
-        // May need to merge with list of temp tables
-        dbname = dbname.toLowerCase();
-        tablePattern = tablePattern.toLowerCase();
-        Map<String, org.apache.hadoop.hive.ql.metadata.Table> tables =
-            getTempTablesForDatabase(dbname, tablePattern);
-        if (tables == null || tables.size() == 0) {
-          return tableNames;
-        }
-        tablePattern = tablePattern.replaceAll("(?<!\\.)\\*", ".*");
-        Pattern pattern = Pattern.compile(tablePattern);
-        Matcher matcher = pattern.matcher("");
-        Set<String> combinedTableNames = new HashSet<String>();
-        combinedTableNames.addAll(tableNames);
         for (Map.Entry<String, org.apache.hadoop.hive.ql.metadata.Table> tableData : tables.entrySet()) {
           matcher.reset(tableData.getKey());
           if (matcher.matches()) {
@@ -298,12 +263,18 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
             }
           }
         }
-        // Combine/sort temp and normal table results
-        tableNames = new ArrayList<>(combinedTableNames);
-        Collections.sort(tableNames);
+      } else {
+        for (String tableName : tables.keySet()) {
+          matcher.reset(tableName);
+          if (matcher.matches()) {
+            combinedTableNames.add(tableName);
+          }
+        }
       }
+      // Combine/sort temp and normal table results
+      tableNames = new ArrayList<>(combinedTableNames);
+      Collections.sort(tableNames);
     }
-
     return tableNames;
   }
 

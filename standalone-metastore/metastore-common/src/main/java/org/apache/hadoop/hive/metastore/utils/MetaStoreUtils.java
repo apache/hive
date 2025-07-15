@@ -58,8 +58,11 @@ import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.ClientCapabilities;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.GetTablesRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -1295,6 +1298,20 @@ public class MetaStoreUtils {
       result.setId(tableId);
     }
     return result;
+  }
+
+  public static GetTablesRequest convertToGetTablesRequest(String catName, String dbName, String tablePattern,
+      List<String> tableNames, ClientCapabilities capabilities, GetProjectionsSpec projectionsSpec,
+      String processorIdentifier, List<String> processorCapabilities) {
+    GetTablesRequest req = new GetTablesRequest(dbName);
+    req.setCatName(catName);
+    req.setTablesPattern(tablePattern);
+    req.setCapabilities(capabilities);
+    req.setProcessorCapabilities(processorCapabilities);
+    req.setProcessorIdentifier(processorIdentifier);
+    req.setTblNames(tableNames);
+    req.setProjectionSpec(projectionsSpec);
+    return req;
   }
 
   public static <T> T createThriftPartitionsReq(Class<T> clazz, Configuration conf, T... deepCopy) {

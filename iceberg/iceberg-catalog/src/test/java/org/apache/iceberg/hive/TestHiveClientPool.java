@@ -109,8 +109,8 @@ public class TestHiveClientPool {
     Mockito.doReturn(hmsClient).when(clients).newClient();
     Mockito.doThrow(new MetaException("Another meta exception"))
         .when(hmsClient)
-        .getTables(Mockito.anyString(), Mockito.anyString());
-    assertThatThrownBy(() -> clients.run(client -> client.getTables("default", "t")))
+        .getTables(Mockito.anyString(), Mockito.anyString(), Mockito.isNull());
+    assertThatThrownBy(() -> clients.run(client -> client.getTables("default", "t", null)))
         .isInstanceOf(MetaException.class)
         .hasMessage("Another meta exception");
   }

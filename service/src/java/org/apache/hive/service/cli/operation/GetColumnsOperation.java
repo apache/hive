@@ -154,7 +154,7 @@ public class GetColumnsOperation extends MetadataOperation {
       Map<String, List<String>> db2Tabs = new HashMap<>();
 
       for (String dbName : dbNames) {
-        List<String> tableNames = metastoreClient.getTables(dbName, tablePattern);
+        List<String> tableNames = metastoreClient.getTables(dbName, tablePattern, null);
         Collections.sort(tableNames);
         db2Tabs.put(dbName, tableNames);
       }

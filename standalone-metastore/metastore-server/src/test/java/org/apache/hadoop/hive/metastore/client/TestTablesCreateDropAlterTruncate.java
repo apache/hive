@@ -806,7 +806,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     // location is not set to null, just remain the same
     newTable.setTableName("new_table");
     client.alter_table(originalDatabase, originalTableName, newTable);
-    List<String> tableNames = client.getTables(originalDatabase, originalTableName);
+    List<String> tableNames = client.getTables(originalDatabase, originalTableName, null);
     Assert.assertEquals("Original table should be removed", 0, tableNames.size());
     Assert.assertFalse("Original table directory should be removed",
         metaStore.isPathExists(new Path(originalTable.getSd().getLocation())));
@@ -833,7 +833,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Table newTable = originalTable.deepCopy();
     newTable.setDbName(OTHER_DATABASE);
     client.alter_table(originalDatabase, originalTableName, newTable);
-    List<String> tableNames = client.getTables(originalDatabase, originalTableName);
+    List<String> tableNames = client.getTables(originalDatabase, originalTableName, null);
     Assert.assertEquals("Original table should be removed", 0, tableNames.size());
     Assert.assertFalse("Original table directory should be removed",
         metaStore.isPathExists(new Path(originalTable.getSd().getLocation())));
@@ -860,7 +860,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Table newTable = originalTable.deepCopy();
     newTable.setTableName("new_external_table_for_test");
     client.alter_table(originalDatabase, originalTableName, newTable);
-    List<String> tableNames = client.getTables(originalDatabase, originalTableName);
+    List<String> tableNames = client.getTables(originalDatabase, originalTableName, null);
     Assert.assertEquals("Original table should be removed", 0, tableNames.size());
     Assert.assertTrue("Original table directory should be kept",
         metaStore.isPathExists(new Path(originalTable.getSd().getLocation())));
