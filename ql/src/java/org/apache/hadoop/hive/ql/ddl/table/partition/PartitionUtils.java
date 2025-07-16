@@ -62,32 +62,33 @@ public final class PartitionUtils {
    * simpler. Should be okay since the reserved names are fairly long and uncommon.
    */
   public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) throws SemanticException {
-    Set<String> reservedPartitionValues = new HashSet<>();
-    Set<String> reservedSuffixPartitionValues = new HashSet<>();
     // Partition can't have this name
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
-    reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
-    // Partition value can't end in this suffix
-    reservedSuffixPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
-    reservedSuffixPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
-    reservedSuffixPartitionValues.add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
+    Set<String> reservedPartitionValues =
+            new HashSet<String>() {{
+              add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
+              add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
+            }};
 
-    for (Entry<String, String> e : partitionSpec.entrySet()) {
-      String value = e.getValue();
-      for (String s : reservedPartitionValues) {
-        if (value != null && value.equals(s)) {
-          throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-                  "(User value: " + e.getValue() + " Reserved string: " + s + ")"));
-        }
+    // Partition value can't end in this suffix
+    Set<String> reservedPartitionSuffixes =
+            new HashSet<String>() {{
+              add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
+              add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
+              add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
+            }};
+
+    partitionSpec.forEach((key, value) -> {
+      if (value != null && reservedPartitionValues.contains(value)) {
+        throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                "(User value: " + value + " Reserved string: " + value + ")"));
       }
-      for (String s : reservedSuffixPartitionValues) {
+      reservedPartitionSuffixes.forEach(s -> {
         if (value != null && value.endsWith(s)) {
-          throw new SemanticException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-                  "(User value: " + e.getValue() + " Partition value cannot" +
-                          " end with Reserved substring: " + s + ")"));
+          throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                  "(User value: " + value + " Partition value cannot end with Reserved substring: " + s + ")"));
         }
-      }
-    }
+      });
+    });
   }
 
   public static ExprNodeGenericFuncDesc makeBinaryPredicate(String fn, ExprNodeDesc left, ExprNodeDesc right)
