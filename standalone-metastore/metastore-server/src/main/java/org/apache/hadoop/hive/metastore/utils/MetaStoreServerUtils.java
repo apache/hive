@@ -1659,10 +1659,11 @@ public class MetaStoreServerUtils {
           return Float.toString(Float.parseFloat(partitionValue));
         case ColumnType.DOUBLE_TYPE_NAME:
           return Double.toString(Double.parseDouble(partitionValue));
-        case ColumnType.DECIMAL_TYPE_NAME:
-          return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
         default:
           break;
+      }
+      if (type.toLowerCase().startsWith(ColumnType.DECIMAL_TYPE_NAME)) {
+        return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
       }
     } catch (NumberFormatException e) {
       String validationMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION);

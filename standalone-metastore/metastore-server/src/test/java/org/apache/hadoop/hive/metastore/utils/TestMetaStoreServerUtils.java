@@ -966,6 +966,7 @@ public class TestMetaStoreServerUtils {
     assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.010000", "double", metastoreConf));
     assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.0100", "decimal", metastoreConf));
     assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal", metastoreConf));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal(10,10)", metastoreConf));
     assertEquals("__HIVE_DEFAULT_PARTITION__", MetaStoreServerUtils.getNormalisedPartitionValue(
         "__HIVE_DEFAULT_PARTITION__", "decimal", metastoreConf));
   }
