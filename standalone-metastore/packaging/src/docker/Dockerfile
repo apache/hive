@@ -67,7 +67,6 @@ ENV HADOOP_HOME=/opt/hadoop \
 ENV PATH=$HIVE_HOME/bin:$HADOOP_HOME/bin:$PATH
 
 COPY entrypoint.sh /
-COPY conf $HIVE_HOME/conf
 RUN chmod +x /entrypoint.sh
 
 
@@ -75,7 +74,6 @@ ARG UID=1000
 RUN useradd --no-create-home -s /sbin/nologin -c "" --uid $UID hive && \
     chown hive /opt/hive && \
     chown hive /opt/hadoop && \
-    chown hive /opt/hive/conf && \
     mkdir -p /opt/hive/data/warehouse && \
     chown hive /opt/hive/data/warehouse
 

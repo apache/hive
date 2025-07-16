@@ -19,16 +19,19 @@
 likely need to add a number of new values. -->
 <configuration>
   <property>
-    <name>metastore.thrift.uris</name>
-    <value>thrift://localhost:9083</value>
-    <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
+    <name>metastore.warehouse.dir</name>
+    <value>/opt/hive/data/warehouse</value>
   </property>
   <property>
-    <name>metastore.task.threads.always</name>
-    <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask</value>
+    <name>metastore.event.db.notification.api.auth</name>
+    <value>false</value>
   </property>
   <property>
-    <name>metastore.expression.proxy</name>
-    <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>
+    <name>metastore.catalog.servlet.port</name>
+    <value>9001</value>
+  </property>
+  <property>
+    <name>metastore.catalog.servlet.auth</name>
+    <value>none</value>
   </property>
 </configuration>
