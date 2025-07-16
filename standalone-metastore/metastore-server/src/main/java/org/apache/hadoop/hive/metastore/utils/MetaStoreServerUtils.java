@@ -1638,64 +1638,29 @@ public class MetaStoreServerUtils {
     return result;
   }
 
-  public enum PartitionDataType {
-    TINYINT,
-    SMALLINT,
-    INT,
-    BIGINT,
-    FLOAT,
-    DOUBLE,
-    DECIMAL,
-    STRING,
-    UNKNOWN;
-
-    public static PartitionDataType fromTypeString(String type) {
-      if (type == null || type.isEmpty()){
-        return UNKNOWN;
-      }
-      String base = type.toLowerCase();
-      if (base.startsWith("decimal")){
-        return DECIMAL;
-      }
-      return switch (base) {
-        case "tinyint" -> TINYINT;
-        case "smallint" -> SMALLINT;
-        case "int" -> INT;
-        case "bigint" -> BIGINT;
-        case "float" -> FLOAT;
-        case "double" -> DOUBLE;
-        case "string" -> STRING;
-        default -> UNKNOWN;
-      };
-    }
-  }
-
   public static String getNormalisedPartitionValue(String partitionValue, String type,
       Configuration conf) {
-    PartitionDataType dataType = PartitionDataType.fromTypeString(type);
-    if (!NumberUtils.isParsable(partitionValue) && dataType != PartitionDataType.STRING
+    if ((!NumberUtils.isParsable(partitionValue) && !Objects.equals(type, ColumnType.STRING_TYPE_NAME)
             && Objects.equals(partitionValue, MetastoreConf.getVar(conf,
-            MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) {
+            MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) || type == null) {
       return partitionValue;
     }
 
     LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
-
     try {
-      switch (dataType) {
-        case TINYINT:
-        case SMALLINT:
-        case INT:
+      switch (type.toLowerCase()) {
+        case ColumnType.TINYINT_TYPE_NAME:
+        case ColumnType.SMALLINT_TYPE_NAME:
+        case ColumnType.INT_TYPE_NAME:
           return Integer.toString(Integer.parseInt(partitionValue));
-        case BIGINT:
+        case ColumnType.BIGINT_TYPE_NAME:
           return Long.toString(Long.parseLong(partitionValue));
-        case FLOAT:
+        case ColumnType.FLOAT_TYPE_NAME:
           return Float.toString(Float.parseFloat(partitionValue));
-        case DOUBLE:
+        case ColumnType.DOUBLE_TYPE_NAME:
           return Double.toString(Double.parseDouble(partitionValue));
-        case DECIMAL:
+        case ColumnType.DECIMAL_TYPE_NAME:
           return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
-        // STRING and UNKNOWN: fallthrough
         default:
           break;
       }
