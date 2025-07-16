@@ -155,11 +155,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(ThriftHiveMetaStoreClient.class);
 
-  public static ThriftHiveMetaStoreClient newClient(Configuration conf, Boolean allowEmbedded)
-      throws MetaException {
-    return new ThriftHiveMetaStoreClient(conf, allowEmbedded);
-  }
-
   public ThriftHiveMetaStoreClient(Configuration conf, boolean allowEmbedded) throws MetaException {
     super(conf);
     version =

@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.client.HiveMetaStoreClientFactory;
 import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.HiveMetaStoreClientBuilder;
@@ -62,7 +61,7 @@ public class HiveMetaStoreClient extends MetaStoreClientWrapper implements IMeta
 
   public HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
-    this(conf, hookLoader, HiveMetaStoreClientFactory.newClient(conf, allowEmbedded));
+    this(conf, hookLoader, HiveMetaStoreClientBuilder.createClient(conf, allowEmbedded));
   }
 
   private HiveMetaStoreClient(Configuration conf, HiveMetaHookLoader hookLoader,
