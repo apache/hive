@@ -814,6 +814,10 @@ public class HiveConf extends Configuration {
         "Whether to use a native APIs for load queries to non-native table(like iceberg), if false uses a Tez job for" +
             " load queries"),
 
+    HIVE_SKIP_PROTOBUF_CORRUPTFILE("hive.exec.skip.protobuf.corruptfile", false,
+            "Whether Hive skips Protocol Buffer files corrupted, \n" +
+                    "during parsing (e.g., due to data truncation or file incompletion) to allow task continuation."),
+
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
     // TODO: this needs to be removed; see TestReplicationScenarios* comments.
@@ -1880,10 +1884,10 @@ public class HiveConf extends Configuration {
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
     HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "NEVER",
         new StringSet(true, "NEVER", "CONSERVATIVE", "ALWAYS"),
-        "The strategy defines when Hive fallbacks to legacy optimizer when CBO fails:" 
+        "The strategy defines when Hive fallbacks to legacy optimizer when CBO fails:"
             + "NEVER, never use the legacy optimizer (all CBO errors are fatal);"
             + "ALWAYS, always use the legacy optimizer (CBO errors are not fatal);"
-            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views."), 
+            + "CONSERVATIVE, use the legacy optimizer only when the CBO error is not related to subqueries and views."),
     HIVE_CBO_CNF_NODES_LIMIT("hive.cbo.cnf.maxnodes", -1, "When converting to conjunctive normal form (CNF), fail if" +
         "the expression exceeds this threshold; the threshold is expressed in terms of number of nodes (leaves and" +
         "interior nodes). -1 to not set up a threshold."),
@@ -2299,7 +2303,7 @@ public class HiveConf extends Configuration {
         "calendar. Hybrid is the default."),
     HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.legacy.conversion.enabled", true,
         "Whether to use former Java date/time APIs to convert between timezones when reading timestamps from " +
-        "Avro files. The property has no effect when the file contains explicit metadata about the conversion " + 
+        "Avro files. The property has no effect when the file contains explicit metadata about the conversion " +
         "used to write the data; in this case reading conversion is based on the metadata."),
     HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.write.legacy.conversion.enabled", false,
         "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
@@ -3145,15 +3149,15 @@ public class HiveConf extends Configuration {
 
     HIVE_ACID_LOCKLESS_READS_ENABLED("hive.acid.lockless.reads.enabled", false,
         "Enables lockless reads"),
-     
+
     HIVE_ACID_CREATE_TABLE_USE_SUFFIX("hive.acid.createtable.softdelete", false,
         "Enables non-blocking DROP TABLE operation.\n" +
         "If enabled, every table directory would be suffixed with the corresponding table creation txnId."),
-    
+
     HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", true,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
-    
+
     HIVE_ACID_DROP_PARTITION_USE_BASE("hive.acid.droppartition.usebase", false,
         "Enables non-blocking DROP PARTITION operation.\n" +
         "If enabled, drop for transactional tables will not delete the data directories,\n" +
@@ -3163,7 +3167,7 @@ public class HiveConf extends Configuration {
       "Enables non-blocking RENAME PARTITION operation.\n" +
         "If enabled, rename for transactional tables will not rename the partition directory,\n" +
         "rather create a copy of it under the new path.\")"),
-    
+
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
     /**
@@ -3891,8 +3895,8 @@ public class HiveConf extends Configuration {
         " * DATETIME: For using java.time.format.DateTimeFormatter\n" +
         " * SIMPLE: For using java.text.SimpleDateFormat (known bugs: HIVE-25458, HIVE-25403, HIVE-25268)\n" +
         "Currently the configuration only affects the behavior of the following SQL functions:\n" +
-        " * unix_timestamp(string,[string])\n" + 
-        " * from_unixtime\n" + 
+        " * unix_timestamp(string,[string])\n" +
+        " * from_unixtime\n" +
         " * date_format\n\n" +
         "The SIMPLE formatter exists purely for compatibility purposes with previous versions of Hive thus its use " +
         "is discouraged. It suffers from known bugs that are unlikely to be fixed in subsequent versions of the product." +
@@ -4042,7 +4046,7 @@ public class HiveConf extends Configuration {
       "hs2ActivePassiveHA",
       "When HiveServer2 Active/Passive High Availability is enabled, uses this namespace for registering HS2\n" +
         "instances with zookeeper"),
-    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002, 
+    HIVE_SERVER2_ACTIVE_PASSIVE_HA_HEALTHCHECK_PORT("hive.server2.active.passive.ha.healthcheck.port", 11002,
         "The port the HiveServer2 ha-healthcheck web app will listen on"),
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
@@ -4137,9 +4141,9 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.SECONDS), "When a query is cancelled (via kill query, query timeout or triggers),\n" +
       " operation logs gets cleaned up after this delay"),
     HIVE_SERVER2_OPERATION_LOG_PURGEPOLICY_TIMETOLIVE("hive.server2.operation.log.purgePolicy.timeToLive",
-        "60s", new TimeValidator(TimeUnit.SECONDS), 
-        "Number of seconds the appender, which has been dynamically created by Log4J framework for the " + 
-        "operation log, should survive without having any events sent to it. For more details, check " + 
+        "60s", new TimeValidator(TimeUnit.SECONDS),
+        "Number of seconds the appender, which has been dynamically created by Log4J framework for the " +
+        "operation log, should survive without having any events sent to it. For more details, check " +
         "Log4J's IdlePurgePolicy."),
     HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED("hive.server2.historic.operation.log.enabled", false,
         "Keep the operation log for some time until the operation's query info is evicted from QueryInfoCache."),
@@ -5844,7 +5848,7 @@ public class HiveConf extends Configuration {
             "The names of additional config files, such as ldap-site.xml," +
                     "tez-site.xml, etc in comma separated list."),
 
-    REWRITE_POLICY("hive.rewrite.data.policy", "DEFAULT", 
+    REWRITE_POLICY("hive.rewrite.data.policy", "DEFAULT",
         "Defines the rewrite policy, the valid values are those defined in RewritePolicy enum"),
 
     HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "0s",
