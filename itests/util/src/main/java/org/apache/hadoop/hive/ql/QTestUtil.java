@@ -248,7 +248,7 @@ public class QTestUtil {
     dispatcher.register("timezone", new QTestTimezoneHandler());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
     dispatcher.register("disabled", new QTestDisabledHandler());
-    dispatcher.register("database", new QTestDatabaseHandler());
+    dispatcher.register("database", new QTestDatabaseHandler(scriptsDir));
     dispatcher.register("queryhistory", new QTestQueryHistoryHandler());
 
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();

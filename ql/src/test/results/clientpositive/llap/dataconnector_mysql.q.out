@@ -1,6 +1,6 @@
 PREHOOK: query: CREATE CONNECTOR mysql_qtest
 TYPE 'mysql'
-URL 'jdbc:mysql://localhost:3306/qtestDB'
+URL 'jdbc:mysql://localhost:3306/qdb'
 COMMENT 'test connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="root",
@@ -12,7 +12,7 @@ PREHOOK: type: CREATEDATACONNECTOR
 PREHOOK: Output: connector:mysql_qtest
 POSTHOOK: query: CREATE CONNECTOR mysql_qtest
 TYPE 'mysql'
-URL 'jdbc:mysql://localhost:3306/qtestDB'
+URL 'jdbc:mysql://localhost:3306/qdb'
 COMMENT 'test connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="root",
@@ -27,11 +27,11 @@ PREHOOK: type: SHOWDATACONNECTORS
 POSTHOOK: query: SHOW CONNECTORS
 POSTHOOK: type: SHOWDATACONNECTORS
 mysql_qtest
-PREHOOK: query: CREATE REMOTE DATABASE db_mysql USING mysql_qtest with DBPROPERTIES("connector.remoteDbName"="qtestDB")
+PREHOOK: query: CREATE REMOTE DATABASE db_mysql USING mysql_qtest with DBPROPERTIES("connector.remoteDbName"="qdb")
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Input: connector:mysql_qtest
 PREHOOK: Output: database:db_mysql
-POSTHOOK: query: CREATE REMOTE DATABASE db_mysql USING mysql_qtest with DBPROPERTIES("connector.remoteDbName"="qtestDB")
+POSTHOOK: query: CREATE REMOTE DATABASE db_mysql USING mysql_qtest with DBPROPERTIES("connector.remoteDbName"="qdb")
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Input: connector:mysql_qtest
 POSTHOOK: Output: database:db_mysql
@@ -75,8 +75,8 @@ TBLPROPERTIES (
   'hive.sql.dbcp.password'='qtestpassword', 
   'hive.sql.dbcp.username'='root', 
   'hive.sql.jdbc.driver'='com.mysql.jdbc.Driver', 
-  'hive.sql.jdbc.url'='jdbc:mysql://localhost:3306/qtestDB', 
-  'hive.sql.schema'='qtestDB', 
+  'hive.sql.jdbc.url'='jdbc:mysql://localhost:3306/qdb', 
+  'hive.sql.schema'='qdb', 
   'hive.sql.table'='country')
 PREHOOK: query: SELECT * FROM country
 PREHOOK: type: QUERY

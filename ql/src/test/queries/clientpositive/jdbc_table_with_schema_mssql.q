@@ -1,4 +1,4 @@
---! qt:database:mssql:q_test_country_table_with_schema.mssql.sql
+--! qt:database:mssql:qdb:q_test_country_table_with_schema.mssql.sql
 -- Microsoft SQL server allows multiple schemas per database so to disambiguate between tables in different schemas it
 -- is necessary to set the hive.sql.schema property properly.
 
@@ -11,9 +11,9 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "MSSQL",
     "hive.sql.jdbc.driver" = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-    "hive.sql.jdbc.url" = "jdbc:sqlserver://localhost:1433;DatabaseName=world;",
-    "hive.sql.dbcp.username" = "sa",
-    "hive.sql.dbcp.password" = "Its-a-s3cret",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};DatabaseName=world;",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
     "hive.sql.schema" = "bob",
     "hive.sql.table" = "country");
 
@@ -25,9 +25,9 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "MSSQL",
     "hive.sql.jdbc.driver" = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-    "hive.sql.jdbc.url" = "jdbc:sqlserver://localhost:1433;DatabaseName=world;",
-    "hive.sql.dbcp.username" = "sa",
-    "hive.sql.dbcp.password" = "Its-a-s3cret",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};DatabaseName=world;",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qdb.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qdb.jdbc.password}",
     "hive.sql.schema" = "alice",
     "hive.sql.table" = "country");
 
@@ -45,7 +45,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "MSSQL",
     "hive.sql.jdbc.driver" = "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-    "hive.sql.jdbc.url" = "jdbc:sqlserver://localhost:1433;DatabaseName=world;",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};DatabaseName=world;",
     "hive.sql.dbcp.username" = "greg",
     "hive.sql.dbcp.password" = "GregPass123!$",
     "hive.sql.table" = "country");

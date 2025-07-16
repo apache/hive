@@ -31,7 +31,7 @@ public class MSSQLServer extends AbstractExternalDB {
 
   @Override
   public String getJdbcUrl() {
-    return "jdbc:sqlserver://" + getContainerHostAddress() + ":1433";
+    return "jdbc:sqlserver://" + getContainerHostAddress() + ":" + getPort();
   }
 
   @Override
@@ -46,7 +46,13 @@ public class MSSQLServer extends AbstractExternalDB {
 
   @Override
   public String[] getDockerAdditionalArgs() {
-    return new String[] { "-p", "1433:1433", "-e", "ACCEPT_EULA=Y", "-e", "SA_PASSWORD=" + getRootPassword(), "-d" };
+    return new String[] { "-p", getPort() + ":1433", "-e", "ACCEPT_EULA=Y", "-e", "SA_PASSWORD=" + getRootPassword(),
+        "-d" };
+  }
+
+  @Override
+  protected int getPort() {
+    return 1433;
   }
 
   @Override
