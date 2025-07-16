@@ -218,7 +218,16 @@ public class HiveUnionSimpleSelectsToInlineTableRule extends RelOptRule {
     if (input.getInputs().size() == 0) {
       return true;
     }
-    if (!(((RexCall)((HiveTableFunctionScan) input).getCall()).getOperands().get(0) instanceof RexCall)) {
+    RexNode call = ((HiveTableFunctionScan) input).getCall();
+    if (!(call instanceof RexCall)) {
+      return false;
+    }
+    // there should be operands present, if not return false
+    if (((RexCall) call).getOperands().size() == 0) {
+      return false;
+    }
+    // the operands should be of type RexCall, if not return false
+    if (!(((RexCall) call).getOperands().get(0) instanceof RexCall)) {
       return false;
     }
     return isDummyTableScan(input.getInput(0));

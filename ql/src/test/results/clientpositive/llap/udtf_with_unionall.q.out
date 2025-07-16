@@ -16,91 +16,26 @@ C	30	2017-08-09	x
 A	10	2015-01-01	n
 B	20	2016-01-01	m
 C	30	2017-08-09	l
-PREHOOK: query: EXPLAIN SELECT stack(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
+PREHOOK: query: EXPLAIN CBO SELECT stack(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
   UNION ALL
  SELECT STACK(3,'A',10,date '2015-01-01','n','B',20,date '2016-01-01','m','C',30,date '2017-08-09','l') AS (col0,col1,col2,col3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT stack(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
+POSTHOOK: query: EXPLAIN CBO SELECT stack(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
   UNION ALL
  SELECT STACK(3,'A',10,date '2015-01-01','n','B',20,date '2016-01-01','m','C',30,date '2017-08-09','l') AS (col0,col1,col2,col3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: 3 (type: int), 'A' (type: string), 10 (type: int), DATE'2015-01-01' (type: date), 'z' (type: string), 'B' (type: string), 20 (type: int), DATE'2016-01-01' (type: date), 'y' (type: string), 'C' (type: string), 30 (type: int), DATE'2017-08-09' (type: date), 'x' (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                    Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: stack
-                      Select Operator
-                        expressions: col0 (type: string), col1 (type: int), col2 (type: date), col3 (type: string)
-                        outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: 3 (type: int), 'A' (type: string), 10 (type: int), DATE'2015-01-01' (type: date), 'n' (type: string), 'B' (type: string), 20 (type: int), DATE'2016-01-01' (type: date), 'm' (type: string), 'C' (type: string), 30 (type: int), DATE'2017-08-09' (type: date), 'l' (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                    Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: stack
-                      Select Operator
-                        expressions: col0 (type: string), col1 (type: int), col2 (type: date), col3 (type: string)
-                        outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(col0=[$0], col1=[$1], col2=[$2], col3=[$3])
+    HiveTableFunctionScan(invocation=[stack(3, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE, _UTF-16LE'z':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2016-01-01:DATE, _UTF-16LE'y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2017-08-09:DATE, _UTF-16LE'x':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")], rowType=[RecordType(VARCHAR(2147483647) col0, INTEGER col1, DATE col2, VARCHAR(2147483647) col3)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+  HiveProject(col0=[$0], col1=[$1], col2=[$2], col3=[$3])
+    HiveTableFunctionScan(invocation=[stack(3, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE, _UTF-16LE'n':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2016-01-01:DATE, _UTF-16LE'm':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2017-08-09:DATE, _UTF-16LE'l':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")], rowType=[RecordType(VARCHAR(2147483647) col0, INTEGER col1, DATE col2, VARCHAR(2147483647) col3)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
   UNION ALL
@@ -127,7 +62,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 11	blue
 12	indigo
 20	violet
-PREHOOK: query: EXPLAIN SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
+PREHOOK: query: EXPLAIN CBO SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
   UNION ALL
  SELECT * FROM (VALUES(10, 'green'), (11, 'blue'), (12, 'indigo'), (20, 'violet')) AS Colors2
   UNION ALL
@@ -135,7 +70,7 @@ PREHOOK: query: EXPLAIN SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yello
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
+POSTHOOK: query: EXPLAIN CBO SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
   UNION ALL
  SELECT * FROM (VALUES(10, 'green'), (11, 'blue'), (12, 'indigo'), (20, 'violet')) AS Colors2
   UNION ALL
@@ -143,181 +78,14 @@ POSTHOOK: query: EXPLAIN SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yell
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: 2 (type: int), 10 (type: int), 'X' (type: string), 20 (type: int), 'Y' (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: stack
-                      Select Operator
-                        expressions: col0 (type: int), col1 (type: string)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: array(const struct(1,'1'),const struct(2,'orange'),const struct(5,'yellow'),const struct(10,'green'),const struct(11,'blue'),const struct(12,'indigo'),const struct(20,'violet')) (type: array<struct<col1:int,col2:string>>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: inline
-                      Select Operator
-                        expressions: col1 (type: int), col2 (type: string)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2016-02-02')))
-  UNION ALL
- SELECT STACK(2,'X',10,date '2017-01-01','Y',20,date '2018-01-01')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2016-02-02')))
-  UNION ALL
- SELECT STACK(2,'X',10,date '2017-01-01','Y',20,date '2018-01-01')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-A	10	2015-01-01
-B	20	2016-02-02
-X	10	2017-01-01
-Y	20	2018-01-01
-PREHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2016-02-02')))
-  UNION ALL
- SELECT STACK(2,'X',30,date '2017-01-01','Y',40,date '2018-01-01')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2016-02-02')))
-  UNION ALL
- SELECT STACK(2,'X',30,date '2017-01-01','Y',40,date '2018-01-01')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: array(const struct('A',10,DATE'2015-01-01'),const struct('B',20,DATE'2016-02-02')) (type: array<struct<col1:string,col2:int,col3:date>>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: inline
-                      Select Operator
-                        expressions: col1 (type: string), col2 (type: int), col3 (type: date)
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: 2 (type: int), 'X' (type: string), 30 (type: int), DATE'2017-01-01' (type: date), 'Y' (type: string), 40 (type: int), DATE'2018-01-01' (type: date)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: stack
-                      Select Operator
-                        expressions: col0 (type: string), col1 (type: int), col2 (type: date)
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(col0=[$0], col1=[$1])
+    HiveTableFunctionScan(invocation=[stack(2, 10, _UTF-16LE'X':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, _UTF-16LE'Y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")], rowType=[RecordType(INTEGER col0, VARCHAR(2147483647) col1)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+  HiveProject(col1=[$0], col2=[$1])
+    HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, _UTF-16LE'1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(2, _UTF-16LE'orange':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(5, _UTF-16LE'yellow':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(10, _UTF-16LE'green':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(11, _UTF-16LE'blue':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(12, _UTF-16LE'indigo':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(20, _UTF-16LE'violet':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
   UNION ALL
@@ -335,142 +103,21 @@ A	10	2015-01-01
 B	20	2015-02-02
 C	30	2016-01-01
 D	40	2016-02-02
-PREHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+PREHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
   UNION ALL
  SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+POSTHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
   UNION ALL
  SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-0 is a root stage
-
-STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: _dummy_table
-          Row Limit Per Split: 1
-          Select Operator
-            expressions: array(const struct('A',10,DATE'2015-01-01'),const struct('B',20,DATE'2015-02-02'),const struct('C',30,DATE'2016-01-01'),const struct('D',40,DATE'2016-02-02')) (type: array<struct<col1:string,col2:int,col3:date>>)
-            outputColumnNames: _col0
-            UDTF Operator
-              function name: inline
-              Select Operator
-                expressions: col1 (type: string), col2 (type: int), col3 (type: date)
-                outputColumnNames: _col0, _col1, _col2
-                ListSink
-
-PREHOOK: query: SELECT EXPLODE(map('A',10,'B',20,'C',30))
-  UNION ALL
- SELECT EXPLODE(map('X',70,'Y',80,'Z',90))
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT EXPLODE(map('A',10,'B',20,'C',30))
-  UNION ALL
- SELECT EXPLODE(map('X',70,'Y',80,'Z',90))
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-A	10
-B	20
-C	30
-X	70
-Y	80
-Z	90
-PREHOOK: query: EXPLAIN SELECT EXPLODE(map('A',10,'B',20,'C',30))
-  UNION ALL
- SELECT EXPLODE(map('X',70,'Y',80,'Z',90))
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT EXPLODE(map('A',10,'B',20,'C',30))
-  UNION ALL
- SELECT EXPLODE(map('X',70,'Y',80,'Z',90))
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: map('A':10,'B':20,'C':30) (type: map<string,int>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 511 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 511 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: explode
-                      Select Operator
-                        expressions: key (type: string), value (type: int)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: map('X':70,'Y':80,'Z':90) (type: map<string,int>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 511 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 511 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: explode
-                      Select Operator
-                        expressions: key (type: string), value (type: int)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+CBO PLAN:
+HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2015-02-02:DATE), ROW(_UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2016-01-01:DATE), ROW(_UTF-16LE'D':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 40, 2016-02-02:DATE)))], rowType=[RecordType(VARCHAR(2147483647) col1, INTEGER col2, DATE col3)])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
   UNION ALL
@@ -494,7 +141,7 @@ A	10	2015-01-01
 B	20	2015-02-02
 C	30	2016-01-01
 D	40	2016-02-02
-PREHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+PREHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
   UNION ALL
  SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
   UNION ALL
@@ -502,7 +149,7 @@ PREHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),str
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+POSTHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
   UNION ALL
  SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
   UNION ALL
@@ -510,77 +157,12 @@ POSTHOOK: query: EXPLAIN SELECT INLINE(array(struct('A',10,date '2015-01-01'),st
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 3 <- Union 2 (CONTAINS)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: 2 (type: int), 'X' (type: string), 50 (type: int), DATE'2017-01-01' (type: date), 'Y' (type: string), 60 (type: int), DATE'2017-01-01' (type: date)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: stack
-                      Select Operator
-                        expressions: col0 (type: string), col1 (type: int), col2 (type: date)
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: _dummy_table
-                  Row Limit Per Split: 1
-                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: array(const struct('A',10,DATE'2015-01-01'),const struct('B',20,DATE'2015-02-02'),const struct('C',30,DATE'2016-01-01'),const struct('D',40,DATE'2016-02-02')) (type: array<struct<col1:string,col2:int,col3:date>>)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
-                    UDTF Operator
-                      Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
-                      function name: inline
-                      Select Operator
-                        expressions: col1 (type: string), col2 (type: int), col3 (type: date)
-                        outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
-            LLAP IO: no inputs
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(col0=[$0], col1=[$1], col2=[$2])
+    HiveTableFunctionScan(invocation=[stack(2, _UTF-16LE'X':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 50, 2017-01-01:DATE, _UTF-16LE'Y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 60, 2017-01-01:DATE)], rowType=[RecordType(VARCHAR(2147483647) col0, INTEGER col1, DATE col2)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+  HiveProject(col1=[$0], col2=[$1], col3=[$2])
+    HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2015-02-02:DATE), ROW(_UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2016-01-01:DATE), ROW(_UTF-16LE'D':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 40, 2016-02-02:DATE)))], rowType=[RecordType(VARCHAR(2147483647) col1, INTEGER col2, DATE col3)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
