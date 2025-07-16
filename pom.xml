@@ -61,6 +61,7 @@
     <module>standalone-metastore</module>
     <module>kafka-handler</module>
     <module>iceberg</module>
+    <module>itests/test-jdbc</module>
   </modules>
   <properties>
     <standalone-metastore.version>4.2.0-SNAPSHOT</standalone-metastore.version>
