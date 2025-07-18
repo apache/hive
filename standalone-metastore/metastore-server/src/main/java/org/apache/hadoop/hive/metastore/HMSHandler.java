@@ -3054,10 +3054,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               tblPath.getParent() + " is not writable by " +
               SecurityUtils.getUser());
         } else if (!wh.isWritable(tblPath)) {
-            String target = indexName == null ? "Table" : "Index table";
-            throw new MetaException(target + " metadata not deleted since " +
-                    tblPath + " is not writable by " +
-                    SecurityUtils.getUser());
+          String target = indexName == null ? "Table" : "Index table";
+          throw new MetaException(target + " metadata not deleted since " +
+              tblPath + " is not writable by " +
+              SecurityUtils.getUser());
         }
       }
 
