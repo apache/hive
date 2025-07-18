@@ -481,10 +481,6 @@
           <groupId>org.yaml</groupId>
           <artifactId>snakeyaml</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.apache.calcite.avatica</groupId>
-          <artifactId>avatica-core</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -492,41 +488,8 @@
       <artifactId>calcite-druid</artifactId>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.calcite.avatica</groupId>
-          <artifactId>avatica-core</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>org.yaml</groupId>
           <artifactId>snakeyaml</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite.avatica</groupId>
-      <artifactId>avatica</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.calcite.avatica</groupId>
-          <artifactId>avatica-core</artifactId>
-        </exclusion>
-        <!-- hsqldb interferes with the use of derby as the default db
-          in hive's use of datanucleus.
-        -->
-        <exclusion>
-          <groupId>org.hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -1102,7 +1065,7 @@
                   <include>com.zaxxer:HikariCP</include>
                   <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
-                  <include>org.apache.calcite.avatica:avatica</include>
+                  <include>org.apache.calcite.avatica:*</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>com.github.luben:zstd-jni</include>
@@ -1111,15 +1074,6 @@
                 </includes>
               </artifactSet>
               <filters>
-                <filter>
-                  <artifact>org.apache.calcite.avatica:avatica</artifact>
-                  <excludes>
-                    <!-- Exclude Avatica bundled SLF4J, because Hive manages its own SLF4J version. -->
-                    <exclude>org/slf4j/**</exclude>
-                    <exclude>META-INF/maven/org.slf4j/**</exclude>
-                    <exclude>META-INF/licenses/slf4j*/**</exclude>
-                  </excludes>
-                </filter>
                 <filter>
                   <artifact>*:*</artifact>
                   <excludes>
