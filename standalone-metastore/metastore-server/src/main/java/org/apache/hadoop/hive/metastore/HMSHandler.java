@@ -3048,11 +3048,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (tableDataShouldBeDeleted && tbl.getSd().getLocation() != null) {
         tblPath = new Path(tbl.getSd().getLocation());
 	// HIVE-28804 drop table user should have table path and parent path permission
-        if (!wh.isWritable(tblPath.getParent()) || !wh.isWritable(tblPath)) {
+        if (!wh.isWritable(tblPath.getParent())) {
           String target = indexName == null ? "Table" : "Index table";
           throw new MetaException(target + " metadata not deleted since " +
               tblPath.getParent() + " is not writable by " +
               SecurityUtils.getUser());
+        } else if (!wh.isWritable(tblPath)) {
+            String target = indexName == null ? "Table" : "Index table";
+            throw new MetaException(target + " metadata not deleted since " +
+                    tblPath + " is not writable by " +
+                    SecurityUtils.getUser());
         }
       }
 
