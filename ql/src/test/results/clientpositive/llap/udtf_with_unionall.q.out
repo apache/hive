@@ -1,0 +1,168 @@
+PREHOOK: query: SELECT STACK(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
+  UNION ALL
+ SELECT STACK(3,'A',10,date '2015-01-01','n','B',20,date '2016-01-01','m','C',30,date '2017-08-09','l') AS (col0,col1,col2,col3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT STACK(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
+  UNION ALL
+ SELECT STACK(3,'A',10,date '2015-01-01','n','B',20,date '2016-01-01','m','C',30,date '2017-08-09','l') AS (col0,col1,col2,col3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+A	10	2015-01-01	z
+B	20	2016-01-01	y
+C	30	2017-08-09	x
+A	10	2015-01-01	n
+B	20	2016-01-01	m
+C	30	2017-08-09	l
+PREHOOK: query: EXPLAIN CBO SELECT stack(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
+  UNION ALL
+ SELECT STACK(3,'A',10,date '2015-01-01','n','B',20,date '2016-01-01','m','C',30,date '2017-08-09','l') AS (col0,col1,col2,col3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT stack(3,'A',10,date '2015-01-01','z','B',20,date '2016-01-01','y','C',30,date '2017-08-09','x') AS (col0,col1,col2,col3)
+  UNION ALL
+ SELECT STACK(3,'A',10,date '2015-01-01','n','B',20,date '2016-01-01','m','C',30,date '2017-08-09','l') AS (col0,col1,col2,col3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(col0=[$0], col1=[$1], col2=[$2], col3=[$3])
+    HiveTableFunctionScan(invocation=[stack(3, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE, _UTF-16LE'z':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2016-01-01:DATE, _UTF-16LE'y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2017-08-09:DATE, _UTF-16LE'x':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")], rowType=[RecordType(VARCHAR(2147483647) col0, INTEGER col1, DATE col2, VARCHAR(2147483647) col3)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+  HiveProject(col0=[$0], col1=[$1], col2=[$2], col3=[$3])
+    HiveTableFunctionScan(invocation=[stack(3, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE, _UTF-16LE'n':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2016-01-01:DATE, _UTF-16LE'm':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2017-08-09:DATE, _UTF-16LE'l':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")], rowType=[RecordType(VARCHAR(2147483647) col0, INTEGER col1, DATE col2, VARCHAR(2147483647) col3)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
+  UNION ALL
+ SELECT * FROM (VALUES(10, 'green'), (11, 'blue'), (12, 'indigo'), (20, 'violet')) AS Colors2
+  UNION ALL
+ SELECT STACK(2,10,'X',20,'Y')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
+  UNION ALL
+ SELECT * FROM (VALUES(10, 'green'), (11, 'blue'), (12, 'indigo'), (20, 'violet')) AS Colors2
+  UNION ALL
+ SELECT STACK(2,10,'X',20,'Y')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+10	X
+20	Y
+1	1
+2	orange
+5	yellow
+10	green
+11	blue
+12	indigo
+20	violet
+PREHOOK: query: EXPLAIN CBO SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
+  UNION ALL
+ SELECT * FROM (VALUES(10, 'green'), (11, 'blue'), (12, 'indigo'), (20, 'violet')) AS Colors2
+  UNION ALL
+ SELECT STACK(2,10,'X',20,'Y')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT * FROM (VALUES(1, '1'), (2, 'orange'), (5, 'yellow')) AS Colors1
+  UNION ALL
+ SELECT * FROM (VALUES(10, 'green'), (11, 'blue'), (12, 'indigo'), (20, 'violet')) AS Colors2
+  UNION ALL
+ SELECT STACK(2,10,'X',20,'Y')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(col0=[$0], col1=[$1])
+    HiveTableFunctionScan(invocation=[stack(2, 10, _UTF-16LE'X':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, _UTF-16LE'Y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")], rowType=[RecordType(INTEGER col0, VARCHAR(2147483647) col1)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+  HiveProject(col1=[$0], col2=[$1])
+    HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, _UTF-16LE'1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(2, _UTF-16LE'orange':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(5, _UTF-16LE'yellow':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(10, _UTF-16LE'green':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(11, _UTF-16LE'blue':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(12, _UTF-16LE'indigo':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), ROW(20, _UTF-16LE'violet':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))], rowType=[RecordType(INTEGER col1, VARCHAR(2147483647) col2)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+A	10	2015-01-01
+B	20	2015-02-02
+C	30	2016-01-01
+D	40	2016-02-02
+PREHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2015-02-02:DATE), ROW(_UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2016-01-01:DATE), ROW(_UTF-16LE'D':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 40, 2016-02-02:DATE)))], rowType=[RecordType(VARCHAR(2147483647) col1, INTEGER col2, DATE col3)])
+  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
+PREHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+  UNION ALL
+ SELECT STACK(2,'X',50,date '2017-01-01','Y',60,date '2017-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+  UNION ALL
+ SELECT STACK(2,'X',50,date '2017-01-01','Y',60,date '2017-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+X	50	2017-01-01
+Y	60	2017-01-01
+A	10	2015-01-01
+B	20	2015-02-02
+C	30	2016-01-01
+D	40	2016-02-02
+PREHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+  UNION ALL
+ SELECT STACK(2,'X',50,date '2017-01-01','Y',60,date '2017-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT INLINE(array(struct('A',10,date '2015-01-01'),struct('B',20,date '2015-02-02')))
+  UNION ALL
+ SELECT INLINE(array(struct('C',30,date '2016-01-01'),struct('D',40,date '2016-02-02')))
+  UNION ALL
+ SELECT STACK(2,'X',50,date '2017-01-01','Y',60,date '2017-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(col0=[$0], col1=[$1], col2=[$2])
+    HiveTableFunctionScan(invocation=[stack(2, _UTF-16LE'X':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 50, 2017-01-01:DATE, _UTF-16LE'Y':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 60, 2017-01-01:DATE)], rowType=[RecordType(VARCHAR(2147483647) col0, INTEGER col1, DATE col2)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+  HiveProject(col1=[$0], col2=[$1], col3=[$2])
+    HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, 2015-01-01:DATE), ROW(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, 2015-02-02:DATE), ROW(_UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 30, 2016-01-01:DATE), ROW(_UTF-16LE'D':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 40, 2016-02-02:DATE)))], rowType=[RecordType(VARCHAR(2147483647) col1, INTEGER col2, DATE col3)])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+
