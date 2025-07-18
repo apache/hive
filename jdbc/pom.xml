@@ -467,6 +467,10 @@
                       <pattern>org.codehaus.stax2</pattern>
                       <shadedPattern>org.apache.hive.org.codehaus.stax2</shadedPattern>
                     </relocation>
+                    <relocation>
+                      <pattern>io.netty</pattern>
+                      <shadedPattern>org.apache.hive.io.netty</shadedPattern>
+                    </relocation>
                   </relocations>
                 </configuration>
               </execution>
