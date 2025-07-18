@@ -289,10 +289,6 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.calcite.avatica</groupId>
-      <artifactId>avatica-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-client</artifactId>
       <scope>test</scope>
