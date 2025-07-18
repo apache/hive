@@ -444,7 +444,12 @@ public class HiveMetaStoreChecker {
     for (Path partPath : missingPartDirs) {
       FileSystem fs = partPath.getFileSystem(conf);
       String partitionName = getPartitionName(fs.makeQualified(tablePath),
-          partPath, partColNames, partitionColToTypeMap);
+          partPath, partColNames, partitionColToTypeMap, conf);
+      if (partitionName == null) {
+        // Skip this partition if there is some issue in the partition validation
+        LOG.warn("Skipping partition : " + partPath.getName());
+        continue;
+      }
       LOG.debug("PartitionName: " + partitionName);
 
       if (partitionName != null) {

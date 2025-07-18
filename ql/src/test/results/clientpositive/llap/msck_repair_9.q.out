@@ -90,7 +90,7 @@ PREHOOK: Output: default@tbl_y
 POSTHOOK: query: MSCK REPAIR TABLE tbl_y
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@tbl_y
-Partitions not in metastore:	tbl_y:month=12/day=2	tbl_y:month=12/day=3	tbl_y:month=12/day=__HIVE_DEFAULT_PARTITION__	tbl_y:month=ANOTHER_PARTITION/day=3
+Partitions not in metastore:	tbl_y:month=12/day=2	tbl_y:month=12/day=3	tbl_y:month=ANOTHER_PARTITION/day=3
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS tbl_y
 PREHOOK: type: SHOWPARTITIONS
@@ -100,8 +100,40 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@tbl_y
 month=12/day=2
 month=12/day=3
-month=12/day=__HIVE_DEFAULT_PARTITION__
 month=ANOTHER_PARTITION/day=3
+PREHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_y
+POSTHOOK: Output: default@tbl_y@month=SECOND_PARTITION/day=3
+POSTHOOK: Lineage: tbl_y PARTITION(month=SECOND_PARTITION,day=3).id SCRIPT []
+POSTHOOK: Lineage: tbl_y PARTITION(month=SECOND_PARTITION,day=3).name SCRIPT []
+PREHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_y
+POSTHOOK: Output: default@tbl_y@month=OTHER_PARTITION/day=3
+POSTHOOK: Lineage: tbl_y PARTITION(month=OTHER_PARTITION,day=3).id SCRIPT []
+POSTHOOK: Lineage: tbl_y PARTITION(month=OTHER_PARTITION,day=3).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS tbl_y
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_y
+POSTHOOK: query: SHOW PARTITIONS tbl_y
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_y
+month=12/day=2
+month=12/day=3
+month=ANOTHER_PARTITION/day=3
+month=OTHER_PARTITION/day=3
+month=SECOND_PARTITION/day=3
 PREHOOK: query: DROP TABLE tbl_x
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_x
