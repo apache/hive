@@ -814,6 +814,10 @@ public class HiveConf extends Configuration {
         "Whether to use a native APIs for load queries to non-native table(like iceberg), if false uses a Tez job for" +
             " load queries"),
 
+    HIVE_SKIP_PROTOBUF_CORRUPTFILE("hive.exec.skip.protobuf.corruptfile", false,
+            "Whether Hive skips Protocol Buffer files corrupted, \n" +
+                    "during parsing (e.g., due to data truncation or file incompletion) to allow task continuation."),
+
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
     HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
     // TODO: this needs to be removed; see TestReplicationScenarios* comments.
