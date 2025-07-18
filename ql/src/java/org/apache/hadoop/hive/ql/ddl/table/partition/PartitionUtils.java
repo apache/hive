@@ -61,7 +61,7 @@ public final class PartitionUtils {
    * with these reserved values. The check that this function is more restrictive than the actual limitation, but it's
    * simpler. Should be okay since the reserved names are fairly long and uncommon.
    */
-  public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) throws SemanticException {
+  public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) {
     // Partition can't have this name
     Set<String> reservedPartitionValues =
             new HashSet<String>() {{
@@ -78,16 +78,19 @@ public final class PartitionUtils {
             }};
 
     partitionSpec.forEach((key, value) -> {
-      if (value != null && reservedPartitionValues.contains(value)) {
-        throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-                "(User value: " + value + " Reserved string: " + value + ")"));
+      if (value == null) {
+        return;
       }
-      reservedPartitionSuffixes.forEach(s -> {
-        if (value != null && value.endsWith(s)) {
-          throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-                  "(User value: " + value + " Partition value cannot end with Reserved substring: " + s + ")"));
-        }
-      });
+      reservedPartitionValues.stream().filter(value::equals).findAny()
+              .ifPresent(s -> {
+                throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                        "(User value: " + value + " Reserved string: " + s + ")"));
+              });
+      reservedPartitionSuffixes.stream().filter(value::endsWith).findAny()
+              .ifPresent(s -> {
+                throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                        "(User value: " + value + " Partition value cannot end with Reserved substring: " + s + ")"));
+              });
     });
   }
 
