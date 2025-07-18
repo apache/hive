@@ -32,19 +32,16 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.compactor.HiveTableCache;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.apache.hadoop.hive.ql.txn.compactor.TableOptimizer;
 import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
@@ -62,7 +59,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 public class IcebergTableOptimizer extends TableOptimizer {
   private HiveMetaStoreClient client;
   private Map<String, Long> snapshotTimeMilCache;
-  private HiveTableCache hiveTableCache;
 
   public IcebergTableOptimizer(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache) throws MetaException {
     super(conf, txnHandler, metadataCache);
@@ -140,9 +136,9 @@ public class IcebergTableOptimizer extends TableOptimizer {
 
   private org.apache.hadoop.hive.ql.metadata.Table getHiveTable(String dbName, String tableName) {
     try {
-      return hiveTableCache.computeIfAbsent(TableName.getDbTable(dbName, tableName),
-          () -> new org.apache.hadoop.hive.ql.metadata.Table(
-              HMSHandler.getMSForConf(conf).getTable(MetaStoreUtils.getDefaultCatalog(conf), dbName, tableName)));
+      Table metastoreTable = metadataCache.computeIfAbsent(TableName.getDbTable(dbName, tableName), () ->
+          CompactorUtil.resolveTable(conf, dbName, tableName));
+      return new org.apache.hadoop.hive.ql.metadata.Table(metastoreTable);
     } catch (Exception e) {
       throw new RuntimeMetaException(e, "Error getting Hive table");
     }
@@ -151,15 +147,6 @@ public class IcebergTableOptimizer extends TableOptimizer {
   public void init() throws MetaException {
     client = new HiveMetaStoreClient(new HiveConf());
     snapshotTimeMilCache = Maps.newConcurrentMap();
-    hiveTableCache = new HiveTableCache(MetastoreConf.getBoolVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON));
-  }
-
-  @Override
-  protected void invalidateCache() {
-    if (hiveTableCache != null) {
-      hiveTableCache.invalidate();
-    }
   }
 
   private void addCompactionTargetIfEligible(Table table, org.apache.iceberg.Table icebergTable, String partitionName,

@@ -100,7 +100,9 @@ public class Initiator extends MetaStoreCompactorThread {
 
           CompactorUtil.checkInterrupt(CLASS_NAME);
 
-          invalidateCache();
+          // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
+          // table property hive.repl.first.inc.pending which would be cached.
+          metadataCache.invalidate();
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
@@ -186,15 +188,6 @@ public class Initiator extends MetaStoreCompactorThread {
       }
     }
   }
-  
-  protected void invalidateCache() {
-    // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
-    // table property hive.repl.first.inc.pending which would be cached.
-    metadataCache.invalidate();
-    for (TableOptimizer optimizer : optimizers) {
-      optimizer.invalidateCache();
-    }
-  }
 
   @Override
   protected boolean isCacheEnabled() {
@@ -230,7 +223,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
   
   @VisibleForTesting
-  protected void initExecutorService() {
+  void initExecutorService() {
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
         conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
         COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
