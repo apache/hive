@@ -257,7 +257,7 @@ public final class Catalogs {
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName) {
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = REST_CATALOG_TYPE.equals(catalogType) ?
+    String keyPrefix = REST_CATALOG_TYPE.equals(catalogName) ?
         InputFormatConfig.CATALOG_REST_CONFIG_PREFIX : InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
     conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
@@ -270,7 +270,7 @@ public final class Catalogs {
                 config.getValue());
       }
     });
-    if (REST_CATALOG_TYPE.equals(catalogType)) {
+    if (REST_CATALOG_TYPE.equals(catalogName)) {
       catalogProperties.put("type", "rest");
     }
     return catalogProperties;

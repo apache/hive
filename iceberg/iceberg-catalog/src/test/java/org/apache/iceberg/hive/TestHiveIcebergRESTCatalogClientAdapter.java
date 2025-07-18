@@ -67,7 +67,7 @@ public class TestHiveIcebergRESTCatalogClientAdapter {
     catalogUtilMockedStatic = Mockito.mockStatic(CatalogUtil.class);
     restCatalog = Mockito.mock(RESTCatalog.class);
     catalogUtilMockedStatic.when(() -> CatalogUtil.buildIcebergCatalog(any(), any(), any())).thenReturn(restCatalog);
-    hiveIcebergRESTCatalogClientAdapter = Mockito.spy(new HiveIcebergRESTCatalogClientAdapter(configuration, null));
+    hiveIcebergRESTCatalogClientAdapter = Mockito.spy(new HiveIcebergRESTCatalogClientAdapter(configuration));
     hiveIcebergRESTCatalogClientAdapter.reconnect();
     TableOperations ops = new TableOperations() {
       @Override

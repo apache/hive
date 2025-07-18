@@ -65,8 +65,8 @@ public class IMetaStoreClientFactory {
       Class<? extends IMetaStoreClient> handlerClass =
           (Class<? extends IMetaStoreClient>)
               Class.forName("org.apache.iceberg.hive.HiveIcebergRESTCatalogClientAdapter", true, Utilities.getSessionSpecifiedClassLoader());
-      Class<?>[] constructorArgTypes = new Class[] { Configuration.class, HiveMetaHookLoader.class};
-      Object[] constructorArgs = new Object[] {conf, hookLoader};
+      Class<?>[] constructorArgTypes = new Class[] { Configuration.class};
+      Object[] constructorArgs = new Object[] {conf};
       IMetaStoreClient restCatalogMetastoreClient = JavaUtils.newInstance(handlerClass, constructorArgTypes, constructorArgs);
       restCatalogMetastoreClient.reconnect();
       return restCatalogMetastoreClient;

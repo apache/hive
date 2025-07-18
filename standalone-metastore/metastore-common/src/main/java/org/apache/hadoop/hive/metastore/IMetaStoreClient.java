@@ -1585,7 +1585,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return whether the resulting list contains partitions which may or may not match the expr
    * @throws TException thrift transport error or error executing the filter.
    */
-  boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException;
+  default boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException{
+    throw new UnsupportedOperationException("this method is not supported");
+  }
 
   /**
    * List partitions, fetching the authorization information along with the partitions.
@@ -2301,9 +2303,11 @@ public interface IMetaStoreClient extends AutoCloseable {
      throw new UnsupportedOperationException("this method is not supported");
   }
 
-  List<Partition> dropPartitions(String catName, String dbName, String tblName,
+  default List<Partition> dropPartitions(String catName, String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
-      throws NoSuchObjectException, MetaException, TException;
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("this method is not supported");
+  }
 
   /**
    * Drop a partition.
