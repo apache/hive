@@ -24,14 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.regex.Pattern;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 public class DynamicPartitionCtx implements Serializable {
@@ -52,7 +47,6 @@ public class DynamicPartitionCtx implements Serializable {
   private List<String> dpNames; // dp column names
   private String defaultPartName; // default partition name in case of null or empty value
   private int maxPartsPerNode;    // maximum dynamic partitions created per mapper/reducer
-  private Pattern whiteListPattern;
   private boolean hasCustomSortExpr = false;
   /**
    * Expressions describing a custom way of sorting the table before write. Expressions can reference simple
@@ -89,13 +83,6 @@ public class DynamicPartitionCtx implements Serializable {
     this.numDPCols = dpNames.size();
     this.numSPCols = spNames.size();
     this.spPath = null;
-    String confVal;
-    try {
-      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getHiveName());
-    } catch (HiveException e) {
-      throw new SemanticException(e);
-    }
-    this.whiteListPattern = confVal == null || confVal.isEmpty() ? null : Pattern.compile(confVal);
     this.customSortExpressions = new LinkedList<>();
     this.customSortOrder = new LinkedList<>();
     this.customSortNullOrder = new LinkedList<>();
@@ -124,13 +111,6 @@ public class DynamicPartitionCtx implements Serializable {
     } else {
       this.spPath = null;
     }
-    String confVal;
-    try {
-      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getHiveName());
-    } catch (HiveException e) {
-      throw new SemanticException(e);
-    }
-    this.whiteListPattern = confVal == null || confVal.isEmpty() ? null : Pattern.compile(confVal);
     this.customSortExpressions = new LinkedList<>();
     this.customSortOrder = new LinkedList<>();
     this.customSortNullOrder = new LinkedList<>();
@@ -147,15 +127,10 @@ public class DynamicPartitionCtx implements Serializable {
     this.dpNames = dp.dpNames;
     this.defaultPartName = dp.defaultPartName;
     this.maxPartsPerNode = dp.maxPartsPerNode;
-    this.whiteListPattern = dp.whiteListPattern;
     this.customSortExpressions = new LinkedList<>();
     addCustomSortExpressions(dp.customSortExpressions);
     this.customSortOrder = dp.customSortOrder;
     this.customSortNullOrder = dp.customSortNullOrder;
-  }
-
-  public Pattern getWhiteListPattern() {
-    return whiteListPattern;
   }
 
   public int getMaxPartitionsPerNode() {
