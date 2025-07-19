@@ -180,7 +180,8 @@ class SchemaToTypeInfo {
     }
 
     if (type == LONG &&
-      AvroSerDe.TIMESTAMP_TYPE_NAME.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
+            (AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE)) ||
+                    AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS.equals(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE)))) {
       return TypeInfoFactory.timestampTypeInfo;
     }
 
