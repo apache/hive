@@ -501,6 +501,9 @@ public class CliDriver {
     StringBuilder qsb = new StringBuilder();
 
     while ((line = r.readLine()) != null) {
+      // Skipping the proto tables location.
+      if (line.startsWith("LOCATION '_REPLACE_WITH_")) continue;
+
       // Skipping through comments
       if (! line.startsWith("--")) {
         qsb.append(line + "\n");
