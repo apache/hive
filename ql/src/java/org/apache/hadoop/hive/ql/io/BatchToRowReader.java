@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import com.google.common.collect.Lists;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.llap.DebugUtils;
 
 import java.util.Arrays;
@@ -517,8 +518,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
       } else {
         result = (TimestampWritableV2) previous;
       }
-      TimestampColumnVector tcv = (TimestampColumnVector) vector;
-      result.setInternal(tcv.time[row], tcv.nanos[row]);
+      result.set(Timestamp.from((TimestampColumnVector) vector, row));
       return result;
     } else {
       return null;
