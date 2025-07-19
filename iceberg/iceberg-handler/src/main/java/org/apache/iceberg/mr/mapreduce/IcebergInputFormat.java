@@ -21,8 +21,10 @@ package org.apache.iceberg.mr.mapreduce;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
@@ -45,10 +47,12 @@ import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.DataTableScan;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.IncrementalAppendScan;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Scan;
 import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.SystemConfigs;
 import org.apache.iceberg.Table;
@@ -60,6 +64,8 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
+import org.apache.iceberg.mr.hive.IcebergTableUtil;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.SerializationUtil;
@@ -197,11 +203,15 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         InputFormatConfig.InMemoryDataModel.GENERIC);
 
     long fromVersion = conf.getLong(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, -1);
+    Snapshot snapshot;
     Scan<? extends Scan, FileScanTask, CombinedScanTask> scan;
     if (fromVersion != -1) {
+      snapshot = table.currentSnapshot();
       scan = applyConfig(conf, createIncrementalAppendScan(table, conf));
     } else {
-      scan = applyConfig(conf, createTableScan(table, conf));
+      TableScan tableScan = createTableScan(table, conf);
+      snapshot = tableScan.snapshot();
+      scan = applyConfig(conf, tableScan);
     }
     scan = scan.planWith(workerPool);
 
@@ -211,7 +221,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     Path tableLocation = new Path(conf.get(InputFormatConfig.TABLE_LOCATION));
 
     String[] groupingPartitionColumns = conf.getStrings(InputFormatConfig.GROUPING_PARTITION_COLUMNS);
-    generateInputSplits(scan, table, groupingPartitionColumns, taskGroup -> {
+    generateInputSplits(scan, table, snapshot, groupingPartitionColumns, taskGroup -> {
       if (applyResidual && model == InputFormatConfig.InMemoryDataModel.HIVE) {
         // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
         checkResiduals(taskGroup);
@@ -240,7 +250,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
   }
 
-  private static void generateInputSplits(Scan<?, FileScanTask, CombinedScanTask> scan, Table table,
+  private static void generateInputSplits(Scan<?, FileScanTask, CombinedScanTask> scan, Table table, Snapshot snapshot,
       String[] groupingPartitionColumns, Consumer<ScanTaskGroup<FileScanTask>> consumer) {
     if (groupingPartitionColumns == null) {
       try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
@@ -249,8 +259,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
       }
     } else {
-      final StructType groupingKeyType = Partitioning.groupingKeyType(
-          table.schema().select(groupingPartitionColumns), table.specs().values());
+      final Schema schema = table.schemas().get(snapshot.schemaId()).select(groupingPartitionColumns);
+      final Set<Integer> specIds = IcebergTableUtil.getPartitionSpecIds(snapshot, table.io());
+      Preconditions.checkArgument(specIds.size() == 1);
+      final PartitionSpec partitionSpec = table.specs().get(specIds.iterator().next());
+      final StructType groupingKeyType = Partitioning.groupingKeyType(schema, Collections.singletonList(partitionSpec));
       try (CloseableIterable<FileScanTask> taskIterable = scan.planFiles()) {
         final List<FileScanTask> tasks = Lists.newArrayList(taskIterable);
         final List<ScanTaskGroup<FileScanTask>> partitionScanTaskGroups =
