@@ -74,6 +74,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-24110] - NullPointerException occurs in some UDFs
     * [HIVE-25351] - stddev(), stddev_pop() with CBO enable returning null
     * [HIVE-26018] - The result of UNIQUEJOIN on Hive on Tez is inconsistent with that of MR
+    * [HIVE-26047] - Vectorized LIKE UDF should use Re2J regex to address JDK-8203458
     * [HIVE-26168] - EXPLAIN DDL command output is not deterministic
     * [HIVE-26339] - Vectorized LIKE UDF optimization
     * [HIVE-27078] - Bucket Map Join can hang if the source vertex parallelism is changed by reducer autoparallelism
@@ -287,7 +288,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-29080] - Query on Decimal column Partitioned table gives incorrect results with Vectorization ON
     * [HIVE-29081] - CI fails intermittently cause some runs exceed ephemeral storage limits
     * [HIVE-29083] - Iceberg: Unable to create table using HadoopCatalog
-    * [HIVE-29086] - Fix ClassNotFoundException: org.apache.tez.dag.DAG when engine is mr
+    * [HIVE-29092] - NoClassDefFoundError: io/netty/util/NetUtil when using hive jdbc standalone jar
 
 
 
@@ -326,6 +327,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-27884] - LLAP: Reuse FileSystem objects from cache across different tasks in the same LLAP daemon
     * [HIVE-27886] - Support Kerberos in JDBC driver without hiveconf
     * [HIVE-27887] - Provide reasonable defaults for ResultSetMetaData
+    * [HIVE-27956] - Query based compactor implementation separation
     * [HIVE-27957] - Better error message for STORED BY
     * [HIVE-28011] - Update the table info in PART_COL_STATS directly in case of table rename
     * [HIVE-28018] - Don't require HiveConf for JDBC Metadata calls
@@ -359,6 +361,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28196] - Preserve column stats when applying UDF upper/lower.
     * [HIVE-28200] - Improve get_partitions_by_filter/expr when partition limit enabled
     * [HIVE-28205] - Implement direct sql for get_partitions_ps_with_auth api
+    * [HIVE-28209] - Allow Proxy Users in Hive Metastore Client
     * [HIVE-28210] - Print Tez summary by default in tests
     * [HIVE-28212] - MiniHS2: use a base folder which is more likely writable on the local FS
     * [HIVE-28224] - Upgrade Orc version in Hive to 1.9.3
@@ -400,6 +403,7 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-28434] - Upgrade to tez 0.10.4
     * [HIVE-28435] - Upgrade cron-utils to 9.2.1
     * [HIVE-28437] - The Docker Image of apache/hive:4.0.0 does not document how to enable INFORMATION_SCHEMA database
+    * [HIVE-28438] - Remove commons-pool2 as an explicit dependency & upgrade commons-dbcp2 to 2.12.0
     * [HIVE-28440] - unblock hcatalog parquet project pushdown
     * [HIVE-28446] - Convert some reserved words to non-reserved words
     * [HIVE-28452] - Iceberg: Cache delete files on executors
@@ -525,8 +529,6 @@ Release Notes - Hive - Version 4.1.0
     * [HIVE-29042] - Performance degradation for add columns cascade after enabling directSQL
     * [HIVE-29062] - Add standalone module for packaging the Metastore
     * [HIVE-29071] - Add release workflow for HMS docker image
-    * [HIVE-29087] - Add MAX_LIFE_TIME configuration for hikaricp connection pool
-    * [HIVE-29088] - Add a configuration option to skip corrupted ORC files
 
 ** Test
     * [HIVE-28142] - Fix flaky test - acid_bloom_filter_orc_file_dump
