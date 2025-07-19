@@ -1,0 +1,4 @@
+DESCRIBE FUNCTION uuid_v7;
+DESCRIBE FUNCTION EXTENDED uuid_v7;
+
+select uuid_v7();
