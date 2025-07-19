@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 
 public class TestHiveCli {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
@@ -80,7 +81,7 @@ public class TestHiveCli {
 
   @Test
   public void testSetPromptValue() {
-    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", err, null,
+    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;\n", "MYCLI> ", err, null,
         ERRNO_OK, true);
   }
 
@@ -135,7 +136,7 @@ public class TestHiveCli {
   @Test
   public void testSourceCmd4() {
     File f = generateTmpFile(SOURCE_CONTEXT5);
-    verifyCMD("source " + f.getPath() + ";", "testtbl", out,
+    verifyCMD("source " + f.getPath() + ";\n", "testtbl", out,
       new String[] { "--database", "test" }, ERRNO_OK, true);
     f.delete();
   }
@@ -199,14 +200,14 @@ public class TestHiveCli {
   public void testVariablesForSource() {
     File f = generateTmpFile(SOURCE_CONTEXT2);
     verifyCMD(
-        "set hiveconf:zzz=" + f.getAbsolutePath() + ";\nsource ${hiveconf:zzz};\ndesc testSrcTbl2;",
+        "set hiveconf:zzz=" + f.getAbsolutePath() + ";\nsource ${hiveconf:zzz};\ndesc testSrcTbl2;\n",
         "sc2", out, new String[] { "--database", "test" }, ERRNO_OK, true);
     f.delete();
   }
 
   @Test
   public void testErrOutput() {
-    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
+    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;\n",
         "cannot recognize input near 'lss' '<EOF>' '<EOF>'", err, null, ERRNO_OTHER, true);
   }
 
@@ -214,13 +215,13 @@ public class TestHiveCli {
   public void testUseCurrentDB1() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", err, null, ERRNO_OTHER, true);
+            + "use default;drop if exists testDB;\n", "hive (testDB)>", err, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseCurrentDB2() {
     verifyCMD(
-        "create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;",
+        "create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;\n",
         "hive (testDB)>", err, null, ERRNO_OTHER, true);
   }
 
@@ -228,12 +229,12 @@ public class TestHiveCli {
   public void testUseCurrentDB3() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use  testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", err, null, ERRNO_OTHER, true);
+            + "use default;drop if exists testDB;\n", "hive (testDB)>", err, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseInvalidDB() {
-    verifyCMD("set hive.cli.print.current.db=true;use invalidDB;",
+    verifyCMD("set hive.cli.print.current.db=true;use invalidDB;\n",
         "hive (invalidDB)>", out, null, ERRNO_OTHER, false);
   }
 
@@ -248,7 +249,7 @@ public class TestHiveCli {
     int ret = 0;
     try {
       if (input != null) {
-        inputStream = IOUtils.toInputStream(input);
+        inputStream = IOUtils.toInputStream(input, Charset.defaultCharset());
       }
       ret = cli.runWithArgs(args, inputStream);
     } catch (Throwable e) {
@@ -270,11 +271,11 @@ public class TestHiveCli {
     String output = os.toString();
     LOG.debug(output);
     if (contains) {
-      Assert.assertTrue("The expected keyword \"" + keywords + "\" occur in the output: " + output,
+      Assert.assertTrue("The expected keyword \"" + keywords + "\" should appear in the output: " + output,
           output.contains(keywords));
     } else {
       Assert.assertFalse(
-          "The expected keyword \"" + keywords + "\" should be excluded occurred in the output: "
+          "The expected keyword \"" + keywords + "\" should not appear in the output: "
               + output, output.contains(keywords));
     }
   }
@@ -293,9 +294,9 @@ public class TestHiveCli {
   @Before
   public void setup() throws IOException, URISyntaxException {
     System.setProperty("datanucleus.schema.autoCreateAll", "true");
-    cli = new HiveCli();
-    initFromFile();
+    cli = new HiveCliForTest();
     redirectOutputStream();
+    initFromFile();
   }
 
   private void redirectOutputStream() {
