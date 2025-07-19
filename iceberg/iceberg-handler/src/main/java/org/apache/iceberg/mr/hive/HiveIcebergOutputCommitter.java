@@ -786,14 +786,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .retry(3)
         .run(taskId -> {
           final String taskFileName = generateFileForCommitLocation(location, conf, jobContext.getJobID(), taskId);
-          final FilesForCommit files = readFileForCommit(taskFileName, io);
-          LOG.debug("Found Iceberg commitTask manifest file: {}\n{}", taskFileName, files);
+          try {
+            final FilesForCommit files;
+            files = readFileForCommit(taskFileName, io);
+            LOG.debug("Found Iceberg commitTask manifest file: {}\n{}", taskFileName, files);
 
-          dataFiles.addAll(files.dataFiles());
-          deleteFiles.addAll(files.deleteFiles());
-          replacedDataFiles.addAll(files.replacedDataFiles());
-          referencedDataFiles.addAll(files.referencedDataFiles());
-          mergedAndDeletedFiles.addAll(files.mergedAndDeletedFiles());
+            dataFiles.addAll(files.dataFiles());
+            deleteFiles.addAll(files.deleteFiles());
+            replacedDataFiles.addAll(files.replacedDataFiles());
+            referencedDataFiles.addAll(files.referencedDataFiles());
+            mergedAndDeletedFiles.addAll(files.mergedAndDeletedFiles());
+          } catch (NotFoundException e) {
+            LOG.info("Commit file may have empty files for commit and hence might have been skipped");
+          }
         });
 
     return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedAndDeletedFiles);
@@ -828,11 +833,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   private static void createFileForCommit(FilesForCommit writeResult, String location, FileIO io) throws IOException {
-    OutputFile fileForCommit = io.newOutputFile(location);
-    try (ObjectOutputStream oos = new ObjectOutputStream(fileForCommit.createOrOverwrite())) {
-      oos.writeObject(writeResult);
+    if (writeResult.hasNonEmptyFilesToCommit()) {
+      OutputFile fileForCommit = io.newOutputFile(location);
+      try (ObjectOutputStream oos = new ObjectOutputStream(fileForCommit.createOrOverwrite())) {
+        oos.writeObject(writeResult);
+      }
+      LOG.debug("Created Iceberg commitTask manifest file: {}\n{}", location, writeResult);
+    } else {
+      LOG.debug("Skipping Iceberg commitTask in order to prevent creation of empty commit files");
     }
-    LOG.debug("Created Iceberg commitTask manifest file: {}\n{}", location, writeResult);
   }
 
   private static FilesForCommit readFileForCommit(String fileForCommitLocation, FileIO io) {
