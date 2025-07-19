@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -53,7 +54,7 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
 
   @Override
   public String toString() {
-    return getClass().toString()
+    return getClass()
         + "["
         + columnNames
         + ":"
@@ -73,15 +74,16 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
     cachedObjectInspector = LazyBinaryFactory.createColumnarStructInspector(
         columnNames, columnTypes);
     int size = columnTypes.size();
-    List<Integer> notSkipIDs = new ArrayList<Integer>();
-    if (!this.configuration.isPresent() || ColumnProjectionUtils.isReadAllColumns(this.configuration.get())) {
+    List<Integer> notSkipIDs = new ArrayList<>();
+    if (this.configuration.isEmpty() || ColumnProjectionUtils.isReadAllColumns(this.configuration.get())) {
       for (int i = 0; i < size; i++) {
         notSkipIDs.add(i);
       }
     } else {
       notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(this.configuration.get());
     }
-    cachedLazyStruct = new LazyBinaryColumnarStruct(cachedObjectInspector, notSkipIDs);
+    boolean legacyConversionEnabled = HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_RCFILE_TIMESTAMP_LEGACY_CONVERSION);
+    cachedLazyStruct = new LazyBinaryColumnarStruct(cachedObjectInspector, notSkipIDs, legacyConversionEnabled);
 
     super.initialize(size);
   }
@@ -90,7 +92,7 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     if (objInspector.getCategory() != Category.STRUCT) {
-      throw new SerDeException(getClass().toString()
+      throw new SerDeException(getClass()
           + " can only serialize struct types, but we got: "
           + objInspector.getTypeName());
     }
@@ -113,7 +115,7 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
       if ((f != null) && (foi.getCategory().equals(ObjectInspector.Category.PRIMITIVE))
           && ((PrimitiveObjectInspector) foi).getPrimitiveCategory().equals(
               PrimitiveObjectInspector.PrimitiveCategory.STRING)
-          && ((StringObjectInspector) foi).getPrimitiveJavaObject(f).length() == 0) {
+          && ((StringObjectInspector) foi).getPrimitiveJavaObject(f).isEmpty()) {
         serializeStream.write(INVALID_UTF__SINGLE_BYTE, 0, 1);
       } else {
         LazyBinarySerDe.serialize(serializeStream, f, foi, true, warnedOnceNullMapKey);
