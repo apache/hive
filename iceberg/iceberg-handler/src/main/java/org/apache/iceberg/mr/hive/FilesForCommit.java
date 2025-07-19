@@ -103,6 +103,11 @@ public class FilesForCommit implements Serializable {
     return dataFiles.isEmpty() && deleteFiles.isEmpty() && replacedDataFiles.isEmpty();
   }
 
+  public boolean hasNonEmptyFilesToCommit() {
+    return !dataFiles.isEmpty() || !deleteFiles.isEmpty() || !replacedDataFiles.isEmpty() ||
+        !referencedDataFiles.isEmpty() || !mergedAndDeletedFiles.isEmpty();
+  }
+
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
