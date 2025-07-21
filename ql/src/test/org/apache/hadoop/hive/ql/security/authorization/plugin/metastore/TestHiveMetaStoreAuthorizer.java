@@ -94,6 +94,7 @@ public class TestHiveMetaStoreAuthorizer {
   private RawStore rawStore;
   private Configuration conf;
   private HMSHandler hmsHandler;
+  private Warehouse wh;
 
   static HiveAuthorizer mockHiveAuthorizer;
   static final List<String> allowedUsers = Arrays.asList("sam", "rob");
@@ -120,6 +121,8 @@ public class TestHiveMetaStoreAuthorizer {
     hmsHandler = new HMSHandler("test", conf);
     hmsHandler.init();
     rawStore = new ObjectStore();
+    wh = new Warehouse(conf);
+    handler.wh = wh;
     rawStore.setConf(hmsHandler.getConf());
     // Create the 'hive' catalog with new warehouse directory
     HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
@@ -827,6 +830,30 @@ public class TestHiveMetaStoreAuthorizer {
         assertTrue("Expected HiveAuthzPluginException in exception chain. Message: '" + e.getMessage() + "'",
             e.getMessage().contains(expectedErrMsg));
       }
+    }
+  }
+
+  @Test
+  public void testDropTableNoTablePathWritePermissionShouldFail() throws Exception {
+    Database db = new Database();
+    db.setName("test_db");
+
+    Table table = new Table();
+    table.setDbName("test_db");
+    table.setTableName("test_drop");
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setLocation("/warehouse/tablespace/managed/hive/test_drop");
+    table.setSd(sd);
+
+    when(rawStore.getDatabase("hive", "test_db")).thenReturn(db);
+    when(rawStore.getTable("hive", "test_db", "test_drop")).thenReturn(table);
+    when(wh.isWritable(new Path("/warehouse/tablespace/managed/hive/test_drop"))).thenReturn(false);
+
+    try {
+      handler.drop_table_core(rawStore, "hive", "test_db", "test_drop", true, null, null, false);
+      fail("Expected MetaException");
+    } catch (MetaException e) {
+      assertTrue(e.getMessage().contains("Table metadata not deleted since /warehouse/tablespace/managed/hive is not writable by " + SecurityUtils.getUser()));
     }
   }
 }
