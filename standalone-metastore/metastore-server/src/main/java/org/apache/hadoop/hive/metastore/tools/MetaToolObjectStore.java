@@ -19,8 +19,11 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import javax.jdo.Query;
+import javax.jdo.datastore.JDOConnection;
 import java.lang.reflect.Modifier;
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,12 +41,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.QueryWrapper;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
-import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.metasummary.MetadataTableSummary;
@@ -240,11 +243,11 @@ public class MetaToolObjectStore extends ObjectStore {
     }
   }
 
-  public class UpdateMDatabaseURIRetVal {
+  public class UpdateURIRetVal {
     private List<String> badRecords;
     private Map<String, String> updateLocations;
 
-    UpdateMDatabaseURIRetVal(List<String> badRecords, Map<String, String> updateLocations) {
+    UpdateURIRetVal(List<String> badRecords, Map<String, String> updateLocations) {
       this.badRecords = badRecords;
       this.updateLocations = updateLocations;
     }
@@ -273,12 +276,12 @@ public class MetaToolObjectStore extends ObjectStore {
    * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
    *
    */
-  public UpdateMDatabaseURIRetVal updateMDatabaseURI(URI oldLoc, URI newLoc, boolean dryRun) {
+  public UpdateURIRetVal updateMDatabaseURI(URI oldLoc, URI newLoc, boolean dryRun) {
     boolean committed = false;
     Query query = null;
     Map<String, String> updateLocations = new HashMap<>();
     List<String> badRecords = new ArrayList<>();
-    UpdateMDatabaseURIRetVal retVal = null;
+    UpdateURIRetVal retVal = null;
     try {
       openTransaction();
       query = pm.newQuery(MDatabase.class);
@@ -329,7 +332,7 @@ public class MetaToolObjectStore extends ObjectStore {
       }
       committed = commitTransaction();
       if (committed) {
-        retVal = new UpdateMDatabaseURIRetVal(badRecords, updateLocations);
+        retVal = new UpdateURIRetVal(badRecords, updateLocations);
       }
       return retVal;
     } finally {
@@ -337,58 +340,28 @@ public class MetaToolObjectStore extends ObjectStore {
     }
   }
 
-  public class UpdatePropURIRetVal {
-    private List<String> badRecords;
-    private Map<String, String> updateLocations;
-
-    UpdatePropURIRetVal(List<String> badRecords, Map<String, String> updateLocations) {
-      this.badRecords = badRecords;
-      this.updateLocations = updateLocations;
-    }
-
-    public List<String> getBadRecords() {
-      return badRecords;
-    }
-
-    public void setBadRecords(List<String> badRecords) {
-      this.badRecords = badRecords;
-    }
-
-    public Map<String, String> getUpdateLocations() {
-      return updateLocations;
-    }
-
-    public void setUpdateLocations(Map<String, String> updateLocations) {
-      this.updateLocations = updateLocations;
-    }
-  }
-
-  private void updatePropURIHelper(URI oldLoc, URI newLoc, String tblPropKey, boolean isDryRun,
+  private String updatePropURIHelper(URI oldLoc, URI newLoc,
       List<String> badRecords, Map<String, String> updateLocations,
-      Map<String, String> parameters) {
+      String tablePropLocation) {
     URI tablePropLocationURI = null;
-    if (parameters.containsKey(tblPropKey)) {
-      String tablePropLocation = parameters.get(tblPropKey);
-      try {
-        tablePropLocationURI = new Path(tablePropLocation).toUri();
-      } catch (IllegalArgumentException e) {
-        badRecords.add(tablePropLocation);
-      }
-      // if tablePropKey that was passed in lead to a valid URI resolution, update it if
-      //parts of it match the old-NN-loc, else add to badRecords
-      if (tablePropLocationURI == null) {
-        badRecords.add(tablePropLocation);
-      } else {
-        if (shouldUpdateURI(tablePropLocationURI, oldLoc)) {
-          String tblPropLoc = parameters.get(tblPropKey).replaceAll(oldLoc.toString(), newLoc
-              .toString());
-          updateLocations.put(tablePropLocationURI.toString(), tblPropLoc);
-          if (!isDryRun) {
-            parameters.put(tblPropKey, tblPropLoc);
-          }
-        }
+    try {
+      tablePropLocationURI = new Path(tablePropLocation).toUri();
+    } catch (IllegalArgumentException e) {
+      badRecords.add(tablePropLocation);
+    }
+    // if tablePropKey that was passed in lead to a valid URI resolution, update it if
+    //parts of it match the old-NN-loc, else add to badRecords
+    if (tablePropLocationURI == null) {
+      badRecords.add(tablePropLocation);
+    } else {
+      if (shouldUpdateURI(tablePropLocationURI, oldLoc)) {
+        String tblPropLoc = tablePropLocation.replaceAll(oldLoc.toString(), newLoc
+            .toString());
+        updateLocations.put(tablePropLocationURI.toString(), tblPropLoc);
+        return tblPropLoc;
       }
     }
+    return null;
   }
 
   /** The following APIs
@@ -398,31 +371,9 @@ public class MetaToolObjectStore extends ObjectStore {
    * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
    *
    */
-  public UpdatePropURIRetVal updateTblPropURI(URI oldLoc, URI newLoc, String tblPropKey,
-      boolean isDryRun) {
-    boolean committed = false;
-    Query query = null;
-    Map<String, String> updateLocations = new HashMap<>();
-    List<String> badRecords = new ArrayList<>();
-    UpdatePropURIRetVal retVal = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MTable.class);
-      List<MTable> mTbls = (List<MTable>) query.execute();
-      pm.retrieveAll(mTbls);
-
-      for (MTable mTbl : mTbls) {
-        updatePropURIHelper(oldLoc, newLoc, tblPropKey, isDryRun, badRecords, updateLocations,
-            mTbl.getParameters());
-      }
-      committed = commitTransaction();
-      if (committed) {
-        retVal = new UpdatePropURIRetVal(badRecords, updateLocations);
-      }
-      return retVal;
-    } finally {
-      rollbackAndCleanup(committed, query);
-    }
+  public UpdateURIRetVal updateTblPropURI(URI oldLoc, URI newLoc, String tblPropKey,
+      boolean isDryRun) throws MetaException {
+    return updateParamURI(oldLoc, newLoc, tblPropKey, isDryRun, "\"TABLE_PARAMS\"", "\"TBL_ID\"");
   }
 
   /** The following APIs
@@ -433,58 +384,18 @@ public class MetaToolObjectStore extends ObjectStore {
    *
    */
   @Deprecated
-  public UpdatePropURIRetVal updateMStorageDescriptorTblPropURI(URI oldLoc, URI newLoc,
-      String tblPropKey, boolean isDryRun) {
-    boolean committed = false;
-    Query query = null;
-    Map<String, String> updateLocations = new HashMap<>();
-    List<String> badRecords = new ArrayList<>();
-    UpdatePropURIRetVal retVal = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MStorageDescriptor.class);
-      List<MStorageDescriptor> mSDSs = (List<MStorageDescriptor>) query.execute();
-      pm.retrieveAll(mSDSs);
-      for (MStorageDescriptor mSDS : mSDSs) {
-        updatePropURIHelper(oldLoc, newLoc, tblPropKey, isDryRun, badRecords, updateLocations,
-            mSDS.getParameters());
-      }
-      committed = commitTransaction();
-      if (committed) {
-        retVal = new UpdatePropURIRetVal(badRecords, updateLocations);
-      }
-      return retVal;
-    } finally {
-      rollbackAndCleanup(committed, query);
-    }
+  public UpdateURIRetVal updateMStorageDescriptorTblPropURI(URI oldLoc, URI newLoc,
+      String tblPropKey, boolean isDryRun) throws MetaException {
+    return updateParamURI(oldLoc, newLoc, tblPropKey, isDryRun, "\"SD_PARAMS\"", "\"SD_ID\"");
   }
 
-  public class UpdateMStorageDescriptorTblURIRetVal {
-    private List<String> badRecords;
-    private Map<String, String> updateLocations;
+  public class UpdateMStorageDescriptorTblURIRetVal extends UpdateURIRetVal {
     private int numNullRecords;
 
     UpdateMStorageDescriptorTblURIRetVal(List<String> badRecords,
         Map<String, String> updateLocations, int numNullRecords) {
-      this.badRecords = badRecords;
-      this.updateLocations = updateLocations;
+      super(badRecords, updateLocations);
       this.numNullRecords = numNullRecords;
-    }
-
-    public List<String> getBadRecords() {
-      return badRecords;
-    }
-
-    public void setBadRecords(List<String> badRecords) {
-      this.badRecords = badRecords;
-    }
-
-    public Map<String, String> getUpdateLocations() {
-      return updateLocations;
-    }
-
-    public void setUpdateLocations(Map<String, String> updateLocations) {
-      this.updateLocations = updateLocations;
     }
 
     public int getNumNullRecords() {
@@ -550,29 +461,64 @@ public class MetaToolObjectStore extends ObjectStore {
     }
   }
 
-  public class UpdateSerdeURIRetVal {
-    private List<String> badRecords;
-    private Map<String, String> updateLocations;
+  private UpdateURIRetVal updateParamURI(URI oldLoc, URI newLoc, String paramKeys,
+      boolean isDryRun, String tableName, String foreignKey) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    Map<String, String> updateLocations = new HashMap<>();
+    List<String> badRecords = new ArrayList<>();
+    UpdateURIRetVal retVal = null;
+    String quotedKeys = Arrays.stream(paramKeys.split(",")).map(prop -> "'" + prop + "'")
+        .collect(Collectors.joining(","));
+    try {
+      openTransaction();
+      String queryText = "select " + foreignKey + ", \"PARAM_KEY\", \"PARAM_VALUE\" from " + tableName +
+          " where \"PARAM_KEY\" in (" + quotedKeys + ")";
+      query = pm.newQuery("javax.jdo.query.SQL", queryText);
+      List<Object[]> results = (List<Object[]>) query.execute();
+      Map<Pair<Long, String>, String> updates = new HashMap<>();
+      if (results != null) {
+        for (Object[] record : results) {
+          long tabId = MetastoreDirectSqlUtils.extractSqlLong(record[0]);
+          String propKey = (String) record[1];
+          String propValue = MetastoreDirectSqlUtils.extractSqlClob(record[2]);
+          String newLocation = updatePropURIHelper(oldLoc, newLoc, badRecords, updateLocations, propValue);
+          if (!isDryRun && newLocation != null) {
+            updates.put(Pair.of(tabId, propKey), newLocation);
+          }
+        }
+      }
 
-    UpdateSerdeURIRetVal(List<String> badRecords, Map<String, String> updateLocations) {
-      this.badRecords = badRecords;
-      this.updateLocations = updateLocations;
-    }
+      String updateText = "UPDATE " + tableName + " SET \"PARAM_VALUE\" = ? WHERE " + foreignKey + " = ? AND \"PARAM_KEY\" = ?";
+      JDOConnection jdoConn = pm.getDataStoreConnection();
+      try {
+        Batchable.runBatched(batchSize, new ArrayList<>(updates.keySet()), new Batchable<Pair<Long, String>, Void>() {
+          @Override
+          public List<Void> run(List<Pair<Long, String>> input) throws Exception {
+            try (PreparedStatement statement =
+                     ((Connection) jdoConn.getNativeConnection()).prepareStatement(updateText)) {
+              for (Pair<Long, String> pair : input) {
+                statement.setString(1, updates.get(pair));
+                statement.setLong(2, pair.getLeft());
+                statement.setString(3, pair.getRight());
+                statement.addBatch();
+              }
+              statement.executeBatch();
+            }
+            return List.of();
+          }
+        });
+      } finally {
+        jdoConn.close();
+      }
 
-    public List<String> getBadRecords() {
-      return badRecords;
-    }
-
-    public void setBadRecords(List<String> badRecords) {
-      this.badRecords = badRecords;
-    }
-
-    public Map<String, String> getUpdateLocations() {
-      return updateLocations;
-    }
-
-    public void setUpdateLocations(Map<String, String> updateLocations) {
-      this.updateLocations = updateLocations;
+      committed = commitTransaction();
+      if (committed) {
+        retVal = new UpdateURIRetVal(badRecords, updateLocations);
+      }
+      return retVal;
+    } finally {
+      rollbackAndCleanup(committed, query);
     }
   }
 
@@ -583,48 +529,9 @@ public class MetaToolObjectStore extends ObjectStore {
    * is used by HiveMetaTool. This API **shouldn't** be exposed via Thrift.
    *
    */
-  public UpdateSerdeURIRetVal updateSerdeURI(URI oldLoc, URI newLoc, String serdeProp,
-      boolean isDryRun) {
-    boolean committed = false;
-    Query query = null;
-    Map<String, String> updateLocations = new HashMap<>();
-    List<String> badRecords = new ArrayList<>();
-    UpdateSerdeURIRetVal retVal = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MSerDeInfo.class);
-      List<MSerDeInfo> mSerdes = (List<MSerDeInfo>) query.execute();
-      pm.retrieveAll(mSerdes);
-      for (MSerDeInfo mSerde : mSerdes) {
-        if (mSerde.getParameters().containsKey(serdeProp)) {
-          String schemaLoc = mSerde.getParameters().get(serdeProp);
-          URI schemaLocURI = null;
-          try {
-            schemaLocURI = new Path(schemaLoc).toUri();
-          } catch (IllegalArgumentException e) {
-            badRecords.add(schemaLoc);
-          }
-          if (schemaLocURI == null) {
-            badRecords.add(schemaLoc);
-          } else {
-            if (shouldUpdateURI(schemaLocURI, oldLoc)) {
-              String newSchemaLoc = schemaLoc.replaceAll(oldLoc.toString(), newLoc.toString());
-              updateLocations.put(schemaLocURI.toString(), newSchemaLoc);
-              if (!isDryRun) {
-                mSerde.getParameters().put(serdeProp, newSchemaLoc);
-              }
-            }
-          }
-        }
-      }
-      committed = commitTransaction();
-      if (committed) {
-        retVal = new UpdateSerdeURIRetVal(badRecords, updateLocations);
-      }
-      return retVal;
-    } finally {
-      rollbackAndCleanup(committed, query);
-    }
+  public UpdateURIRetVal updateSerdeURI(URI oldLoc, URI newLoc, String serdeProp,
+      boolean isDryRun) throws MetaException {
+     return updateParamURI(oldLoc, newLoc, serdeProp, isDryRun, "\"SERDE_PARAMS\"", "\"SERDE_ID\"");
   }
 
   /**
@@ -948,7 +855,7 @@ public class MetaToolObjectStore extends ObjectStore {
           List<Object> result = (List<Object>) query.executeWithArray(params);
           if (result != null) {
             for (Object fields : result) {
-              ids.add(Long.parseLong(fields.toString()));
+              ids.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
             }
           }
         } finally {
