@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -42,7 +43,7 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
   private final JwksServer jwksServer;
   private final RESTCatalogServer restCatalogServer;
 
-  private HiveRESTCatalogServerExtension(AuthType authType) {
+  private HiveRESTCatalogServerExtension(AuthType authType, Class<? extends MetaStoreSchemaInfo> schemaInfoClass) {
     this.conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, authType.name());
     if (authType == AuthType.JWT) {
@@ -54,6 +55,13 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
       jwksServer = null;
     }
     restCatalogServer = new RESTCatalogServer();
+    if (schemaInfoClass != null) {
+      restCatalogServer.setSchemaInfoClass(schemaInfoClass);
+    }
+  }
+  
+  public Configuration getConf() {
+    return conf;
   }
 
   @Override
@@ -98,13 +106,19 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
 
   public static class Builder {
     private final AuthType authType;
+    private Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass;
 
     private Builder(AuthType authType) {
       this.authType = authType;
     }
+    
+    public Builder addMetaStoreSchemaClassName(Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass) {
+      this.metaStoreSchemaClass = metaStoreSchemaClass;
+      return this;
+    }
 
     public HiveRESTCatalogServerExtension build() {
-      return new HiveRESTCatalogServerExtension(authType);
+      return new HiveRESTCatalogServerExtension(authType, metaStoreSchemaClass);
     }
   }
 

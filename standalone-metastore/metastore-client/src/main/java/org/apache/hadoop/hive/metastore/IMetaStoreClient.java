@@ -22,7 +22,6 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,8 +31,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidCleanerWriteIdList;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -63,8 +60,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param addedJars the hive.added.jars.path. It is qualified paths separated by commas.
    */
   default void setHiveAddedJars(String addedJars) {
-    throw new UnsupportedOperationException("this method is not supported");
-  };
+    throw new UnsupportedOperationException("MetaStore client does not support setting added jars");
+  }
 
   /**
    * Returns true if the current client is using an in process metastore (local metastore).
@@ -72,7 +69,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return
    */
   default boolean isLocalMetaStore(){
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support checking if metastore is local");
   }
 
   /**
@@ -89,14 +86,14 @@ public interface IMetaStoreClient extends AutoCloseable {
   /**
    * set meta variable which is open to end users
    */
-  default void setMetaConf(String key, String value) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void setMetaConf(String key, String value) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support setting meta variables");
   }
 
   /**
    * get current meta variable
    */
-  default String getMetaConf(String key) throws MetaException, TException{
+  default String getMetaConf(String key) throws TException{
     return "";
   }
 
@@ -111,7 +108,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void createCatalog(Catalog catalog)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support creating catalogs");
   }
 
   /**
@@ -128,7 +125,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alterCatalog(String catalogName, Catalog newCatalog)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering catalogs");
   }
 
   /**
@@ -140,7 +137,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift exception.
    */
   default Catalog getCatalog(String catName) throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support fetching catalogs");
   }
 
   /**
@@ -150,7 +147,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift exception.
    */
   default List<String> getCatalogs() throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support fetching catalogs");
   }
 
   /**
@@ -164,7 +161,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void dropCatalog(String catName)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping catalogs");
   }
 
   /**
@@ -175,7 +172,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift exception.
    */
   default void dropCatalog(String catName, boolean ifExists) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping catalogs");
   }
 
   /**
@@ -269,8 +266,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    * @throws UnknownDBException indicated database does not exist.
    */
-  List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
-      throws MetaException, TException, UnknownDBException;
+  default List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
+      throws MetaException, TException, UnknownDBException  {
+    throw new UnsupportedOperationException("MetaStore client does not support fetching tables with table type");
+  }
 
   /**
    * Retrieve all materialized views that have rewriting enabled. This will use the default catalog.
@@ -281,7 +280,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Table> getAllMaterializedViewObjectsForRewriting()
       throws MetaException, TException, UnknownDBException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support fetching materialized views");
   }
 
   /**
@@ -297,7 +296,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<ExtendedTableInfo> getTablesExt(String catName, String dbName, String tablePattern, int requestedFields,
       int limit) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support fetching extended table info");
   }
 
   /**
@@ -310,7 +309,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> getMaterializedViewsForRewriting(String dbName)
       throws MetaException, TException, UnknownDBException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support fetching materialized views");
   }
 
   /**
@@ -324,7 +323,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> getMaterializedViewsForRewriting(String catName, String dbName)
       throws MetaException, TException, UnknownDBException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support fetching materialized views");
   }
 
   /**
@@ -341,7 +340,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
       throws MetaException, TException, UnknownDBException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support fetching table metadata");
   }
 
   /**
@@ -360,7 +359,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<TableMeta> getTableMeta(String catName, String dbPatterns, String tablePatterns,
                                List<String> tableTypes)
       throws MetaException, TException, UnknownDBException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support fetching table metadata");
   }
 
   /**
@@ -426,7 +425,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
       throws TException, InvalidOperationException, UnknownDBException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing table names by filter");
   }
 
   /**
@@ -471,7 +470,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> listTableNamesByFilter(String catName, String dbName, String filter, int maxTables)
       throws TException, InvalidOperationException, UnknownDBException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing table names by filter");
   }
 
   /**
@@ -609,28 +608,28 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   @Deprecated
   default void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support truncating tables");
   }
 
   default void truncateTable(TableName table, List<String> partNames) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support truncating tables");
   }
 
   default void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support truncating tables with write ids");
   }
 
 
   default void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId, boolean deleteData) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
-  };
+    throw new UnsupportedOperationException("MetaStore client does not support truncating tables with write ids");
+  }
 
   default void truncateTable(String catName, String dbName, String tableName, String ref, List<String> partNames,
       String validWriteIds, long writeId, boolean deleteData, EnvironmentContext context) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
-  };
+    throw new UnsupportedOperationException("MetaStore client does not support truncating tables with write ids");
+  }
 
   /**
    * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
@@ -639,8 +638,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    *                isPurge flag when set to true files which needs to be recycled are not moved to Trash
    * @return Response which is currently void
    */
-  default CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support recycling directories to cmroot");
   }
 
   /**
@@ -799,7 +798,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support fetching table objects by name");
   }
 
   /**
@@ -822,9 +821,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    *          Any other errors
    */
-  default List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
-          throws MetaException, InvalidOperationException, UnknownDBException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default List<Table> getTables(String catName, String dbName, List<String> tableNames, 
+    GetProjectionsSpec projectionsSpec) throws MetaException, InvalidOperationException, UnknownDBException, 
+      TException {
+     throw new UnsupportedOperationException("MetaStore client does not support fetching tables");
   }
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -849,31 +849,32 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Table> getTableObjectsByName(String catName, String dbName, List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support fetching table objects by name");
   }
 
   /**
    * Returns the invalidation information for the materialized views given as input.
    */
-  default Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
-          throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList) 
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support fetching materialization invalidation " +
+        "info");
   }
 
   /**
    * Updates the creation metadata for the materialized view.
    */
   default void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
-      throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support updating creation metadata");
   }
 
   /**
    * Updates the creation metadata for the materialized view.
    */
   default void updateCreationMetadata(String catName, String dbName, String tableName, CreationMetadata cm)
-      throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support updating creation metadata");
   }
 
   /**
@@ -891,7 +892,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition appendPartition(String dbName, String tableName, List<String> partVals)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support appending partitions");
   }
 
   /**
@@ -909,7 +910,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition appendPartition(String catName, String dbName, String tableName, List<String> partVals)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support appending partitions");
   }
 
   /**
@@ -926,7 +927,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition appendPartition(String dbName, String tableName, String name)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support appending partitions");
   }
 
   /**
@@ -944,7 +945,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition appendPartition(String catName, String dbName, String tableName, String name)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support appending partitions");
   }
 
   /**
@@ -964,7 +965,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition add_partition(Partition partition)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding partitions");
   }
 
   /**
@@ -983,7 +984,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default int add_partitions(List<Partition> partitions)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support adding partitions");
   }
 
   /**
@@ -997,7 +998,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default int add_partitions_pspec(PartitionSpecProxy partitionSpec)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support adding partitions using a spec proxy");
   }
 
   /**
@@ -1010,8 +1011,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Partition> add_partitions(
       List<Partition> partitions, boolean ifNotExists, boolean needResults)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+      throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support adding partitions");
   }
 
   /**
@@ -1027,7 +1028,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition getPartition(String dbName, String tblName, List<String> partVals)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions");
   }
 
   /**
@@ -1040,7 +1041,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
           throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions");
   }
 
     /**
@@ -1057,7 +1058,7 @@ public interface IMetaStoreClient extends AutoCloseable {
      */
   default Partition getPartition(String catName, String dbName, String tblName, List<String> partVals)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions");
   }
 
   /**
@@ -1077,7 +1078,7 @@ public interface IMetaStoreClient extends AutoCloseable {
       String sourceDb, String sourceTable, String destdb,
       String destTableName) throws MetaException, NoSuchObjectException,
       InvalidObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support exchanging partitions");
   }
 
   /**
@@ -1099,7 +1100,7 @@ public interface IMetaStoreClient extends AutoCloseable {
                                String sourceDb, String sourceTable, String destCat, String destdb,
                                String destTableName) throws MetaException, NoSuchObjectException,
       InvalidObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support exchanging partitions");
   }
 
   /**
@@ -1121,7 +1122,7 @@ public interface IMetaStoreClient extends AutoCloseable {
       String sourceDb, String sourceTable, String destdb,
       String destTableName) throws MetaException, NoSuchObjectException,
       InvalidObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support exchanging partitions");
   }
 
   /**
@@ -1145,7 +1146,7 @@ public interface IMetaStoreClient extends AutoCloseable {
                                       String sourceDb, String sourceTable, String destCat,
                                       String destdb, String destTableName)
       throws MetaException, NoSuchObjectException, InvalidObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support exchanging partitions");
   }
 
   /**
@@ -1159,7 +1160,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition getPartition(String dbName, String tblName, String name)
       throws MetaException, UnknownTableException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions");
   }
 
   /**
@@ -1174,7 +1175,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Partition getPartition(String catName, String dbName, String tblName, String name)
       throws MetaException, UnknownTableException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions");
   }
 
 
@@ -1194,7 +1195,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default Partition getPartitionWithAuthInfo(String dbName, String tableName,
       List<String> pvals, String userName, List<String> groupNames)
       throws MetaException, UnknownTableException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions with auth info");
   }
 
   /**
@@ -1214,7 +1215,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default Partition getPartitionWithAuthInfo(String catName, String dbName, String tableName,
                                      List<String> pvals, String userName, List<String> groupNames)
       throws MetaException, UnknownTableException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions with auth info");
   }
 
   /**
@@ -1229,7 +1230,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions");
   }
 
   /**
@@ -1245,7 +1246,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Partition> listPartitions(String catName, String db_name, String tbl_name, int max_parts)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions");
   }
 
   /**
@@ -1258,7 +1259,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default PartitionSpecProxy listPartitionSpecs(String dbName, String tableName, int maxParts)
     throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition specs");
   }
 
   /**
@@ -1272,7 +1273,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default PartitionSpecProxy listPartitionSpecs(String catName, String dbName, String tableName, int maxParts)
       throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition specs");
   }
 
   /**
@@ -1289,7 +1290,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Partition> listPartitions(String db_name, String tbl_name,
       List<String> part_vals, short max_parts) throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions");
   }
 
   /**
@@ -1308,7 +1309,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<Partition> listPartitions(String catName, String db_name, String tbl_name,
                                  List<String> part_vals, int max_parts)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions");
   }
 
   /**
@@ -1323,7 +1324,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> listPartitionNames(String db_name, String tbl_name,
       short max_parts) throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition names");
   }
 
   /**
@@ -1336,7 +1337,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
           throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition names");
   }
 
   /**
@@ -1352,7 +1353,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> listPartitionNames(String catName, String db_name, String tbl_name, int max_parts)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition names");
   }
 
   /**
@@ -1371,7 +1372,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> listPartitionNames(String db_name, String tbl_name, List<String> part_vals, short max_parts)
       throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition names");
   }
 
   /**
@@ -1391,7 +1392,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> listPartitionNames(String catName, String db_name, String tbl_name, List<String> part_vals,
       int max_parts) throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition names");
   }
 
   /**
@@ -1404,7 +1405,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> listPartitionNames(PartitionsByExprRequest request)
       throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition names");
   }
 
   /**
@@ -1417,7 +1418,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default PartitionValuesResponse listPartitionValues(PartitionValuesRequest request)
       throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition values");
   }
 
   /**
@@ -1434,7 +1435,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default int getNumPartitionsByFilter(String dbName, String tableName, String filter)
       throws MetaException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting number of partitions by filter");
   }
 
   /**
@@ -1452,7 +1453,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default int getNumPartitionsByFilter(String catName, String dbName, String tableName, String filter)
       throws MetaException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting number of partitions by filter");
   }
 
 
@@ -1472,7 +1473,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Partition> listPartitionsByFilter(String db_name, String tbl_name, String filter, short max_parts)
       throws MetaException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions by filter");
   }
 
   /**
@@ -1493,7 +1494,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<Partition> listPartitionsByFilter(String catName, String db_name, String tbl_name,
                                          String filter, int max_parts)
       throws MetaException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions by filter");
   }
 
   /**
@@ -1510,7 +1511,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default PartitionSpecProxy listPartitionSpecsByFilter(String db_name, String tbl_name, String filter, int max_parts)
       throws MetaException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition specs by filter");
   }
 
   /**
@@ -1528,7 +1529,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default PartitionSpecProxy listPartitionSpecsByFilter(String catName, String db_name, String tbl_name,
       String filter, int max_parts) throws MetaException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition specs by filter");
   }
 
   /**
@@ -1538,7 +1539,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error or error executing the filter.
    */
   default boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partition specs by expr");
   }
 
   /**
@@ -1557,7 +1558,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean listPartitionsByExpr(String db_name, String tbl_name,
       byte[] expr, String default_partition_name, short max_parts, List<Partition> result)
       throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions by expr");
   }
 
   /**
@@ -1576,7 +1577,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean listPartitionsByExpr(String catName, String db_name, String tbl_name, byte[] expr, 
       String default_partition_name, int max_parts, List<Partition> result) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("tMetaStore client does not support listing partitions by expr");
   }
 
   /**
@@ -1586,7 +1587,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error or error executing the filter.
    */
   default boolean listPartitionsByExpr(PartitionsByExprRequest req, List<Partition> result) throws TException{
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support listing partitions by expr");
   }
 
   /**
@@ -1604,7 +1605,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<Partition> listPartitionsWithAuthInfo(String dbName,
       String tableName, short maxParts, String userName, List<String> groupNames)
       throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions with auth info");
   }
 
   /**
@@ -1617,7 +1618,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
           throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions with auth info");
   }
 
   /**
@@ -1636,7 +1637,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<Partition> listPartitionsWithAuthInfo(String catName, String dbName, String tableName,
                                              int maxParts, String userName, List<String> groupNames)
       throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions with auth info");
   }
 
   /**
@@ -1653,7 +1654,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   @Deprecated
   default List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions by names");
   }
 
   /**
@@ -1666,7 +1667,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default PartitionsResponse getPartitionsRequest(PartitionsRequest req)
           throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting partitions request");
   }
 
     /**
@@ -1678,7 +1679,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    */
   default GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting partitions by names");
   }
 
   /**
@@ -1697,7 +1698,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<Partition> listPartitionsWithAuthInfo(String dbName,
       String tableName, List<String> partialPvals, short maxParts, String userName,
       List<String> groupNames) throws MetaException, TException, NoSuchObjectException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions with auth info");
   }
 
   /**
@@ -1716,7 +1717,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<Partition> listPartitionsWithAuthInfo(
       String catName, String dbName, String tableName, List<String> partialPvals, int maxParts, String userName,
       List<String> groupNames) throws MetaException, TException, NoSuchObjectException  {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing partitions with auth info");
   }
 
   /**
@@ -1736,7 +1737,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> partKVs,
       PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
       UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support marking partition for event");
   }
 
   /**
@@ -1757,7 +1758,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void markPartitionForEvent(String catName, String db_name, String tbl_name, Map<String,String> partKVs,
                              PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
       UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support marking partition for event");
   }
 
   /**
@@ -1777,7 +1778,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> partKVs,
       PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
       UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support checking if partition is marked for event");
   }
 
   /**
@@ -1798,7 +1799,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean isPartitionMarkedForEvent(String catName, String db_name, String tbl_name, Map<String,String> partKVs,
                                     PartitionEventType eventType) throws MetaException, NoSuchObjectException, TException,
       UnknownTableException, UnknownDBException, UnknownPartitionException, InvalidPartitionException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support checking if partition is marked for event");
   }
 
   /**
@@ -1807,7 +1808,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    */
   default void validatePartitionNameCharacters(List<String> partVals) throws TException, MetaException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support validating partition name characters");
   }
 
   /**
@@ -1817,8 +1818,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    *    *          a table object
    *    * @throws HiveException
    */
-  default Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
-          InvalidObjectException, MetaException, NoSuchObjectException, TException {
+  default Table getTranslateTableDryrun(Table tbl) throws TException {
     return new Table();
   }
 
@@ -1857,7 +1857,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alter_table(String databaseName, String tblName, Table table)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering table");
   }
 
   /**
@@ -1895,7 +1895,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void alter_table(String catName, String dbName, String tblName, Table newTable,
                   EnvironmentContext envContext)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering table");
   }
 
   /**
@@ -1903,9 +1903,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * passed in EnvironmentContext using {@code StatsSetupConst.CASCADE}
    */
   @Deprecated
-  default void alter_table(String defaultDatabaseName, String tblName, Table table,
-      boolean cascade) throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void alter_table(String defaultDatabaseName, String tblName, Table table, boolean cascade) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support altering table with cascade option");
   }
 
   /**
@@ -1924,12 +1923,11 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void alter_table_with_environmentContext(String databaseName, String tblName, Table table,
       EnvironmentContext environmentContext) throws InvalidOperationException, MetaException,
       TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering table with environment context");
   }
 
   default void alter_table(String catName, String databaseName, String tblName, Table table,
-      EnvironmentContext environmentContext, String validWriteIdList)
-          throws InvalidOperationException, MetaException, TException {}
+      EnvironmentContext environmentContext, String validWriteIdList) throws TException {}
   /**
    * Create a new database.
    * @param db database object.  If the catalog name is null it will be assumed to be
@@ -2026,7 +2024,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alterDatabase(String name, Database db)
       throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering database");
   }
 
   /**
@@ -2041,7 +2039,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alterDatabase(String catName, String dbName, Database newDb)
       throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering database");
   }
 
   /**
@@ -2054,7 +2052,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void createDataConnector(DataConnector connector)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support creating dataconnector");
   }
 
   /**
@@ -2069,7 +2067,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping dataconnector");
   }
 
   /**
@@ -2082,7 +2080,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alterDataConnector(String name, DataConnector connector)
       throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering dataconnector");
   }
 
   /**
@@ -2093,7 +2091,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default DataConnector getDataConnector(String name)
       throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting dataconnector by name");
   }
 
   /**
@@ -2103,7 +2101,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    */
   default List<String> getAllDataConnectorNames() throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting all dataconnector names");
   }
 
   /**
@@ -2121,7 +2119,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean dropPartition(String db_name, String tbl_name,
       List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partition");
   }
 
   /**
@@ -2140,7 +2138,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean dropPartition(String catName, String db_name, String tbl_name,
                         List<String> part_vals, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partition");
   }
 
   /**
@@ -2158,7 +2156,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
                         PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partition");
   }
 
   /**
@@ -2177,7 +2175,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean dropPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
                         PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partition");
   }
 
   /**
@@ -2199,7 +2197,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<Partition> dropPartitions(String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
                                  boolean ifExists) throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partitions by expression");
   }
 
   /**
@@ -2231,8 +2229,8 @@ public interface IMetaStoreClient extends AutoCloseable {
   @Deprecated
   default List<Partition> dropPartitions(String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
-      boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+      boolean ifExists, boolean needResults) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partitions by expression");
   }
 
   /**
@@ -2281,7 +2279,7 @@ public interface IMetaStoreClient extends AutoCloseable {
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partitions by expression");
   }
 
   /**
@@ -2300,13 +2298,13 @@ public interface IMetaStoreClient extends AutoCloseable {
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partitions by expression");
   }
 
   default List<Partition> dropPartitions(String catName, String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support dropping partitions by expression");
   }
 
   /**
@@ -2323,7 +2321,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean dropPartition(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partition");
   }
 
   /**
@@ -2341,7 +2339,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean dropPartition(String catName, String db_name, String tbl_name,
                         String name, boolean deleteData)
       throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping partition");
   }
 
   /**
@@ -2362,7 +2360,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alter_partition(String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering partition");
   }
 
   /**
@@ -2384,14 +2382,14 @@ public interface IMetaStoreClient extends AutoCloseable {
   @Deprecated
   default void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering partition");
   }
 
 
   default void alter_partition(String catName, String dbName, String tblName, Partition newPart,
       EnvironmentContext environmentContext, String writeIdList)
-      throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support altering partition");
   }
 
   /**
@@ -2413,7 +2411,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void alter_partition(String catName, String dbName, String tblName, Partition newPart,
                        EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering partition");
   }
 
   /**
@@ -2435,7 +2433,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   @Deprecated
   default void alter_partitions(String dbName, String tblName, List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering partitions");
   }
 
   /**
@@ -2457,16 +2455,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   @Deprecated
   default  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
-      EnvironmentContext environmentContext)
-      throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      EnvironmentContext environmentContext) throws InvalidOperationException, MetaException, TException {
+    throw new UnsupportedOperationException("MetaStore client does not support altering partitions");
   }
 
   default  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                         EnvironmentContext environmentContext,
-                        String writeIdList, long writeId)
-      throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+                        String writeIdList, long writeId) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support altering partitions");
   }
 
   /**
@@ -2490,7 +2486,7 @@ public interface IMetaStoreClient extends AutoCloseable {
                         EnvironmentContext environmentContext,
                         String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering partitions");
   }
 
   /**
@@ -2515,7 +2511,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void renamePartition(final String dbname, final String tableName, final List<String> part_vals,
                        final Partition newPart)
       throws InvalidOperationException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support renaming partition");
   }
 
   /**
@@ -2545,7 +2541,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
                        Partition newPart, String validWriteIds, long txnId, boolean makeCopy)
     throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support renaming partition");
   }
 
   /**
@@ -2561,7 +2557,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<FieldSchema> getFields(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting fields for a table");
   }
 
   /**
@@ -2578,7 +2574,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<FieldSchema> getFields(String catName, String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting fields for a table");
   }
 
   /**
@@ -2593,7 +2589,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default GetFieldsResponse getFieldsRequest(GetFieldsRequest req)
           throws MetaException, TException, UnknownTableException,
           UnknownDBException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting fields for a table");
   }
 
   /**
@@ -2609,7 +2605,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<FieldSchema> getSchema(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting schema for a table");
   }
 
   /**
@@ -2626,7 +2622,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<FieldSchema> getSchema(String catName, String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting schema for a table");
   }
 
   /**
@@ -2641,7 +2637,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default GetSchemaResponse getSchemaRequest(GetSchemaRequest req)
           throws MetaException, TException, UnknownTableException,
           UnknownDBException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting schema for a table");
   }
 
   /**
@@ -2668,7 +2664,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<String> partitionNameToVals(String name)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support converting partition name to values");
   }
   /**
    *
@@ -2680,7 +2676,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Map<String, String> partitionNameToSpec(String name)
       throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support converting partition name to spec");
   }
 
   /**
@@ -2696,7 +2692,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean updateTableColumnStatistics(ColumnStatistics statsObj)
     throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
     InvalidInputException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support updating table column statistics");
 }
 
   /**
@@ -2712,7 +2708,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean updatePartitionColumnStatistics(ColumnStatistics statsObj)
    throws NoSuchObjectException, InvalidObjectException, MetaException, TException,
    InvalidInputException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support updating partition column statistics");
   }
 
   /**
@@ -2730,13 +2726,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting table column statistics");
   }
 
   default List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
-      List<String> colNames, String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+      List<String> colNames, String engine, String validWriteIdList) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support getting table column statistics");
   }
 
   /**
@@ -2755,13 +2750,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
       List<String> colNames, String engine) throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting table column statistics");
   }
 
   default List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
-      List<String> colNames, String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+      List<String> colNames, String engine, String validWriteIdList) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support getting table column statistics");
   }
   /**
    * Get the column statistics for a set of columns in a partition.
@@ -2779,14 +2773,12 @@ public interface IMetaStoreClient extends AutoCloseable {
   default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames, String engine)
           throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting partition column statistics");
   }
 
-  default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
-      String tableName,  List<String> partNames, List<String> colNames,
-      String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName, String tableName, 
+    List<String> partNames, List<String> colNames, String engine, String validWriteIdList) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting partition column statistics");
   }
 
   /**
@@ -2806,15 +2798,14 @@ public interface IMetaStoreClient extends AutoCloseable {
   default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames,
       String engine) throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting partition column statistics");
   }
 
   default Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames,
-      String engine, String validWriteIdList)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      String engine, String validWriteIdList) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting partition column statistics");
   }
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
@@ -2951,11 +2942,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport error
    */
   default boolean deleteColumnStatistics(DeleteColumnStatisticsRequest req) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support deleting column statistics");
   }
 
   default void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support updating transactional statistics");
   }
 
   /**
@@ -2967,7 +2958,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean create_role(Role role)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support creating roles");
   }
 
   /**
@@ -2979,7 +2970,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default boolean drop_role(String role_name) throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support dropping roles");
   }
 
   /**
@@ -2989,7 +2980,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    */
   default List<String> listRoleNames() throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing role names");
   }
 
   /**
@@ -3007,7 +2998,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default boolean grant_role(String role_name, String user_name,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
       boolean grantOption) throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support granting roles");
   }
 
   /**
@@ -3023,7 +3014,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean revoke_role(String role_name, String user_name,
       PrincipalType principalType, boolean grantOption) throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support revoking roles");
   }
 
   /**
@@ -3036,7 +3027,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<Role> list_roles(String principalName, PrincipalType principalType)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing roles");
   }
 
   /**
@@ -3052,7 +3043,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
       String user_name, List<String> group_names) throws MetaException,
       TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting privilege set");
   }
 
   /**
@@ -3067,7 +3058,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default List<HiveObjectPrivilege> list_privileges(String principal_name,
       PrincipalType principal_type, HiveObjectRef hiveObject)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing privileges");
   }
 
   /**
@@ -3078,7 +3069,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean grant_privileges(PrivilegeBag privileges)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support granting privileges");
   }
 
   /**
@@ -3089,7 +3080,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean revoke_privileges(PrivilegeBag privileges, boolean grantOption)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support revoking privileges");
   }
 
   /**
@@ -3101,7 +3092,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support refreshing privileges");
   }
 
   /**
@@ -3115,7 +3106,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default String getDelegationToken(String owner, String renewerKerberosPrincipalName)
       throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting delegation token");
   }
 
   /**
@@ -3125,7 +3116,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default long renewDelegationToken(String tokenStrForm) throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support renewing delegation token");
   }
 
   /**
@@ -3134,45 +3125,44 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void cancelDelegationToken(String tokenStrForm) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support canceling delegation token");
   }
 
   default String getTokenStrForm() throws IOException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting token string form");
   }
 
   default boolean addToken(String tokenIdentifier, String delegationToken) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support adding tokens");
   }
 
   default boolean removeToken(String tokenIdentifier) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support removing tokens");
   }
 
   default String getToken(String tokenIdentifier) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting tokens");
   }
 
   default List<String> getAllTokenIdentifiers() throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting all tokens");
   }
 
-  default int addMasterKey(String key) throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default int addMasterKey(String key) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support adding master keys");
   }
 
-  default void updateMasterKey(Integer seqNo, String key)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void updateMasterKey(Integer seqNo, String key) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support updating master keys");
   }
 
   default boolean removeMasterKey(Integer keySeq) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support removing master keys");
   }
 
 
   default String[] getMasterKeys() throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting master keys");
   }
 
   /**
@@ -3184,7 +3174,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void createFunction(Function func)
       throws InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support creating functions");
   }
 
   /**
@@ -3198,7 +3188,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alterFunction(String dbName, String funcName, Function newFunction)
       throws InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering functions");
   }
 
   /**
@@ -3213,7 +3203,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void alterFunction(String catName, String dbName, String funcName, Function newFunction)
       throws InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering functions");
   }
 
   /**
@@ -3228,7 +3218,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void dropFunction(String dbName, String funcName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping functions");
   }
 
   /**
@@ -3244,7 +3234,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void dropFunction(String catName, String dbName, String funcName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping functions");
   }
 
   /**
@@ -3256,7 +3246,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Function getFunction(String dbName, String funcName)
       throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting functions");
   }
 
   /**
@@ -3269,7 +3259,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default Function getFunction(String catName, String dbName, String funcName)
       throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting functions");
   }
 
   /**
@@ -3282,7 +3272,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   @Deprecated
   default List<String> getFunctions(String dbName, String pattern)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting functions");
   }
 
   /**
@@ -3292,7 +3282,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default GetFunctionsResponse getFunctionsRequest(GetFunctionsRequest functionRequest)
       throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting functions");
   }
   /**
    * Get all functions matching a pattern
@@ -3305,7 +3295,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   @Deprecated
   default List<String> getFunctions(String catName, String dbName, String pattern)
       throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting functions");
   }
 
   /**
@@ -3319,7 +3309,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   }
 
   default GetOpenTxnsResponse getOpenTxns() throws TException  {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting open transactions");
   }
 
   /**
@@ -3328,7 +3318,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default ValidTxnList getValidTxns() throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting valid transactions");
   }
 
   /**
@@ -3339,7 +3329,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default ValidTxnList getValidTxns(long currentTxn) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting valid transactions");
   }
 
   /**
@@ -3351,7 +3341,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting valid transactions");
   }
 
   /**
@@ -3361,7 +3351,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting valid write ids");
   }
 
   /**
@@ -3372,7 +3362,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default ValidWriteIdList getValidWriteIds(String fullTableName, Long writeId) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting valid write ids");
   }
 
   /**
@@ -3385,7 +3375,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
           throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting valid write ids");
   }
 
   /**
@@ -3394,7 +3384,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param writeIds list of minOpenWriteId
    */
   default void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding write ids to min history");
   }
     
   /**
@@ -3406,7 +3396,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default long openTxn(String user) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support opening transactions");
   }
 
   /**
@@ -3417,7 +3407,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default long openTxn(String user, TxnType txnType) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support opening transactions with type");
   }
 
   /**
@@ -3433,8 +3423,10 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return transaction identifiers
    * @throws TException
    */
-  default List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) 
+      throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support opening repl replayed or hive " +
+         "replication transactions");
   }
 
   /**
@@ -3463,7 +3455,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support opening transactions in batch");
   }
 
   /**
@@ -3476,7 +3468,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void rollbackTxn(long txnid) throws NoSuchTxnException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support rolling back transactions");
   }
 
   /**
@@ -3490,7 +3482,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void rollbackTxn(AbortTxnRequest abortTxnRequest) throws NoSuchTxnException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support rolling back transactions");
   }
 
   /**
@@ -3508,11 +3500,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void replRollbackTxn(long srcTxnid, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support rolling back transactions");
   }
 
 
-  ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) throws TException;
+  default ReplayedTxnsForPolicyResult getReplayedTxnsForPolicy(String replPolicy) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting replayed transactions " +
+        "for policy");
+  }
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with
@@ -3527,11 +3522,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void commitTxn(long txnid)
       throws NoSuchTxnException, TxnAbortedException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support committing transactions");
   }
 
   /**
-   * Like commitTxn but it will atomically store as well a key and a value. This
+   * Like commitTxn, but it will atomically store as well a key and a value. This
    * can be useful for example to know if the transaction corresponding to
    * txnid has been committed by later querying with DESCRIBE EXTENDED TABLE.
    * TABLE_PARAMS from the metastore must already have a row with the TBL_ID
@@ -3555,7 +3550,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void commitTxnWithKeyValue(long txnid, long tableId,
       String key, String value) throws NoSuchTxnException,
       TxnAbortedException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support committing transactions with key/value");
   }
 
   /**
@@ -3572,7 +3567,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void commitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support committing transactions with request");
   }
 
   /**
@@ -3580,7 +3575,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void abortTxns(List<Long> txnids) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support aborting transactions");
   }
 
   /**
@@ -3590,7 +3585,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void abortTxns(AbortTxnsRequest abortTxnsRequest) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support aborting transactions with request");
   }
 
   /**
@@ -3601,7 +3596,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs");
   }
 
   /**
@@ -3613,7 +3608,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs " +
+         "with reallocate option");
   }
 
   /**
@@ -3626,7 +3622,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
           throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support replicating table write IDs state");
   }
 
   /**
@@ -3636,8 +3632,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param tableName table to which the write ID to be allocated
    * @throws TException
    */
-  default List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
+      throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs in batch");
   }
 
   /**
@@ -3650,7 +3647,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                                     List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support replicating allocating table write " +
+         "IDs in batch");
   }
 
   /**
@@ -3661,7 +3659,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting maximum allocated write IDs");
   }
 
   /**
@@ -3672,7 +3670,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support seeding write IDs");
   }
 
   /**
@@ -3682,7 +3680,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void seedTxnId(long seedTxnId) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support seeding transaction IDs");
   }
 
   /**
@@ -3693,7 +3691,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default GetOpenTxnsInfoResponse showTxns() throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support showing transactions");
   }
 
   /**
@@ -3727,7 +3725,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   @RetrySemantics.CannotRetry
   default LockResponse lock(LockRequest request)
       throws NoSuchTxnException, TxnAbortedException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support locking");
   }
 
   /**
@@ -3754,7 +3752,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default LockResponse checkLock(long lockid)
     throws NoSuchTxnException, TxnAbortedException, NoSuchLockException,
       TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support checking locks");
   }
 
   /**
@@ -3770,7 +3768,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void unlock(long lockid)
       throws NoSuchLockException, TxnOpenException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support unlocking locks");
   }
 
   /**
@@ -3780,7 +3778,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default ShowLocksResponse showLocks(ShowLocksRequest showLocksRequest) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support showing locks");
   }
 
   /**
@@ -3806,7 +3804,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void heartbeat(long txnid, long lockid)
     throws NoSuchLockException, NoSuchTxnException, TxnAbortedException,
       TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support heartbeating");
   }
 
   /**
@@ -3820,7 +3818,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default HeartbeatTxnRangeResponse heartbeatTxnRange(long min, long max) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support heartbeating a range of transactions");
   }
 
   /**
@@ -3834,7 +3832,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default CompactionResponse compact2(CompactionRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support compacting tables or partitions");
   }
 
   /**
@@ -3844,14 +3842,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default ShowCompactResponse showCompactions() throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support showing compactions");
   }
   
   /**
    * Get a list of compactions for the given request object.
    */
   default ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support showing compactions with request");
   }
   
   /**
@@ -3866,7 +3864,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
                            long txnId) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support submitting for cleanup");
   }
 
   /**
@@ -3882,7 +3880,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(GetLatestCommittedCompactionInfoRequest request)
     throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting latest committed compaction info");
   }
 
   /**
@@ -3898,7 +3896,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   default void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName, List<String> partNames,
                             DataOperationType operationType)
     throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding dynamic partitions");
   }
 
   /**
@@ -3909,7 +3907,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException
    */
   default void insertTable(Table table, boolean overwrite) throws MetaException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support inserting tables");
   }
 
   /**
@@ -3918,11 +3916,12 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return latest txnId in conflict
    */
   default long getLatestTxnIdInConflict(long txnId) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting latest transaction id " +
+         "in conflict");
   }
 
   default GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting database objects");
   }
 
   /**
@@ -3977,7 +3976,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   default NotificationEventResponse getNextNotification(NotificationEventRequest request,
       boolean allowGapsInEventIds, NotificationFilter filter) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting next notification with request");
   }
 
   /**
@@ -3998,7 +3997,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   default NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
           throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting notification events count");
   }
 
   /**
@@ -4011,7 +4010,7 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   default FireEventResponse fireListenerEvent(FireEventRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support firing events");
   }
 
   /**
@@ -4021,7 +4020,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   default void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding write notification log");
   }
 
   /**
@@ -4031,7 +4030,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   default void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding write notification log in batch");
   }
 
   class IncompatibleMetastoreException extends MetaException {
@@ -4051,7 +4050,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default GetPrincipalsInRoleResponse get_principals_in_role(GetPrincipalsInRoleRequest getPrincRoleReq)
       throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting principals in role");
   }
 
 
@@ -4066,7 +4065,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default GetRoleGrantsForPrincipalResponse get_role_grants_for_principal(
       GetRoleGrantsForPrincipalRequest getRolePrincReq) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting role grants for principal");
   }
 
   /**
@@ -4082,14 +4081,16 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException thrift transport exception
    */
   default AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partName, String engine)  throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      List<String> colNames, List<String> partName, String engine) 
+      throws NoSuchObjectException, MetaException, TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting aggregated column stats " +
+        "for partitions");
   }
 
-  default AggrStats getAggrColStatsFor(String dbName, String tblName,
-      List<String> colNames, List<String> partName,
-      String engine, String writeIdList)  throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default AggrStats getAggrColStatsFor(String dbName, String tblName, List<String> colNames, 
+      List<String> partName, String engine, String writeIdList) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting aggregated column stats " +
+        "for partitions with writeIdList");
   }
 
   /**
@@ -4109,14 +4110,14 @@ public interface IMetaStoreClient extends AutoCloseable {
                                List<String> colNames, List<String> partNames,
                                String engine)
       throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting aggregated column stats for " +
+        "partitions with catalog name");
   }
 
-  default AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
-                               List<String> colNames, List<String> partNames,
-                               String engine, String writeIdList)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames, 
+      List<String> partNames, String engine, String writeIdList) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting aggregated column stats for " +
+        "partitions with catalog name and writeIdList");
   }
   /**
    * Set table or partition column statistics.
@@ -4130,7 +4131,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default boolean setPartitionColumnStatistics(SetPartitionsStatsRequest request)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException, InvalidInputException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support setting partition column statistics");
   }
 
   /**
@@ -4144,35 +4145,36 @@ public interface IMetaStoreClient extends AutoCloseable {
    * The metadata that is not cached in metastore may be missing.
    */
   default Iterable<Entry<Long, ByteBuffer>> getFileMetadata(List<Long> fileIds) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting file metadata");
   }
 
   default Iterable<Entry<Long, MetadataPpdResult>> getFileMetadataBySarg(
       List<Long> fileIds, ByteBuffer sarg, boolean doGetFooters) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting file metadata by sarg");
   }
 
   /**
    * Cleares the file metadata cache for respective file IDs.
    */
   default void clearFileMetadata(List<Long> fileIds) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support clearing file metadata");
   }
 
   /**
    * Adds file metadata for respective file IDs to metadata cache in metastore.
    */
   default void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support putting file metadata");
   }
 
   default boolean isSameConfObj(Configuration c) {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support checking if the configuration object " +
+         "is the same");
   }
 
   default boolean cacheFileMetadata(String dbName, String tableName, String partName,
       boolean allParts) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support caching file metadata");
   }
 
   /**
@@ -4185,7 +4187,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
     throws MetaException, NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting primary keys");
   }
 
   /**
@@ -4198,7 +4200,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException,
     NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting foreign keys");
   }
 
   /**
@@ -4211,7 +4213,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException,
     NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting unique constraints");
   }
 
   /**
@@ -4227,13 +4229,11 @@ public interface IMetaStoreClient extends AutoCloseable {
     return Collections.emptyList();
   }
 
-  default List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException,
-      NoSuchObjectException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support getting default constraints");
   }
 
-  default List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException,
-      NoSuchObjectException, TException {
+  default List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws TException {
     return Collections.emptyList();
   }
 
@@ -4257,8 +4257,8 @@ public interface IMetaStoreClient extends AutoCloseable {
     List<SQLNotNullConstraint> notNullConstraints,
     List<SQLDefaultConstraint> defaultConstraints,
     List<SQLCheckConstraint> checkConstraints)
-    throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support creating table with constraints");
   }
 
   /**
@@ -4273,7 +4273,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void dropConstraint(String dbName, String tableName, String constraintName)
       throws MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping constraints");
   }
 
   /**
@@ -4289,7 +4289,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void dropConstraint(String catName, String dbName, String tableName, String constraintName)
       throws MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping constraints with catalog name");
   }
 
 
@@ -4302,7 +4302,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws
   MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding primary keys");
   }
 
   /**
@@ -4314,7 +4314,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
   MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding foreign keys");
   }
 
   /**
@@ -4326,7 +4326,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols) throws
   MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding unique constraints");
   }
 
   /**
@@ -4339,17 +4339,15 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
   MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding not null constraints");
   }
 
-  default void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws
-      MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support adding default constraints");
   }
 
-  default void addCheckConstraint(List<SQLCheckConstraint> checkConstraints) throws
-      MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void addCheckConstraint(List<SQLCheckConstraint> checkConstraints) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support adding check constraints");
   }
 
   /**
@@ -4359,93 +4357,81 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException in case of Thrift errors
    */
   default String getMetastoreDbUuid() throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting metastore db uuid");
   }
 
-  default void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
-      throws InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support creating resource plans");
   }
 
-  default WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns)
-    throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting resource plans");
   }
 
-  default List<WMResourcePlan> getAllResourcePlans(String ns)
-      throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default List<WMResourcePlan> getAllResourcePlans(String ns) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support getting all resource plans");
   }
 
-  default void dropResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void dropResourcePlan(String resourcePlanName, String ns) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support dropping resource plans");
   }
 
   default WMFullResourcePlan alterResourcePlan(String resourcePlanName, String ns, WMNullableResourcePlan resourcePlan,
-      boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support altering resource plans");
   }
 
-  default WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException, TException {
+  default WMFullResourcePlan getActiveResourcePlan(String ns) throws TException {
     return new WMFullResourcePlan();
   }
 
-  default WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+  default WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName, String ns) throws TException {
     throw new UnsupportedOperationException("this method is not supported");
   }
 
-  default void createWMTrigger(WMTrigger trigger)
-      throws InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void createWMTrigger(WMTrigger trigger) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support creating WM triggers");
   }
 
-  default void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void alterWMTrigger(WMTrigger trigger) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support altering WM triggers");
   }
 
-  default void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void dropWMTrigger(String resourcePlanName, String triggerName, String ns) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support dropping WM triggers");
   }
 
-  default List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns)
-      throws NoSuchObjectException, MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default List<WMTrigger> getTriggersForResourcePlan(String resourcePlan, String ns) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support getting WM triggers for resource plans");
   }
 
-  default void createWMPool(WMPool pool)
-      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void createWMPool(WMPool pool) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support creating WM pools");
   }
 
-  default void alterWMPool(WMNullablePool pool, String poolPath)
-      throws NoSuchObjectException, InvalidObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void alterWMPool(WMNullablePool pool, String poolPath) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support altering WM pools");
   }
 
   default void dropWMPool(String resourcePlanName, String poolPath, String ns)
       throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping WM pools");
   }
 
   default void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
       throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support creating or updating WM mappings");
   }
 
   default void dropWMMapping(WMMapping mapping)
       throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping WM mappings");
   }
 
   default void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
-      String poolPath, boolean shouldDrop, String ns) throws AlreadyExistsException, NoSuchObjectException,
-      InvalidObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+      String poolPath, boolean shouldDrop, String ns) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support creating or dropping trigger " +
+        "to pool mappings");
   }
 
   /**
@@ -4458,7 +4444,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default void createISchema(ISchema schema) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support creating schemas");
   }
 
   /**
@@ -4472,7 +4458,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default void alterISchema(String catName, String dbName, String schemaName, ISchema newSchema) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support altering schemas");
   }
 
   /**
@@ -4486,7 +4472,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default ISchema getISchema(String catName, String dbName, String name) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting schemas");
   }
 
   /**
@@ -4500,7 +4486,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default void dropISchema(String catName, String dbName, String name) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping schemas");
   }
 
   /**
@@ -4512,7 +4498,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default void addSchemaVersion(SchemaVersion schemaVersion) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding schema versions");
   }
 
   /**
@@ -4527,7 +4513,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    */
   default SchemaVersion getSchemaVersion(String catName, String dbName, String schemaName, int version)
       throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting schema versions");
   }
 
   /**
@@ -4542,7 +4528,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default SchemaVersion getSchemaLatestVersion(String catName, String dbName, String schemaName) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting latest schema version");
   }
 
   /**
@@ -4557,7 +4543,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default List<SchemaVersion> getSchemaAllVersions(String catName, String dbName, String schemaName) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting all schema versions");
   }
 
   /**
@@ -4573,7 +4559,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default void dropSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping schema versions");
   }
 
   /**
@@ -4585,7 +4571,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default FindSchemasByColsResp getSchemaByCols(FindSchemasByColsRqst rqst) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting schemas by columns");
   }
 
   /**
@@ -4601,8 +4587,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  default void mapSchemaVersionToSerde(String catName, String dbName, String schemaName, int version, String serdeName) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void mapSchemaVersionToSerde(String catName, String dbName, String schemaName, int version, String serdeName) 
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support mapping schema versions to serdes");
   }
 
   /**
@@ -4617,8 +4604,9 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  default void setSchemaVersionState(String catName, String dbName, String schemaName, int version, SchemaVersionState state) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void setSchemaVersionState(String catName, String dbName, String schemaName, int version, 
+      SchemaVersionState state) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support setting schema version state");
   }
 
   /**
@@ -4630,7 +4618,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default void addSerDe(SerDeInfo serDeInfo) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding serdes");
   }
 
   /**
@@ -4643,7 +4631,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException general thrift error
    */
   default SerDeInfo getSerDe(String serDeName) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting serdes");
   }
 
   /**
@@ -4657,7 +4645,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * the status can be either ACQUIRED or NOT ACQUIRED
    */
   default LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support acquiring materialization rebuild lock");
   }
 
 
@@ -4669,17 +4657,18 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return true if the lock could be renewed, false otherwise
    */
   default boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support heartbeating materialization " +
+         "rebuild lock");
   }
 
   /** Adds a RuntimeStat for metastore persistence. */
   default void addRuntimeStat(RuntimeStat stat) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support adding runtime stats");
   }
 
   /** Reads runtime statistics. */
   default List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support reading runtime stats");
   }
 
   /**
@@ -4699,7 +4688,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * Partitions can be filtered by names, by values or by partition expressions.
    */
   default GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting partitions with specs");
   }
 
   /**
@@ -4710,7 +4699,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support finding next compaction");
   }
 
   /**
@@ -4720,7 +4709,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void updateCompactorState(CompactionInfoStruct cr, long txnId) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support updating compactor state");
   }
 
   /**
@@ -4730,7 +4719,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default List<String> findColumnsWithStats(CompactionInfoStruct cr) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support finding columns with stats");
   }
 
   /**
@@ -4740,7 +4729,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void markCleaned(CompactionInfoStruct cr) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support marking compaction as cleaned");
   }
 
   /**
@@ -4750,7 +4739,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void markCompacted(CompactionInfoStruct cr) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support marking compaction as compacted");
   }
 
   /**
@@ -4760,7 +4749,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support marking compaction as failed");
   }
 
   /**
@@ -4770,7 +4759,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void markRefused(CompactionInfoStruct cr) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support marking compaction as refused");
   }
 
   /**
@@ -4791,7 +4780,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support updating compaction metrics data");
   }
 
 
@@ -4802,7 +4791,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support removing compaction metrics data");
   }
   /**
    * Set the hadoop id for a compaction.
@@ -4812,7 +4801,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default void setHadoopJobid(String jobId, long cqId) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support setting hadoop job id for compaction");
   }
 
   /**
@@ -4821,7 +4810,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return String representation of the version number of Metastore server (eg: 3.1.0-SNAPSHOT)
    */
   default String getServerVersion() throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting server version");
   }
 
   /**
@@ -4830,14 +4819,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws NoSuchObjectException if an object by the given name dosen't exists.
    */
   default ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support getting scheduled query by key");
   }
 
   /**
    * Carries out maintenance of scheduled queries (insert/update/drop).
    */
-  default void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void scheduledQueryMaintenance(ScheduledQueryMaintenanceRequest request) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support scheduled query maintenance");
   }
 
   /**
@@ -4845,15 +4834,15 @@ public interface IMetaStoreClient extends AutoCloseable {
    *
    * @return optionally a scheduled query to be processed.
    */
-  default ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support scheduled query poll");
   }
 
   /**
    * Registers the progress a scheduled query being executed.
    */
   default void scheduledQueryProgress(ScheduledQueryProgressInfo info) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support scheduled query progress");
   }
 
   /**
@@ -4861,45 +4850,45 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param replicationMetricList
    * @throws MetaException
    */
-  default void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void addReplicationMetrics(ReplicationMetricList replicationMetricList) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support adding replication metrics");
   }
 
   default ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
-                                                replicationMetricsRequest) throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+                                                replicationMetricsRequest) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting replication metrics");
   }
 
-  default void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void createStoredProcedure(StoredProcedure proc) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support creating stored procedures");
   }
 
-  default StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting stored procedures");
   }
 
-  default void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void dropStoredProcedure(StoredProcedureRequest request) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support dropping stored procedures");
   }
 
-  default List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
-     throw new UnsupportedOperationException("this method is not supported");
+  default List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws TException {
+     throw new UnsupportedOperationException("MetaStore client does not support getting all stored procedures");
   }
 
-  default void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
+  default void addPackage(AddPackageRequest request) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support adding packages");
   }
 
   default Package findPackage(GetPackageRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support finding packages");
   }
 
   default List<String> listPackages(ListPackageRequest request) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support listing packages");
   }
 
   default void dropPackage(DropPackageRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support dropping packages");
   }
 
   /**
@@ -4907,11 +4896,11 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws TException
    */
   default List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException {
-     throw new UnsupportedOperationException("this method is not supported");
+     throw new UnsupportedOperationException("MetaStore client does not support getting write events");
   }
 
   default AbortCompactResponse abortCompactions(AbortCompactionRequest request) throws TException {
-    throw new UnsupportedOperationException("this method is not supported");
+    throw new UnsupportedOperationException("MetaStore client does not support aborting compactions");
   }
 
   /**
@@ -4934,7 +4923,8 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return a map keyed by property map path to maps keyed by property name mapped to property values
    * @throws TException
    */
-  default Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, String mapPredicate, String... selection) throws TException {
+  default Map<String, Map<String, String>> getProperties(String nameSpace, String mapPrefix, 
+      String mapPredicate, String... selection) throws TException {
     throw new UnsupportedOperationException();
   }
 }

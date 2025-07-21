@@ -19,17 +19,33 @@
 
 package org.apache.iceberg.hive;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.thrift.TException;
 
 public class MetastoreUtil {
+
+  public static final String DEFAULT_INPUT_FORMAT_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergInputFormat";
+  public static final String DEFAULT_OUTPUT_FORMAT_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat";
+  public static final String DEFAULT_SERDE_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergSerDe";
+
   private static final DynMethods.UnboundMethod ALTER_TABLE =
       DynMethods.builder("alter_table")
           .impl(
@@ -86,5 +102,40 @@ public class MetastoreUtil {
         throw e;
       }
     }
+  }
+
+  public static Table convertIcebergTableToHiveTable(org.apache.iceberg.Table icebergTable, Configuration conf) {
+    Table hiveTable = new Table();
+    TableMetadata metadata = ((BaseTable) icebergTable).operations().current();
+    long maxHiveTablePropertySize = conf.getLong(HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE,
+        HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
+    HMSTablePropertyHelper.updateHmsTableForIcebergTable(metadata.metadataFileLocation(), hiveTable, metadata,
+        null, true, maxHiveTablePropertySize, null);
+    hiveTable.getParameters().put(CatalogUtils.ICEBERG_CATALOG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
+    TableName tableName = TableName.fromString(icebergTable.name(), null, null);
+    hiveTable.setTableName(tableName.getTable());
+    hiveTable.setDbName(tableName.getDb());
+    StorageDescriptor storageDescriptor = new StorageDescriptor();
+    hiveTable.setSd(storageDescriptor);
+    hiveTable.setTableType("EXTERNAL_TABLE");
+    hiveTable.setPartitionKeys(new LinkedList<>());
+    List<FieldSchema> cols = new LinkedList<>();
+    storageDescriptor.setCols(cols);
+    storageDescriptor.setLocation(icebergTable.location());
+    storageDescriptor.setInputFormat(DEFAULT_INPUT_FORMAT_CLASS);
+    storageDescriptor.setOutputFormat(DEFAULT_OUTPUT_FORMAT_CLASS);
+    storageDescriptor.setBucketCols(new LinkedList<>());
+    storageDescriptor.setSortCols(new LinkedList<>());
+    storageDescriptor.setParameters(Maps.newHashMap());
+    SerDeInfo serDeInfo = new SerDeInfo("icebergSerde", DEFAULT_SERDE_CLASS, Maps.newHashMap());
+    serDeInfo.getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1"); // Default serialization format.
+    storageDescriptor.setSerdeInfo(serDeInfo);
+    icebergTable.schema().columns().forEach(icebergColumn -> {
+      FieldSchema fieldSchema = new FieldSchema();
+      fieldSchema.setName(icebergColumn.name());
+      fieldSchema.setType(icebergColumn.type().toString());
+      cols.add(fieldSchema);
+    });
+    return hiveTable;
   }
 }

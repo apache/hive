@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -71,7 +72,6 @@ public final class Catalogs {
   public static final String SNAPSHOT_REF = "snapshot_ref";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
-  private static final String REST_CATALOG_TYPE = "rest";
 
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
@@ -271,8 +271,16 @@ public final class Catalogs {
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName) {
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = REST_CATALOG_TYPE.equals(catalogName) ?
-        InputFormatConfig.CATALOG_REST_CONFIG_PREFIX : InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
+
+    String keyPrefix;
+    if (ICEBERG_DEFAULT_CATALOG_NAME.equals(catalogName)) {
+      keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
+    } else {
+      keyPrefix = String.format(InputFormatConfig.CUSTOM_CATALOG_CONFIG_PREFIX, catalogName);
+      catalogProperties.put(CatalogUtil.ICEBERG_CATALOG_TYPE,
+          conf.get(MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getVarname()));
+    }
+
     conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
         catalogProperties.putIfAbsent(
@@ -284,9 +292,6 @@ public final class Catalogs {
                 config.getValue());
       }
     });
-    if (REST_CATALOG_TYPE.equals(catalogName)) {
-      catalogProperties.put("type", "rest");
-    }
     return catalogProperties;
   }
 
