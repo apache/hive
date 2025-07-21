@@ -1638,17 +1638,25 @@ public class MetaStoreServerUtils {
     return result;
   }
 
-  public static String getNormalisedPartitionValue(String partitionValue, String type,
-      Configuration conf) {
-    if ((!NumberUtils.isParsable(partitionValue) && !Objects.equals(type, ColumnType.STRING_TYPE_NAME)
-            && Objects.equals(partitionValue, MetastoreConf.getVar(conf,
-            MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) || type == null) {
+  public static String getNormalisedPartitionValue(String partitionValue, String type, Configuration conf) {
+    // 1. Handle simple exit cases first.
+    if (type == null) {
       return partitionValue;
     }
-
-    LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
+    if (Objects.equals(partitionValue, MetastoreConf.getVar(conf,
+            MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) {
+      // This is the special partition name for NULL values. It should never be parsed.
+      return partitionValue;
+    }
+    // 2. If the type is not numeric, no normalization is needed.
+    String colType = ColumnType.getTypeName(type);
+    if (!ColumnType.NumericTypes.contains(colType)) {
+      return partitionValue;
+    }
+    // 3. At this point, we have a numeric type that needs normalization.
+    LOG.debug("Normalizing partition value '{}' for type '{}'.", partitionValue, type);
     try {
-      switch (type.toLowerCase()) {
+      switch (colType) {
         case ColumnType.TINYINT_TYPE_NAME:
         case ColumnType.SMALLINT_TYPE_NAME:
         case ColumnType.INT_TYPE_NAME:
@@ -1659,20 +1667,19 @@ public class MetaStoreServerUtils {
           return Float.toString(Float.parseFloat(partitionValue));
         case ColumnType.DOUBLE_TYPE_NAME:
           return Double.toString(Double.parseDouble(partitionValue));
-        default:
-          break;
-      }
-      if (type.toLowerCase().startsWith(ColumnType.DECIMAL_TYPE_NAME)) {
-        return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+        case ColumnType.DECIMAL_TYPE_NAME:
+          return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
       }
     } catch (NumberFormatException e) {
+      // 4. Handle cases where the value cannot be parsed as the expected number type.
       String validationMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION);
-      if (Objects.equals(validationMode, "throw")) {
-        LOG.error("Exception occurred while processing the partition. Set hive.msck.path.validation=skip" +
-                "and retry the operation to skip the invalid partitions");
+      if ("throw".equals(validationMode)) {
+        LOG.error("Invalid partition value: Cannot parse '{}' as type '{}'. Failing MSCK. "
+                + "Set hive.msck.path.validation=skip to ignore invalid partitions.", partitionValue, type);
         throw e;
-      } else if (Objects.equals(validationMode, "skip")) {
-        // skips this partition and continues with next one
+      } else if ("skip".equals(validationMode)) {
+        LOG.warn("Skipping invalid partition value '{}' for type '{}' due to parsing error.", partitionValue, type);
+        // Signals the caller to skip this partition.
         return null;
       }
     }

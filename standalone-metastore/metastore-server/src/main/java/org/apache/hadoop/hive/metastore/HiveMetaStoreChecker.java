@@ -452,31 +452,29 @@ public class HiveMetaStoreChecker {
       }
       LOG.debug("PartitionName: " + partitionName);
 
-      if (partitionName != null) {
-        CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
-        pr.setPartitionName(partitionName);
-        pr.setTableName(table.getTableName());
-        // Also set the correct partition path here as creating path from Warehouse.makePartPath will always return
-        // lowercase keys/path. Even if we add the new partition with lowerkeys, get queries on such partition
-        // will not return any results.
-        pr.setPath(partPath);
+      CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
+      pr.setPartitionName(partitionName);
+      pr.setTableName(table.getTableName());
+      // Also set the correct partition path here as creating path from Warehouse.makePartPath will always return
+      // lowercase keys/path. Even if we add the new partition with lowerkeys, get queries on such partition
+      // will not return any results.
+      pr.setPath(partPath);
 
-        // Check if partition already exists. No need to check for those partition which are present in db
-        // but no in fs as msck will override the partition location in db
-        if (result.getCorrectPartitions().contains(pr)) {
-          String msg = "The partition '" + pr.toString() + "' already exists for table" + table.getTableName();
-          throw new MetastoreException(msg);
-        } else if (result.getPartitionsNotInMs().contains(pr)) {
-          String msg = "Found two paths for same partition '" + pr.toString() + "' for table " + table.getTableName();
-          throw new MetastoreException(msg);
-        }
-        if (transactionalTable) {
-          setMaxTxnAndWriteIdFromPartition(partPath, pr);
-        }
-        result.getPartitionsNotInMs().add(pr);
-        if (result.getPartitionsNotOnFs().contains(pr)) {
-          result.getPartitionsNotOnFs().remove(pr);
-        }
+      // Check if partition already exists. No need to check for those partition which are present in db
+      // but no in fs as msck will override the partition location in db
+      if (result.getCorrectPartitions().contains(pr)) {
+        String msg = "The partition '" + pr.toString() + "' already exists for table" + table.getTableName();
+        throw new MetastoreException(msg);
+      } else if (result.getPartitionsNotInMs().contains(pr)) {
+        String msg = "Found two paths for same partition '" + pr.toString() + "' for table " + table.getTableName();
+        throw new MetastoreException(msg);
+      }
+      if (transactionalTable) {
+        setMaxTxnAndWriteIdFromPartition(partPath, pr);
+      }
+      result.getPartitionsNotInMs().add(pr);
+      if (result.getPartitionsNotOnFs().contains(pr)) {
+        result.getPartitionsNotOnFs().remove(pr);
       }
     }
     LOG.debug("Number of partitions not in metastore : " + result.getPartitionsNotInMs().size());

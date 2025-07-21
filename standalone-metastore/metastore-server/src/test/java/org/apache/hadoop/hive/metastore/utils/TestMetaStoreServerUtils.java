@@ -987,7 +987,6 @@ public class TestMetaStoreServerUtils {
     Assert.assertThrows(NumberFormatException.class, () -> MetaStoreServerUtils.getNormalisedPartitionValue(
             "Random_Partition", "decimal", metastoreConf));
 
-
     MetastoreConf.setVar(metastoreConf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION, "skip");
       assertNull(MetaStoreServerUtils.getNormalisedPartitionValue(
               "Random_Partition", "int", metastoreConf));
