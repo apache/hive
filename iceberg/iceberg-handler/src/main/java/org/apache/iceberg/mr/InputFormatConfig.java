@@ -28,7 +28,6 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.util.SerializationUtil;
-import org.apache.parquet.Strings;
 
 public class InputFormatConfig {
 
@@ -79,6 +78,7 @@ public class InputFormatConfig {
 
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
   public static final String CATALOG_REST_CONFIG_PREFIX = "iceberg.rest-catalog";
+  public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.%-catalog.warehouse";
   public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
 
   public enum InMemoryDataModel {
@@ -217,9 +217,7 @@ public class InputFormatConfig {
    * @return Hadoop config key of a catalog property for the catalog name
    */
   public static String catalogPropertyConfigKey(String catalogName, String catalogProperty) {
-    return Strings.isNullOrEmpty(catalogName) ?
-        String.format("%s%s", CATALOG_CONFIG_PREFIX, catalogProperty) :
-        String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
+    return String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
   }
 
   private static Schema schema(Configuration conf, String key) {

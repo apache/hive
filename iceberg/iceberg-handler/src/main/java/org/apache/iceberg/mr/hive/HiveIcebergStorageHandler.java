@@ -172,7 +172,6 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
-import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.CloseableIterable;
@@ -442,7 +441,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Map<String, String> partitionSpec)
       throws SemanticException {
     Table icebergTbl = IcebergTableUtil.getTable(conf, table);
-    String format = table.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT);
+    String format = Optional.ofNullable(table.getParameters()).orElseGet(Maps::newHashMap)
+        .get(TableProperties.DEFAULT_FILE_FORMAT);
     HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, partitionSpec, conf);
   }
 
@@ -1557,7 +1557,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       try {
         HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) tableDesc.getDeserializer(configuration);
         schema = icebergSerDe.getTableSchema();
-        spec = HMSTablePropertyHelper.createPartitionSpec(configuration, icebergSerDe.getTableSchema());
+        spec = IcebergTableUtil.spec(configuration, icebergSerDe.getTableSchema());
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

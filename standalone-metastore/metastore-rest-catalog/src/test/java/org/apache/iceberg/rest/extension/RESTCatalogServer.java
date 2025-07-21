@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -36,11 +37,16 @@ public class RESTCatalogServer {
   private Path warehouseDir;
   private int hmsPort = -1;
   private int restPort = -1;
+  private Class<? extends MetaStoreSchemaInfo> metaStoreSchemaInfoClass = RESTCatalogSchemaInfo.class;
 
   private static int createMetastoreServerWithRESTCatalog(int restPort, Configuration conf) throws Exception {
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_PORT, restPort);
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf,
         true, false, false, false);
+  }
+  
+  public void setMetaStoreSchemaInfoClass(Class<? extends MetaStoreSchemaInfo> metaStoreSchemaInfoClass) {
+    this.metaStoreSchemaInfoClass = metaStoreSchemaInfoClass;
   }
 
   void start(Configuration conf) throws Exception {
@@ -61,7 +67,7 @@ public class RESTCatalogServer {
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, externalPath);
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SCHEMA_INFO_CLASS,
-        RESTCatalogSchemaInfo.class.getCanonicalName());
+        metaStoreSchemaInfoClass.getCanonicalName());
 
     for (int i = 0; i < MetaStoreTestUtils.RETRY_COUNT; i++) {
       try {

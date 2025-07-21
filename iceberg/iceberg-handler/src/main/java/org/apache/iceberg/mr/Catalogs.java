@@ -71,7 +71,6 @@ public final class Catalogs {
   public static final String SNAPSHOT_REF = "snapshot_ref";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
-  private static final String REST_CATALOG_TYPE = "rest";
 
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
@@ -266,12 +265,12 @@ public final class Catalogs {
   /**
    * Collect all the catalog specific configuration from the global hive configuration.
    * @param conf a Hadoop configuration
-   * @param catalogName name of the catalog
+   * @param catalogName type of the catalog
    * @return complete map of catalog properties
    */
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName) {
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = REST_CATALOG_TYPE.equals(catalogName) ?
+    String keyPrefix = CatalogUtil.ICEBERG_CATALOG_TYPE_REST.equals(catalogName) ?
         InputFormatConfig.CATALOG_REST_CONFIG_PREFIX : InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
     conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
@@ -284,8 +283,8 @@ public final class Catalogs {
                 config.getValue());
       }
     });
-    if (REST_CATALOG_TYPE.equals(catalogName)) {
-      catalogProperties.put("type", "rest");
+    if (CatalogUtil.ICEBERG_CATALOG_TYPE_REST.equals(catalogName)) {
+      catalogProperties.put(CatalogUtil.ICEBERG_CATALOG_TYPE_REST, CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
     }
     return catalogProperties;
   }
@@ -309,8 +308,8 @@ public final class Catalogs {
         return catalogType;
       }
     } else {
-      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey(
-          "", CatalogUtil.ICEBERG_CATALOG_TYPE));
+      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey("",
+          CatalogUtil.ICEBERG_CATALOG_TYPE));
       if (catalogType != null && catalogType.equals(LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {
