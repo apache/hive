@@ -56,7 +56,7 @@ public final class PartitionUtils {
   }
 
   /**
-   * Certain partition values are are used by hive. e.g. the default partition in dynamic partitioning and the
+   * Certain partition values are used by hive. e.g. the default partition in dynamic partitioning and the
    * intermediate partition values used in the archiving process. Naturally, prohibit the user from creating partitions
    * with these reserved values. The check that this function is more restrictive than the actual limitation, but it's
    * simpler. Should be okay since the reserved names are fairly long and uncommon.
@@ -64,33 +64,33 @@ public final class PartitionUtils {
   public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) {
     // Partition can't have this name
     Set<String> reservedPartitionValues =
-            new HashSet<String>() {{
-              add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
-              add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
-            }};
+        new HashSet<String>() {{
+          add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
+          add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
+        }};
 
     // Partition value can't end in this suffix
     Set<String> reservedPartitionSuffixes =
-            new HashSet<String>() {{
-              add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
-              add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
-              add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
-            }};
+        new HashSet<String>() {{
+          add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ORIGINAL));
+          add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED));
+          add(HiveConf.getVar(conf, ConfVars.METASTORE_INT_EXTRACTED));
+        }};
 
     partitionSpec.forEach((key, value) -> {
       if (value == null) {
         return;
       }
       reservedPartitionValues.stream().filter(value::equals).findAny()
-              .ifPresent(s -> {
-                throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-                        "(User value: " + value + " Reserved string: " + s + ")"));
-              });
+          .ifPresent(s -> {
+            throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                "(User value: " + value + " Reserved string: " + s + ")"));
+          });
       reservedPartitionSuffixes.stream().filter(value::endsWith).findAny()
-              .ifPresent(s -> {
-                throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
-                        "(User value: " + value + " Partition value cannot end with Reserved substring: " + s + ")"));
-              });
+          .ifPresent(s -> {
+            throw new RuntimeException(ErrorMsg.RESERVED_PART_VAL.getMsg(
+                "(User value: " + value + " Partition value cannot end with Reserved substring: " + s + ")"));
+          });
     });
   }
 
