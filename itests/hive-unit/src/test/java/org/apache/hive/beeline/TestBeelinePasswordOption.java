@@ -256,10 +256,10 @@ public class TestBeelinePasswordOption {
         inputStream = new ByteArrayInputStream(prompt.getBytes());
       }
       int returnCode = beeLine.begin(args, inputStream);
-      Assert.assertEquals("Beeline.begin return code is not as expected", 0, returnCode);
+      assertEquals("Beeline.begin return code is not as expected", 0, returnCode);
       if (expectedMaxColumnWidth != -1) {
         int maxColumnWidth = beeLine.getOpts().getMaxColumnWidth();
-        Assert.assertEquals("Unexpected max column width", expectedMaxColumnWidth, maxColumnWidth);
+        assertEquals("Unexpected max column width", expectedMaxColumnWidth, maxColumnWidth);
       }
       if (hiveConfKey != null) {
         String hiveConfValue = beeLine.getOpts().getHiveConfVariables().get(hiveConfKey);

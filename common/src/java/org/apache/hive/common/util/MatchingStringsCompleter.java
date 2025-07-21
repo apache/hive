@@ -47,10 +47,6 @@ public class MatchingStringsCompleter implements Completer {
     strings.forEach(candidateStrings::add);
   }
 
-  public MatchingStringsCompleter(Candidate... candidates) {
-    Arrays.stream(candidates).map(Candidate::value).forEach(candidateStrings::add);
-  }
-
   public Collection<String> getStrings() {
     return candidateStrings;
   }

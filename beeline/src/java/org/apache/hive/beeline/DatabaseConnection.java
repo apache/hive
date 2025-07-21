@@ -74,10 +74,6 @@ class DatabaseConnection {
 
 
   void setCompletions(boolean skipmeta) throws SQLException, IOException {
-    final String extraNameCharacters =
-        getDatabaseMetaData() == null || getDatabaseMetaData().getExtraNameCharacters() == null ? ""
-            : getDatabaseMetaData().getExtraNameCharacters();
-
     // setup the completer for the database
     sqlCompleter = new ArgumentCompleter(new SQLCompleter(SQLCompleter.getSQLCompleters(beeLine, skipmeta)));
     // not all argument elements need to hold true

@@ -24,8 +24,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
@@ -52,6 +55,8 @@ import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.jline.reader.LineReader;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.impl.DumbTerminal;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -180,29 +185,19 @@ import org.junit.Test;
     return output;
   }
 
-  /*
-   * Creates a BeeLineDummyTerminalFromFile instance that skips the main execution code path
-   * if an init script has already run. Since this unit test class executes scripts in init (-i) or file (-f) mode,
-   * we can avoid using waiting hacks and simply return from execute() with the original init result.
-   */
-  private static BeeLineDummyTerminalFromFile getBeeLineDummyTerminal() {
-    return new BeeLineDummyTerminalFromFile() {
-      private int initResult = -1;
-
+  private static BeeLineDummyTerminal getBeeLineDummyTerminal() {
+    return new BeeLineDummyTerminal() {
+      /*
+       * Unit tests in this class call the begin function with a null input stream. Once the initial (-i) and file (-f)
+       * scripts are completed, the flow enters the interactive code path—which we want to skip in tests to allow them
+       * to exit cleanly. In the real world, this would lead to the interactive Beeline shell, but for testing purposes,
+       * we bypass that by providing a dummy empty stream. This avoids infinite loops or null pointer errors in the
+       * JLine read logic.
+       */
       @Override
-      int execute(LineReader reader, boolean exitOnError) {
-        String[] initFiles = getOpts().getInitFiles();
-        // short circuit the test execution, we're not interested in entering the interactive reader codepath
-        if (initFiles != null && initFiles.length != 0 && initResult != -1) {
-          return initResult;
-        }
-        return super.execute(reader, exitOnError);
-      }
-
-      @Override
-      int runInit() {
-        this.initResult = super.runInit();
-        return initResult;
+      protected Terminal buildTerminal(InputStream inputStream) throws IOException {
+        return new DumbTerminal(inputStream == null ? new ByteArrayInputStream("".getBytes()) : inputStream,
+            getErrorStream());
       }
     };
   }

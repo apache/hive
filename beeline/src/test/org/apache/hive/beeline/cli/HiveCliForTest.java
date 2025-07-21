@@ -22,7 +22,8 @@ import org.apache.hive.beeline.BeeLineDummyTerminal;
 
 public class HiveCliForTest extends HiveCli {
 
-  protected BeeLine createBeeline() {
+  @Override
+  BeeLine createBeeline() {
     return new BeeLineDummyTerminal(false);
   }
 }

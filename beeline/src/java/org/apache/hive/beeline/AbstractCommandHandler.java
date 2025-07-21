@@ -43,15 +43,15 @@ public abstract class AbstractCommandHandler implements CommandHandler {
   protected transient Throwable lastException;
 
   public AbstractCommandHandler(BeeLine beeLine, String[] names, String helpText,
-                                Completer[] completors) {
+                                Completer[] completers) {
     this.beeLine = beeLine;
     name = names[0];
     this.names = names;
     this.helpText = helpText;
-    if (completors == null || completors.length == 0) {
+    if (completers == null || completers.length == 0) {
       parameterCompleters = new Completer[] { new NullCompleter() };
     } else {
-      List<Completer> c = new LinkedList<Completer>(Arrays.asList(completors));
+      List<Completer> c = new LinkedList<Completer>(Arrays.asList(completers));
       c.add(new NullCompleter());
       parameterCompleters = c.toArray(new Completer[0]);
     }
@@ -92,10 +92,6 @@ public abstract class AbstractCommandHandler implements CommandHandler {
       }
     }
     return null;
-  }
-
-  public void setParameterCompleters(Completer[] parameterCompleters) {
-    this.parameterCompleters = parameterCompleters;
   }
 
   @Override

@@ -212,19 +212,17 @@ public class TestCliDriverMethods {
     final List<Candidate> candidates1 = new ArrayList<>();
     candidates1.add(new Candidate(")"));
     completers[1].complete(null, CliDriver.getDefaultParser().parse("fdsdfsdf", 0), candidates1);
-    assertEquals(")", candidates1.get(0).value());
+    assertEquals(")", candidates1.getFirst().value());
 
     final List<Candidate> candidates2 = new ArrayList<>();
     completers[1].complete(null,  CliDriver.getDefaultParser().parse("length", 0), candidates2);
-    System.out.printf("--- --> %s%n", candidates2.get(0).value());
-    assertTrue(candidates2.get(0).value().endsWith("length("));
+    System.out.printf("--- --> %s%n", candidates2.getFirst().value());
+    assertTrue(candidates2.getFirst().value().endsWith("length("));
 
     final List<Candidate> candidates3 = new ArrayList<>();
     completers[0].complete(null, CliDriver.getDefaultParser().parse("set f", 0), candidates3);
-    assertEquals("set", candidates3.get(0).value());
+    assertEquals("set", candidates3.getFirst().value());
   }
-
-
 
   @Test
   public void testRun() throws Exception {
@@ -387,21 +385,21 @@ public class TestCliDriverMethods {
   public void testCommandSplits() {
     // Test double quote in the string
     String cmd1 = "insert into escape1 partition (ds='1', part='\"') values (\"!\")";
-    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1).get(0));
-    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1 + ";").get(0));
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1).getFirst());
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1 + ";").getFirst());
 
     // Test escape
     String cmd2 = "insert into escape1 partition (ds='1', part='\"\\'') values (\"!\")";
-    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2).get(0));
-    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2 + ";").get(0));
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2).getFirst());
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2 + ";").getFirst());
 
     // Test multiple commands
     List<String> results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2);
-    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd1, results.getFirst());
     assertEquals(cmd2, results.get(1));
 
     results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2 + ";");
-    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd1, results.getFirst());
     assertEquals(cmd2, results.get(1));
   }
 

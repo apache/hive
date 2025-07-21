@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -68,7 +67,6 @@ import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
-import org.jline.reader.EndOfFileException;
 import org.jline.reader.History;
 import org.jline.reader.impl.LineReaderImpl;
 
@@ -1101,30 +1099,15 @@ public class Commands {
           }
         }
       }
-      String extra;
+
       //avoid NPE below if for some reason -e argument has multi-line command
       if (beeLine.getLineReader() == null) {
         throw new RuntimeException("Console reader not initialized. This could happen when there "
             + "is a multi-line command using -e option and which requires further reading from console");
       }
 
-      try {
-        if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
-          extra = beeLine.getLineReader().readLine(null, mask);
-        } else {
-          extra = beeLine.getLineReader().readLine(prompt.toString());
-        }
-      } catch (EndOfFileException t) {
-        /*
-         * If you're reading from a normal file (not from standard input or a terminal), JLine might raise an
-         * EndOfFileException when it reaches the end of the file. JLine uses readLine() for reading input, and it
-         * expects the input source to provide data interactively. When reading from a file, it might misinterpret
-         * the EOF condition.
-         * While handling a multiline command, it's fine to break the loop at this point.
-         */
-        break;
-      }
-
+      String extra = (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) ?
+          beeLine.readLine(null, mask) : beeLine.readLine(prompt.toString(), null);
 
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
         break;
@@ -1676,11 +1659,11 @@ public class Commands {
         && !JdbcConnectionParams.AUTH_SSO_BROWSER_MODE.equals(auth)) {
       String urlForPrompt = url.substring(0, url.contains(";") ? url.indexOf(';') : url.length());
       if (username == null) {
-        username = readLineWithPrompt("Enter username for " + urlForPrompt + ": ", null);
+        username = beeLine.readLine("Enter username for " + urlForPrompt + ": ", null);
       }
       props.setProperty(JdbcConnectionParams.AUTH_USER, username);
       if (password == null) {
-        password = readLineWithPrompt("Enter password for " + urlForPrompt + ": ", '*');
+        password = beeLine.readLine("Enter password for " + urlForPrompt + ": ", '*');
       }
       props.setProperty(JdbcConnectionParams.AUTH_PASSWD, password);
     }
@@ -1710,24 +1693,6 @@ public class Commands {
       return beeLine.error(sqle);
     } catch (IOException ioe) {
       return beeLine.error(ioe);
-    }
-  }
-
-  /**
-   * Reads a line with the given prompt and optional mask character.
-   * Starting with JLine3, an EndOfFileException is intentionally thrown upon reaching the end of the input stream.
-   * In interactive usage, this method returns the partial line entered before the exception to preserve existing
-   * behavior. This is typically used for input prompts such as username/password.
-   *
-   * @param prompt the prompt message displayed to the user
-   * @param mask the character used to mask the input, if any
-   * @return the full line read, or the partial input captured before the EndOfFileException was thrown
-   */
-  private String readLineWithPrompt(String prompt, Character mask) {
-    try {
-      return beeLine.getLineReader().readLine(prompt, mask);
-    } catch (EndOfFileException e) {
-      return e.getPartialLine();
     }
   }
 

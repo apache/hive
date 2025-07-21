@@ -15,33 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hive.beeline;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.jline.terminal.Terminal;
-import org.jline.terminal.impl.DumbTerminal;
-
-/**
- * A Beeline implementation that always creates a DumbTerminal.
- * This class resides in the production source code (not in tests) because Beeline can serve as a
- * dummy terminal tool without real user interaction (e.g., HiveSchemaTool), not just in testing scenarios,
- * although that is its primary use case.
- */
-public class BeeLineDummyTerminal extends BeeLine {
-
-  public BeeLineDummyTerminal() {
-    this(true);
-  }
-
-  public BeeLineDummyTerminal(boolean isBeeLine) {
-    super(isBeeLine);
-  }
-
-  @Override
-  protected Terminal buildTerminal(InputStream inputStream) throws IOException {
-    return new DumbTerminal(inputStream, getErrorStream());
+public class NoCurrentConnectionException extends IllegalArgumentException {
+  public NoCurrentConnectionException(String message) {
+    super(message);
   }
 }

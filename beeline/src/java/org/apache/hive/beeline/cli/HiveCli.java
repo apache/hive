@@ -40,7 +40,7 @@ public class HiveCli {
     }
   }
 
-  protected BeeLine createBeeline() {
+  BeeLine createBeeline() {
     return new BeeLine(false);
   }
 }

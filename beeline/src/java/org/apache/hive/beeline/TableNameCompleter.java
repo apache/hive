@@ -30,13 +30,13 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-class TableNameCompletor implements Completer {
+class TableNameCompleter implements Completer {
   private final BeeLine beeLine;
 
   /**
    * @param beeLine
    */
-  TableNameCompletor(BeeLine beeLine) {
+  TableNameCompleter(BeeLine beeLine) {
     this.beeLine = beeLine;
   }
 

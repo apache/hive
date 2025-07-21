@@ -121,10 +121,6 @@
       <artifactId>hadoop-mapreduce-client-core</artifactId>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-1.2-api</artifactId>
-    </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>org.apache.hbase</groupId>

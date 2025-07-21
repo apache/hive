@@ -162,8 +162,8 @@ public class BeeLineOpts implements Completer {
         maxHeight = terminal.getHeight();
       }
       terminal.close();
-    } catch(IOException e) {
-      // nothing to do
+    } catch (IOException e) {
+      beeLine.debug("Failed to initialize terminal for max width/height check: " + e.getMessage());
     }
     loadProperties(props);
   }
