@@ -853,7 +853,7 @@ public class TestHiveMetaStoreAuthorizer {
       handler.drop_table_core(rawStore, "hive", "test_db", "test_drop", true, null, null, false);
       fail("Expected MetaException");
     } catch (MetaException e) {
-      assertTrue(e.getMessage().contains("Table metadata not deleted since /warehouse/tablespace/managed/hive is not writable by " + SecurityUtils.getUser()));
+      assertTrue(e.getMessage().contains("Table metadata not deleted since /warehouse/tablespace/managed/hive/test_drop is not writable by " + SecurityUtils.getUser()));
     }
   }
 }
