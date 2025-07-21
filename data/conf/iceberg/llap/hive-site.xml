@@ -400,11 +400,7 @@
     
     <!-- -- Iceberg REST catalog specific properties -->
     <property>
-        <name>connector.name</name>
-        <value>iceberg</value>
-    </property>
-    <property>
-        <name>iceberg.rest-catalog.type</name>
+        <name>hive.iceberg.catalog.type</name>
         <value>rest</value>
     </property>
     <property>

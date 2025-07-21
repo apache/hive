@@ -83,7 +83,7 @@ public class HMSTablePropertyHelper {
 
   /**
    * Provides key translation where necessary between Iceberg and HMS props. This translation is needed because some
-   * properties control the same behaviour but are named differently in Iceberg and Hive. Therefore changes to these
+   * properties control the same behaviour but are named differently in Iceberg and Hive. Therefore, changes to these
    * property pairs should be synchronized.
    *
    * Example: Deleting data files upon DROP TABLE is enabled using gc.enabled=true in Iceberg and
@@ -97,21 +97,13 @@ public class HMSTablePropertyHelper {
   public static String translateToIcebergProp(String hmsProp) {
     return ICEBERG_TO_HMS_TRANSLATION.inverse().getOrDefault(hmsProp, hmsProp);
   }
+
   /** Updates the HMS Table properties based on the Iceberg Table metadata. */
-  public static void updateHmsTableForIcebergTable(
-      String newMetadataLocation,
-      Table tbl,
-      TableMetadata metadata,
-      Set<String> obsoleteProps,
-      boolean hiveEngineEnabled,
-      long maxHiveTablePropertySize,
-      String currentLocation) {
-    Map<String, String> parameters =
-        Optional.ofNullable(tbl.getParameters()).orElseGet(Maps::newHashMap);
-    Map<String, String> summary =
-        Optional.ofNullable(metadata.currentSnapshot())
-            .map(Snapshot::summary)
-            .orElseGet(ImmutableMap::of);
+  public static void updateHmsTableForIcebergTable(String newMetadataLocation, Table tbl, TableMetadata metadata,
+      Set<String> obsoleteProps, boolean hiveEngineEnabled, long maxHiveTablePropertySize, String currentLocation) {
+    Map<String, String> parameters = Optional.ofNullable(tbl.getParameters()).orElseGet(Maps::newHashMap);
+    Map<String, String> summary = Optional.ofNullable(metadata.currentSnapshot()).map(Snapshot::summary)
+        .orElseGet(ImmutableMap::of);
     // push all Iceberg table properties into HMS
     metadata.properties().entrySet().stream()
         .filter(entry -> !entry.getKey().equalsIgnoreCase(HiveCatalog.HMS_TABLE_OWNER))
@@ -122,14 +114,8 @@ public class HMSTablePropertyHelper {
               String hmsKey = ICEBERG_TO_HMS_TRANSLATION.getOrDefault(key, key);
               parameters.put(hmsKey, entry.getValue());
             });
-    setCommonParameters(
-        newMetadataLocation,
-        metadata.uuid(),
-        obsoleteProps,
-        currentLocation,
-        parameters,
-        BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(Locale.ENGLISH),
-        metadata.schema(),
+    setCommonParameters(newMetadataLocation, metadata.uuid(), obsoleteProps, currentLocation, parameters,
+        BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase(Locale.ENGLISH), metadata.schema(),
         maxHiveTablePropertySize);
     setStorageHandler(parameters, hiveEngineEnabled);
 
@@ -159,10 +145,8 @@ public class HMSTablePropertyHelper {
    * @return iceberg partition spec, always non-null
    */
   public static PartitionSpec createPartitionSpec(Configuration configuration, Schema schema) {
-    List<TransformSpec> partitionTransformSpecList = SessionStateUtil
-        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<TransformSpec>) o)
-        .orElse(null);
+    List<TransformSpec> partitionTransformSpecList = (List<TransformSpec>) SessionStateUtil
+        .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC).orElse(null);
 
     if (partitionTransformSpecList == null) {
       LOG.warn("Iceberg partition transform spec is not found in QueryState.");
@@ -218,15 +202,14 @@ public class HMSTablePropertyHelper {
    */
   public static Properties getCatalogProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     Properties properties = new Properties();
-
-    hmsTable.getParameters().entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
+    Map<String, String> hmsTableParameters = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap);
+    hmsTableParameters.entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
       // translate key names between HMS and Iceberg where needed
       String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
       properties.put(icebergKey, e.getValue());
     });
 
-    if (properties.get(LOCATION) == null &&
-        hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null) {
+    if (properties.get(LOCATION) == null && hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null) {
       properties.put(LOCATION, hmsTable.getSd().getLocation());
     }
 
@@ -236,11 +219,11 @@ public class HMSTablePropertyHelper {
 
     SerDeInfo serdeInfo = hmsTable.getSd().getSerdeInfo();
     if (serdeInfo != null) {
-      serdeInfo.getParameters().entrySet().stream()
-          .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
-            String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
-            properties.put(icebergKey, e.getValue());
-          });
+      Map<String, String> serdeParameters = Optional.ofNullable(serdeInfo.getParameters()).orElseGet(Maps::newHashMap);
+      serdeParameters.entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
+        String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
+        properties.put(icebergKey, e.getValue());
+      });
     }
 
     // Remove HMS table parameters we don't want to propagate to Iceberg
@@ -248,14 +231,8 @@ public class HMSTablePropertyHelper {
 
     return properties;
   }
-  private static void setCommonParameters(
-      String newMetadataLocation,
-      String uuid,
-      Set<String> obsoleteProps,
-      String currentLocation,
-      Map<String, String> parameters,
-      String tableType,
-      Schema schema,
+  private static void setCommonParameters(String newMetadataLocation, String uuid, Set<String> obsoleteProps,
+      String currentLocation, Map<String, String> parameters, String tableType, Schema schema,
       long maxHiveTablePropertySize) {
     if (uuid != null) {
       parameters.put(TableProperties.UUID, uuid);
@@ -276,7 +253,7 @@ public class HMSTablePropertyHelper {
 
   @VisibleForTesting
   static void setStorageHandler(Map<String, String> parameters, boolean hiveEngineEnabled) {
-    // If needed set the 'storage_handler' property to enable query from Hive
+    // If needed, set the 'storage_handler' property to enable query from Hive
     if (hiveEngineEnabled) {
       parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
     } else {
@@ -301,9 +278,7 @@ public class HMSTablePropertyHelper {
   }
 
   @VisibleForTesting
-  static void setSnapshotSummary(
-      Map<String, String> parameters,
-      Snapshot currentSnapshot,
+  static void setSnapshotSummary(Map<String, String> parameters, Snapshot currentSnapshot,
       long maxHiveTablePropertySize) {
     try {
       String summary = JsonUtil.mapper().writeValueAsString(currentSnapshot.summary());
@@ -346,9 +321,7 @@ public class HMSTablePropertyHelper {
     }
   }
 
-  private static void setField(
-      Map<String, String> parameters,
-      String key, String value,
+  private static void setField(Map<String, String> parameters, String key, String value,
       long maxHiveTablePropertySize) {
     if (value.length() <= maxHiveTablePropertySize) {
       parameters.put(key, value);

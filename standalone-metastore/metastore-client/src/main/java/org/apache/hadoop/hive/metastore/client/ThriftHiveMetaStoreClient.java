@@ -458,6 +458,15 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
+  public boolean isReconnectable() {
+    if (localMetaStore) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  @Override
   public void reconnect() throws MetaException {
     if (localMetaStore) {
       // For direct DB connections we don't yet support reestablishing connections.

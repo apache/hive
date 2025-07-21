@@ -27,15 +27,12 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataStruct;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
@@ -47,9 +44,9 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
@@ -68,7 +65,6 @@ import org.slf4j.LoggerFactory;
 
 public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRESTCatalogClientAdapter.class);
   public static final String NAMESPACE_SEPARATOR = ".";
   public static final String NAME = "name";
   public static final String LOCATION = "location";
@@ -76,21 +72,24 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
   public static final String DB_OWNER = "owner";
   public static final String DB_OWNER_TYPE = "ownerType";
   public static final String DEFAULT_INPUT_FORMAT_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergInputFormat";
-  public static final String DEFAULT_OUTPUT_FORMAT_CLASS
-      = "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat";
+  public static final String DEFAULT_OUTPUT_FORMAT_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat";
   public static final String DEFAULT_SERDE_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergSerDe";
-  public static final String CATALOG_CONFIG_PREFIX = "iceberg.rest-catalog.";
   public static final String WAREHOUSE = "warehouse";
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRESTCatalogClientAdapter.class);
   private final Configuration conf;
   private RESTCatalog restCatalog;
-
   private final long maxHiveTablePropertySize;
+
+  public HiveIcebergRESTCatalogClientAdapter(Configuration conf, boolean allowEmbedded) {
+    this(conf);
+  }
 
   public HiveIcebergRESTCatalogClientAdapter(Configuration conf) {
     super(conf);
     this.conf = conf;
     this.maxHiveTablePropertySize = conf.getLong(HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE,
-          HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
+        HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
   }
 
   @Override
@@ -112,13 +111,15 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
     }
   }
 
-  private static Map<String, String> getCatalogPropertiesFromConf(
-      Configuration conf) {
+  private static Map<String, String> getCatalogPropertiesFromConf(Configuration conf) {
     Map<String, String> catalogProperties = Maps.newHashMap();
+    String icebergCatalogType = MetastoreConf.get(conf, MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getHiveName());
+    final String catalogConfigPrefix = String.format("iceberg.%s-catalog.", icebergCatalogType);
+
     conf.forEach(config -> {
-      if (config.getKey().startsWith(CATALOG_CONFIG_PREFIX)) {
+      if (config.getKey().startsWith(catalogConfigPrefix)) {
         catalogProperties.put(
-            config.getKey().substring(CATALOG_CONFIG_PREFIX.length()),
+            config.getKey().substring(catalogConfigPrefix.length()),
             config.getValue());
       }
     });
@@ -127,30 +128,28 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
 
 
   @Override
-  public List<String> getDatabases(String catName, String databasePattern) throws MetaException, TException {
+  public List<String> getDatabases(String catName, String databasePattern) {
     return restCatalog.listNamespaces(Namespace.empty()).stream().map(Namespace::toString).collect(Collectors.toList());
   }
 
   @Override
-  public List<String> getAllDatabases(String catName) throws MetaException, TException {
+  public List<String> getAllDatabases(String catName) throws TException {
     return getAllDatabases();
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern)
-      throws MetaException, TException, UnknownDBException {
+  public List<String> getTables(String catName, String dbName, String tablePattern) {
     return getTables(catName, dbName, tablePattern, null);
   }
 
   @Override
-  public List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType)
-      throws MetaException, TException, UnknownDBException {
+  public List<String> getTables(String catName, String dbName, String tablePattern, TableType tableType) {
     List<TableIdentifier> tableIdentifiers = restCatalog.listTables(Namespace.of(dbName));
-    return tableIdentifiers.stream().map(tableIdentifier -> tableIdentifier.name()).collect(Collectors.toList());
+    return tableIdentifiers.stream().map(TableIdentifier::name).collect(Collectors.toList());
   }
 
   @Override
-  public List<String> getAllTables(String catName, String dbName) throws MetaException, TException, UnknownDBException {
+  public List<String> getAllTables(String catName, String dbName) {
     return getTables(catName, dbName, "", null);
   }
 
@@ -161,14 +160,12 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
   }
 
   @Override
-  public boolean tableExists(String catName, String dbName, String tableName)
-      throws MetaException, TException, UnknownDBException {
+  public boolean tableExists(String catName, String dbName, String tableName) throws TException {
     return tableExists(dbName, tableName);
   }
 
   @Override
-  public Database getDatabase(String catalogName, String databaseName)
-      throws NoSuchObjectException, MetaException, TException {
+  public Database getDatabase(String catalogName, String databaseName) {
     return restCatalog.listNamespaces(Namespace.empty()).stream()
         .filter(namespace -> namespace.levels()[0].equals(databaseName)).map(namespace -> {
           Database database = new Database();
@@ -189,8 +186,8 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
   private Table convertIcebergTableToHiveTable(org.apache.iceberg.Table icebergTable) {
     Table hiveTable = new Table();
     TableMetadata metadata = ((BaseTable) icebergTable).operations().current();
-    HMSTablePropertyHelper.updateHmsTableForIcebergTable(metadata.metadataFileLocation(), hiveTable,
-        metadata, null, true, maxHiveTablePropertySize, null);
+    HMSTablePropertyHelper.updateHmsTableForIcebergTable(metadata.metadataFileLocation(), hiveTable, metadata,
+        null, true, maxHiveTablePropertySize, null);
     hiveTable.getParameters().put(ICEBERG_CATALOG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
     hiveTable.setTableName(getTableName(icebergTable));
     hiveTable.setDbName(getDbName(icebergTable));
@@ -217,6 +214,7 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
     });
     return hiveTable;
   }
+
   private String getTableName(org.apache.iceberg.Table icebergTable) {
     String[] nameParts = icebergTable.name().split("\\.");
     if (nameParts.length == 3) {
@@ -234,21 +232,19 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
   }
 
   @Override
-  public Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException {
-    org.apache.iceberg.Table icebergTable = null;
+  public Table getTable(GetTableRequest getTableRequest) throws TException {
+    org.apache.iceberg.Table icebergTable;
     try {
-      icebergTable = restCatalog.loadTable(
-          TableIdentifier.of(getTableRequest.getDbName(), getTableRequest.getTblName()));
+      icebergTable = restCatalog.loadTable(TableIdentifier.of(getTableRequest.getDbName(),
+          getTableRequest.getTblName()));
     } catch (NoSuchTableException exception) {
       throw new NoSuchObjectException();
     }
-    Table hiveTable = convertIcebergTableToHiveTable(icebergTable);
-    return hiveTable;
+    return convertIcebergTableToHiveTable(icebergTable);
   }
 
   @Override
-  public void createTable(CreateTableRequest request)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException {
+  public void createTable(CreateTableRequest request) throws TException {
     Table table = request.getTable();
     List<FieldSchema> cols = Lists.newArrayList(table.getSd().getCols());
     if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
@@ -258,24 +254,17 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
     Schema schema = HiveSchemaUtil.convert(cols, true);
     SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(catalogProperties, schema);
     org.apache.iceberg.PartitionSpec partitionSpec = HMSTablePropertyHelper.createPartitionSpec(this.conf, schema);
-    restCatalog
-        .buildTable(TableIdentifier.of(table.getDbName(), table.getTableName()), schema)
-        .withPartitionSpec(partitionSpec)
-        .withLocation(catalogProperties.getProperty(LOCATION))
-        .withSortOrder(sortOrder)
-        .withProperties(
-            catalogProperties
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(entry -> ((Map.Entry) entry).getKey().toString(),
-                    entry -> ((Map.Entry) entry).getValue().toString())
-                ))
-        .create();
+
+    restCatalog.buildTable(TableIdentifier.of(table.getDbName(), table.getTableName()), schema)
+        .withPartitionSpec(partitionSpec).withLocation(catalogProperties.getProperty(LOCATION)).withSortOrder(sortOrder)
+        .withProperties(catalogProperties.entrySet().stream()
+            .collect(Collectors.toMap(entry -> ((Map.Entry<?, ?>) entry).getKey().toString(),
+                    entry -> ((Map.Entry<?, ?>) entry).getValue().toString())
+            )).create();
   }
 
   @Override
-  public void createDatabase(Database db)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
+  public void createDatabase(Database db) {
     Map<String, String> props = Maps.newHashMap();
     props.put(LOCATION, db.getLocationUri());
     props.put(DB_OWNER, db.getOwnerName());
@@ -285,26 +274,24 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
 
 
   @Override
-  public void dropDatabase(DropDatabaseRequest req) throws TException {
+  public void dropDatabase(DropDatabaseRequest req) {
     restCatalog.dropNamespace(Namespace.of(req.getName()));
   }
 
   @Override
   public void createTableWithConstraints(Table tTbl, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException {
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) throws TException {
     createTable(tTbl);
   }
 
   @Override
-  public WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException, TException {
+  public WMFullResourcePlan getResourcePlan(String resourcePlanName, String ns) {
     return null;
   }
 
   @Override
-  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct) throws MetaException, TException {
+  public boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct) {
     return false;
   }
 

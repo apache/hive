@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -171,7 +170,7 @@ public class TestHiveIcebergRESTCatalogClientAdapter {
     table.setTableName("tableName");
     table.setDbName("default");
     table.setSd(new StorageDescriptor());
-    table.getSd().setCols(new LinkedList<FieldSchema>());
+    table.getSd().setCols(new LinkedList<>());
     table.setParameters(Maps.newHashMap());
     hiveIcebergRESTCatalogClientAdapter.createTable(table);
     Mockito.verify(restCatalog).buildTable(any(), any());

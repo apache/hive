@@ -309,8 +309,8 @@ public final class Catalogs {
         return catalogType;
       }
     } else {
-      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey(
-          "", CatalogUtil.ICEBERG_CATALOG_TYPE));
+      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey("",
+          CatalogUtil.ICEBERG_CATALOG_TYPE));
       if (catalogType != null && catalogType.equals(LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {
