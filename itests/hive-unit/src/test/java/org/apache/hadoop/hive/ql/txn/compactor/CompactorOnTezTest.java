@@ -544,12 +544,21 @@ public abstract class CompactorOnTezTest {
     }
   }
 
-  protected void runSingleInitiatorCycle() throws Exception {
+  protected Initiator createInitiator() throws Exception {
     TestTxnDbUtil.setConfValues(conf);
-    CompactorThread t = new Initiator();
+    Initiator t = new Initiator();
     t.setConf(conf);
     stop.set(true);
     t.init(stop);
-    t.run();
+    return t;
+  }
+
+  static Worker createWorker(HiveConf conf) throws  Exception {
+    HiveConf hiveConf = new HiveConf(conf);
+    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    Worker t = new Worker();
+    t.setConf(hiveConf);
+    t.init(new AtomicBoolean(true));
+    return t;
   }
 }

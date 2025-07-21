@@ -52,8 +52,6 @@ public class Initiator extends MetaStoreCompactorThread {
   private static final String CLASS_NAME = Initiator.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  private ExecutorService compactionExecutor;
-
   private boolean metricsEnabled;
   private boolean shouldUseMutex = true;
   private List<TableOptimizer> optimizers;
@@ -63,7 +61,9 @@ public class Initiator extends MetaStoreCompactorThread {
     LOG.info("Starting Initiator thread");
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
-    try {
+    try (ExecutorService compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+        conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+        COMPACTOR_INTIATOR_THREAD_NAME_FORMAT)) {
       recoverFailedCompactions(false);
       TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
@@ -183,9 +183,6 @@ public class Initiator extends MetaStoreCompactorThread {
       if (Thread.currentThread().isInterrupted()) {
         LOG.info("Interrupt received, Initiator is shutting down.");
       }
-      if (compactionExecutor != null) {
-        compactionExecutor.shutdownNow();
-      }
     }
   }
 
@@ -214,9 +211,6 @@ public class Initiator extends MetaStoreCompactorThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
-            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
-            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
     optimizers = Arrays.stream(MetastoreConf.getTrimmedStringsVar(conf,

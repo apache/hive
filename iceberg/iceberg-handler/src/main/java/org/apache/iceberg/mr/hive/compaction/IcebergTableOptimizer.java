@@ -19,9 +19,17 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -30,23 +38,27 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.apache.hadoop.hive.ql.txn.compactor.TableOptimizer;
+import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
+import org.apache.iceberg.ContentFile;
+import org.apache.iceberg.DataOperations;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.hive.RuntimeMetaException;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.mr.hive.compaction.evaluator.CompactionEvaluator;
+import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 
 public class IcebergTableOptimizer extends TableOptimizer {
   private HiveMetaStoreClient client;
-  private Map<String, Long> snapshotIdCache;
+  private Map<String, Long> snapshotTimeMilCache;
 
   public IcebergTableOptimizer(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache) throws MetaException {
     super(conf, txnHandler, metadataCache);
@@ -79,29 +91,36 @@ public class IcebergTableOptimizer extends TableOptimizer {
     getTables().stream()
         .filter(table -> !skipDBs.contains(table.getDb()))
         .filter(table -> !skipTables.contains(table.getNotEmptyDbTable()))
-        .map(table -> Pair.of(table, resolveMetastoreTable(table.getNotEmptyDbTable())))
-        .filter(tablePair -> MetaStoreUtils.isIcebergTable(tablePair.getValue().getParameters()))
-        .filter(tablePair -> {
-          long currentSnapshotId = Long.parseLong(tablePair.getValue().getParameters().get("current-snapshot-id"));
-          Long cachedSnapshotId = snapshotIdCache.get(tablePair.getKey().getNotEmptyDbTable());
-          return cachedSnapshotId == null || cachedSnapshotId != currentSnapshotId;
+        .map(table -> {
+          org.apache.hadoop.hive.ql.metadata.Table hiveTable = getHiveTable(table.getDb(), table.getTable());
+          org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, hiveTable.getTTable());
+          return Pair.of(hiveTable, icebergTable);
         })
-        .forEach(tablePair -> {
-          org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, tablePair.getValue());
+        .filter(t -> hasNewCommits(t.getRight(),
+            snapshotTimeMilCache.get(t.getLeft().getFullyQualifiedName())))
+        .forEach(t -> {
+          String qualifiedTableName = t.getLeft().getFullyQualifiedName();
+          org.apache.hadoop.hive.ql.metadata.Table hiveTable = t.getLeft();
+          org.apache.iceberg.Table icebergTable = t.getRight();
 
           if (icebergTable.spec().isPartitioned()) {
-            List<String> partitions = getPartitions(icebergTable);
+            List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = findModifiedPartitions(hiveTable,
+                icebergTable, snapshotTimeMilCache.get(qualifiedTableName), true);
 
-            partitions.forEach(partition -> addCompactionTargetIfEligible(tablePair.getValue(), icebergTable,
-                partition, compactionTargets, currentCompactions, skipDBs, skipTables));
-          }
+            partitions.forEach(partition -> addCompactionTargetIfEligible(hiveTable.getTTable(), icebergTable,
+                partition.getName(), compactionTargets, currentCompactions, skipDBs, skipTables));
 
-          if (icebergTable.spec().isUnpartitioned() || IcebergTableUtil.hasUndergonePartitionEvolution(icebergTable)) {
-            addCompactionTargetIfEligible(tablePair.getValue(), icebergTable, null, compactionTargets,
+            if (IcebergTableUtil.hasUndergonePartitionEvolution(icebergTable) && !findModifiedPartitions(hiveTable,
+                icebergTable, snapshotTimeMilCache.get(qualifiedTableName), false).isEmpty()) {
+              addCompactionTargetIfEligible(hiveTable.getTTable(), icebergTable,
+                  null, compactionTargets, currentCompactions, skipDBs, skipTables);
+            }
+          } else {
+            addCompactionTargetIfEligible(hiveTable.getTTable(), icebergTable, null, compactionTargets,
                 currentCompactions, skipDBs, skipTables);
           }
 
-          snapshotIdCache.put(tablePair.getKey().getNotEmptyDbTable(), icebergTable.currentSnapshot().snapshotId());
+          snapshotTimeMilCache.put(qualifiedTableName, icebergTable.currentSnapshot().timestampMillis());
         });
 
     return compactionTargets;
@@ -115,27 +134,19 @@ public class IcebergTableOptimizer extends TableOptimizer {
     }
   }
 
-  private List<String> getPartitions(org.apache.iceberg.Table icebergTable) {
+  private org.apache.hadoop.hive.ql.metadata.Table getHiveTable(String dbName, String tableName) {
     try {
-      return IcebergTableUtil.getPartitionNames(icebergTable, Maps.newHashMap(), true);
-    } catch (SemanticException e) {
-      throw new RuntimeMetaException(e, "Error getting partition names for Iceberg table %s", icebergTable.name());
-    }
-  }
-
-  private Table resolveMetastoreTable(String qualifiedTableName) {
-    String[] dbTableName = TxnUtils.getDbTableName(qualifiedTableName);
-    try {
-      return metadataCache.computeIfAbsent(qualifiedTableName,
-          () -> CompactorUtil.resolveTable(conf, dbTableName[0], dbTableName[1]));
+      Table metastoreTable = metadataCache.computeIfAbsent(TableName.getDbTable(dbName, tableName), () ->
+          CompactorUtil.resolveTable(conf, dbName, tableName));
+      return new org.apache.hadoop.hive.ql.metadata.Table(metastoreTable);
     } catch (Exception e) {
-      throw new RuntimeMetaException(e, "Error resolving table %s", qualifiedTableName);
+      throw new RuntimeMetaException(e, "Error getting Hive table for %s.%s", dbName, tableName);
     }
   }
 
   public void init() throws MetaException {
     client = new HiveMetaStoreClient(new HiveConf());
-    snapshotIdCache = Maps.newConcurrentMap();
+    snapshotTimeMilCache = Maps.newConcurrentMap();
   }
 
   private void addCompactionTargetIfEligible(Table table, org.apache.iceberg.Table icebergTable, String partitionName,
@@ -164,5 +175,81 @@ public class IcebergTableOptimizer extends TableOptimizer {
 
     ci.type = compactionEvaluator.determineCompactionType();
     compactions.add(ci);
+  }
+
+  /**
+   * Finds all unique non-compaction-modified partitions (with added or deleted files) between a given past
+   * snapshot ID and the table's current (latest) snapshot.
+   * @param hiveTable The {@link org.apache.hadoop.hive.ql.metadata.Table} instance to inspect.
+   * @param pastSnapshotTimeMil The timestamp in milliseconds of the snapshot to check from (exclusive).
+   * @param latestSpecOnly when True, returns partitions with the current spec only;
+   *                       False - older specs only;
+   *                       Null - any spec
+   * @return A List of {@link org.apache.hadoop.hive.ql.metadata.Partition} representing the unique modified
+   *                       partition names.
+   * @throws IllegalArgumentException if snapshot IDs are invalid or out of order, or if the table has no current
+   *                       snapshot.
+   */
+  private List<Partition> findModifiedPartitions(org.apache.hadoop.hive.ql.metadata.Table hiveTable,
+      org.apache.iceberg.Table icebergTable, Long pastSnapshotTimeMil, Boolean latestSpecOnly) {
+
+    List<Snapshot> relevantSnapshots = getRelevantSnapshots(icebergTable, pastSnapshotTimeMil).toList();
+    if (relevantSnapshots.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      // Submit a task for each snapshot and collect the Futures
+      List<Future<Set<String>>> futures = relevantSnapshots.stream()
+          .map(snapshot -> executor.submit(() -> {
+            FileIO io = icebergTable.io();
+            List<ContentFile<?>> affectedFiles = FluentIterable.<ContentFile<?>>concat(
+                    snapshot.addedDataFiles(io),
+                    snapshot.removedDataFiles(io),
+                    snapshot.addedDeleteFiles(io),
+                    snapshot.removedDeleteFiles(io))
+                .toList();
+            return IcebergTableUtil.getPartitionNames(icebergTable, affectedFiles, latestSpecOnly);
+          }))
+          .toList();
+
+      // Collect the results from all completed futures
+      Set<String> modifiedPartitions = Sets.newHashSet();
+      for (Future<Set<String>> future : futures) {
+        modifiedPartitions.addAll(future.get());
+      }
+
+      return IcebergTableUtil.convertNameToMetastorePartition(hiveTable, modifiedPartitions);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeMetaException(e, "Interrupted while finding modified partitions");
+    } catch (ExecutionException e) {
+      // Just wrap this one in a runtime exception
+      throw new RuntimeMetaException(e, "Failed to find modified partitions in parallel");
+    }
+  }
+
+  /**
+   * Checks if a table has had new commits since a given snapshot that were not caused by compaction.
+   * @param icebergTable The Iceberg table to check.
+   * @param pastSnapshotTimeMil The timestamp in milliseconds of the snapshot to check from (exclusive).
+   * @return true if at least one non-compaction snapshot exists since the pastSnapshotTimeMil
+   * whose source is not compaction, false otherwise.
+   */
+  private boolean hasNewCommits(org.apache.iceberg.Table icebergTable, Long pastSnapshotTimeMil) {
+    return getRelevantSnapshots(icebergTable, pastSnapshotTimeMil)
+        .findAny().isPresent();
+  }
+
+  private Stream<Snapshot> getRelevantSnapshots(org.apache.iceberg.Table icebergTable, Long pastSnapshotTimeMil) {
+    Snapshot currentSnapshot = icebergTable.currentSnapshot();
+    if (currentSnapshot == null || Objects.equals(currentSnapshot.timestampMillis(), pastSnapshotTimeMil)) {
+      return Stream.empty();
+    }
+
+    return StreamSupport.stream(icebergTable.snapshots().spliterator(), false)
+        .filter(s -> pastSnapshotTimeMil == null || s.timestampMillis() > pastSnapshotTimeMil)
+        .filter(s -> s.timestampMillis() <= currentSnapshot.timestampMillis())
+        .filter(s -> !s.operation().equals(DataOperations.REPLACE));
   }
 }

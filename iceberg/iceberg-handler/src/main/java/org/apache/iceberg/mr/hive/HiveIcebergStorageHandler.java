@@ -2133,12 +2133,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return IcebergTableUtil.getPartitionNames(table, partitionSpec, latestSpecOnly).stream()
-        .map(partName -> {
-          Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-          Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-          return new DummyPartition(hmsTable, partName, partSpecMap);
-        }).collect(Collectors.toList());
+    List<String> partNames = IcebergTableUtil.getPartitionNames(table, partitionSpec, latestSpecOnly);
+    return IcebergTableUtil.convertNameToMetastorePartition(hmsTable, partNames);
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
