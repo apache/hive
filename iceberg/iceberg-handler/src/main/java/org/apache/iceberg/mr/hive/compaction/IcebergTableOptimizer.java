@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -94,13 +94,13 @@ public class IcebergTableOptimizer extends TableOptimizer {
         .map(table -> {
           org.apache.hadoop.hive.ql.metadata.Table hiveTable = getHiveTable(table.getDb(), table.getTable());
           org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, hiveTable.getTTable());
-          return Triple.of(table, hiveTable, icebergTable);
+          return Pair.of(hiveTable, icebergTable);
         })
         .filter(t -> hasNewCommits(t.getRight(),
-            snapshotTimeMilCache.get(t.getLeft().getNotEmptyDbTable())))
+            snapshotTimeMilCache.get(t.getLeft().getFullyQualifiedName())))
         .forEach(t -> {
-          String qualifiedTableName = t.getLeft().getNotEmptyDbTable();
-          org.apache.hadoop.hive.ql.metadata.Table hiveTable = t.getMiddle();
+          String qualifiedTableName = t.getLeft().getFullyQualifiedName();
+          org.apache.hadoop.hive.ql.metadata.Table hiveTable = t.getLeft();
           org.apache.iceberg.Table icebergTable = t.getRight();
 
           if (icebergTable.spec().isPartitioned()) {
@@ -140,7 +140,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
           CompactorUtil.resolveTable(conf, dbName, tableName));
       return new org.apache.hadoop.hive.ql.metadata.Table(metastoreTable);
     } catch (Exception e) {
-      throw new RuntimeMetaException(e, "Error getting Hive table");
+      throw new RuntimeMetaException(e, "Error getting Hive table for %s.%s", dbName, tableName);
     }
   }
 
@@ -220,7 +220,11 @@ public class IcebergTableOptimizer extends TableOptimizer {
       }
 
       return IcebergTableUtil.convertNameToMetastorePartition(hiveTable, modifiedPartitions);
-    } catch (InterruptedException | ExecutionException e) {
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeMetaException(e, "Interrupted while finding modified partitions");
+    } catch (ExecutionException e) {
+      // Just wrap this one in a runtime exception
       throw new RuntimeMetaException(e, "Failed to find modified partitions in parallel");
     }
   }

@@ -126,7 +126,6 @@ public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (13, 'ccc111')", QUALIFIED_TABLE_NAME), driver);
     executeStatementOnDriver(String.format("INSERT INTO %s VALUES (14, 'ddd111')", QUALIFIED_TABLE_NAME), driver);
 
-    initiator.initExecutorService();
     initiator.run();
     rsp = msClient.showCompactions();
     Assert.assertEquals(6, rsp.getCompactsSize());
