@@ -650,17 +650,17 @@ public class CliDriver {
         super.complete(reader, line, candidates);
         final int cursor = line.cursor();
         if (candidates.isEmpty() && cursor > 1 && line.word().charAt(cursor - 1) == '=') {
-          HiveConf.ConfVars var = HiveConf.getConfVars(line.word().substring(0, cursor - 1));
-          if (var == null) {
+          HiveConf.ConfVars confVars = HiveConf.getConfVars(line.word().substring(0, cursor - 1));
+          if (confVars == null) {
             return;
           }
-          if (var.getValidator() instanceof Validator.StringSet) {
-            Validator.StringSet validator = (Validator.StringSet)var.getValidator();
+          if (confVars.getValidator() instanceof Validator.StringSet) {
+            Validator.StringSet validator = (Validator.StringSet)confVars.getValidator();
             validator.getExpected().stream().map(Candidate::new).forEach(candidates::add);
-          } else if (var.getValidator() != null) {
-            candidates.add(new Candidate(var.getValidator().toDescription()));
+          } else if (confVars.getValidator() != null) {
+            candidates.add(new Candidate(confVars.getValidator().toDescription()));
           } else {
-            candidates.add(new Candidate("Expects " + var.typeString() + " type value"));
+            candidates.add(new Candidate("Expects " + confVars.typeString() + " type value"));
           }
           return;
         }

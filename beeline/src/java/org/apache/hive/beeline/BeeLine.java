@@ -1441,7 +1441,7 @@ public class BeeLine implements Closeable {
   }
 
   @VisibleForTesting
-  void setupHistory() throws IOException {
+  void setupHistory() {
     if (this.history != null) {
        return;
     }
@@ -1495,7 +1495,7 @@ public class BeeLine implements Closeable {
     return lineReader;
   }
 
-  private void defaultParser(LineReaderBuilder builder) throws IOException {
+  private void defaultParser(LineReaderBuilder builder) {
     DefaultParser parser = new DefaultParser() {
       private String extraNameCharacters;
 
@@ -2603,7 +2603,6 @@ public class BeeLine implements Closeable {
     return errorStream;
   }
 
-  @VisibleForTesting
   public LineReader getLineReader() {
     return lineReader;
   }

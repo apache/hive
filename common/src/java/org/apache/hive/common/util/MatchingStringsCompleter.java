@@ -26,6 +26,7 @@ import org.jline.reader.ParsedLine;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -53,7 +54,7 @@ public class MatchingStringsCompleter implements Completer {
 
   @Override
   public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
-    assert candidates != null;
+    Objects.requireNonNull(candidates, "candidates must not be null");
 
     if (line == null) {
       candidateStrings.stream().map(Candidate::new).forEach(candidates::add);

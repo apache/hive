@@ -1085,7 +1085,7 @@ public class Commands {
   /*
    * Check if the input line is a multi-line command which needs to read further
    */
-  public String handleMultiLineCmd(String line) throws IOException {
+  public String handleMultiLineCmd(String line) {
     line = HiveStringUtils.removeComments(line);
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
                        : LineReaderImpl.NULL_MASK;
