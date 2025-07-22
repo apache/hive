@@ -17,27 +17,27 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.MSSQLServerContainer;
+import org.testcontainers.utility.DockerImageName;
+
+import java.io.IOException;
+
 /**
  * JUnit TestRule for Mssql.
  */
 public class Mssql extends DatabaseRule {
+  private final JdbcDatabaseContainer<?> container =
+      new MSSQLServerContainer<>(DockerImageName.parse("mcr.microsoft.com/mssql/server:2019-latest")).acceptLicense();
 
   @Override
-  public String getDockerImageName() {
-    return "mcr.microsoft.com/mssql/server:2019-latest";
+  public void before() throws IOException, InterruptedException {
+    container.start();
   }
 
   @Override
-  public String[] getDockerAdditionalArgs() {
-    return buildArray(
-        "-p",
-        "1433:1433",
-        "-e",
-        "ACCEPT_EULA=Y",
-        "-e",
-        "SA_PASSWORD=" + getDbRootPassword(),
-        "-d"
-    );
+  public void after() {
+    container.stop();
   }
 
   @Override
@@ -47,35 +47,27 @@ public class Mssql extends DatabaseRule {
 
   @Override
   public String getDbRootUser() {
-    return "SA";
+    return container.getUsername();
   }
 
   @Override
   public String getDbRootPassword() {
-    return "Its-a-s3cret";
+    return container.getPassword();
   }
 
   @Override
   public String getJdbcDriver() {
-    return com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName();
-    // return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    return container.getDriverClassName();
   }
 
   @Override
-  public String getJdbcUrl(String hostAddress) {
-    return "jdbc:sqlserver://" + hostAddress + ":1433;DatabaseName=" + HIVE_DB + ";";
+  public String getJdbcUrl() {
+    return container.withUrlParam("DatabaseName", HIVE_DB).getJdbcUrl();
   }
 
   @Override
-  public String getInitialJdbcUrl(String hostAddress) {
-    return "jdbc:sqlserver://" + hostAddress + ":1433";
-  }
-
-  @Override
-  public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout
-        .contains(
-        "Recovery is complete. This is an informational message only. No user action is required.");
+  public String getInitialJdbcUrl() {
+    return container.withUrlParam("DatabaseName", "master").getJdbcUrl();
   }
 
   @Override
