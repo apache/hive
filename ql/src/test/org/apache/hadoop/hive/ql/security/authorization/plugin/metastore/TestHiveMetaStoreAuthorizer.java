@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -70,6 +71,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /*
 Test whether HiveAuthorizer for MetaStore operation is trigger and HiveMetaStoreAuthzInfo is created by HiveMetaStoreAuthorizer
@@ -94,6 +96,7 @@ public class TestHiveMetaStoreAuthorizer {
   private RawStore rawStore;
   private Configuration conf;
   private HMSHandler hmsHandler;
+  private Warehouse wh;
 
   static HiveAuthorizer mockHiveAuthorizer;
   static final List<String> allowedUsers = Arrays.asList("sam", "rob");
@@ -116,9 +119,10 @@ public class TestHiveMetaStoreAuthorizer {
     conf.set("hadoop.proxyuser.hive.users", "*");
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
+    wh = Mockito.spy(new Warehouse(conf));
 
     hmsHandler = new HMSHandler("test", conf);
-    hmsHandler.init();
+    hmsHandler.init(wh);
     rawStore = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
     // Create the 'hive' catalog with new warehouse directory
@@ -128,7 +132,7 @@ public class TestHiveMetaStoreAuthorizer {
       dropDcReq.setIfNotExists(true);
       dropDcReq.setCheckReferences(true);
       hmsHandler.drop_dataconnector_req(dropDcReq);
-      hmsHandler.drop_table(dbName, tblName, true);
+      hmsHandler.drop_table("default", tblName, true);
       hmsHandler.drop_database(dbName, true, false);
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
@@ -827,6 +831,31 @@ public class TestHiveMetaStoreAuthorizer {
         assertTrue("Expected HiveAuthzPluginException in exception chain. Message: '" + e.getMessage() + "'",
             e.getMessage().contains(expectedErrMsg));
       }
+    }
+  }
+
+  @Test
+  public void testDropTableNoTablePathWritePermissionShouldFail() throws Exception {
+    UserGroupInformation.setLoginUser(
+            UserGroupInformation.createRemoteUser(authorizedUser));
+
+    Table table = new TableBuilder()
+        .setTableName(tblName)
+        .addCol("name", ColumnType.STRING_TYPE_NAME)
+        .setOwner(authorizedUser)
+        .build(conf);
+    hmsHandler.create_table(table);
+
+    Path tablePath = new Path(table.getSd().getLocation());
+    when(wh.isWritable(Mockito.eq(tablePath.getParent()))).thenReturn(true);
+    when(wh.isWritable(Mockito.eq(tablePath))).thenReturn(false);
+
+    try {
+      hmsHandler.drop_table("default", tblName, true);
+    } catch (MetaException e) {
+      String expected = "%s metadata not deleted since %s is not writable by %s"
+          .formatted("Table", tablePath.toString(), authorizedUser);
+      assertEquals(expected, e.getMessage());
     }
   }
 }
