@@ -1550,8 +1550,7 @@ public class BeeLine implements Closeable {
     Terminal terminal;
     if (inputStream != null) { // typically when there is a file script to read from
       terminal = TerminalBuilder.builder().streams(inputStream, getErrorStream()).build();
-    } else { // no input stream, normal operation: proper behavior needs a system terminal
-      // system terminal can only be created with system streams
+    } else { // no input stream, normal operation: proper behavior needs a system terminal (which needs system streams)
       terminal = TerminalBuilder.builder().system(true).dumb(false).streams(System.in, System.err).build();
     }
     this.terminalsToClose.add(terminal);

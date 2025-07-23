@@ -207,7 +207,7 @@ public class TestHiveCli {
 
   @Test
   public void testErrOutput() {
-    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;\n",
+    verifyCMD("show tables;set system:xxx=5;set system:yyy=${system:xxx};\nlss;",
         "cannot recognize input near 'lss' '<EOF>' '<EOF>'", err, null, ERRNO_OTHER, true);
   }
 
