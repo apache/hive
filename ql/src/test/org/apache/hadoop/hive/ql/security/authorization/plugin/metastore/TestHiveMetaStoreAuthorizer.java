@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -70,6 +71,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /*
 Test whether HiveAuthorizer for MetaStore operation is trigger and HiveMetaStoreAuthzInfo is created by HiveMetaStoreAuthorizer
@@ -117,12 +119,11 @@ public class TestHiveMetaStoreAuthorizer {
     conf.set("hadoop.proxyuser.hive.users", "*");
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
+    wh = Mockito.spy(new Warehouse(conf));
 
     hmsHandler = new HMSHandler("test", conf);
-    hmsHandler.init();
+    hmsHandler.init(wh);
     rawStore = new ObjectStore();
-    wh = new Warehouse(conf);
-    handler.wh = wh;
     rawStore.setConf(hmsHandler.getConf());
     // Create the 'hive' catalog with new warehouse directory
     HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
@@ -389,7 +390,7 @@ public class TestHiveMetaStoreAuthorizer {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       Table table = new TableBuilder()
-          .setTableName(tblName)
+          .setTableName("test_drop")
           .addCol("name", ColumnType.STRING_TYPE_NAME)
           .setOwner(authorizedUser)
           .build(conf);
@@ -398,7 +399,7 @@ public class TestHiveMetaStoreAuthorizer {
       Table alteredTable = new TableBuilder()
           .addCol("dep", ColumnType.STRING_TYPE_NAME)
           .build(conf);
-      hmsHandler.alter_table("default", tblName, alteredTable);
+      hmsHandler.alter_table("default", "test_drop", alteredTable);
     } catch (Exception e) {
       // No Exception for create table for authorized user
     }
@@ -835,25 +836,26 @@ public class TestHiveMetaStoreAuthorizer {
 
   @Test
   public void testDropTableNoTablePathWritePermissionShouldFail() throws Exception {
-    Database db = new Database();
-    db.setName("test_db");
+    UserGroupInformation.setLoginUser(
+            UserGroupInformation.createRemoteUser(authorizedUser));
 
-    Table table = new Table();
-    table.setDbName("test_db");
-    table.setTableName("test_drop");
-    StorageDescriptor sd = new StorageDescriptor();
-    sd.setLocation("/warehouse/tablespace/managed/hive/test_drop");
-    table.setSd(sd);
+    Table table = new TableBuilder()
+        .setTableName(tblName)
+        .addCol("name", ColumnType.STRING_TYPE_NAME)
+        .setOwner(authorizedUser)
+        .build(conf);
+    hmsHandler.create_table(table);
 
-    when(rawStore.getDatabase("hive", "test_db")).thenReturn(db);
-    when(rawStore.getTable("hive", "test_db", "test_drop")).thenReturn(table);
-    when(wh.isWritable(new Path("/warehouse/tablespace/managed/hive/test_drop"))).thenReturn(false);
+    Path tablePath = new Path(table.getSd().getLocation());
+    when(wh.isWritable(Mockito.eq(tablePath.getParent()))).thenReturn(true);
+    when(wh.isWritable(Mockito.eq(tablePath))).thenReturn(false);
 
     try {
-      handler.drop_table_core(rawStore, "hive", "test_db", "test_drop", true, null, null, false);
-      fail("Expected MetaException");
+      hmsHandler.drop_table("default", tblName, true);
     } catch (MetaException e) {
-      assertTrue(e.getMessage().contains("Table metadata not deleted since /warehouse/tablespace/managed/hive/test_drop is not writable by " + SecurityUtils.getUser()));
+      String expected = "%s metadata not deleted since %s is not writable by %s"
+          .formatted("Table", tablePath.toString(), authorizedUser);
+      assertEquals(expected, e.getMessage());
     }
   }
 }
