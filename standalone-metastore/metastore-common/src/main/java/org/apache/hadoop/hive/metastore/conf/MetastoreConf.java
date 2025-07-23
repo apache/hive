@@ -1257,6 +1257,10 @@ public class MetastoreConf {
 
 
     // Partition management task params
+    PARTITION_MANAGEMENT_ENABLE("metastore.partition.management.enable", "hive.metastore.partition.management.enable",
+        true, "Config to toggle PartitionManagementTask. This config can be disabled in cloud environments " +
+        "where partitions may not be added externally and hence by disabling this feature, we can reduce the cloud costs as " +
+        "there will be no scans to table directory paths from PartitionManagementTask"),
     PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",
       "metastore.partition.management.task.frequency",
       6, TimeUnit.HOURS, "Frequency at which timer task runs to do automatic partition management for tables\n" +

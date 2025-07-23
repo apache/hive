@@ -91,43 +91,45 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       String qualifiedTableName = null;
       IMetaStoreClient msc = null;
       try {
-        msc = new HiveMetaStoreClient(conf);
-        String catalogName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_CATALOG_NAME);
-        String dbPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN);
-        String tablePattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_PATTERN);
-        String tableTypes = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_TYPES);
-        List<TableName> candidates =
-            new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(tableTypes)
-                .tableCondition(
-                    hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "discover__partitions like \"true\" ")
-                .build()
-                .getTables();
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_ENABLE)) {
+          msc = new HiveMetaStoreClient(conf);
+          String catalogName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_CATALOG_NAME);
+          String dbPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN);
+          String tablePattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_PATTERN);
+          String tableTypes = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_TYPES);
+          List<TableName> candidates =
+              new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(tableTypes)
+                  .tableCondition(
+                      hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "discover__partitions like \"true\" ")
+                  .build()
+                  .getTables();
 
-        if (candidates.isEmpty()) {
-          LOG.info("Got empty table list in catalog: {}, dbPattern: {}", catalogName, dbPattern);
-          return;
-        }
+          if (candidates.isEmpty()) {
+            LOG.info("Got empty table list in catalog: {}, dbPattern: {}", catalogName, dbPattern);
+            return;
+          }
 
-        // TODO: Msck creates MetastoreClient (MSC) on its own. MSC creation is expensive. Sharing MSC also
-        // will not be safe unless synchronized MSC is used. Using synchronized MSC in multi-threaded context also
-        // defeats the purpose of thread pooled msck repair.
-        int threadPoolSize = MetastoreConf.getIntVar(conf,
-          MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE);
-        final ExecutorService executorService = Executors
-          .newFixedThreadPool(Math.min(candidates.size(), threadPoolSize),
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
-        CountDownLatch countDownLatch = new CountDownLatch(candidates.size());
-        LOG.info("Found {} candidate tables for partition discovery", candidates.size());
-        setupMsckPathInvalidation();
-        Configuration msckConf = Msck.getMsckConf(conf);
-        for (TableName table : candidates) {
-          // this always runs in 'sync' mode where partitions can be added and dropped
-          MsckInfo msckInfo = new MsckInfo(table.getCat(), table.getDb(), table.getTable(),
-            null, null, true, true, true, -1);
-          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
+          // TODO: Msck creates MetastoreClient (MSC) on its own. MSC creation is expensive. Sharing MSC also
+          // will not be safe unless synchronized MSC is used. Using synchronized MSC in multi-threaded context also
+          // defeats the purpose of thread pooled msck repair.
+          int threadPoolSize = MetastoreConf.getIntVar(conf,
+              MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE);
+          final ExecutorService executorService = Executors
+              .newFixedThreadPool(Math.min(candidates.size(), threadPoolSize),
+                  new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
+          CountDownLatch countDownLatch = new CountDownLatch(candidates.size());
+          LOG.info("Found {} candidate tables for partition discovery", candidates.size());
+          setupMsckPathInvalidation();
+          Configuration msckConf = Msck.getMsckConf(conf);
+          for (TableName table : candidates) {
+            // this always runs in 'sync' mode where partitions can be added and dropped
+            MsckInfo msckInfo = new MsckInfo(table.getCat(), table.getDb(), table.getTable(),
+                null, null, true, true, true, -1);
+            executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
+          }
+          countDownLatch.await();
+          executorService.shutdownNow();
         }
-        countDownLatch.await();
-        executorService.shutdownNow();
       } catch (Exception e) {
         LOG.error("Exception while running partition discovery task for table: " + qualifiedTableName, e);
       } finally {

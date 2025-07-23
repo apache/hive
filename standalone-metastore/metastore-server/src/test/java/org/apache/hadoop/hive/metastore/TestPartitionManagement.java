@@ -318,6 +318,23 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(4, partitions.size());
+
+    // disable partition management task by default. Currently, there are 4 directories
+    // this test adds two additional paths and verifies that partitions are not added to
+    // metastore when partition management task is disabled.
+    Assert.assertTrue(fs.mkdirs(new Path(tablePath, "state=AZ/dt=2025-07-01")));
+    Assert.assertTrue(fs.mkdirs(new Path(tablePath, "state=NV/dt=2025-07-02")));
+    assertEquals(6, fs.listStatus(tablePath).length);
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_ENABLE.getVarname(), "false");
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(4, partitions.size());
+
+    // Re-enable PMT and verify 6 partitions
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_ENABLE.getVarname(), "true");
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(6, partitions.size());
   }
 
   @Test
