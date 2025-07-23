@@ -132,7 +132,7 @@ public class TestHiveMetaStoreAuthorizer {
       dropDcReq.setIfNotExists(true);
       dropDcReq.setCheckReferences(true);
       hmsHandler.drop_dataconnector_req(dropDcReq);
-      hmsHandler.drop_table(dbName, tblName, true);
+      hmsHandler.drop_table("default", tblName, true);
       hmsHandler.drop_database(dbName, true, false);
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
@@ -390,7 +390,7 @@ public class TestHiveMetaStoreAuthorizer {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       Table table = new TableBuilder()
-          .setTableName("test_drop")
+          .setTableName(tblName)
           .addCol("name", ColumnType.STRING_TYPE_NAME)
           .setOwner(authorizedUser)
           .build(conf);
@@ -399,7 +399,7 @@ public class TestHiveMetaStoreAuthorizer {
       Table alteredTable = new TableBuilder()
           .addCol("dep", ColumnType.STRING_TYPE_NAME)
           .build(conf);
-      hmsHandler.alter_table("default", "test_drop", alteredTable);
+      hmsHandler.alter_table("default", tblName, alteredTable);
     } catch (Exception e) {
       // No Exception for create table for authorized user
     }
