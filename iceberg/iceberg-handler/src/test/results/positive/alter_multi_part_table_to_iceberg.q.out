@@ -808,3 +808,1323 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_avro
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_avro
+PREHOOK: query: drop table if exists tbl_orc_mixed
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_orc_mixed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_orc_mixed(a int) partitioned by (b double, c int, d string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: create external table tbl_orc_mixed(a int) partitioned by (b double, c int, d string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: describe formatted tbl_orc_mixed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: query: describe formatted tbl_orc_mixed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc_mixed
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_orc_mixed partition (b=1.1, c=2, d='one') values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed@b=1.1/c=2/d=one
+POSTHOOK: query: insert into table tbl_orc_mixed partition (b=1.1, c=2, d='one') values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed@b=1.1/c=2/d=one
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=1.1,c=2,d=one).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed partition (b=2.22, c=1, d='two') values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed@b=2.22/c=1/d=two
+POSTHOOK: query: insert into table tbl_orc_mixed partition (b=2.22, c=1, d='two') values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed@b=2.22/c=1/d=two
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=2.22,c=1,d=two).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed partition (b=3.333, c=3, d='three') values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed@b=3.333/c=3/d=three
+POSTHOOK: query: insert into table tbl_orc_mixed partition (b=3.333, c=3, d='three') values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed@b=3.333/c=3/d=three
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=3.333,c=3,d=three).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed partition (b=4.4444, c=4, d='four') values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed@b=4.4444/c=4/d=four
+POSTHOOK: query: insert into table tbl_orc_mixed partition (b=4.4444, c=4, d='four') values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=4.4444,c=4,d=four).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed values (10, '', '', '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (10, '', '', '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: Output: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed values (11, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (11, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: Output: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed values (12, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (12, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: Output: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed values (13, '', -2, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (13, '', -2, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: Output: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=-2,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed values (14, null, null, 'random')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (14, null, null, 'random')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: Output: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=random).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc_mixed values (15, -0.11, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (15, -0.11, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: Output: default@tbl_orc_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc_mixed PARTITION(b=-0.11,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: select count(*) from tbl_orc_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_mixed
+PREHOOK: Input: default@tbl_orc_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_orc_mixed@b=1.1/c=2/d=one
+PREHOOK: Input: default@tbl_orc_mixed@b=2.22/c=1/d=two
+PREHOOK: Input: default@tbl_orc_mixed@b=3.333/c=3/d=three
+PREHOOK: Input: default@tbl_orc_mixed@b=4.4444/c=4/d=four
+PREHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_orc_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Input: default@tbl_orc_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_orc_mixed@b=1.1/c=2/d=one
+POSTHOOK: Input: default@tbl_orc_mixed@b=2.22/c=1/d=two
+POSTHOOK: Input: default@tbl_orc_mixed@b=3.333/c=3/d=three
+POSTHOOK: Input: default@tbl_orc_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15
+PREHOOK: query: select * from tbl_orc_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_mixed
+PREHOOK: Input: default@tbl_orc_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_orc_mixed@b=1.1/c=2/d=one
+PREHOOK: Input: default@tbl_orc_mixed@b=2.22/c=1/d=two
+PREHOOK: Input: default@tbl_orc_mixed@b=3.333/c=3/d=three
+PREHOOK: Input: default@tbl_orc_mixed@b=4.4444/c=4/d=four
+PREHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_orc_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Input: default@tbl_orc_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_orc_mixed@b=1.1/c=2/d=one
+POSTHOOK: Input: default@tbl_orc_mixed@b=2.22/c=1/d=two
+POSTHOOK: Input: default@tbl_orc_mixed@b=3.333/c=3/d=three
+POSTHOOK: Input: default@tbl_orc_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_orc_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+11	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+12	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+13	NULL	-2	__HIVE_DEFAULT_PARTITION__
+14	NULL	NULL	random
+15	-0.11	NULL	__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: explain alter table tbl_orc_mixed convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: query: explain alter table tbl_orc_mixed convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_orc_mixed
+Stage-0
+  Convert operation{"table name:":"default.tbl_orc_mixed","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_orc_mixed convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: query: alter table tbl_orc_mixed convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: describe formatted tbl_orc_mixed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: query: describe formatted tbl_orc_mixed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc_mixed
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	double              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
+d                   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"double\"},{\"id\":3,\"name\":\"c\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"10\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"8\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001},{\"name\":\"d\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1002}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	10                  
+	numRows             	15                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 3, 
+	                           	  \"names\" : [ \"c\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 4, 
+	                           	  \"names\" : [ \"d\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select count(*) from tbl_orc_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_orc_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15
+PREHOOK: query: select * from tbl_orc_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_orc_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	NULL
+11	NULL	NULL	NULL
+12	NULL	NULL	NULL
+13	NULL	-2	NULL
+14	NULL	NULL	random
+15	-0.11	NULL	NULL
+PREHOOK: query: insert into table tbl_orc_mixed partition (b=5.55555, c = 5, d = 'five') values (16)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed@d=five/b=5.55555/c=5
+POSTHOOK: query: insert into table tbl_orc_mixed partition (b=5.55555, c = 5, d = 'five') values (16)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed@d=five/b=5.55555/c=5
+PREHOOK: query: insert into table tbl_orc_mixed values (17, '', '', '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (17, '', '', '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: insert into table tbl_orc_mixed values (18, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (18, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: insert into table tbl_orc_mixed values (19, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (19, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: insert into table tbl_orc_mixed values (20, '', -3, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (20, '', -3, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: insert into table tbl_orc_mixed values (21, null, null, 'part')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (21, null, null, 'part')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: insert into table tbl_orc_mixed values (22, -0.234, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: insert into table tbl_orc_mixed values (22, -0.234, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: select count(*) from tbl_orc_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_orc_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+22
+PREHOOK: query: select * from tbl_orc_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_orc_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	NULL
+11	NULL	NULL	NULL
+12	NULL	NULL	NULL
+13	NULL	-2	NULL
+14	NULL	NULL	random
+15	-0.11	NULL	NULL
+16	5.55555	5	five
+17	NULL	NULL	
+18	NULL	NULL	NULL
+19	NULL	NULL	NULL
+20	NULL	-3	
+21	NULL	NULL	part
+22	-0.234	NULL	NULL
+PREHOOK: query: drop table tbl_orc_mixed
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_orc_mixed
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc_mixed
+POSTHOOK: query: drop table tbl_orc_mixed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_orc_mixed
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc_mixed
+PREHOOK: query: drop table if exists tbl_parquet_mixed
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_parquet_mixed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_parquet_mixed(a int) partitioned by (b double, c int, d string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: create external table tbl_parquet_mixed(a int) partitioned by (b double, c int, d string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: describe formatted tbl_parquet_mixed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: query: describe formatted tbl_parquet_mixed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet_mixed
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_parquet_mixed partition (b=1.1, c=2, d='one') values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed@b=1.1/c=2/d=one
+POSTHOOK: query: insert into table tbl_parquet_mixed partition (b=1.1, c=2, d='one') values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed@b=1.1/c=2/d=one
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=1.1,c=2,d=one).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed partition (b=2.22, c=1, d='two') values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed@b=2.22/c=1/d=two
+POSTHOOK: query: insert into table tbl_parquet_mixed partition (b=2.22, c=1, d='two') values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed@b=2.22/c=1/d=two
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=2.22,c=1,d=two).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed partition (b=3.333, c=3, d='three') values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed@b=3.333/c=3/d=three
+POSTHOOK: query: insert into table tbl_parquet_mixed partition (b=3.333, c=3, d='three') values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed@b=3.333/c=3/d=three
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=3.333,c=3,d=three).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed partition (b=4.4444, c=4, d='four') values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed@b=4.4444/c=4/d=four
+POSTHOOK: query: insert into table tbl_parquet_mixed partition (b=4.4444, c=4, d='four') values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=4.4444,c=4,d=four).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed values (10, '', '', '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (10, '', '', '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: Output: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed values (11, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (11, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: Output: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed values (12, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (12, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: Output: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed values (13, '', -2, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (13, '', -2, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: Output: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=-2,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed values (14, null, null, 'random')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (14, null, null, 'random')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: Output: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=random).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_mixed values (15, -0.11, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (15, -0.11, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: Output: default@tbl_parquet_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_mixed PARTITION(b=-0.11,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: select count(*) from tbl_parquet_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_mixed
+PREHOOK: Input: default@tbl_parquet_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_parquet_mixed@b=1.1/c=2/d=one
+PREHOOK: Input: default@tbl_parquet_mixed@b=2.22/c=1/d=two
+PREHOOK: Input: default@tbl_parquet_mixed@b=3.333/c=3/d=three
+PREHOOK: Input: default@tbl_parquet_mixed@b=4.4444/c=4/d=four
+PREHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Input: default@tbl_parquet_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_parquet_mixed@b=1.1/c=2/d=one
+POSTHOOK: Input: default@tbl_parquet_mixed@b=2.22/c=1/d=two
+POSTHOOK: Input: default@tbl_parquet_mixed@b=3.333/c=3/d=three
+POSTHOOK: Input: default@tbl_parquet_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15
+PREHOOK: query: select * from tbl_parquet_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_mixed
+PREHOOK: Input: default@tbl_parquet_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_parquet_mixed@b=1.1/c=2/d=one
+PREHOOK: Input: default@tbl_parquet_mixed@b=2.22/c=1/d=two
+PREHOOK: Input: default@tbl_parquet_mixed@b=3.333/c=3/d=three
+PREHOOK: Input: default@tbl_parquet_mixed@b=4.4444/c=4/d=four
+PREHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Input: default@tbl_parquet_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_parquet_mixed@b=1.1/c=2/d=one
+POSTHOOK: Input: default@tbl_parquet_mixed@b=2.22/c=1/d=two
+POSTHOOK: Input: default@tbl_parquet_mixed@b=3.333/c=3/d=three
+POSTHOOK: Input: default@tbl_parquet_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_parquet_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+11	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+12	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+13	NULL	-2	__HIVE_DEFAULT_PARTITION__
+14	NULL	NULL	random
+15	-0.11	NULL	__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: explain alter table tbl_parquet_mixed convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: query: explain alter table tbl_parquet_mixed convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet_mixed
+Stage-0
+  Convert operation{"table name:":"default.tbl_parquet_mixed","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_parquet_mixed convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: query: alter table tbl_parquet_mixed convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: describe formatted tbl_parquet_mixed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: query: describe formatted tbl_parquet_mixed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet_mixed
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	double              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
+d                   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"double\"},{\"id\":3,\"name\":\"c\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"10\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"8\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001},{\"name\":\"d\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1002}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	10                  
+	numRows             	15                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 3, 
+	                           	  \"names\" : [ \"c\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 4, 
+	                           	  \"names\" : [ \"d\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select count(*) from tbl_parquet_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15
+PREHOOK: query: select * from tbl_parquet_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	NULL
+11	NULL	NULL	NULL
+12	NULL	NULL	NULL
+13	NULL	-2	NULL
+14	NULL	NULL	random
+15	-0.11	NULL	NULL
+PREHOOK: query: insert into table tbl_parquet_mixed partition (b=5.55555, c = 5, d = 'five') values (16)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed@d=five/b=5.55555/c=5
+POSTHOOK: query: insert into table tbl_parquet_mixed partition (b=5.55555, c = 5, d = 'five') values (16)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed@d=five/b=5.55555/c=5
+PREHOOK: query: insert into table tbl_parquet_mixed values (17, '', '', '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (17, '', '', '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: insert into table tbl_parquet_mixed values (18, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (18, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: insert into table tbl_parquet_mixed values (19, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (19, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: insert into table tbl_parquet_mixed values (20, '', -3, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (20, '', -3, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: insert into table tbl_parquet_mixed values (21, null, null, 'part')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (21, null, null, 'part')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: insert into table tbl_parquet_mixed values (22, -0.234, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: insert into table tbl_parquet_mixed values (22, -0.234, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: select count(*) from tbl_parquet_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+22
+PREHOOK: query: select * from tbl_parquet_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	NULL
+11	NULL	NULL	NULL
+12	NULL	NULL	NULL
+13	NULL	-2	NULL
+14	NULL	NULL	random
+15	-0.11	NULL	NULL
+16	5.55555	5	five
+17	NULL	NULL	
+18	NULL	NULL	NULL
+19	NULL	NULL	NULL
+20	NULL	-3	
+21	NULL	NULL	part
+22	-0.234	NULL	NULL
+PREHOOK: query: drop table tbl_parquet_mixed
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_parquet_mixed
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet_mixed
+POSTHOOK: query: drop table tbl_parquet_mixed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_parquet_mixed
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet_mixed
+PREHOOK: query: drop table if exists tbl_avro_mixed
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_avro_mixed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_avro_mixed(a int) partitioned by (b double, c int, d string) stored as avro
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: create external table tbl_avro_mixed(a int) partitioned by (b double, c int, d string) stored as avro
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: describe formatted tbl_avro_mixed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: query: describe formatted tbl_avro_mixed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_avro_mixed
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.avro.AvroSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_avro_mixed partition (b=1.1, c=2, d='one') values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed@b=1.1/c=2/d=one
+POSTHOOK: query: insert into table tbl_avro_mixed partition (b=1.1, c=2, d='one') values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed@b=1.1/c=2/d=one
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=1.1,c=2,d=one).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed partition (b=2.22, c=1, d='two') values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed@b=2.22/c=1/d=two
+POSTHOOK: query: insert into table tbl_avro_mixed partition (b=2.22, c=1, d='two') values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed@b=2.22/c=1/d=two
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=2.22,c=1,d=two).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed partition (b=3.333, c=3, d='three') values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed@b=3.333/c=3/d=three
+POSTHOOK: query: insert into table tbl_avro_mixed partition (b=3.333, c=3, d='three') values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed@b=3.333/c=3/d=three
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=3.333,c=3,d=three).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed partition (b=4.4444, c=4, d='four') values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed@b=4.4444/c=4/d=four
+POSTHOOK: query: insert into table tbl_avro_mixed partition (b=4.4444, c=4, d='four') values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=4.4444,c=4,d=four).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed values (10, '', '', '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (10, '', '', '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: Output: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed values (11, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (11, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: Output: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed values (12, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (12, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: Output: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed values (13, '', -2, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (13, '', -2, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: Output: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=-2,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed values (14, null, null, 'random')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (14, null, null, 'random')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: Output: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=__HIVE_DEFAULT_PARTITION__,c=__HIVE_DEFAULT_PARTITION__,d=random).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro_mixed values (15, -0.11, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (15, -0.11, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: Output: default@tbl_avro_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_avro_mixed PARTITION(b=-0.11,c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: select count(*) from tbl_avro_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro_mixed
+PREHOOK: Input: default@tbl_avro_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_avro_mixed@b=1.1/c=2/d=one
+PREHOOK: Input: default@tbl_avro_mixed@b=2.22/c=1/d=two
+PREHOOK: Input: default@tbl_avro_mixed@b=3.333/c=3/d=three
+PREHOOK: Input: default@tbl_avro_mixed@b=4.4444/c=4/d=four
+PREHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_avro_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Input: default@tbl_avro_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_avro_mixed@b=1.1/c=2/d=one
+POSTHOOK: Input: default@tbl_avro_mixed@b=2.22/c=1/d=two
+POSTHOOK: Input: default@tbl_avro_mixed@b=3.333/c=3/d=three
+POSTHOOK: Input: default@tbl_avro_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15
+PREHOOK: query: select * from tbl_avro_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro_mixed
+PREHOOK: Input: default@tbl_avro_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_avro_mixed@b=1.1/c=2/d=one
+PREHOOK: Input: default@tbl_avro_mixed@b=2.22/c=1/d=two
+PREHOOK: Input: default@tbl_avro_mixed@b=3.333/c=3/d=three
+PREHOOK: Input: default@tbl_avro_mixed@b=4.4444/c=4/d=four
+PREHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_avro_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Input: default@tbl_avro_mixed@b=-0.11/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_avro_mixed@b=1.1/c=2/d=one
+POSTHOOK: Input: default@tbl_avro_mixed@b=2.22/c=1/d=two
+POSTHOOK: Input: default@tbl_avro_mixed@b=3.333/c=3/d=three
+POSTHOOK: Input: default@tbl_avro_mixed@b=4.4444/c=4/d=four
+POSTHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=-2/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_avro_mixed@b=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=random
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+11	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+12	NULL	NULL	__HIVE_DEFAULT_PARTITION__
+13	NULL	-2	__HIVE_DEFAULT_PARTITION__
+14	NULL	NULL	random
+15	-0.11	NULL	__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: explain alter table tbl_avro_mixed convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: query: explain alter table tbl_avro_mixed convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_avro_mixed
+Stage-0
+  Convert operation{"table name:":"default.tbl_avro_mixed","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_avro_mixed convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: query: alter table tbl_avro_mixed convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: describe formatted tbl_avro_mixed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: query: describe formatted tbl_avro_mixed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_avro_mixed
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	double              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
+d                   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"double\"},{\"id\":3,\"name\":\"c\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"d\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"10\",\"added-records\":\"15\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"8\",\"total-records\":\"15\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001},{\"name\":\"d\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1002}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	10                  
+	numRows             	15                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 3, 
+	                           	  \"names\" : [ \"c\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 4, 
+	                           	  \"names\" : [ \"d\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	avro                
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select count(*) from tbl_avro_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_avro_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15
+PREHOOK: query: select * from tbl_avro_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_avro_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	NULL
+11	NULL	NULL	NULL
+12	NULL	NULL	NULL
+13	NULL	-2	NULL
+14	NULL	NULL	random
+15	-0.11	NULL	NULL
+PREHOOK: query: insert into table tbl_avro_mixed partition (b=5.55555, c = 5, d = 'five') values (16)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed@d=five/b=5.55555/c=5
+POSTHOOK: query: insert into table tbl_avro_mixed partition (b=5.55555, c = 5, d = 'five') values (16)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed@d=five/b=5.55555/c=5
+PREHOOK: query: insert into table tbl_avro_mixed values (17, '', '', '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (17, '', '', '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: insert into table tbl_avro_mixed values (18, null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (18, null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: insert into table tbl_avro_mixed values (19, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (19, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: insert into table tbl_avro_mixed values (20, '', -3, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (20, '', -3, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: insert into table tbl_avro_mixed values (21, null, null, 'part')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (21, null, null, 'part')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: insert into table tbl_avro_mixed values (22, -0.234, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: insert into table tbl_avro_mixed values (22, -0.234, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro_mixed
+PREHOOK: query: select count(*) from tbl_avro_mixed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_avro_mixed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+22
+PREHOOK: query: select * from tbl_avro_mixed order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_avro_mixed order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1	2	one
+2	1.1	2	one
+3	1.1	2	one
+4	2.22	1	two
+5	2.22	1	two
+6	3.333	3	three
+7	3.333	3	three
+8	3.333	3	three
+9	4.4444	4	four
+10	NULL	NULL	NULL
+11	NULL	NULL	NULL
+12	NULL	NULL	NULL
+13	NULL	-2	NULL
+14	NULL	NULL	random
+15	-0.11	NULL	NULL
+16	5.55555	5	five
+17	NULL	NULL	
+18	NULL	NULL	NULL
+19	NULL	NULL	NULL
+20	NULL	-3	
+21	NULL	NULL	part
+22	-0.234	NULL	NULL
+PREHOOK: query: drop table tbl_avro_mixed
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_avro_mixed
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_avro_mixed
+POSTHOOK: query: drop table tbl_avro_mixed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_avro_mixed
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_avro_mixed

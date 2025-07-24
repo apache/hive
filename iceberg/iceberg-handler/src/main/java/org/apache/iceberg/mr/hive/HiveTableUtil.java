@@ -169,7 +169,10 @@ public class HiveTableUtil {
           dataFile -> {
             StructLike structLike = dataFile.partition();
             for (int pos : stringFields) {
-              structLike.set(pos, FileUtils.unescapePathName(structLike.get(pos, String.class)));
+              String val = structLike.get(pos, String.class);
+              if (val != null && !val.isEmpty()) {
+                structLike.set(pos, FileUtils.unescapePathName(val));
+              }
             }
             return dataFile;
           }));
