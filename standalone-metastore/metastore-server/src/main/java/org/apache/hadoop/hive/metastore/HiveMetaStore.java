@@ -498,7 +498,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
     int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
-    boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf);
@@ -634,7 +633,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         HMSHandler.LOG.info("Started the new metaserver on port [{}]...", port);
         HMSHandler.LOG.info("Options.minWorkerThreads = {}", minWorkerThreads);
         HMSHandler.LOG.info("Options.maxWorkerThreads = {}", maxWorkerThreads);
-        HMSHandler.LOG.info("TCP keepalive = {}", tcpKeepAlive);
         HMSHandler.LOG.info("Enable SSL = {}", useSSL);
         tServer.serve();
       }
