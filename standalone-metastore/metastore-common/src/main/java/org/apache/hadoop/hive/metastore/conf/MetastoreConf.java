@@ -190,7 +190,6 @@ public class MetastoreConf {
       ConfVars.CONNECT_URL_KEY,
       ConfVars.SERVER_MIN_THREADS,
       ConfVars.SERVER_MAX_THREADS,
-      ConfVars.TCP_KEEP_ALIVE,
       ConfVars.KERBEROS_KEYTAB_FILE,
       ConfVars.KERBEROS_PRINCIPAL,
       ConfVars.USE_THRIFT_SASL,
@@ -1533,9 +1532,6 @@ public class MetastoreConf {
         "hive.metastore.server.thrift.http.path",
         "metastore",
         "Path component of URL endpoint when in HTTP mode"),
-    TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
-        "hive.metastore.server.tcp.keepalive", true,
-        "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
     THREAD_POOL_SIZE("metastore.thread.pool.size", "no.such", 15,
         "Number of threads in the thread pool.  These will be used to execute all background " +
             "processes."),

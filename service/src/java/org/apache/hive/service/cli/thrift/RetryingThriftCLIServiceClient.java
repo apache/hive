@@ -317,11 +317,6 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     transport = HiveAuthUtils.getSocketTransport(host, port, 0, maxThriftMessageSize);
     ((TSocket) transport).setTimeout((int) conf.getTimeVar(HiveConf.ConfVars.SERVER_READ_SOCKET_TIMEOUT,
       TimeUnit.SECONDS) * 1000);
-    try {
-      ((TSocket) transport).getSocket().setKeepAlive(conf.getBoolVar(HiveConf.ConfVars.SERVER_TCP_KEEP_ALIVE));
-    } catch (SocketException e) {
-      LOG.error("Error setting keep alive to " + conf.getBoolVar(HiveConf.ConfVars.SERVER_TCP_KEEP_ALIVE), e);
-    }
 
     String userName = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_USER);
     String passwd = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_CLIENT_PASSWORD);

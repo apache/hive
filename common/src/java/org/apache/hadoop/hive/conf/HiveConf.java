@@ -283,7 +283,6 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY,
       HiveConf.ConfVars.METASTORE_SERVER_MIN_THREADS,
       HiveConf.ConfVars.METASTORE_SERVER_MAX_THREADS,
-      HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE,
       HiveConf.ConfVars.METASTORE_INT_ORIGINAL,
       HiveConf.ConfVars.METASTORE_INT_ARCHIVED,
       HiveConf.ConfVars.METASTORE_INT_EXTRACTED,
@@ -1096,13 +1095,6 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_SERVER_MAX_THREADS("hive.metastore.server.max.threads", 1000,
         "Maximum number of worker threads in the Thrift server's pool."),
-    /**
-     * @deprecated Use MetastoreConf.TCP_KEEP_ALIVE
-     */
-    @Deprecated
-    METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true,
-        "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
-
     /**
      * @deprecated Use MetastoreConf.WM_DEFAULT_POOL_SIZE
      */
@@ -4605,8 +4597,6 @@ public class HiveConf extends Configuration {
     SERVER_READ_SOCKET_TIMEOUT("hive.server.read.socket.timeout", "10s",
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for the HiveServer to close the connection if no response from the client. By default, 10 seconds."),
-    SERVER_TCP_KEEP_ALIVE("hive.server.tcp.keepalive", true,
-        "Whether to enable TCP keepalive for the Hive Server. Keepalive will prevent accumulation of half-open connections."),
 
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
