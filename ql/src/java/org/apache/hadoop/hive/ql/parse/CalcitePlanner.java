@@ -143,6 +143,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableAnalyzer;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -616,21 +617,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               // save the resultSchema before rewriting it
               originalResultSchema = resultSchema;
             }
-            if (cboCtx.type == PreCboCtx.Type.VIEW) {
-              try {
-                viewSelect = handleCreateViewDDL(newAST);
-              } catch (SemanticException e) {
-                throw new CalciteViewSemanticException(e.getMessage());
-              }
-            } else if (cboCtx.type == PreCboCtx.Type.CTAS) {
-              // CTAS
-              init(false);
-              setAST(newAST);
-              newAST = reAnalyzeCTASAfterCbo(newAST);
-            } else {
-              // All others
-              init(false);
-            }
+            newAST = handlePostCboRewriteContext(cboCtx, newAST);
             if (oldHints.size() > 0) {
               if (getQB().getParseInfo().getHints() != null) {
                 LOG.warn("Hints are not null in the optimized tree; "
@@ -736,6 +723,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return sinkOp;
+  }
+
+  protected ASTNode handlePostCboRewriteContext(PreCboCtx cboCtx, ASTNode newAST)
+      throws SemanticException {
+    if (cboCtx.type == PreCboCtx.Type.VIEW) {
+      try {
+        viewSelect = handleCreateViewDDL(newAST);
+      } catch (SemanticException e) {
+        throw new CalciteViewSemanticException(e.getMessage());
+      }
+    } else {
+      // All others
+      init(false);
+    }
+    return newAST;
   }
 
   private String getOptimizedByCboInfo() {
@@ -1061,7 +1063,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     createTable.addChild(temporary);
     createTable.addChild(cte.cteNode);
 
-    CalcitePlanner analyzer = new CalcitePlanner(queryState);
+    CreateTableAnalyzer analyzer = new CreateTableAnalyzer(queryState);
     analyzer.initCtx(ctx);
     analyzer.init(false);
 
@@ -1113,7 +1115,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * (currently, this is used for CTAS and insert-as-select).
    */
   protected static class PreCboCtx extends PlannerContext {
-    enum Type {
+    public enum Type {
       NONE, INSERT, MULTI_INSERT, CTAS, VIEW, UNEXPECTED
     }
 
@@ -1131,8 +1133,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       this.nodeOfInterest = ast;
     }
 
+    public Type getType() {
+      return type;
+    }
+
     @Override
-    void setCTASToken(ASTNode child) {
+    public void setCTASToken(ASTNode child) {
       set(PreCboCtx.Type.CTAS, child);
     }
 
@@ -1198,18 +1204,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     default:
       throw new AssertionError("Unexpected type " + cboCtx.type);
     }
-  }
-
-  ASTNode reAnalyzeCTASAfterCbo(ASTNode newAst) throws SemanticException {
-    // analyzeCreateTable uses this.ast, but doPhase1 doesn't, so only reset it
-    // here.
-    newAst = analyzeCreateTable(newAst, getQB(), null);
-    if (newAst == null) {
-      LOG.error("analyzeCreateTable failed to initialize CTAS after CBO;" + " new ast is "
-          + getAST().dump());
-      throw new SemanticException("analyzeCreateTable failed to initialize CTAS after CBO");
-    }
-    return newAst;
   }
 
   ASTNode reAnalyzeViewAfterCbo(ASTNode newAst) throws SemanticException {
