@@ -91,7 +91,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       String qualifiedTableName = null;
       IMetaStoreClient msc = null;
       try {
-        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_ENABLE)) {
+        if (MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_FREQUENCY,
+            TimeUnit.HOURS) > 0) {
           msc = new HiveMetaStoreClient(conf);
           String catalogName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_CATALOG_NAME);
           String dbPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN);

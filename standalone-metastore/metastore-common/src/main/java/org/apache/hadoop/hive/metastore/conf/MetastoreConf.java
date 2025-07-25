@@ -1257,10 +1257,6 @@ public class MetastoreConf {
 
 
     // Partition management task params
-    PARTITION_MANAGEMENT_ENABLE("metastore.partition.management.enable", "hive.metastore.partition.management.enable",
-        true, "Config to toggle PartitionManagementTask. This config can be disabled in cloud environments " +
-        "where partitions may not be added externally and hence by disabling this feature, we can reduce the cloud costs as " +
-        "there will be no scans to table directory paths from PartitionManagementTask"),
     PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",
       "metastore.partition.management.task.frequency",
       6, TimeUnit.HOURS, "Frequency at which timer task runs to do automatic partition management for tables\n" +
@@ -1270,7 +1266,8 @@ public class MetastoreConf {
       "Similarly if partition object exists in metastore and partition location does not exist, partition object\n" +
       "will be dropped. The second piece in partition management is retention period. When 'discover.partition'\n" +
       "is set to true and if 'partition.retention.period' table property is defined, partitions that are older\n" +
-      "than the specified retention period will be automatically dropped from metastore along with the data."),
+      "than the specified retention period will be automatically dropped from metastore along with the data.\n" +
+      "Set this value to 0 inorder to disable Partition Management Task"),
     PARTITION_MANAGEMENT_TABLE_TYPES("metastore.partition.management.table.types",
       "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
       "Comma separated list of table types to use for partition management"),

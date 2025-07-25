@@ -325,13 +325,13 @@ public class TestPartitionManagement {
     Assert.assertTrue(fs.mkdirs(new Path(tablePath, "state=AZ/dt=2025-07-01")));
     Assert.assertTrue(fs.mkdirs(new Path(tablePath, "state=NV/dt=2025-07-02")));
     assertEquals(6, fs.listStatus(tablePath).length);
-    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_ENABLE.getVarname(), "false");
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_FREQUENCY.getVarname(), "0");
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(4, partitions.size());
 
     // Re-enable PMT and verify 6 partitions
-    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_ENABLE.getVarname(), "true");
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_FREQUENCY.getVarname(), "1");
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(6, partitions.size());
