@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.instanceOf;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -1086,7 +1085,7 @@ public class TestHive {
   public void testLoadingIMetaStoreClient() throws Throwable {
     String clientClassName = ThriftHiveMetaStoreClient.class.getName();
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_CLASS, clientClassName);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, clientClassName);
     // The current object was constructed in setUp() before we got here
     // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
     Hive.closeCurrent();
@@ -1100,7 +1099,7 @@ public class TestHive {
     // Intentionally invalid class
     String clientClassName = String.class.getName();
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_CLASS, clientClassName);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, clientClassName);
     // The current object was constructed in setUp() before we got here
     // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
     Hive.closeCurrent();

@@ -80,9 +80,9 @@ public class HiveMetaStoreClientBuilder {
     return Objects.requireNonNull(client);
   }
 
-  public static IMetaStoreClient createClient(Configuration conf, boolean allowEmbedded) throws MetaException {
+  private static IMetaStoreClient createClient(Configuration conf, boolean allowEmbedded) throws MetaException {
     Class<? extends IMetaStoreClient> mscClass = MetastoreConf.getClass(
-        conf, MetastoreConf.ConfVars.METASTORE_CLIENT_CLASS,
+        conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
         ThriftHiveMetaStoreClient.class, IMetaStoreClient.class);
     LOG.info("Using {} as a base MetaStoreClient", mscClass.getName());
 
