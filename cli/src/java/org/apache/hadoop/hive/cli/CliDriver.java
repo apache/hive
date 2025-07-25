@@ -396,7 +396,10 @@ public class CliDriver {
 
           // First, kill any running MR jobs
           HadoopJobExecHelper.killRunningJobs();
-          TezJobExecHelper.killRunningJobs();
+          if ("tez".equalsIgnoreCase(HiveConf.getVar(conf,
+                  HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
+            TezJobExecHelper.killRunningJobs();
+          }
           HiveInterruptUtils.interrupt();
         }
       });
