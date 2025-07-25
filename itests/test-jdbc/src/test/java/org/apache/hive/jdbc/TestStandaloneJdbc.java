@@ -43,8 +43,8 @@ import static org.junit.Assert.fail;
 
 public class TestStandaloneJdbc {
   private static File workDir = new File(createTempDir(), "test-it-standalone-jdbc");
-  private static ItAbstractContainer HS2;
-  private static ItAbstractContainer ZK_HS2;
+  private static ITAbstractContainer HS2;
+  private static ITAbstractContainer ZK_HS2;
 
   public static File createTempDir() {
     File baseDir = new File(System.getProperty("java.io.tmpdir"));
@@ -68,8 +68,8 @@ public class TestStandaloneJdbc {
   @BeforeClass
   public static void setup() throws Exception {
     workDir.mkdirs();
-    HS2 = new ItHiveServer2(workDir);
-    ZK_HS2 = new ItZKHiveServer2(workDir);
+    HS2 = new ITHiveServer2(workDir);
+    ZK_HS2 = new ITZKHiveServer2(workDir);
 
     HS2.start();
     ZK_HS2.start();
@@ -78,7 +78,6 @@ public class TestStandaloneJdbc {
   @Test
   public void testBinaryJdbc() throws Exception {
     testMetaOp(HS2.getBaseJdbcUrl(), true);
-    //testMetaOp(ZK_HS2.getJdbcUrl(), false);
     testDataSourceOp(HS2.getBaseJdbcUrl());
     testNegativeJdbc(HS2.getBaseJdbcUrl());
   }
@@ -182,8 +181,8 @@ public class TestStandaloneJdbc {
   public void testTokenAuthentication() throws Exception {
     String url = HS2.getBaseJdbcUrl();
     String dt;
-    try (HiveConnection con =  (HiveConnection) DriverManager.getConnection(url)) {
-      dt = con.getDelegationToken(ItHiveServer2.MiniJdbcKdc.HIVE_TEST_USER_1, "hive");
+    try (HiveConnection con = (HiveConnection) DriverManager.getConnection(url)) {
+      dt = con.getDelegationToken(ITHiveServer2.MiniJdbcKdc.HIVE_TEST_USER_1, "hive");
     }
     File dtFile = new File(workDir, "delegation-token-file");
     try (FileOutputStream os = new FileOutputStream(dtFile)) {
@@ -212,8 +211,8 @@ public class TestStandaloneJdbc {
     }
   }
 
-  private static void killContainer(ItAbstractContainer... containers) {
-    for (ItAbstractContainer container : containers) {
+  private static void killContainer(ITAbstractContainer... containers) {
+    for (ITAbstractContainer container : containers) {
       try {
         if (container != null) {
           container.stop();
