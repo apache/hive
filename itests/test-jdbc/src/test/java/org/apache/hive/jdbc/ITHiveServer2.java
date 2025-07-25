@@ -42,18 +42,18 @@ import org.testcontainers.utility.DockerImageName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class ItHiveServer2 extends ItAbstractContainer {
+public class ITHiveServer2 extends ITAbstractContainer {
   protected File workDir;
   private final MiniJdbcKdc miniKdc;
   protected GenericContainer<?> container;
   protected final String imageName = "apache/hive:4.0.1";
   private int[] realmPorts;
 
-  public ItHiveServer2() {
+  public ITHiveServer2() {
     this.miniKdc = null;
   }
 
-  public ItHiveServer2(File workDir) throws Exception {
+  public ITHiveServer2(File workDir) throws Exception {
     this.workDir = new File(workDir, "test-standalone-jdbc-file");
     this.miniKdc = new MiniJdbcKdc(this.workDir);
 

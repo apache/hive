@@ -17,7 +17,7 @@
  */
 package org.apache.hive.jdbc;
 
-public abstract class ItAbstractContainer {
+public abstract class ITAbstractContainer {
 
   protected String getZkConnectionUrl() {
     throw new UnsupportedOperationException("not implemented");
