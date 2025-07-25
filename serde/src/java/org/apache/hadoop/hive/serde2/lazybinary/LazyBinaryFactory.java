@@ -58,7 +58,7 @@ public final class LazyBinaryFactory {
    * Create a lazy binary primitive class given the type name.
    */
   public static LazyBinaryPrimitive<?, ?> createLazyBinaryPrimitiveClass(
-      PrimitiveObjectInspector oi) {
+      PrimitiveObjectInspector oi, boolean legacyConversionEnabled) {
     PrimitiveCategory p = oi.getPrimitiveCategory();
     switch (p) {
     case BOOLEAN:
@@ -86,7 +86,7 @@ public final class LazyBinaryFactory {
     case DATE:
       return new LazyBinaryDate((WritableDateObjectInspector) oi);
     case TIMESTAMP:
-      return new LazyBinaryTimestamp((WritableTimestampObjectInspector) oi);
+      return new LazyBinaryTimestamp((WritableTimestampObjectInspector) oi, legacyConversionEnabled);
     case TIMESTAMPLOCALTZ:
       return new LazyBinaryTimestampLocalTZ((WritableTimestampLocalTZObjectInspector) oi);
     case INTERVAL_YEAR_MONTH:
@@ -106,10 +106,14 @@ public final class LazyBinaryFactory {
    * Create a hierarchical LazyBinaryObject based on the given typeInfo.
    */
   public static LazyBinaryObject createLazyBinaryObject(ObjectInspector oi) {
+    return createLazyBinaryObject(oi, false);
+  }
+
+  public static LazyBinaryObject createLazyBinaryObject(ObjectInspector oi, boolean legacyConversionEnabled) {
     ObjectInspector.Category c = oi.getCategory();
     switch (c) {
     case PRIMITIVE:
-      return createLazyBinaryPrimitiveClass((PrimitiveObjectInspector) oi);
+      return createLazyBinaryPrimitiveClass((PrimitiveObjectInspector) oi, legacyConversionEnabled);
     case MAP:
       return new LazyBinaryMap((LazyBinaryMapObjectInspector) oi);
     case LIST:
