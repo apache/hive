@@ -296,7 +296,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private MetaStoreFilterHook filterHook;
   private boolean isServerFilterEnabled = false;
 
-  private Pattern partitionValidationPattern;
   private final boolean isInTest;
 
   @Override
@@ -371,11 +370,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     endFunctionListeners = MetaStoreServerUtils.getMetaStoreListeners(
         MetaStoreEndFunctionListener.class, conf, MetastoreConf.getVar(conf, ConfVars.END_FUNCTION_LISTENERS));
 
-    String partitionValidationRegex =
-        MetastoreConf.getVar(conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN);
-    if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
-      partitionValidationPattern = Pattern.compile(partitionValidationRegex);
-    }
+
 
     expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
     fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
@@ -472,13 +467,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public Configuration getConf() {
-    Configuration conf = HMSHandlerContext.getConfiguration()
-        .orElseGet(() -> {
-          Configuration configuration = new Configuration(this.conf);
-          HMSHandlerContext.setConfiguration(configuration);
-          return configuration;
-        });
-    return conf;
+    return HMSHandlerContext.getConfiguration()
+        .orElseGet(
+            () -> {
+              Configuration configuration = new Configuration(this.conf);
+              HMSHandlerContext.setConfiguration(configuration);
+              return configuration;
+            });
   }
 
   @Override
@@ -4052,7 +4047,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       part.setTableName(tableName);
       part.setValues(part_vals);
 
-      MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
+      MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, getConf());
 
       tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
       if (tbl == null) {
@@ -4465,8 +4460,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void validatePartition(final Partition part, final String catName,
                                     final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd)
       throws MetaException, TException {
-    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(),
-        partitionValidationPattern);
+    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(), getConf());
     if (part.getDbName() == null || part.getTableName() == null) {
       throw new MetaException("The database and table name must be set in the partition.");
     }
@@ -6015,8 +6009,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, part_vals, new_part, this));
       if (part_vals != null && !part_vals.isEmpty()) {
-        MetaStoreServerUtils.validatePartitionNameCharacters(new_part.getValues(),
-            partitionValidationPattern);
+        MetaStoreServerUtils.validatePartitionNameCharacters(new_part.getValues(), getConf());
       }
 
       oldPart = alterHandler.alterPartition(getMS(), wh, catName, db_name, tbl_name,
@@ -8654,18 +8647,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public boolean partition_name_has_valid_characters(List<String> part_vals,
-                                                     boolean throw_exception) throws TException {
+  public boolean partition_name_has_valid_characters(
+      List<String> part_vals, boolean throw_exception) throws TException {
     startFunction("partition_name_has_valid_characters");
     boolean ret;
     Exception ex = null;
     try {
       if (throw_exception) {
-        MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
+        MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, getConf());
         ret = true;
       } else {
-        ret = MetaStoreServerUtils.partitionNameHasValidCharacters(part_vals,
-            partitionValidationPattern);
+        ret = MetaStoreServerUtils.partitionNameHasValidCharacters(part_vals, getConf());
       }
     } catch (Exception e) {
       ex = e;
