@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.junit.Assert.assertThat;
 
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -51,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
@@ -1120,6 +1123,37 @@ public class TestHive {
       return checksumString;
     }
     return "";
+  }
+
+  @Test
+  public void testLoadingIMetaStoreClient() throws Throwable {
+    String clientClassName = ThriftHiveMetaStoreClient.class.getName();
+    HiveConf conf = new HiveConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, clientClassName);
+    // The current object was constructed in setUp() before we got here
+    // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
+    Hive.closeCurrent();
+    Hive hive = Hive.get(conf);
+    IMetaStoreClient tmp = hive.getMSC();
+    assertNotNull("getMSC() failed.", tmp);
+  }
+
+  @Test
+  public void testLoadingInvalidIMetaStoreClient() throws Throwable {
+    // Intentionally invalid class
+    String clientClassName = String.class.getName();
+    HiveConf conf = new HiveConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL, clientClassName);
+    // The current object was constructed in setUp() before we got here
+    // so clean that up so we can inject our own dummy implementation of IMetaStoreClient
+    Hive.closeCurrent();
+    Hive hive = Hive.get(conf);
+    try {
+      hive.getMSC();
+      fail("getMSC() was expected to throw MetaException.");
+    } catch (Exception e) {
+      assertTrue("getMSC() failed, which IS expected.", true);
+    }
   }
 
   // shamelessly copied from Path in hadoop-2

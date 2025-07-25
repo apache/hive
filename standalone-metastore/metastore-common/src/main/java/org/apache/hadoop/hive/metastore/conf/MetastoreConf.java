@@ -1724,6 +1724,10 @@ public class MetastoreConf {
                     " and password. Any other value is ignored right now but may be used later."
                 + "If JWT- Supported only in HTTP transport mode. If set, HMS Client will pick the value of JWT from "
                 + "environment variable HMS_JWT and set it in Authorization header in http request"),
+    METASTORE_CLIENT_IMPL("metastore.client.impl",
+        "hive.metastore.client.impl",
+        "org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient",
+        "The name of MetaStoreClient class that implements the IMetaStoreClient interface."),
     METASTORE_CLIENT_ADDITIONAL_HEADERS("metastore.client.http.additional.headers",
         "hive.metastore.client.http.additional.headers", "",
         "Comma separated list of headers which are passed to the metastore service in the http headers"),
