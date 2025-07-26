@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -62,17 +63,16 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   private final VectorizedRowBatch batch;
   private int rowInBatch;
   private long baseRow;
+  private final boolean useUTC;
 
   protected RecordReaderImpl(ReaderImpl fileReader,
     Reader.Options options, final Configuration conf) throws IOException {
     super(fileReader, options);
+    useUTC = fileReader.isUTC();
     final boolean useDecimal64ColumnVectors = conf != null && HiveConf.getVar(conf,
       HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
-    if (useDecimal64ColumnVectors){
-      batch = this.schema.createRowBatchV2();
-    } else {
-      batch = this.schema.createRowBatch();
-    }
+    // Workaround for ORC not initializing TimestampColumnVector properly
+    batch = createRowBatch(useDecimal64ColumnVectors);
     rowInBatch = 0;
   }
 
@@ -91,7 +91,12 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
   }
 
   public VectorizedRowBatch createRowBatch(boolean useDecimal64) {
-    return useDecimal64 ? this.schema.createRowBatchV2() : this.schema.createRowBatch();
+    TimestampColumnVector.setUseUTC(useUTC);
+    try {
+      return useDecimal64 ? this.schema.createRowBatchV2() : this.schema.createRowBatch();
+    } finally {
+      TimestampColumnVector.setUseUTC(null);
+    }
   }
 
   @Override
@@ -457,8 +462,7 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       } else {
         result = (TimestampWritableV2) previous;
       }
-      TimestampColumnVector tcv = (TimestampColumnVector) vector;
-      result.setInternal(tcv.time[row], tcv.nanos[row]);
+      result.set(Timestamp.from((TimestampColumnVector) vector, row));
       return result;
     } else {
       return null;
