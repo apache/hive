@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -35,22 +36,20 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * Class that wraps an Iceberg Catalog to cache tables.
  */
 public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
   private final HiveCatalog hiveCatalog;
   
   public HMSCachingCatalog(HiveCatalog catalog, long expiration) {
-    super(catalog, true, expiration, Ticker.systemTicker());
+    super(catalog, false, expiration, Ticker.systemTicker());
     this.hiveCatalog = catalog;
-  }
-
-  @Override
-  public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
-    return hiveCatalog.buildTable(identifier, schema);
   }
 
   @Override
@@ -61,6 +60,27 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   @Override
   public List<Namespace> listNamespaces(Namespace nmspc) throws NoSuchNamespaceException {
     return hiveCatalog.listNamespaces(nmspc);
+  }
+
+  @Override
+  public Table loadTable(TableIdentifier identifier) {
+    TableIdentifier canonicalIdentifier = identifier.toLowerCase();
+    Table cachedTable = tableCache.getIfPresent(canonicalIdentifier);
+    if (cachedTable != null) {
+      String location = hiveCatalog.getTableLocation(canonicalIdentifier);
+      if (location == null) {
+        LOG.debug("Table {} has no location, returning cached table without location", canonicalIdentifier);
+      } else if (!location.equals(cachedTable.location())) {
+        LOG.debug("Cached table {} has a different location than the one in the catalog: {} != {}",
+                 canonicalIdentifier, cachedTable.location(), location);
+      } else {
+        LOG.debug("Returning cached table: {}", canonicalIdentifier);
+        return cachedTable;
+      }
+      // Invalidate the cached table if the location is different
+      tableCache.invalidate(cachedTable);
+    }
+    return super.loadTable(identifier);
   }
 
   @Override
@@ -90,6 +110,11 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   @Override
   public boolean namespaceExists(Namespace namespace) {
     return hiveCatalog.namespaceExists(namespace);
+  }
+
+  @Override
+  public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
+    return hiveCatalog.buildTable(identifier, schema);
   }
 
   @Override
