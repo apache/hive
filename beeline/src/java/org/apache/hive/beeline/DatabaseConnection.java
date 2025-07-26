@@ -39,8 +39,8 @@ import java.util.TreeSet;
 
 import org.apache.hive.jdbc.HiveConnection;
 
-import jline.console.completer.ArgumentCompleter;
-import jline.console.completer.Completer;
+import org.jline.reader.Completer;
+import org.jline.reader.impl.completer.ArgumentCompleter;
 
 class DatabaseConnection {
   private static final String HIVE_VAR_PREFIX = "hivevar:";
@@ -74,29 +74,8 @@ class DatabaseConnection {
 
 
   void setCompletions(boolean skipmeta) throws SQLException, IOException {
-    final String extraNameCharacters =
-        getDatabaseMetaData() == null || getDatabaseMetaData().getExtraNameCharacters() == null ? ""
-            : getDatabaseMetaData().getExtraNameCharacters();
-
     // setup the completer for the database
-    sqlCompleter = new ArgumentCompleter(
-        new ArgumentCompleter.AbstractArgumentDelimiter() {
-          // delimiters for SQL statements are any
-          // non-letter-or-number characters, except
-          // underscore and characters that are specified
-          // by the database to be valid name identifiers.
-          @Override
-          public boolean isDelimiterChar(CharSequence buffer, int pos) {
-            char c = buffer.charAt(pos);
-            if (Character.isWhitespace(c)) {
-              return true;
-            }
-            return !(Character.isLetterOrDigit(c))
-                && c != '_'
-                && extraNameCharacters.indexOf(c) == -1;
-          }
-        },
-        new SQLCompleter(SQLCompleter.getSQLCompleters(beeLine, skipmeta)));
+    sqlCompleter = new ArgumentCompleter(new SQLCompleter(SQLCompleter.getSQLCompleters(beeLine, skipmeta)));
     // not all argument elements need to hold true
     ((ArgumentCompleter) sqlCompleter).setStrict(false);
   }

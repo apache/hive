@@ -16,43 +16,54 @@
  * limitations under the License.
  */
 
-/*
- * This source file is based on code taken from SQLLine 1.0.2
- * See SQLLine notice in LICENSE
- */
-package org.apache.hive.beeline;
-
-import java.util.List;
+package org.apache.hive.common.util;
 
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-/**
- * Completer for BeeLine. It dispatches to sub-completors based on the
- * current arguments.
- *
- */
-class BeeLineCompleter implements Completer {
-  private final BeeLine beeLine;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-  /**
-   * @param beeLine
-   */
-  BeeLineCompleter(BeeLine beeLine) {
-    this.beeLine = beeLine;
+/**
+ * A matching string Completer based on JLine's StringCompleter
+ */
+public class MatchingStringsCompleter implements Completer {
+  protected SortedSet<String> candidateStrings = new TreeSet<>();
+
+  public MatchingStringsCompleter() {
+    // empty
+  }
+
+  public MatchingStringsCompleter(String... strings) {
+    this(Arrays.asList(strings));
+  }
+
+  public MatchingStringsCompleter(Iterable<String> strings) {
+    strings.forEach(candidateStrings::add);
+  }
+
+  public Collection<String> getStrings() {
+    return candidateStrings;
   }
 
   @Override
   public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
-    if (line != null && line.line().startsWith(BeeLine.COMMAND_PREFIX)
-        && !line.line().startsWith(BeeLine.COMMAND_PREFIX + "all")
-        && !line.line().startsWith(BeeLine.COMMAND_PREFIX + "sql")) {
-       beeLine.getCommandCompleter().complete(reader, line, candidates);
+    Objects.requireNonNull(candidates, "candidates must not be null");
+
+    if (line == null) {
+      candidateStrings.stream().map(Candidate::new).forEach(candidates::add);
     } else {
-      if (beeLine.getDatabaseConnection() != null && beeLine.getDatabaseConnection().getSQLCompleter() != null) {
-         beeLine.getDatabaseConnection().getSQLCompleter().complete(reader, line, candidates);
+      for (String match : this.candidateStrings.tailSet(line.word())) {
+        if (!match.startsWith(line.word())) {
+          break;
+        }
+        candidates.add(new Candidate(match));
       }
     }
   }
