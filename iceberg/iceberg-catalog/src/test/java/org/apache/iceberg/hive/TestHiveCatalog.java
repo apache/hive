@@ -65,7 +65,7 @@ import org.apache.iceberg.transforms.Transforms;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.JsonUtil;
 import org.apache.thrift.TException;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -595,7 +595,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     try {
       database = HIVE_METASTORE_EXTENSION.metastoreClient().getDatabase(namespace.level(0));
     } catch (TException e) {
-      Assert.fail();
+      Assertions.fail();
     }
     assertThat(database.getParameters()).containsEntry("owner", "alter_apache");
     assertThat(database.getParameters()).containsEntry("test", "test");
@@ -799,7 +799,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     try {
       database = HIVE_METASTORE_EXTENSION.metastoreClient().getDatabase(namespace.level(0));
     } catch (TException e) {
-      Assert.fail();
+      Assertions.fail();
     }
     assertThat(database.getParameters()).doesNotContainKey("owner");
     assertThat(database.getParameters()).containsEntry("group", "iceberg");
