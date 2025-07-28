@@ -111,7 +111,8 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
     }
   }
 
-  // the spec requires position deletes to be ordered by file and position
+  // Use the DV writer for V3+ tables
+  // The spec requires position deletes to be ordered by file and position for V2 tables
   // use a fanout writer if the input is unordered no matter whether fanout writers are enabled
   // clustered writers assume that the position deletes are already ordered by file and position
   static PartitioningWriter<PositionDelete<Record>, DeleteWriteResult> newDeleteWriter(

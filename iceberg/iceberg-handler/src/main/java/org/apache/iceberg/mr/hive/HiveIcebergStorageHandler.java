@@ -1648,7 +1648,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       // set table format-version and write-mode information from tableDesc
       List<String> writeConfigList = ImmutableList.of(
           FORMAT_VERSION, DELETE_MODE, UPDATE_MODE, MERGE_MODE);
-      if (IcebergTableUtil.isV2Table(props::getProperty)) {
+      if (IcebergTableUtil.isV2TableOrAbove(props::getProperty)) {
         writeConfigList.forEach(cfg -> serializableTable.properties().computeIfAbsent(cfg, props::getProperty));
       }
       checkAndSkipIoConfigSerialization(configuration, serializableTable);
@@ -1958,7 +1958,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void setTableParametersForCTLT(org.apache.hadoop.hive.ql.metadata.Table tbl, CreateTableLikeDesc desc,
       Map<String, String> origParams) {
     // Preserve the format-version of the iceberg table and filter out rest.
-    if (IcebergTableUtil.isV2Table(origParams)) {
+    if (IcebergTableUtil.isV2TableOrAbove(origParams)) {
       tbl.getParameters().put(TableProperties.FORMAT_VERSION, IcebergTableUtil.formatVersion(origParams).toString());
       tbl.getParameters().put(TableProperties.DELETE_MODE, MERGE_ON_READ);
       tbl.getParameters().put(TableProperties.UPDATE_MODE, MERGE_ON_READ);

@@ -112,7 +112,7 @@ import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE
 public class IcebergTableUtil {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
 
-  public static final String SPEC_NOT_FOUND_IN_QUERY_STATE =
+  public static final String PARTITION_TRANSFORM_SPEC_NOT_FOUND =
       "Iceberg partition transform spec is not found in QueryState.";
 
   public static final int SPEC_IDX = 1;
@@ -257,7 +257,7 @@ public class IcebergTableUtil {
         .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionTransformSpecList == null) {
-      LOG.warn(SPEC_NOT_FOUND_IN_QUERY_STATE);
+      LOG.warn(PARTITION_TRANSFORM_SPEC_NOT_FOUND);
       return null;
     }
     PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
@@ -306,7 +306,7 @@ public class IcebergTableUtil {
         .map(o -> (List<TransformSpec>) o).orElse(null);
 
     if (partitionTransformSpecList == null) {
-      LOG.warn(SPEC_NOT_FOUND_IN_QUERY_STATE);
+      LOG.warn(PARTITION_TRANSFORM_SPEC_NOT_FOUND);
       return;
     }
     partitionTransformSpecList.forEach(spec -> {
@@ -404,17 +404,18 @@ public class IcebergTableUtil {
     table.manageSnapshots().cherrypick(snapshotId).commit();
   }
 
-  public static boolean isV2Table(Map<String, String> props) {
+  public static boolean isV2TableOrAbove(Map<String, String> props) {
     return IcebergTableUtil.formatVersion(props) >= 2;
   }
 
-  public static boolean isV2Table(BinaryOperator<String> props) {
+  public static boolean isV2TableOrAbove(BinaryOperator<String> props) {
     return IcebergTableUtil.formatVersion(props) >= 2;
   }
 
   public static Integer formatVersion(Map<String, String> props) {
     if (props == null) {
-      return 2; // default to V2
+      // TODO: switch to v3 once fully supported
+      return 2; // default to v2
     }
     return IcebergTableUtil.formatVersion(props::getOrDefault);
   }
@@ -432,7 +433,7 @@ public class IcebergTableUtil {
   }
 
   private static String getWriteModeDefault(BinaryOperator<String> props) {
-    return (isV2Table(props) ? MERGE_ON_READ : COPY_ON_WRITE).modeName();
+    return (isV2TableOrAbove(props) ? MERGE_ON_READ : COPY_ON_WRITE).modeName();
   }
 
   public static boolean isCopyOnWriteMode(Context.Operation operation, BinaryOperator<String> props) {
