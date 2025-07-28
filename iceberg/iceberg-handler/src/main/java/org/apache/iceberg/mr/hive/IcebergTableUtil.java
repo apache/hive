@@ -279,10 +279,10 @@ public class IcebergTableUtil {
           builder.hour(spec.getColumnName());
           break;
         case TRUNCATE:
-          builder.truncate(spec.getColumnName(), spec.getTransformParam().get());
+          builder.truncate(spec.getColumnName(), spec.getTransformParam());
           break;
         case BUCKET:
-          builder.bucket(spec.getColumnName(), spec.getTransformParam().get());
+          builder.bucket(spec.getColumnName(), spec.getTransformParam());
           break;
       }
     });
@@ -327,10 +327,10 @@ public class IcebergTableUtil {
           updatePartitionSpec.addField(Expressions.hour(spec.getColumnName()));
           break;
         case TRUNCATE:
-          updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam().get()));
+          updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam()));
           break;
         case BUCKET:
-          updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam().get()));
+          updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam()));
           break;
       }
     });
@@ -344,7 +344,7 @@ public class IcebergTableUtil {
 
   public static boolean isBucket(TransformSpec spec) {
     // Iceberg's bucket transform requires a bucket number to be specified
-    return spec.getTransformType() == TransformType.BUCKET && spec.getTransformParam().isPresent();
+    return spec.getTransformType() == TransformType.BUCKET && spec.getTransformParam() != null;
   }
 
   /**

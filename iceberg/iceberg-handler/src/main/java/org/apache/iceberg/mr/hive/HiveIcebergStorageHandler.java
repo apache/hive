@@ -990,7 +990,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     final List<Integer> numBuckets = Lists.newArrayList();
     getPartitionTransformSpec(table).stream().filter(IcebergTableUtil::isBucket).forEach(spec -> {
       bucketColumnNames.add(spec.getColumnName());
-      numBuckets.add(spec.getTransformParam().get());
+      numBuckets.add(spec.getTransformParam());
     });
 
     if (bucketColumnNames.isEmpty()) {
