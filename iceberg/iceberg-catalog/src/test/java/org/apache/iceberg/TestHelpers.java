@@ -35,6 +35,7 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.ExpressionVisitors;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.junit.jupiter.api.Assertions;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestHelpers {
@@ -44,28 +45,28 @@ public class TestHelpers {
 
   public static <T> T assertAndUnwrap(Expression expr, Class<T> expected) {
     Assertions.assertTrue(
-       expected.isInstance(expr), "Expression should have expected type: " + expected);
+        expected.isInstance(expr), "Expression should have expected type: " + expected);
     return expected.cast(expr);
   }
 
   @SuppressWarnings("unchecked")
   public static <T> BoundPredicate<T> assertAndUnwrap(Expression expr) {
     Assertions.assertTrue(
-       expr instanceof BoundPredicate, "Expression should be a bound predicate: " + expr);
+        expr instanceof BoundPredicate, "Expression should be a bound predicate: " + expr);
     return (BoundPredicate<T>) expr;
   }
 
   @SuppressWarnings("unchecked")
   public static <T> BoundSetPredicate<T> assertAndUnwrapBoundSet(Expression expr) {
     Assertions.assertTrue(
-       expr instanceof BoundSetPredicate, "Expression should be a bound set predicate: " + expr);
+        expr instanceof BoundSetPredicate, "Expression should be a bound set predicate: " + expr);
     return (BoundSetPredicate<T>) expr;
   }
 
   @SuppressWarnings("unchecked")
   public static <T> UnboundPredicate<T> assertAndUnwrapUnbound(Expression expr) {
     Assertions.assertTrue(
-       expr instanceof UnboundPredicate, "Expression should be an unbound predicate: " + expr);
+        expr instanceof UnboundPredicate, "Expression should be an unbound predicate: " + expr);
     return (UnboundPredicate<T>) expr;
   }
 
@@ -132,13 +133,12 @@ public class TestHelpers {
         (schemaId, schema1) -> {
           Schema schema2 = map2.get(schemaId);
           Assertions.assertNotNull(
-          schema2, String.format("Schema ID %s does not exist in map: %s", schemaId, map2));
+              schema2, String.format("Schema ID %s does not exist in map: %s", schemaId, map2));
 
           Assertions.assertEquals(schema1.schemaId(), schema2.schemaId(),
               "Should have matching schema id");
           Assertions.assertTrue(
-          
-             schema1.sameSchema(schema2), String.format(
+              schema1.sameSchema(schema2), String.format(
                   "Should be the same schema. Schema 1: %s, schema 2: %s", schema1, schema2));
         });
   }
