@@ -1634,7 +1634,7 @@ public class MetaStoreServerUtils {
       currPath = currPath.getParent();
       LOG.debug("currPath=" + currPath);
     }
-    return result.toString();
+    return (result == null) ? null : result.toString();
   }
 
   public static String getNormalisedPartitionValue(String partitionValue, String type, Configuration conf) {
