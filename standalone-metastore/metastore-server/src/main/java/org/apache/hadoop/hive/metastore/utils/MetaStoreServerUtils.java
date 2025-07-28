@@ -63,7 +63,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -1600,7 +1599,7 @@ public class MetaStoreServerUtils {
    */
   public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
                                         Map<String, String> partitionColToTypeMap, Configuration conf) {
-    String result = null;
+    StringBuilder result = null;
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
 
@@ -1611,7 +1610,7 @@ public class MetaStoreServerUtils {
       if (parts.length > 0) {
         if (parts.length != 2) {
           LOG.warn(currPath.getName() + " is not a valid partition name");
-          return result;
+          return result.toString();
         }
 
         // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
@@ -1626,16 +1625,16 @@ public class MetaStoreServerUtils {
             return null;
           }
           if (result == null) {
-            result = partitionName + "=" + normalisedPartitionValue;
+            result = new StringBuilder(partitionName + "=" + normalisedPartitionValue);
           } else {
-            result = partitionName + "=" + normalisedPartitionValue + Path.SEPARATOR + result;
+            result.insert(0, partitionName + "=" + normalisedPartitionValue + Path.SEPARATOR);
           }
         }
       }
       currPath = currPath.getParent();
       LOG.debug("currPath=" + currPath);
     }
-    return result;
+    return result.toString();
   }
 
   public static String getNormalisedPartitionValue(String partitionValue, String type, Configuration conf) {

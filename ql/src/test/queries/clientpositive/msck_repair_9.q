@@ -28,6 +28,9 @@ INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3);
 
 SHOW PARTITIONS tbl_y;
 
-set hive.msck.path.validation=throw;
+set hive.msck.path.validation=ignore;
+MSCK REPAIR TABLE tbl_y;
+SHOW PARTITIONS tbl_y;
+
 DROP TABLE tbl_x;
 DROP TABLE tbl_y;

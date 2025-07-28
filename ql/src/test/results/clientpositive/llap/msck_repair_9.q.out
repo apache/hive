@@ -134,6 +134,26 @@ month=12/day=3
 month=ANOTHER_PARTITION/day=3
 month=OTHER_PARTITION/day=3
 month=SECOND_PARTITION/day=3
+PREHOOK: query: MSCK REPAIR TABLE tbl_y
+PREHOOK: type: MSCK
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: MSCK REPAIR TABLE tbl_y
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@tbl_y
+Partitions not in metastore:	tbl_y:month=12/day=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS tbl_y
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_y
+POSTHOOK: query: SHOW PARTITIONS tbl_y
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_y
+month=12/day=2
+month=12/day=3
+month=12/day=__HIVE_DEFAULT_PARTITION__
+month=ANOTHER_PARTITION/day=3
+month=OTHER_PARTITION/day=3
+month=SECOND_PARTITION/day=3
 PREHOOK: query: DROP TABLE tbl_x
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_x
