@@ -17,14 +17,8 @@
  */
 package org.apache.hive.beeline;
 
-import org.apache.hive.common.util.MatchingStringsCompleter;
-
-/**
- * JLine completer boolean value (true/false)
- */
-class BooleanCompleter extends MatchingStringsCompleter {
-
-  public BooleanCompleter(){
-    super("true", "false");
+public class NoCurrentConnectionException extends IllegalArgumentException {
+  public NoCurrentConnectionException(String message) {
+    super(message);
   }
 }
