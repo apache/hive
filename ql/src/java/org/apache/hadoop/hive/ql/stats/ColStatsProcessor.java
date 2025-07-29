@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -162,7 +163,7 @@ public class ColStatsProcessor implements IStatsProcessor {
               Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
                 .getPrimitiveJavaObject(values.get(i));
               partVals.add(partVal == null ? // could be null for default partition
-                this.conf.getVar(ConfVars.DEFAULT_PARTITION_NAME) : partVal.toString());
+                PartitionUtils.getDefaultPartitionName(tbl.getParameters(), this.conf) : partVal.toString());
             }
           }
           partName = Warehouse.makePartName(partColSchema, partVals);

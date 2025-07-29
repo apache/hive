@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -910,8 +911,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(hmsTable.getParameters(), (HiveConf) conf);
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
-        hiveConf.getVar(ConfVars.DEFAULT_PARTITION_NAME),
+        defaultPartitionName,
         hiveConf.getIntVar(ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
 
     if (table.spec().isPartitioned() &&
