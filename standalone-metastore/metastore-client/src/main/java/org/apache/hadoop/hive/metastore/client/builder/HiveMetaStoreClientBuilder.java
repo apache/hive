@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -34,49 +36,72 @@ import java.util.function.Function;
 
 public class HiveMetaStoreClientBuilder {
 
-    private final Configuration conf;
-    private IMetaStoreClient client;
+  public static final String HIVE_ICEBERG_REST_CATALOG_CLIENT_CLASS = 
+      "org.apache.iceberg.hive.HiveIcebergRESTCatalogClientAdapter";
 
-    public HiveMetaStoreClientBuilder(Configuration conf) {
-        this.conf = Objects.requireNonNull(conf);
-    }
+  private final Configuration conf;
+  private IMetaStoreClient client;
 
-    public HiveMetaStoreClientBuilder newClient() throws MetaException {
-        this.client = new HiveMetaStoreClient(conf);
-        return this;
-    }
+  public HiveMetaStoreClientBuilder(Configuration conf) {
+    this.conf = Objects.requireNonNull(conf);
+  }
 
-    public HiveMetaStoreClientBuilder newThriftClient(boolean allowEmbedded) throws MetaException {
-        this.client = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
-        return this;
-    }
+  public HiveMetaStoreClientBuilder newClient() throws MetaException {
+    this.client = new HiveMetaStoreClient(conf);
+    return this;
+  }
 
-    public HiveMetaStoreClientBuilder client(IMetaStoreClient client) {
-        this.client = client;
-        return this;
-    }
+  public HiveMetaStoreClientBuilder newThriftClient(boolean allowEmbedded) throws MetaException {
+    this.client = ThriftHiveMetaStoreClient.newClient(conf, allowEmbedded);
+    return this;
+  }
 
-    public HiveMetaStoreClientBuilder enhanceWith(Function<IMetaStoreClient, IMetaStoreClient> wrapperFunction) {
-        client = wrapperFunction.apply(client);
-        return this;
-    }
+  public HiveMetaStoreClientBuilder client(IMetaStoreClient client) {
+    this.client = client;
+    return this;
+  }
 
-    public HiveMetaStoreClientBuilder withHooks(HiveMetaHookLoader hookLoader) {
-        this.client = HookEnabledMetaStoreClient.newClient(conf, hookLoader, client);
-        return this;
-    }
+  public HiveMetaStoreClientBuilder enhanceWith(Function<IMetaStoreClient, IMetaStoreClient> wrapperFunction) {
+    client = wrapperFunction.apply(client);
+    return this;
+  }
 
-    public HiveMetaStoreClientBuilder withRetry(Map<String, Long> metaCallTimeMap) throws MetaException {
-        client = RetryingMetaStoreClient.getProxy(conf, metaCallTimeMap, client);
-        return this;
-    }
+  public HiveMetaStoreClientBuilder withHooks(HiveMetaHookLoader hookLoader) {
+    this.client = HookEnabledMetaStoreClient.newClient(conf, hookLoader, client);
+    return this;
+  }
 
-    public HiveMetaStoreClientBuilder threadSafe() {
-        this.client = SynchronizedMetaStoreClient.newClient(conf, client);
-        return this;
-    }
+  public HiveMetaStoreClientBuilder withRetry(Map<String, Long> metaCallTimeMap) throws MetaException {
+    client = RetryingMetaStoreClient.getProxy(conf, metaCallTimeMap, client);
+    return this;
+  }
 
-    public IMetaStoreClient build() {
-        return Objects.requireNonNull(client);
+  public HiveMetaStoreClientBuilder threadSafe() {
+    this.client = SynchronizedMetaStoreClient.newClient(conf, client);
+    return this;
+  }
+
+  public IMetaStoreClient build() {
+    
+    if (!MetastoreConf.get(conf, MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getHiveName()).isEmpty()) {
+      return createHiveIcebergRESTCatalogClient();
     }
+    return Objects.requireNonNull(client);
+  }
+
+  private IMetaStoreClient createHiveIcebergRESTCatalogClient() {
+    try {
+      Class<? extends IMetaStoreClient> handlerClass = (Class<? extends IMetaStoreClient>) 
+          Class.forName(HIVE_ICEBERG_REST_CATALOG_CLIENT_CLASS, true, JavaUtils.getClassLoader());
+      Class<?>[] constructorArgTypes = new Class[] { Configuration.class };
+      Object[] constructorArgs = new Object[] {conf};
+      IMetaStoreClient restCatalogMetastoreClient = JavaUtils.newInstance(handlerClass, constructorArgTypes, 
+          constructorArgs);
+      restCatalogMetastoreClient.reconnect();
+      return restCatalogMetastoreClient;
+    } catch (MetaException | ClassNotFoundException e) {
+      throw new HiveMetaStoreClientBuilderException(String.format("Error in loading %s class, %s",
+          HIVE_ICEBERG_REST_CATALOG_CLIENT_CLASS, e.getMessage()));
+    }
+  }
 }
