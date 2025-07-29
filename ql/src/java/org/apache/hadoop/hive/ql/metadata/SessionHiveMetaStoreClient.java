@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheKey;
@@ -1574,7 +1575,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
           List<DropPartitionsExpr> exprs = partsSpec.getExprs();
           for (DropPartitionsExpr expr : exprs) {
             String filter = generateJDOFilter(table, expr.getExpr(),
-                conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
+                PartitionUtils.getDefaultPartitionName(table.getParameters(), (HiveConf) conf));
             List<Partition> partitions = tt.listPartitionsByFilter(filter);
             for (Partition p : partitions) {
               partValues.add(p.getValues());
