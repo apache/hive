@@ -95,13 +95,16 @@ public class IfExprColumnCondExpr extends IfExprCondExprBase {
     // The THEN expression is either IdentityExpression (a column) or a ConstantVectorExpression
     // (a scalar) and trivial to evaluate.
     childExpressions[1].evaluate(batch);
+
+    // Evaluate the third child (ELSE) expression conditionally.
+    conditionalEvaluate(batch, childExpressions[2], elseSelected, elseCount);
+    
     for (int i = 0; i < thenCount; i++) {
       final int batchIndex = thenSelected[i];
       outputIsNull[batchIndex] = false;
       outputColVector.setElement(batchIndex, batchIndex, thenColVector);
     }
-
-    conditionalEvaluate(batch, childExpressions[2], elseSelected, elseCount);
+    
     for (int i = 0; i < elseCount; i++) {
       final int batchIndex = elseSelected[i];
       outputIsNull[batchIndex] = false;
