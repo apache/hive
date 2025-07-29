@@ -156,19 +156,49 @@ POSTHOOK: Lineage: date_dim_multi.d_date_sk_decimal SCRIPT []
 POSTHOOK: Lineage: date_dim_multi.d_date_sk_double SCRIPT []
 POSTHOOK: Lineage: date_dim_multi.d_date_sk_int SCRIPT []
 POSTHOOK: Lineage: date_dim_multi.d_year SCRIPT []
+PREHOOK: query: alter table sales_p_int set default partition to 'abc'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@sales_p_int
+PREHOOK: Output: default@sales_p_int
+POSTHOOK: query: alter table sales_p_int set default partition to 'abc'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@sales_p_int
+POSTHOOK: Output: default@sales_p_int
+PREHOOK: query: alter table sales_p_bigint set default partition to 'abc'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@sales_p_bigint
+PREHOOK: Output: default@sales_p_bigint
+POSTHOOK: query: alter table sales_p_bigint set default partition to 'abc'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@sales_p_bigint
+POSTHOOK: Output: default@sales_p_bigint
+PREHOOK: query: alter table sales_p_double set default partition to 'abc'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@sales_p_double
+PREHOOK: Output: default@sales_p_double
+POSTHOOK: query: alter table sales_p_double set default partition to 'abc'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@sales_p_double
+POSTHOOK: Output: default@sales_p_double
+PREHOOK: query: alter table sales_p_decimal set default partition to 'abc'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@sales_p_decimal
+PREHOOK: Output: default@sales_p_decimal
+POSTHOOK: query: alter table sales_p_decimal set default partition to 'abc'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@sales_p_decimal
+POSTHOOK: Output: default@sales_p_decimal
 PREHOOK: query: SELECT d_date FROM sales_p_int s, date_dim_multi d WHERE s.ss_sold_date_sk_int = d.d_date_sk_int and d.d_year = 2020 GROUP BY d_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_dim_multi
 PREHOOK: Input: default@sales_p_int
 PREHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=24518
-PREHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d_date FROM sales_p_int s, date_dim_multi d WHERE s.ss_sold_date_sk_int = d.d_date_sk_int and d.d_year = 2020 GROUP BY d_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_dim_multi
 POSTHOOK: Input: default@sales_p_int
 POSTHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=24518
-POSTHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2020-01-01
 PREHOOK: query: SELECT d_date FROM sales_p_bigint s JOIN date_dim_multi d ON s.ss_sold_date_sk_bigint = d.d_date_sk_bigint WHERE d.d_year = 2020 GROUP BY d_date
@@ -176,14 +206,12 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@date_dim_multi
 PREHOOK: Input: default@sales_p_bigint
 PREHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=2451800001
-PREHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d_date FROM sales_p_bigint s JOIN date_dim_multi d ON s.ss_sold_date_sk_bigint = d.d_date_sk_bigint WHERE d.d_year = 2020 GROUP BY d_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_dim_multi
 POSTHOOK: Input: default@sales_p_bigint
 POSTHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=2451800001
-POSTHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2020-01-01
 PREHOOK: query: SELECT d_date FROM sales_p_double s JOIN date_dim_multi d ON s.ss_sold_date_sk_double = d.d_date_sk_double WHERE d.d_year = 2020 GROUP BY d_date

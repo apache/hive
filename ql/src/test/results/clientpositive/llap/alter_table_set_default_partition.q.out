@@ -1,0 +1,823 @@
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: INSERT INTO tbl_orc (a, b, c) values(3, 'ccc', 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: INSERT INTO tbl_orc (a, b, c) values(3, 'ccc', 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__).c SCRIPT []
+PREHOOK: query: show partitions tbl_orc
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show partitions tbl_orc
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc
+d=__HIVE_DEFAULT_PARTITION__
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: alter table tbl_orc set default partition to 'random_partition'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc set default partition to 'random_partition'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	DEFAULT_PARTITION_NAME	random_partition    
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numPartitions       	1                   
+	numRows             	1                   
+	rawDataSize         	95                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: show partitions tbl_orc
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show partitions tbl_orc
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc
+d=random_partition
+PREHOOK: query: select * from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+3	ccc	12	NULL
+PREHOOK: query: select count(*) from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+1
+PREHOOK: query: INSERT INTO tbl_orc (a, b, c) values(4, 'ddd', 23)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: INSERT INTO tbl_orc (a, b, c) values(4, 'ddd', 23)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=random_partition
+POSTHOOK: Lineage: tbl_orc PARTITION(d=random_partition).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=random_partition).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=random_partition).c SCRIPT []
+PREHOOK: query: show partitions tbl_orc
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show partitions tbl_orc
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc
+d=random_partition
+PREHOOK: query: select * from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+3	ccc	12	NULL
+4	ddd	23	NULL
+PREHOOK: query: select count(*) from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=random_partition
+#### A masked pattern was here ####
+2
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d int, e string, f bigint) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create external table tbl_orc(a int, b string, c int) partitioned by (d int, e string, f bigint) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	int                 	                    
+e                   	string              	                    
+f                   	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: INSERT INTO tbl_orc (a, b, c) values(3, 'ccc', 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: INSERT INTO tbl_orc (a, b, c) values(3, 'ccc', 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=__HIVE_DEFAULT_PARTITION__/e=__HIVE_DEFAULT_PARTITION__/f=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=__HIVE_DEFAULT_PARTITION__,f=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=__HIVE_DEFAULT_PARTITION__,f=__HIVE_DEFAULT_PARTITION__).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=__HIVE_DEFAULT_PARTITION__,f=__HIVE_DEFAULT_PARTITION__).c SCRIPT []
+PREHOOK: query: INSERT INTO tbl_orc (a, b, c, d, e) values(5, 'ddd', 13, 32, 'tgf')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: INSERT INTO tbl_orc (a, b, c, d, e) values(5, 'ddd', 13, 32, 'tgf')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=32/e=tgf/f=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc PARTITION(d=32,e=tgf,f=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=32,e=tgf,f=__HIVE_DEFAULT_PARTITION__).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=32,e=tgf,f=__HIVE_DEFAULT_PARTITION__).c SCRIPT []
+PREHOOK: query: INSERT INTO tbl_orc (a, b, c, e, f) values(6, 'eee', 14, 'tgh', 23456876)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: INSERT INTO tbl_orc (a, b, c, e, f) values(6, 'eee', 14, 'tgh', 23456876)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=__HIVE_DEFAULT_PARTITION__/e=tgh/f=23456876
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=tgh,f=23456876).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=tgh,f=23456876).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=tgh,f=23456876).c SCRIPT []
+PREHOOK: query: show partitions tbl_orc
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show partitions tbl_orc
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc
+d=32/e=tgf/f=__HIVE_DEFAULT_PARTITION__
+d=__HIVE_DEFAULT_PARTITION__/e=__HIVE_DEFAULT_PARTITION__/f=__HIVE_DEFAULT_PARTITION__
+d=__HIVE_DEFAULT_PARTITION__/e=tgh/f=23456876
+Found 3 items
+#### A masked pattern was here ####
+PREHOOK: query: alter table tbl_orc set default partition to 'default_partition'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc set default partition to 'default_partition'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	int                 	                    
+e                   	string              	                    
+f                   	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	DEFAULT_PARTITION_NAME	default_partition   
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	3                   
+	rawDataSize         	285                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+5	ddd	13	32	tgf	NULL
+3	ccc	12	NULL	default_partition	NULL
+6	eee	14	NULL	tgh	23456876
+PREHOOK: query: select count(*) from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+3
+PREHOOK: query: show partitions tbl_orc
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show partitions tbl_orc
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc
+d=32/e=tgf/f=default_partition
+d=default_partition/e=default_partition/f=default_partition
+d=default_partition/e=tgh/f=23456876
+PREHOOK: query: INSERT INTO tbl_orc (a, b, c) values(4, 'ddd', 23)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: INSERT INTO tbl_orc (a, b, c) values(4, 'ddd', 23)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Lineage: tbl_orc PARTITION(d=default_partition,e=default_partition,f=default_partition).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=default_partition,e=default_partition,f=default_partition).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc PARTITION(d=default_partition,e=default_partition,f=default_partition).c SCRIPT []
+PREHOOK: query: select * from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+5	ddd	13	32	tgf	NULL
+3	ccc	12	NULL	default_partition	NULL
+4	ddd	23	NULL	default_partition	NULL
+6	eee	14	NULL	tgh	23456876
+PREHOOK: query: select count(*) from tbl_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tbl_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+4
+PREHOOK: query: show partitions tbl_orc
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: show partitions tbl_orc
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc
+d=32/e=tgf/f=default_partition
+d=default_partition/e=default_partition/f=default_partition
+d=default_partition/e=tgh/f=23456876
+Found 4 items
+#### A masked pattern was here ####
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: drop table if exists tbl_orc_multiple
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_orc_multiple
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists tbl_orc_copy_multiple
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_orc_copy_multiple
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc_multiple
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc_multiple
+PREHOOK: query: describe formatted tbl_orc_multiple
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: query: describe formatted tbl_orc_multiple
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc_multiple
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	int                 	                    
+e                   	string              	                    
+f                   	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: INSERT INTO tbl_orc_multiple (a, b, c) values(3, 'ccc', 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: query: INSERT INTO tbl_orc_multiple (a, b, c) values(3, 'ccc', 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: Output: default@tbl_orc_multiple@d=__HIVE_DEFAULT_PARTITION__/e=__HIVE_DEFAULT_PARTITION__/f=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=__HIVE_DEFAULT_PARTITION__,f=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=__HIVE_DEFAULT_PARTITION__,f=__HIVE_DEFAULT_PARTITION__).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=__HIVE_DEFAULT_PARTITION__,f=__HIVE_DEFAULT_PARTITION__).c SCRIPT []
+PREHOOK: query: INSERT INTO tbl_orc_multiple (a, b, c, d, e) values(5, 'ddd', 13, 32, 'tgf')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: query: INSERT INTO tbl_orc_multiple (a, b, c, d, e) values(5, 'ddd', 13, 32, 'tgf')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: Output: default@tbl_orc_multiple@d=32/e=tgf/f=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=32,e=tgf,f=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=32,e=tgf,f=__HIVE_DEFAULT_PARTITION__).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=32,e=tgf,f=__HIVE_DEFAULT_PARTITION__).c SCRIPT []
+PREHOOK: query: INSERT INTO tbl_orc_multiple (a, b, c, e, f) values(6, 'eee', 14, 'tgh', 23456876)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: query: INSERT INTO tbl_orc_multiple (a, b, c, e, f) values(6, 'eee', 14, 'tgh', 23456876)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: Output: default@tbl_orc_multiple@d=__HIVE_DEFAULT_PARTITION__/e=tgh/f=23456876
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=tgh,f=23456876).a SCRIPT []
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=tgh,f=23456876).b SCRIPT []
+POSTHOOK: Lineage: tbl_orc_multiple PARTITION(d=__HIVE_DEFAULT_PARTITION__,e=tgh,f=23456876).c SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc_copy_multiple
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc_copy_multiple
+PREHOOK: query: show partitions tbl_orc_multiple
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: query: show partitions tbl_orc_multiple
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc_multiple
+d=32/e=tgf/f=__HIVE_DEFAULT_PARTITION__
+d=__HIVE_DEFAULT_PARTITION__/e=__HIVE_DEFAULT_PARTITION__/f=__HIVE_DEFAULT_PARTITION__
+d=__HIVE_DEFAULT_PARTITION__/e=tgh/f=23456876
+PREHOOK: query: msck repair table tbl_orc_copy_multiple
+PREHOOK: type: MSCK
+PREHOOK: Output: default@tbl_orc_copy_multiple
+POSTHOOK: query: msck repair table tbl_orc_copy_multiple
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@tbl_orc_copy_multiple
+Partitions not in metastore:	tbl_orc_copy_multiple:d=32/e=tgf/f=__HIVE_DEFAULT_PARTITION__	tbl_orc_copy_multiple:d=__HIVE_DEFAULT_PARTITION__/e=__HIVE_DEFAULT_PARTITION__/f=__HIVE_DEFAULT_PARTITION__	tbl_orc_copy_multiple:d=__HIVE_DEFAULT_PARTITION__/e=tgh/f=23456876
+#### A masked pattern was here ####
+PREHOOK: query: show partitions tbl_orc_copy_multiple
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc_copy_multiple
+POSTHOOK: query: show partitions tbl_orc_copy_multiple
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc_copy_multiple
+d=32/e=tgf/f=__HIVE_DEFAULT_PARTITION__
+d=__HIVE_DEFAULT_PARTITION__/e=__HIVE_DEFAULT_PARTITION__/f=__HIVE_DEFAULT_PARTITION__
+d=__HIVE_DEFAULT_PARTITION__/e=tgh/f=23456876
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: alter table tbl_orc_multiple set default partition to 'default_partition'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_orc_multiple
+PREHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: query: alter table tbl_orc_multiple set default partition to 'default_partition'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: Output: default@tbl_orc_multiple
+PREHOOK: query: describe formatted tbl_orc_multiple
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: query: describe formatted tbl_orc_multiple
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc_multiple
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	int                 	                    
+e                   	string              	                    
+f                   	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	DEFAULT_PARTITION_NAME	default_partition   
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	3                   
+	rawDataSize         	285                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from tbl_orc_multiple
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_multiple
+PREHOOK: Input: default@tbl_orc_multiple@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc_multiple
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: Input: default@tbl_orc_multiple@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+5	ddd	13	32	tgf	NULL
+3	ccc	12	NULL	default_partition	NULL
+6	eee	14	NULL	tgh	23456876
+PREHOOK: query: select count(*) from tbl_orc_multiple
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_multiple
+PREHOOK: Input: default@tbl_orc_multiple@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tbl_orc_multiple
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: Input: default@tbl_orc_multiple@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+3
+PREHOOK: query: show partitions tbl_orc_multiple
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: query: show partitions tbl_orc_multiple
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc_multiple
+d=32/e=tgf/f=default_partition
+d=default_partition/e=default_partition/f=default_partition
+d=default_partition/e=tgh/f=23456876
+Found 3 items
+#### A masked pattern was here ####
+PREHOOK: query: alter table tbl_orc_copy_multiple set default partition to 'default_partition'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_orc_copy_multiple
+PREHOOK: Output: default@tbl_orc_copy_multiple
+POSTHOOK: query: alter table tbl_orc_copy_multiple set default partition to 'default_partition'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_orc_copy_multiple
+POSTHOOK: Output: default@tbl_orc_copy_multiple
+PREHOOK: query: describe formatted tbl_orc_copy_multiple
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc_copy_multiple
+POSTHOOK: query: describe formatted tbl_orc_copy_multiple
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc_copy_multiple
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	int                 	                    
+e                   	string              	                    
+f                   	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	DEFAULT_PARTITION_NAME	default_partition   
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from tbl_orc_copy_multiple
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_copy_multiple
+PREHOOK: Input: default@tbl_orc_copy_multiple@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_orc_copy_multiple
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_copy_multiple
+POSTHOOK: Input: default@tbl_orc_copy_multiple@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+5	ddd	13	32	tgf	NULL
+3	ccc	12	NULL	default_partition	NULL
+6	eee	14	NULL	tgh	23456876
+PREHOOK: query: select count(*) from tbl_orc_copy_multiple
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc_copy_multiple
+PREHOOK: Input: default@tbl_orc_copy_multiple@d=32/e=tgf/f=default_partition
+PREHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=default_partition/f=default_partition
+PREHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from tbl_orc_copy_multiple
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc_copy_multiple
+POSTHOOK: Input: default@tbl_orc_copy_multiple@d=32/e=tgf/f=default_partition
+POSTHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=default_partition/f=default_partition
+POSTHOOK: Input: default@tbl_orc_copy_multiple@d=default_partition/e=tgh/f=23456876
+#### A masked pattern was here ####
+3
+PREHOOK: query: show partitions tbl_orc_copy_multiple
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_orc_copy_multiple
+POSTHOOK: query: show partitions tbl_orc_copy_multiple
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_orc_copy_multiple
+d=32/e=tgf/f=default_partition
+d=default_partition/e=default_partition/f=default_partition
+d=default_partition/e=tgh/f=23456876
+PREHOOK: query: drop table if exists tbl_orc_multiple
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_orc_multiple
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc_multiple
+POSTHOOK: query: drop table if exists tbl_orc_multiple
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_orc_multiple
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc_multiple
+PREHOOK: query: drop table if exists tbl_orc_copy_multiple
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_orc_copy_multiple
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc_copy_multiple
+POSTHOOK: query: drop table if exists tbl_orc_copy_multiple
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_orc_copy_multiple
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc_copy_multiple
