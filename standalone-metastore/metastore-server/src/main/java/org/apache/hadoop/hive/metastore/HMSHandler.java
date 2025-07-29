@@ -3209,8 +3209,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      throw new MetaException("Failed to delete directory: %s . Exception detail : %s"
-          .formatted(path.toString(), org.apache.hadoop.util.StringUtils.stringifyException(e)));
+      throw new MetaException("Failed to delete directory: " + path.toString() + " . Exception detail : "
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
 
