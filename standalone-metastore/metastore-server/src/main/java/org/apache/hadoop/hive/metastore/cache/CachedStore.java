@@ -563,8 +563,7 @@ public class CachedStore implements RawStore, Configurable {
                   // Remove default partition from partition names and get aggregate
                   // stats again
                   List<FieldSchema> partKeys = table.getPartitionKeys();
-                  String defaultPartitionValue =
-                      MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+                  String defaultPartitionValue = getDefaultPartitionName(table.getParameters(), rawStore.getConf());
                   List<String> partCols = new ArrayList<>();
                   List<String> partVals = new ArrayList<>();
                   for (FieldSchema fs : partKeys) {
@@ -1004,7 +1003,7 @@ public class CachedStore implements RawStore, Configurable {
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
           List<FieldSchema> partKeys = table.getPartitionKeys();
-          String defaultPartitionValue = MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+          String defaultPartitionValue = getDefaultPartitionName(table.getParameters(), rawStore.getConf());
           List<String> partCols = new ArrayList<String>();
           List<String> partVals = new ArrayList<String>();
           for (FieldSchema fs : partKeys) {
@@ -1726,7 +1725,7 @@ public class CachedStore implements RawStore, Configurable {
       result.add(Warehouse.makePartName(table.getPartitionKeys(), part.getValues()));
     }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
-      defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+      defaultPartName = getDefaultPartitionName(table.getParameters(), getConf());
     }
     return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr, defaultPartName, result);
   }
@@ -1785,13 +1784,13 @@ public class CachedStore implements RawStore, Configurable {
     if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
     }
-    String defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
     List<String> partNames = new LinkedList<>();
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null) {
       // The table is not yet loaded in cache
       return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
     }
+    String defaultPartName = getDefaultPartitionName(table.getParameters(), getConf());
     getPartitionNamesPrunedByExprNoTxn(table, expr, defaultPartName, Short.MAX_VALUE, partNames, sharedCache);
     return partNames.size();
   }
@@ -2434,7 +2433,7 @@ public class CachedStore implements RawStore, Configurable {
       }
       type = StatsType.ALL;
     } else if (partNames.size() == (allPartNames.size() - 1)) {
-      String defaultPartitionName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+      String defaultPartitionName = getDefaultPartitionName(table.getParameters(), getConf());
       if (!partNames.contains(defaultPartitionName)) {
         colStats = sharedCache.getAggrStatsFromCache(catName, dbName, tblName, colNames, StatsType.ALLBUTDEFAULT);
         if (colStats != null) {
@@ -3440,5 +3439,13 @@ public class CachedStore implements RawStore, Configurable {
   private boolean shouldGetConstraintFromRawStore(String catName, String dbName, String tblName) {
     return !shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())
         || !sharedCache.isTableConstraintValid(catName, dbName, tblName);
+  }
+
+  public static String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
+    if (tableParams != null && tableParams.containsKey(HiveAlterHandler.DEFAULT_PARTITION_NAME)) {
+      return tableParams.get(HiveAlterHandler.DEFAULT_PARTITION_NAME);
+    } else {
+      return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME);
+    }
   }
 }

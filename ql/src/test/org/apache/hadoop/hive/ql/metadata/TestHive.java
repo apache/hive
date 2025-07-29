@@ -432,43 +432,43 @@ public class TestHive {
     Map<String, String> partitionSpec = new HashMap<>();
 
     partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.DEFAULT_PARTITION_NAME));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
 
     partitionSpec.clear();
     partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
 
     partitionSpec.clear();
     partitionSpec.put("a", "random" + HiveConf.getVar(hiveConf, ConfVars.DEFAULT_PARTITION_NAME) + "partition");
-    PartitionUtils.validatePartitions(hiveConf, partitionSpec);
+    PartitionUtils.validatePartitions(hiveConf, partitionSpec, null);
 
     partitionSpec.clear();
     partitionSpec.put("a", "random" + HiveConf.getVar(hiveConf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME) + "partition");
-    PartitionUtils.validatePartitions(hiveConf, partitionSpec);
+    PartitionUtils.validatePartitions(hiveConf, partitionSpec, null);
 
     partitionSpec.clear();
     partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ORIGINAL));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
 
     partitionSpec.clear();
     partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ARCHIVED));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
 
     partitionSpec.clear();
     partitionSpec.put("a", HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_EXTRACTED));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
 
     partitionSpec.clear();
     partitionSpec.put("a", "random_part" + HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ORIGINAL));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
 
     partitionSpec.clear();
     partitionSpec.put("a", "random_part" + HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_ARCHIVED));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
 
     partitionSpec.clear();
     partitionSpec.put("a", "random_part" + HiveConf.getVar(hiveConf, ConfVars.METASTORE_INT_EXTRACTED));
-    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec));
+    Assert.assertThrows(RuntimeException.class, () -> PartitionUtils.validatePartitions(hiveConf, partitionSpec, null));
   }
 
   @Test

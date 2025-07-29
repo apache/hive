@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -147,8 +148,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     this.curBatchMaxWriteId = maxWriteId;
     this.statementId = statementId;
     this.conf = conn.getHiveConf();
-    this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     this.table = conn.getTable();
+    this.defaultPartitionName = PartitionUtils.getDefaultPartitionName(this.table.getParameters(), conf);
     String location = table.getSd().getLocation();
     try {
       URI uri = new URI(location);

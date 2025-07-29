@@ -3344,12 +3344,13 @@ public class ObjectStore implements RawStore, Configurable {
   public List<String> listPartitionNames(final String catName, final String dbName, final String tblName,
       final String defaultPartName, final byte[] exprBytes,
       final String order, final int maxParts) throws MetaException, NoSuchObjectException {
-    final String defaultPartitionName = getDefaultPartitionName(defaultPartName);
+    final String defaultPartitionName = getDefaultPartitionName(defaultPartName,
+            ensureGetMTable(catName, dbName, tblName).getParameters());
     final boolean isEmptyFilter = exprBytes.length == 1 && exprBytes[0] == -1;
     ExpressionTree tmp = null;
     if (!isEmptyFilter) {
       tmp = PartFilterExprUtil.makeExpressionTree(expressionProxy, exprBytes,
-          getDefaultPartitionName(defaultPartName), conf);
+              defaultPartitionName, conf);
     }
     final ExpressionTree exprTree = tmp;
     return new GetListHelper<String>(catName, dbName, tblName, true, true) {
@@ -3378,7 +3379,7 @@ public class ObjectStore implements RawStore, Configurable {
         Table table = ctx.getTable();
         if (exprTree != null) {
           if (directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
-              ctx.getTable().getPartitionKeys(), exprTree, defaultPartitionName, filter)) {
+              ctx.getTable().getPartitionKeys(), exprTree, defaultPartitionName, filter, table.getParameters())) {
             partNames = directSql.getPartitionNamesViaSql(filter, table.getPartitionKeys(),
                 defaultPartitionName, order, (int)maxParts);
           }
@@ -3427,13 +3428,13 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected boolean canUseDirectSql(GetHelper<List<String>> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(catName, dbName, tblName,
-            partitionKeys, tree, null, filter);
+            partitionKeys, tree, null, filter, mTable.getParameters());
       }
 
       @Override
       protected List<String> getSqlResult(GetHelper<List<String>> ctx) throws MetaException {
         return directSql.getPartitionNamesViaSql(filter, partitionKeys,
-            getDefaultPartitionName(args.getDefaultPartName()), null, args.getMax());
+            getDefaultPartitionName(args.getDefaultPartName(), mTable.getParameters()), null, args.getMax());
       }
 
       @Override
@@ -4060,7 +4061,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean hasUnknownPartitions = expressionProxy.filterPartitionsByExpr(
             partitionKeys,
             args.getExpr(),
-            getDefaultPartitionName(args.getDefaultPartName()),
+            getDefaultPartitionName(args.getDefaultPartName(), mTable.getParameters()),
             result);
     if (args.getMax() >= 0 && result.size() > args.getMax()) {
       result = result.subList(0, args.getMax());
@@ -4071,10 +4072,6 @@ public class ObjectStore implements RawStore, Configurable {
   protected boolean getPartitionsByExprInternal(String catName, String dbName, String tblName,
       List<Partition> result, boolean allowSql, boolean allowJdo, GetPartitionsArgs args) throws TException {
     assert result != null;
-
-    byte[] expr = args.getExpr();
-    final ExpressionTree exprTree = expr.length != 0 ? PartFilterExprUtil.makeExpressionTree(
-          expressionProxy, expr, getDefaultPartitionName(args.getDefaultPartName()), conf) : ExpressionTree.EMPTY_TREE;
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
 
     catName = normalizeIdentifier(catName);
@@ -4082,6 +4079,10 @@ public class ObjectStore implements RawStore, Configurable {
     tblName = normalizeIdentifier(tblName);
 
     MTable mTable = ensureGetMTable(catName, dbName, tblName);
+    byte[] expr = args.getExpr();
+    final ExpressionTree exprTree = expr.length != 0 ? PartFilterExprUtil.makeExpressionTree(
+            expressionProxy, expr, getDefaultPartitionName(args.getDefaultPartName(), mTable.getParameters()),
+            conf) : ExpressionTree.EMPTY_TREE;
     List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
     boolean isAcidTable = TxnUtils.isAcidTable(mTable.getParameters());
     result.addAll(new GetListHelper<Partition>(catName, dbName, tblName, allowSql, allowJdo) {
@@ -4091,7 +4092,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (exprTree != null) {
           SqlFilterForPushdown filter = new SqlFilterForPushdown();
           if (directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
-              exprTree, args.getDefaultPartName(), filter)) {
+              exprTree, args.getDefaultPartName(), filter, mTable.getParameters())) {
             String catalogName = (catName != null) ? catName : getDefaultCatalog(conf);
             return directSql.getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter,
                     isAcidTable, args);
@@ -4133,9 +4134,15 @@ public class ObjectStore implements RawStore, Configurable {
    * @param inputDefaultPartName Incoming default partition name.
    * @return Valid default partition name
    */
-  private String getDefaultPartitionName(String inputDefaultPartName) {
+  private String getDefaultPartitionName(String inputDefaultPartName, Map<String, String> tableParams) {
+    String computedDefaultPartitionName;
+    if (tableParams != null && tableParams.containsKey(HiveAlterHandler.DEFAULT_PARTITION_NAME)) {
+      computedDefaultPartitionName =  tableParams.get(HiveAlterHandler.DEFAULT_PARTITION_NAME);
+    } else {
+      computedDefaultPartitionName =  MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+    }
     return (((inputDefaultPartName == null) || (inputDefaultPartName.isEmpty()))
-            ? MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME)
+            ? computedDefaultPartitionName
             : inputDefaultPartName);
   }
 
@@ -4606,7 +4613,8 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree,
+           null, filter, mTable.getParameters());
       }
 
       @Override
@@ -4643,7 +4651,8 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null,
+          filter, mTable.getParameters());
       }
 
       @Override
@@ -4695,7 +4704,8 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, tree, null, filter);
+        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, tree,
+            null, filter, mTable.getParameters());
       }
 
       @Override
@@ -4753,7 +4763,7 @@ public class ObjectStore implements RawStore, Configurable {
           // if there are more than one filter string we AND them together
           initExpressionTree();
           return directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
-                  table.getPartitionKeys(), tree, null, filter);
+                  table.getPartitionKeys(), tree, null, filter, ctx.table.getParameters());
         }
         // BY_VALUES and BY_NAMES are always supported
         return true;

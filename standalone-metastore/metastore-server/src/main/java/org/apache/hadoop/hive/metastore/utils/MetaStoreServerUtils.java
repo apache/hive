@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -1607,7 +1608,7 @@ public class MetaStoreServerUtils {
    * @return Partition name, for example partitiondate=2008-01-01
    */
   public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
-                                        Map<String, String> partitionColToTypeMap, Configuration conf) {
+      Map<String, String> partitionColToTypeMap, Configuration conf, Map<String, String> tableParameters) {
     StringBuilder result = null;
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
@@ -1629,7 +1630,7 @@ public class MetaStoreServerUtils {
         String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
           String normalisedPartitionValue = getNormalisedPartitionValue(partitionValue,
-                  partitionColToTypeMap.get(partitionName), conf);
+                  partitionColToTypeMap.get(partitionName), conf, tableParameters);
           if (normalisedPartitionValue == null) {
             return null;
           }
@@ -1646,13 +1647,13 @@ public class MetaStoreServerUtils {
     return (result == null) ? null : result.toString();
   }
 
-  public static String getNormalisedPartitionValue(String partitionValue, String type, Configuration conf) {
+  public static String getNormalisedPartitionValue(String partitionValue, String type, Configuration conf,
+      Map<String, String> tableParams) {
     // 1. Handle simple exit cases first.
     if (type == null) {
       return partitionValue;
     }
-    if (Objects.equals(partitionValue, MetastoreConf.getVar(conf,
-            MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) {
+    if (Objects.equals(partitionValue, HiveMetaStoreChecker.getDefaultPartitionName(tableParams, conf))) {
       // This is the special partition name for NULL values. It should never be parsed.
       return partitionValue;
     }

@@ -952,54 +952,54 @@ public class TestMetaStoreServerUtils {
   @Test
   public void testConversionToSignificantNumericTypes() {
     Configuration metastoreConf = MetastoreConf.newMetastoreConf();
-    assertEquals("1", MetaStoreServerUtils.getNormalisedPartitionValue("0001", "tinyint", metastoreConf));
-    assertEquals("1", MetaStoreServerUtils.getNormalisedPartitionValue("0001", "smallint", metastoreConf));
-    assertEquals("10", MetaStoreServerUtils.getNormalisedPartitionValue("00010", "int", metastoreConf));
-    assertEquals("-10", MetaStoreServerUtils.getNormalisedPartitionValue("-00010", "int", metastoreConf));
+    assertEquals("1", MetaStoreServerUtils.getNormalisedPartitionValue("0001", "tinyint", metastoreConf, null));
+    assertEquals("1", MetaStoreServerUtils.getNormalisedPartitionValue("0001", "smallint", metastoreConf, null));
+    assertEquals("10", MetaStoreServerUtils.getNormalisedPartitionValue("00010", "int", metastoreConf, null));
+    assertEquals("-10", MetaStoreServerUtils.getNormalisedPartitionValue("-00010", "int", metastoreConf, null));
 
-    assertEquals("10", MetaStoreServerUtils.getNormalisedPartitionValue("00010", "bigint", metastoreConf));
-    assertEquals("-10", MetaStoreServerUtils.getNormalisedPartitionValue("-00010", "bigint", metastoreConf));
+    assertEquals("10", MetaStoreServerUtils.getNormalisedPartitionValue("00010", "bigint", metastoreConf, null));
+    assertEquals("-10", MetaStoreServerUtils.getNormalisedPartitionValue("-00010", "bigint", metastoreConf, null));
 
-    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.0100", "float", metastoreConf));
-    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "float", metastoreConf));
-    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.010000", "double", metastoreConf));
-    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.010000", "double", metastoreConf));
-    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.0100", "decimal", metastoreConf));
-    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal", metastoreConf));
-    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal(10,10)", metastoreConf));
+    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.0100", "float", metastoreConf, null));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "float", metastoreConf, null));
+    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.010000", "double", metastoreConf, null));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.010000", "double", metastoreConf, null));
+    assertEquals("1.01", MetaStoreServerUtils.getNormalisedPartitionValue("0001.0100", "decimal", metastoreConf, null));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal", metastoreConf, null));
+    assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal(10,10)", metastoreConf, null));
     assertEquals("__HIVE_DEFAULT_PARTITION__", MetaStoreServerUtils.getNormalisedPartitionValue(
-        "__HIVE_DEFAULT_PARTITION__", "decimal", metastoreConf));
+        "__HIVE_DEFAULT_PARTITION__", "decimal", metastoreConf, null));
   }
 
   @Test
   public void testConversionFromStringToNumeric() {
     Configuration metastoreConf = MetastoreConf.newMetastoreConf();
     Assert.assertThrows(NumberFormatException.class, () -> MetaStoreServerUtils.getNormalisedPartitionValue(
-            "Random_Partition", "double", metastoreConf));
+            "Random_Partition", "double", metastoreConf, null));
     Assert.assertThrows(NumberFormatException.class, () -> MetaStoreServerUtils.getNormalisedPartitionValue(
-            "Random_Partition", "int", metastoreConf));
+            "Random_Partition", "int", metastoreConf, null));
     Assert.assertThrows(NumberFormatException.class, () -> MetaStoreServerUtils.getNormalisedPartitionValue(
-            "Random_Partition", "smallint", metastoreConf));
+            "Random_Partition", "smallint", metastoreConf, null));
     Assert.assertThrows(NumberFormatException.class, () -> MetaStoreServerUtils.getNormalisedPartitionValue(
-            "Random_Partition", "bigint", metastoreConf));
+            "Random_Partition", "bigint", metastoreConf, null));
     Assert.assertThrows(NumberFormatException.class, () -> MetaStoreServerUtils.getNormalisedPartitionValue(
-            "Random_Partition", "float", metastoreConf));
+            "Random_Partition", "float", metastoreConf, null));
     Assert.assertThrows(NumberFormatException.class, () -> MetaStoreServerUtils.getNormalisedPartitionValue(
-            "Random_Partition", "decimal", metastoreConf));
+            "Random_Partition", "decimal", metastoreConf, null));
 
     MetastoreConf.setVar(metastoreConf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION, "skip");
       assertNull(MetaStoreServerUtils.getNormalisedPartitionValue(
-              "Random_Partition", "int", metastoreConf));
+              "Random_Partition", "int", metastoreConf, null));
       assertNull(MetaStoreServerUtils.getNormalisedPartitionValue(
-              "Random_Partition", "smallint", metastoreConf));
+              "Random_Partition", "smallint", metastoreConf, null));
       assertNull(MetaStoreServerUtils.getNormalisedPartitionValue(
-              "Random_Partition", "bigint", metastoreConf));
+              "Random_Partition", "bigint", metastoreConf, null));
       assertNull(MetaStoreServerUtils.getNormalisedPartitionValue(
-              "Random_Partition", "float", metastoreConf));
+              "Random_Partition", "float", metastoreConf, null));
       assertNull(MetaStoreServerUtils.getNormalisedPartitionValue(
-              "Random_Partition", "double", metastoreConf));
+              "Random_Partition", "double", metastoreConf, null));
       assertNull(MetaStoreServerUtils.getNormalisedPartitionValue(
-              "Random_Partition", "decimal", metastoreConf));
+              "Random_Partition", "decimal", metastoreConf, null));
   }
 
   @Test

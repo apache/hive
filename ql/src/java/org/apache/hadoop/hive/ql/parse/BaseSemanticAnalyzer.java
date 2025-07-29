@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -1649,7 +1650,7 @@ public abstract class BaseSemanticAnalyzer {
     return storedAsDirs;
   }
 
-  private static boolean getPartExprNodeDesc(ASTNode astNode, HiveConf conf,
+  private static boolean getPartExprNodeDesc(Table tbl, ASTNode astNode, HiveConf conf,
       Map<ASTNode, ExprNodeDesc> astExprNodeMap) throws SemanticException {
 
     if (astNode == null) {
@@ -1659,13 +1660,13 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(tbl.getParameters(), conf);
     boolean result = true;
     for (Node childNode : astNode.getChildren()) {
       ASTNode childASTNode = (ASTNode)childNode;
 
       if (childASTNode.getType() != HiveParser.TOK_PARTVAL) {
-        result = getPartExprNodeDesc(childASTNode, conf, astExprNodeMap) && result;
+        result = getPartExprNodeDesc(tbl, childASTNode, conf, astExprNodeMap) && result;
       } else {
         boolean isDynamicPart = childASTNode.getChildren().size() <= 1;
         result = !isDynamicPart && result;
@@ -1765,7 +1766,7 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     Map<ASTNode, ExprNodeDesc> astExprNodeMap = new HashMap<>();
-    if (!getPartExprNodeDesc(astNode, conf, astExprNodeMap)) {
+    if (!getPartExprNodeDesc(tbl, astNode, conf, astExprNodeMap)) {
       STATIC_LOG.warn("Dynamic partitioning is used; only validating "
           + astExprNodeMap.size() + " columns");
     }
