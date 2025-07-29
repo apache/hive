@@ -29,10 +29,17 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -64,6 +71,10 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 public abstract class HMSTestBase {
   protected static final String baseDir = System.getProperty("basedir");
@@ -142,6 +153,78 @@ public abstract class HMSTestBase {
     } finally {
       client = null;
       conf = null;
+    }
+  }
+
+  /**
+   * This is how we created a self-signed certificate for localhost needed for https (ssl) configuration
+   * The keystore and truststore were generated using the following commands:
+   * % keytool -genkeypair -alias Hive -keyalg RSA -keysize 2048 -validity 3650 -storetype PKCS12 -keystore hive_keystore.p12 -storepass apache -keypass apache
+   * % keytool -export -alias Hive -file hive.crt -keystore hive_keystore.p12 -storepass apache
+   * % keytool -import -alias Hive -file hive.crt -keystore hive_trusstore.p012 -storepass apache -noprompt -storetype PKCS12
+  */
+  private static final String LOCALHOST_KEY_STORE_NAME = "hive_keystore.p12";
+  private static final String KEY_STORE_TRUST_STORE_PASSWORD = "apache";
+  private static final String TRUST_STORE_NAME = "hive_truststore.p12";
+  private static final String STORES_DIR = "src/test/resources";
+
+  /**
+   * Sets the metastore configuration to use SSL.
+
+   * @param conf the configuration to set
+   */
+  public static void setHttpsConf(Configuration conf) {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.USE_SSL, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH,
+            STORES_DIR + File.separator + LOCALHOST_KEY_STORE_NAME);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD,
+            KEY_STORE_TRUST_STORE_PASSWORD);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE, "PKCS12");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM, KeyManagerFactory.getDefaultAlgorithm());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH,
+            STORES_DIR + File.separator + TRUST_STORE_NAME);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD,
+            KEY_STORE_TRUST_STORE_PASSWORD);
+    LOG.info("Metastore SSL configuration set with keystore {} and truststore {}",
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH),
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH));
+  }
+
+
+  /**
+   * Returns a client socket factory that uses the truststore defined in the configuration.
+   * This is used to connect to the server using SSL.
+   * @return the SSLSocketFactory
+   */
+  protected static SSLContext clientSSLContextFactory(Configuration conf) {
+    try {
+      boolean sslEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS);
+      if (!sslEnabled) {
+        // SSL is not enabled in configuration
+        return null;
+      }
+      LOG.info("Creating client SSLContext with truststore from configuration");
+      String storePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH);
+      if (storePath == null || storePath.isEmpty()) {
+        throw new IllegalArgumentException("SSL truststore path is not set in configuration");
+      }
+      String password = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+      // Load custom truststore containing the server certificate
+      KeyStore trustStore = KeyStore.getInstance("PKCS12");
+      try (InputStream tsStream = Files.newInputStream(Paths.get(storePath))) {
+        trustStore.load(tsStream, password.toCharArray());
+      }
+      // Initialize TrustManager with the truststore
+      TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+              TrustManagerFactory.getDefaultAlgorithm());
+      tmf.init(trustStore);
+      // Create isolated SSLContext using only our truststore
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(null, tmf.getTrustManagers(), null);
+      return sslContext;
+    } catch (IOException | KeyStoreException | CertificateException | KeyManagementException | NoSuchAlgorithmException e) {
+      throw new IllegalArgumentException("Client socket factory creation failed", e);
     }
   }
 

@@ -31,7 +31,7 @@ import java.util.TreeMap;
  * <ul>
  *   <li>name : when it refers to a cluster property named 'name'</li>
  *   <li>db.name : when it refers to a database property named 'name' for the database 'db'</li>
- *   <li>db.table.name : when it refers to a table property named 'name' for the table 'table' in the database 'db</li>
+ *   <li>db.table.name : when it refers to a table property named 'name' for the table 'table' in the database 'db'</li>
  * </ul>
  */
 public class HMSPropertyManager extends PropertyManager {
@@ -80,7 +80,8 @@ public class HMSPropertyManager extends PropertyManager {
     CLEANUP_NEEDED,
     FAILED
   }
-  /** The map form ordinal to OpStatus. */
+  
+  /** The map from ordinal to OpStatus. */
   private static final Map<Integer, MaintenanceOpStatus> MOS;
   static {
     MOS = new HashMap<>(MaintenanceOpStatus.values().length);
@@ -111,6 +112,7 @@ public class HMSPropertyManager extends PropertyManager {
       }
       return parse(value.toString());
     }
+
     @Override public MaintenanceOpType parse(String str) {
       if (str == null) {
         return null;
@@ -142,12 +144,14 @@ public class HMSPropertyManager extends PropertyManager {
       }
       return parse(value.toString());
     }
+
     @Override public MaintenanceOpStatus parse(String str) {
       if (str == null) {
         return null;
       }
       return MaintenanceOpStatus.valueOf(str.toUpperCase());
     }
+
     @Override public String format(Object value) {
       if (value instanceof MaintenanceOpStatus) {
         return value.toString();

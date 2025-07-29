@@ -1891,6 +1891,10 @@ public class MetastoreConf {
             "hive.metastore.httpserver.threadpool.idle", 60_000L,
             "HMS embedded HTTP server thread idle time."
     ),
+    HTTPSERVER_USE_HTTPS("hive.metastore.httpserver.use.https",
+        "hive.metastore.httpserver.use.https", false,
+        "Set this to true for using HTTPS in HMS embedded HTTP server."
+    ),
 
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
