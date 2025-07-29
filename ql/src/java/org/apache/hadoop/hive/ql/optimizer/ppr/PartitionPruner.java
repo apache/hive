@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -508,7 +509,7 @@ public class PartitionPruner extends Transform {
 
     List<String> partNames = Hive.get().getPartitionNames(tab, (short) -1);
 
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(tab.getParameters(), conf);
     List<String> partCols = tab.getPartColNames();
     List<PrimitiveTypeInfo> partColTypeInfos = extractPartColTypes(tab);
 

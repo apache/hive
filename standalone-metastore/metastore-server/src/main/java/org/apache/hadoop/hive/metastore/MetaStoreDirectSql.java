@@ -879,7 +879,7 @@ class MetaStoreDirectSql {
 
   public boolean generateSqlFilterForPushdown(String catName, String dbName, String tableName,
       List<FieldSchema> partitionKeys, ExpressionTree tree, String defaultPartitionName,
-      SqlFilterForPushdown result) throws MetaException {
+      SqlFilterForPushdown result, Map<String, String> tableParams) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     assert partitionKeys != null;
     boolean dbHasJoinCastBug = dbType.hasJoinOperationOrderBug();

@@ -1569,6 +1569,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         List<Partition> result = new ArrayList<>();
         for (Pair<Integer, byte[]> pair : partExprs) {
           byte[] expr = pair.getRight();
+          // no concept of default partition in temp tables, so we only do from HiveConf
           String filter = generateJDOFilter(table, expr,
               conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
           List<Partition> partitions = tt.listPartitionsByFilter(filter);

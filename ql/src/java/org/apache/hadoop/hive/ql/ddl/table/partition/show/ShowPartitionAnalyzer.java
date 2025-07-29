@@ -119,7 +119,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
         }
 
         showFilter = replaceDefaultPartNameAndCastType(target, colTypes,
-            HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
+           PartitionUtils.getDefaultPartitionName(table.getParameters(), this.conf));
       }
     }
     return showFilter;

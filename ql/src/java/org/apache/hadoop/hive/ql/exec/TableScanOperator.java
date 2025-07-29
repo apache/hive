@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -320,7 +321,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       jc = new JobConf(hconf);
     }
 
-    defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    defaultPartitionName = PartitionUtils.getDefaultPartitionName(conf.getTableMetadata().getParameters(),
+            HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
     currentStat = null;
     stats = new HashMap<String, Stat>();
 

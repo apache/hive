@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.LineageState;
@@ -261,7 +262,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   @Test
   public void testListPartitionNames() throws Exception {
     Table t = createTable4PartColsParts(getClient()).table;
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(t.getParameters(), conf);
     List<List<String>> testValues = Lists.newArrayList(
         Lists.newArrayList("1999", defaultPartitionName, "02"),
         Lists.newArrayList(defaultPartitionName, "02", "10"),

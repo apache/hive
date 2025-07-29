@@ -93,8 +93,9 @@ class FileOutputFormatContainer extends OutputFormatContainer {
       // When Dynamic partitioning is used, the RecordWriter instance initialized here isn't used. Can use null.
       // (That's because records can't be written until the values of the dynamic partitions are deduced.
       // By that time, a new local instance of RecordWriter, with the correct output-path, will be constructed.)
+      org.apache.hadoop.hive.metastore.api.Table tbl = jobInfo.getTableInfo().getTable();
       rw = new DynamicPartitionFileRecordWriterContainer(
-          (org.apache.hadoop.mapred.RecordWriter)null, context);
+          (org.apache.hadoop.mapred.RecordWriter)null, context, jobInfo.getTableInfo().getTable());
     } else {
       Path parentDir = new Path(context.getConfiguration().get("mapred.work.output.dir"));
       String extension = HiveConf.getVar(context.getConfiguration(), HiveConf.ConfVars.OUTPUT_FILE_EXTENSION,"");
