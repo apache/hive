@@ -272,10 +272,9 @@ public class TestHiveIcebergOutputCommitter {
       }
 
       TaskAttemptID taskId = new TaskAttemptID(JOB_ID.getJtIdentifier(), JOB_ID.getId(), TaskType.MAP, i, attemptNum);
-      HiveIcebergWriter testWriter = WriterBuilder.builderFor(table)
+      HiveIcebergWriter testWriter = WriterBuilder.builderFor(table, conf::get)
           .attemptID(TezUtil.taskAttemptWrapper(taskId))
           .queryId("Q_ID")
-          .tableName(conf.get(Catalogs.NAME))
           .operation(Context.Operation.OTHER)
           .build();
 

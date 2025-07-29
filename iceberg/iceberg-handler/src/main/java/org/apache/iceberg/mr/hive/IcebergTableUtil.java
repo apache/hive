@@ -105,7 +105,6 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.iceberg.RowLevelOperationMode.COPY_ON_WRITE;
 import static org.apache.iceberg.RowLevelOperationMode.MERGE_ON_READ;
-
 import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_NAME;
 import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE;
 

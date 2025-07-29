@@ -1188,7 +1188,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) exprNodeDesc);
       validatePartitionSpec(sarg, icebergTbl.spec());
       return HiveIcebergFilterFactory.generateFilterExpression(sarg);
-    }).collect(Collectors.toList());
+    }).toList();
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils
         .createMetadataTableInstance(icebergTbl, MetadataTableType.PARTITIONS);
     List<PartitionData> partitionList = Lists.newArrayList();

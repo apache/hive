@@ -67,6 +67,15 @@ POSTHOOK: query: delete from ice01 where id>2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
+PREHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+#### A masked pattern was here ####
+POSTHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+#### A masked pattern was here ####
+1	PUFFIN	0	2	4
 PREHOOK: query: select * from ice01 order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice01
@@ -107,6 +116,16 @@ POSTHOOK: query: delete from ice01 where id=7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
+PREHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+#### A masked pattern was here ####
+POSTHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+#### A masked pattern was here ####
+1	PUFFIN	0	1	4
+1	PUFFIN	0	2	4
 PREHOOK: query: select * from ice01 order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice01
@@ -158,6 +177,16 @@ POSTHOOK: query: delete from icepart01 where id>=2 AND id<4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@icepart01
 POSTHOOK: Output: default@icepart01
+PREHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icepart01
+#### A masked pattern was here ####
+POSTHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icepart01
+#### A masked pattern was here ####
+1	PUFFIN	0	1	4
+1	PUFFIN	0	1	4
 PREHOOK: query: select * from icepart01
 PREHOOK: type: QUERY
 PREHOOK: Input: default@icepart01
@@ -198,6 +227,17 @@ POSTHOOK: query: delete from icepart01 where id=7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@icepart01
 POSTHOOK: Output: default@icepart01
+PREHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icepart01
+#### A masked pattern was here ####
+POSTHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icepart01
+#### A masked pattern was here ####
+1	PUFFIN	0	1	4
+1	PUFFIN	0	1	4
+1	PUFFIN	0	1	4
 PREHOOK: query: select * from icepart01 order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@icepart01

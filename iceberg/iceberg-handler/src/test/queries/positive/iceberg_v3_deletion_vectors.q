@@ -26,6 +26,7 @@ select * from ice01;
 
 -- delete some values
 delete from ice01 where id>2;
+select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
 
 -- check the values, the delete value should be there
 select * from ice01 order by id;
@@ -38,6 +39,7 @@ select * from ice01 order by id;
 
 -- delete one value
 delete from ice01 where id=7;
+select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
 
 -- check the entries, the deleted entries shouldn't be there.
 select * from ice01 order by id;
@@ -54,6 +56,7 @@ select * from icepart01 order by id;;
 
 -- delete some values
 delete from icepart01 where id>=2 AND id<4;
+select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files;
 
 -- check the values, the delete value should be there
 select * from icepart01;
@@ -66,6 +69,7 @@ select * from icepart01 order by id;
 
 -- delete one value
 delete from icepart01 where id=7;
+select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files;
 
 -- check the entries, the deleted entries shouldn't be there.
 select * from icepart01 order by id;;
