@@ -7,12 +7,13 @@ INSERT INTO tbl_x values(1, 'aaa', 12, 2);
 INSERT INTO tbl_x values(2, 'bbb', 12, 3);
 INSERT INTO tbl_x (id, name, month) values(3, 'ccc', 12);
 
-SET hive.exec.default.partition.name=ANOTHER_PARTITION;
+alter table tbl_x set default partition to 'ANOTHER_PARTITION';
 INSERT INTO tbl_x (id, name, day) values(4, 'ddd', 3);
 
 SHOW PARTITIONS tbl_x;
 
 CREATE EXTERNAL TABLE tbl_y (id INT, name STRING) PARTITIONED BY (month INT, day INT) stored as ORC location '${system:test.tmp.dir}/apps/hive/warehouse/test.db/tbl_x/';
+alter table tbl_y set default partition to 'ANOTHER_PARTITION';
 
 set hive.msck.path.validation=skip;
 
@@ -20,15 +21,17 @@ MSCK REPAIR TABLE tbl_y;
 
 SHOW PARTITIONS tbl_y;
 
-SET hive.exec.default.partition.name=SECOND_PARTITION;
+alter table tbl_y set default partition to 'SECOND_PARTITION';
 INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3);
+SHOW PARTITIONS tbl_y;
 
-SET hive.exec.default.partition.name=OTHER_PARTITION;
+alter table tbl_y set default partition to 'OTHER_PARTITION';
 INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3);
-
 SHOW PARTITIONS tbl_y;
 
 set hive.msck.path.validation=ignore;
+
+dfs ${system:test.dfs.mkdir} -p ${system:test.tmp.dir}/apps/hive/warehouse/test.db//tbl_x/month=DEFAULT/day=DEFAULT;
 MSCK REPAIR TABLE tbl_y;
 SHOW PARTITIONS tbl_y;
 
