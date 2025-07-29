@@ -3117,7 +3117,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
+  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
     if (tablePath != null) {
       deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
     }
@@ -3151,7 +3151,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
+  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
     if (partPaths != null && !partPaths.isEmpty()) {
       for (Path partPath : partPaths) {
         deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
@@ -3190,7 +3190,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) {
+  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
     try {
       if (shouldEnableCm) {
         //Don't delete cmdir if its inside the partition path
