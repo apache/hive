@@ -68,7 +68,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
@@ -853,7 +853,7 @@ public class TestHiveMetaStoreAuthorizer {
     when(fileStatus.getPath()).thenReturn(new Path(tblName));
     when(wh.getFs(new Path(tblName)).listStatus(new Path(tblName))).thenReturn(new FileStatus[] { fileStatus });
 
-    doThrow(new FileNotFoundException("Failed to delete director:"))
+    doThrow(new MetaException("Failed to delete director:"))
        .when(wh.getFs(new Path(tblName))).delete(any(Path.class), anyBoolean());
 
     try {
