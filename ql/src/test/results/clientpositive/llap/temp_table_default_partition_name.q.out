@@ -6,6 +6,14 @@ POSTHOOK: query: create temporary table default_partition_name_temp (key int, va
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@default_partition_name_temp
+PREHOOK: query: alter table default_partition_name_temp set default partition to 'some_other_default_partition_name_temp'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@default_partition_name_temp
+PREHOOK: Output: default@default_partition_name_temp
+POSTHOOK: query: alter table default_partition_name_temp set default partition to 'some_other_default_partition_name_temp'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@default_partition_name_temp
+POSTHOOK: Output: default@default_partition_name_temp
 PREHOOK: query: alter table default_partition_name_temp add partition(ds='__HIVE_DEFAULT_PARTITION__')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@default_partition_name_temp

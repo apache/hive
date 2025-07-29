@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -320,7 +321,16 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       jc = new JobConf(hconf);
     }
 
-    defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    if (conf.getTableMetadata() != null) {
+      defaultPartitionName = PartitionUtils.getDefaultPartitionName(conf.getTableMetadata().getParameters(),
+              HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
+    } else {
+      // If the table metadata is not available, we cannot determine the default partition name.
+      // This can happen in some test cases or if the table is not partitioned or in case of nested query.
+      // Nested query ex: SELECT * FROM (SELECT key, value FROM src DISTRIBUTE BY (key, value))t ORDER BY key, value;
+      // Parent query do not know about the partitioning of the child query.
+      defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    }
     currentStat = null;
     stats = new HashMap<String, Stat>();
 

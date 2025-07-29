@@ -38,6 +38,7 @@ public enum AlterTableType {
   ADDPARTITION("add partition"),
   DROPPARTITION("drop partition"),
   RENAMEPARTITION("rename partition"), // Note: used in RenamePartitionDesc, not here.
+  SETDEFAULTPARTITION("set default partition"),
   ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
   SETPARTITIONSPEC("set partition spec"),
   EXECUTE("execute"),

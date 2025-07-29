@@ -416,6 +416,7 @@ public class HiveStringUtils {
   final public static char EQUALS = '=';
   final public static String COMMA_STR = ",";
   final public static char ESCAPE_CHAR = '\\';
+  final public static String DEFAULT_PARTITION_NAME = "DEFAULT_PARTITION_NAME";
 
   /**
    * Split a string using the default separator

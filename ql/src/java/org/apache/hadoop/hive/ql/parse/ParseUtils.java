@@ -579,7 +579,7 @@ public final class ParseUtils {
    */
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> getFullPartitionSpecs(
       CommonTree ast, Table table, Configuration conf, boolean canGroupExprs) throws SemanticException {
-    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(table.getParameters(), (HiveConf)conf);
     Map<String, String> colTypes = new HashMap<>();
     List<FieldSchema> partitionKeys = table.hasNonNativePartitionSupport() ?
         table.getStorageHandler().getPartitionKeys(table) : table.getPartitionKeys();

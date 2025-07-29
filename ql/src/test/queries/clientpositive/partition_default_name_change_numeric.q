@@ -32,7 +32,11 @@ INSERT INTO date_dim_multi VALUES
   (24519, 2451900002, 24519.02, 24519.02, '2020-01-02', 2020);
 
 -- modify hive default partition name post insertion
-SET hive.exec.default.partition.name=abc;
+alter table sales_p_int set default partition to 'abc';
+alter table sales_p_bigint set default partition to 'abc';
+alter table sales_p_double set default partition to 'abc';
+alter table sales_p_decimal set default partition to 'abc';
+
 
 SELECT d_date FROM sales_p_int s, date_dim_multi d WHERE s.ss_sold_date_sk_int = d.d_date_sk_int and d.d_year = 2020 GROUP BY d_date;
 SELECT d_date FROM sales_p_bigint s JOIN date_dim_multi d ON s.ss_sold_date_sk_bigint = d.d_date_sk_bigint WHERE d.d_year = 2020 GROUP BY d_date;

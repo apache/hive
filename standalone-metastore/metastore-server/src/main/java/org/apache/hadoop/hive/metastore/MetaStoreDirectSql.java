@@ -30,6 +30,7 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.cache.CachedStore.getDefaultPartitionName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -151,7 +152,6 @@ class MetaStoreDirectSql {
   private final DatabaseProduct dbType;
   private final int batchSize;
   private final boolean convertMapNullsToEmptyStrings;
-  private final String defaultPartName;
   private final boolean isTxnStatsEnabled;
 
   /**
@@ -220,7 +220,6 @@ class MetaStoreDirectSql {
 
     convertMapNullsToEmptyStrings =
         MetastoreConf.getBoolVar(conf, ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
-    defaultPartName = MetastoreConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
 
     String jdoIdFactory = MetastoreConf.getVar(conf, ConfVars.IDENTIFIER_FACTORY);
     if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
@@ -879,7 +878,7 @@ class MetaStoreDirectSql {
 
   public boolean generateSqlFilterForPushdown(String catName, String dbName, String tableName,
       List<FieldSchema> partitionKeys, ExpressionTree tree, String defaultPartitionName,
-      SqlFilterForPushdown result) throws MetaException {
+      SqlFilterForPushdown result, Map<String, String> tableParams) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     assert partitionKeys != null;
     boolean dbHasJoinCastBug = dbType.hasJoinOperationOrderBug();
@@ -888,7 +887,7 @@ class MetaStoreDirectSql {
     result.catName = catName;
     result.filter = PartitionFilterGenerator.generateSqlFilter(catName, dbName, tableName,
         partitionKeys, tree, result.params, result.joins, dbHasJoinCastBug,
-        ((defaultPartitionName == null) ? defaultPartName : defaultPartitionName),
+        ((defaultPartitionName == null) ? getDefaultPartitionName(tableParams, conf ) : defaultPartitionName),
         dbType, schema, result.compactJoins);
     return result.filter != null;
   }

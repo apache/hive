@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -119,7 +118,7 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
         }
 
         showFilter = replaceDefaultPartNameAndCastType(target, colTypes,
-            HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
+           PartitionUtils.getDefaultPartitionName(table.getParameters(), this.conf));
       }
     }
     return showFilter;

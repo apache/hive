@@ -40,10 +40,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -514,7 +516,8 @@ public class TestStreamingDynamicPartitioning {
     assertEquals("7\tfoo\t" + defaultPartitionName + "\t" + defaultPartitionName, res.get(6));
     assertEquals("8\tbar\t" + defaultPartitionName + "\t12", res.get(7));
 
-    defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    Table tbl = msClient.getTable(dbName, tblName);
+    defaultPartitionName = PartitionUtils.getDefaultPartitionName(tbl.getParameters(), conf);
     res = queryTable(driver, "show partitions " + (dbName + "." + tblName));
     assertEquals(5, res.size());
     assertTrue(res.contains("year=2018/month=2"));
@@ -574,7 +577,8 @@ public class TestStreamingDynamicPartitioning {
     assertTrue(exception.getMessage().equals("Transaction state is not OPEN. Missing beginTransaction?"));
 
     connection.close();
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    Table tbl = msClient.getTable(dbName, tblName);
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(tbl.getParameters(), conf);
     List<String> res = queryTable(driver, "select * from " + (dbName + "." + tblName) + " order by id");
     assertEquals(2, res.size());
     assertEquals("1\tfoo\tAsia\t" + defaultPartitionName, res.get(0));
@@ -708,7 +712,8 @@ public class TestStreamingDynamicPartitioning {
     assertNotNull(exception);
     assertTrue(exception.getMessage().endsWith("Streaming connection is closed already."));
 
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    Table tbl = msClient.getTable(dbName, tblName);
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(tbl.getParameters(), conf);
     List<String> res = queryTable(driver, "select * from " + (dbName + "." + tblName) + " order by id");
     assertEquals(2, res.size());
     assertEquals("1\tfoo\tAsia\t" + defaultPartitionName, res.get(0));
@@ -759,7 +764,8 @@ public class TestStreamingDynamicPartitioning {
     }
     assertNotNull(exception);
     assertTrue(exception.getMessage().equals("Streaming connection is closed already."));
-    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    Table tbl = msClient.getTable(dbName, tblName);
+    String defaultPartitionName = PartitionUtils.getDefaultPartitionName(tbl.getParameters(), conf);
     List<String> res = queryTable(driver, "select * from " + (dbName + "." + tblName) + " order by id");
     assertEquals(3, res.size());
     assertEquals("1\tfoo\tAsia\t" + defaultPartitionName, res.get(0));

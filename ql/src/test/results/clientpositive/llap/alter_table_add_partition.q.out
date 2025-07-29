@@ -232,6 +232,14 @@ POSTHOOK: query: alter table test_part add partition(b='one')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@test_part
 POSTHOOK: Output: default@test_part@b=one
+PREHOOK: query: alter table test_part set default partition to 'random'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@test_part
+PREHOOK: Output: default@test_part
+POSTHOOK: query: alter table test_part set default partition to 'random'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@test_part
+POSTHOOK: Output: default@test_part
 PREHOOK: query: alter table test_part add partition(b='random_access_memory')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@test_part

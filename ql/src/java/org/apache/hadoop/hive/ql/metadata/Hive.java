@@ -162,6 +162,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -928,6 +929,10 @@ public class Hive implements AutoCloseable {
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
       }
+      if (isSetDefaultPartition(environmentContext)) {
+        environmentContext.putToProperties(ConfVars.DEFAULT_PARTITION_NAME.varname,
+                conf.getVar(ConfVars.DEFAULT_PARTITION_NAME));
+      }
       if (isRename(environmentContext)) {
         newTbl.validateName(conf);
         environmentContext.putToProperties(HiveMetaHook.OLD_TABLE_NAME, tblName);
@@ -978,6 +983,14 @@ public class Hive implements AutoCloseable {
     if (environmentContext.isSetProperties()) {
       String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
       return operation != null && AlterTableType.RENAME == AlterTableType.valueOf(operation);
+    }
+    return false;
+  }
+
+  private static boolean isSetDefaultPartition(EnvironmentContext environmentContext) {
+    if (environmentContext.isSetProperties()) {
+      String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
+      return operation != null && AlterTableType.SETDEFAULTPARTITION == AlterTableType.valueOf(operation);
     }
     return false;
   }
@@ -4166,7 +4179,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       exprBytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
     }
     try {
-      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
+      String defaultPartitionName = PartitionUtils.getDefaultPartitionName(tbl.getParameters(), conf);
       PartitionsByExprRequest req =
           new PartitionsByExprRequest(tbl.getDbName(), tbl.getTableName(), ByteBuffer.wrap(exprBytes));
       if (defaultPartitionName != null) {
@@ -4707,7 +4720,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PARTITIONS_BY_EXPR);
     try {
       Preconditions.checkNotNull(partitions);
-      String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME);
+      String defaultPartitionName = PartitionUtils.getDefaultPartitionName(tbl.getParameters(), conf);
       if (tbl.hasNonNativePartitionSupport()) {
         partitions.addAll(tbl.getStorageHandler().getPartitionsByExpr(tbl, expr));
         return false;

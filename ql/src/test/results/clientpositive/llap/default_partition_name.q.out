@@ -6,6 +6,14 @@ POSTHOOK: query: create table default_partition_name (key int, value string) par
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@default_partition_name
+PREHOOK: query: alter table default_partition_name set default partition to 'some_other_default_partition_name'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@default_partition_name
+PREHOOK: Output: default@default_partition_name
+POSTHOOK: query: alter table default_partition_name set default partition to 'some_other_default_partition_name'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@default_partition_name
+POSTHOOK: Output: default@default_partition_name
 PREHOOK: query: alter table default_partition_name add partition(ds='__HIVE_DEFAULT_PARTITION__')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@default_partition_name

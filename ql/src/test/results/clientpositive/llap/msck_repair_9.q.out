@@ -53,6 +53,14 @@ POSTHOOK: Output: default@tbl_x
 POSTHOOK: Output: default@tbl_x@month=12/day=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=__HIVE_DEFAULT_PARTITION__).id SCRIPT []
 POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=__HIVE_DEFAULT_PARTITION__).name SCRIPT []
+PREHOOK: query: alter table tbl_x set default partition to 'ANOTHER_PARTITION'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_x
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: alter table tbl_x set default partition to 'ANOTHER_PARTITION'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_x
+POSTHOOK: Output: default@tbl_x
 PREHOOK: query: INSERT INTO tbl_x (id, name, day) values(4, 'ddd', 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -72,7 +80,7 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@tbl_x
 month=12/day=2
 month=12/day=3
-month=12/day=__HIVE_DEFAULT_PARTITION__
+month=12/day=ANOTHER_PARTITION
 month=ANOTHER_PARTITION/day=3
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -84,13 +92,21 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_y
+PREHOOK: query: alter table tbl_y set default partition to 'ANOTHER_PARTITION'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_y
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: alter table tbl_y set default partition to 'ANOTHER_PARTITION'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_y
+POSTHOOK: Output: default@tbl_y
 PREHOOK: query: MSCK REPAIR TABLE tbl_y
 PREHOOK: type: MSCK
 PREHOOK: Output: default@tbl_y
 POSTHOOK: query: MSCK REPAIR TABLE tbl_y
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@tbl_y
-Partitions not in metastore:	tbl_y:month=12/day=2	tbl_y:month=12/day=3	tbl_y:month=ANOTHER_PARTITION/day=3
+Partitions not in metastore:	tbl_y:month=12/day=2	tbl_y:month=12/day=3	tbl_y:month=12/day=ANOTHER_PARTITION	tbl_y:month=ANOTHER_PARTITION/day=3
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS tbl_y
 PREHOOK: type: SHOWPARTITIONS
@@ -100,7 +116,16 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@tbl_y
 month=12/day=2
 month=12/day=3
+month=12/day=ANOTHER_PARTITION
 month=ANOTHER_PARTITION/day=3
+PREHOOK: query: alter table tbl_y set default partition to 'SECOND_PARTITION'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_y
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: alter table tbl_y set default partition to 'SECOND_PARTITION'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_y
+POSTHOOK: Output: default@tbl_y
 PREHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -112,6 +137,24 @@ POSTHOOK: Output: default@tbl_y
 POSTHOOK: Output: default@tbl_y@month=SECOND_PARTITION/day=3
 POSTHOOK: Lineage: tbl_y PARTITION(month=SECOND_PARTITION,day=3).id SCRIPT []
 POSTHOOK: Lineage: tbl_y PARTITION(month=SECOND_PARTITION,day=3).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS tbl_y
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_y
+POSTHOOK: query: SHOW PARTITIONS tbl_y
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_y
+month=12/day=2
+month=12/day=3
+month=12/day=SECOND_PARTITION
+month=SECOND_PARTITION/day=3
+PREHOOK: query: alter table tbl_y set default partition to 'OTHER_PARTITION'
+PREHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+PREHOOK: Input: default@tbl_y
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: alter table tbl_y set default partition to 'OTHER_PARTITION'
+POSTHOOK: type: ALTERTABLE_SETDEFAULTPARTITION
+POSTHOOK: Input: default@tbl_y
+POSTHOOK: Output: default@tbl_y
 PREHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -131,16 +174,15 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@tbl_y
 month=12/day=2
 month=12/day=3
-month=ANOTHER_PARTITION/day=3
+month=12/day=OTHER_PARTITION
 month=OTHER_PARTITION/day=3
-month=SECOND_PARTITION/day=3
 PREHOOK: query: MSCK REPAIR TABLE tbl_y
 PREHOOK: type: MSCK
 PREHOOK: Output: default@tbl_y
 POSTHOOK: query: MSCK REPAIR TABLE tbl_y
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@tbl_y
-Partitions not in metastore:	tbl_y:month=12/day=__HIVE_DEFAULT_PARTITION__
+Partitions not in metastore:	tbl_y:month=DEFAULT/day=DEFAULT
 #### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS tbl_y
 PREHOOK: type: SHOWPARTITIONS
@@ -150,10 +192,9 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@tbl_y
 month=12/day=2
 month=12/day=3
-month=12/day=__HIVE_DEFAULT_PARTITION__
-month=ANOTHER_PARTITION/day=3
+month=12/day=OTHER_PARTITION
+month=DEFAULT/day=DEFAULT
 month=OTHER_PARTITION/day=3
-month=SECOND_PARTITION/day=3
 PREHOOK: query: DROP TABLE tbl_x
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_x
