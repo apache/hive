@@ -851,10 +851,10 @@ public class TestHiveMetaStoreAuthorizer {
     FileStatus fileStatus = Mockito.mock(FileStatus.class);
     when(fileStatus.isDirectory()).thenReturn(true);
     when(fileStatus.getPath()).thenReturn(new Path(tblName));
-    when(wh.getFs().listStatus(new Path(tblName))).thenReturn(new FileStatus[] { fileStatus });
+    when(wh.getFs(new Path(tblName)).listStatus(new Path(tblName))).thenReturn(new FileStatus[] { fileStatus });
 
     doThrow(new FileNotFoundException("Failed to delete director:"))
-       .when(wh.getFs()).delete(any(Path.class), anyBoolean());
+       .when(wh.getFs(new Path(tblName))).delete(any(Path.class), anyBoolean());
 
     try {
       hmsHandler.drop_table(default_db, tblName, true);
