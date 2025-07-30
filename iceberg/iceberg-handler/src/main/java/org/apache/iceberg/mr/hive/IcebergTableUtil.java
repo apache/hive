@@ -422,7 +422,8 @@ public class IcebergTableUtil {
   private static Integer formatVersion(BinaryOperator<String> props) {
     String version = props.apply(TableProperties.FORMAT_VERSION, null);
     if (version == null) {
-      return 2; // default to V2
+      // TODO: switch to v3 once fully supported
+      return 2; // default to v2
     }
     try {
       return Integer.parseInt(version);

@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -72,17 +71,6 @@ import org.apache.iceberg.util.ThreadPools;
  * @param <T> T is the in memory data model which can either be Pig tuples, Hive rows. Default is Iceberg records
  */
 public class IcebergInputFormat<T> extends InputFormat<Void, T> {
-
-  /**
-   * Configures the {@code Job} to use the {@code IcebergInputFormat} and
-   * returns a helper to add further configuration.
-   *
-   * @param job the {@code Job} to configure
-   */
-  public static InputFormatConfig.ConfigBuilder configure(Job job) {
-    job.setInputFormatClass(IcebergInputFormat.class);
-    return new InputFormatConfig.ConfigBuilder(job.getConfiguration());
-  }
 
   private static TableScan createTableScan(Table table, Configuration conf) {
     TableScan scan = table.newScan();
@@ -119,14 +107,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     return table.newIncrementalAppendScan().fromSnapshotExclusive(fromSnapshot);
   }
 
-  private static <
-          T extends Scan<T, FileScanTask, CombinedScanTask>> Scan<T,
-          FileScanTask,
-          CombinedScanTask> applyConfig(
-          Configuration conf, Scan<T, FileScanTask, CombinedScanTask> scanToConfigure) {
+  private static <T extends Scan<T, FileScanTask, CombinedScanTask>> T applyConfig(
+      Configuration conf, T scanToConfigure) {
 
-    Scan<T, FileScanTask, CombinedScanTask> scan = scanToConfigure.caseSensitive(
-            conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
+    T scan = scanToConfigure.caseSensitive(
+        conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
 
     long splitSize = conf.getLong(InputFormatConfig.SPLIT_SIZE, 0);
     if (splitSize > 0) {
@@ -234,7 +219,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
   private static void validateFileLocations(ScanTaskGroup<FileScanTask> split, Path tableLocation) {
     for (FileScanTask fileScanTask : split.tasks()) {
-      if (!FileUtils.isPathWithinSubtree(new Path(fileScanTask.file().path().toString()), tableLocation)) {
+      if (!FileUtils.isPathWithinSubtree(new Path(fileScanTask.file().location()), tableLocation)) {
         throw new AuthorizationException("The table contains paths which are outside the table location");
       }
     }
@@ -281,6 +266,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
   @Override
   public RecordReader<Void, T> createRecordReader(InputSplit split, TaskAttemptContext context) {
-    return split instanceof IcebergMergeSplit ? new IcebergMergeRecordReader<>() : new IcebergRecordReader<>();
+    return split instanceof IcebergMergeSplit ? new IcebergMergeRecordReader<>() : new IcebergRecordReader<T>();
   }
 }

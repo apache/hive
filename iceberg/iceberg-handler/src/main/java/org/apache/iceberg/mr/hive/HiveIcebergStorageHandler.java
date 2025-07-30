@@ -1293,7 +1293,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean isValidMetadataTable(String metaTableName) {
-    return metaTableName != null && MetadataTableType.from(metaTableName) != null;
+    return Optional.ofNullable(metaTableName)
+        .map(MetadataTableType::from)
+        .filter(type -> type != MetadataTableType.POSITION_DELETES)
+        .isPresent();
   }
 
   @Override
