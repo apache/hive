@@ -505,9 +505,9 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+      RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException {
-    return delegate.dropPartitions(catName, dbName, tblName, partExprs, options, context);
+    return delegate.dropPartitions(catName, dbName, tblName, partsSpec, options, context);
   }
 
   @Override
