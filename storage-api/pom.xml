@@ -32,8 +32,8 @@
     <guava.version>22.0</guava.version>
     <hadoop.version>3.4.1</hadoop.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.11.2</junit.jupiter.version>
-    <junit.vintage.version>5.11.2</junit.vintage.version>
+    <junit.jupiter.version>5.13.3</junit.jupiter.version>
+    <junit.vintage.version>5.13.3</junit.vintage.version>
     <slf4j.version>1.7.30</slf4j.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>

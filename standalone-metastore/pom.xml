@@ -89,8 +89,8 @@
     <jexl.version>3.3</jexl.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13.2</junit.version>
-    <junit.jupiter.version>5.11.2</junit.jupiter.version>
-    <junit.vintage.version>5.11.2</junit.vintage.version>
+    <junit.jupiter.version>5.13.3</junit.jupiter.version>
+    <junit.vintage.version>5.13.3</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.24.3</log4j2.version>
