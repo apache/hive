@@ -168,6 +168,8 @@ public class Operation2Privilege {
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType. ALTERTABLE_DROPCOL,
             PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType. ALTERTABLE_SETDEFAULTPARTITIONNAME,
+            PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_REPLACECOLS,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_RENAMECOL,

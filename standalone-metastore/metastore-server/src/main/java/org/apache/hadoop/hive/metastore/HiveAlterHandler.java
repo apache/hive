@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -453,8 +454,75 @@ public class HiveAlterHandler implements AlterHandler {
                   new TableName(catalogName, databaseName, tableName), writeIdList);
             }
           } else {
-            LOG.warn("Alter table not cascaded to partitions.");
-            msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
+            // add code for alter table set default partitions.
+            if (isSetDefaultPartition(environmentContext)) {
+              String clusterLevelDefaultPartitionName = environmentContext.getProperties()
+                      .get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getHiveName());
+              String oldDefaultPartitionValue = oldt.getParameters().get("DEFAULT_PARTITION_NAME");
+              String newDefaultPartitionValue = newt.getParameters().get("DEFAULT_PARTITION_NAME");
+
+              PartitionsRequest partitionReq = new PartitionsRequest(dbname, name);
+              partitionReq.setCatName(catName);
+              partitionReq.setMaxParts((short) -1);
+              List<String> partNames = handler.fetch_partition_names_req(partitionReq);
+              List<String> partNamesToProcess = new ArrayList<>();
+
+              Table finalOldt = oldt;
+              FileSystem fs  = wh.getFs(new Path(oldt.getSd().getLocation()));
+              partNames.forEach(partName -> {
+                for (FieldSchema partKey : finalOldt.getPartitionKeys()) {
+                  if (partName.contains(partKey.getName() + "=" + clusterLevelDefaultPartitionName) ||
+                          (oldDefaultPartitionValue != null && partName.contains(partKey.
+                                  getName() + "=" + oldDefaultPartitionValue))) {
+                    partNamesToProcess.add(partName);
+                    break;
+                  }
+                }
+              });
+
+              GetPartitionsByNamesRequest partsToProcess = MetaStoreUtils.convertToGetPartitionsByNamesRequest(dbname,
+                      name, partNamesToProcess);
+
+              List<Partition> oldParts = handler.get_partitions_by_names_req(partsToProcess).getPartitions();
+
+              for (Partition part : oldParts) {
+                List<String> oldPartValue = new ArrayList<>(part.getValues());
+                for (int i = 0; i< part.getValues().size() ; i++) {
+                  if (part.getValues().get(i).equals(oldDefaultPartitionValue) ||
+                          part.getValues().get(i).equals(clusterLevelDefaultPartitionName)) {
+                    part.getValues().set(i, newDefaultPartitionValue);
+                  }
+                }
+
+                String oldPartLocation = part.getSd().getLocation();
+                String searchPattern = "=";
+                if (oldDefaultPartitionValue == null) {
+                  searchPattern += clusterLevelDefaultPartitionName;
+                } else {
+                  searchPattern += oldDefaultPartitionValue;
+                }
+                String replacePattern = "=" + newDefaultPartitionValue;
+                String newPartLocation = oldPartLocation.replace(searchPattern, replacePattern);
+
+                Path oldPath = new Path(oldPartLocation);
+                try {
+                  if (fs.exists(oldPath)) {
+                    //rename to new path
+                    wh.renameDir(oldPath, new Path(newPartLocation), false);
+                  }
+                  part.getSd().setLocation(newPartLocation);
+                  msdb.alterPartition(catName, dbname, name, oldPartValue, part, writeIdList);
+                } catch (IOException e) {
+                  LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, e);
+                  throw new InvalidOperationException("Unable to access src or dest location for");
+                } catch (MetaException me) {
+                  LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, me);
+                  throw me;
+                }
+              }
+              LOG.warn("Alter table not cascaded to partitions.");
+              msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
+            }
           }
         } else {
           msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
@@ -526,6 +594,14 @@ public class HiveAlterHandler implements AlterHandler {
           new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler, isReplicated),
           environmentContext, txnAlterTableEventResponses, msdb);
     }
+  }
+
+  private static boolean isSetDefaultPartition(EnvironmentContext environmentContext) {
+    if (environmentContext.isSetProperties()) {
+      String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
+      return "SETDEFAULTPARTITIONNAME".equals(operation);
+    }
+    return false;
   }
 
   /**
