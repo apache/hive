@@ -929,6 +929,10 @@ public class Hive implements AutoCloseable {
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
       }
+      if (isSetDefaultPartition(environmentContext)) {
+        environmentContext.putToProperties(ConfVars.DEFAULT_PARTITION_NAME.varname,
+                conf.getVar(ConfVars.DEFAULT_PARTITION_NAME));
+      }
       if (isRename(environmentContext)) {
         newTbl.validateName(conf);
         environmentContext.putToProperties(HiveMetaHook.OLD_TABLE_NAME, tblName);
@@ -979,6 +983,14 @@ public class Hive implements AutoCloseable {
     if (environmentContext.isSetProperties()) {
       String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
       return operation != null && AlterTableType.RENAME == AlterTableType.valueOf(operation);
+    }
+    return false;
+  }
+
+  private static boolean isSetDefaultPartition(EnvironmentContext environmentContext) {
+    if (environmentContext.isSetProperties()) {
+      String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
+      return operation != null && AlterTableType.SETDEFAULTPARTITIONNAME == AlterTableType.valueOf(operation);
     }
     return false;
   }
