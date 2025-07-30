@@ -15,16 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/*
+ * This source file is based on code taken from SQLLine 1.0.2
+ * See SQLLine notice in LICENSE
+ */
 package org.apache.hive.beeline;
 
+import java.util.List;
+
 import org.apache.hive.common.util.MatchingStringsCompleter;
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
 
-/**
- * JLine completer boolean value (true/false)
- */
-class BooleanCompleter extends MatchingStringsCompleter {
+class TableNameCompleter implements Completer {
+  private final BeeLine beeLine;
 
-  public BooleanCompleter(){
-    super("true", "false");
+  /**
+   * @param beeLine
+   */
+  TableNameCompleter(BeeLine beeLine) {
+    this.beeLine = beeLine;
+  }
+
+  @Override
+  public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+    final DatabaseConnection connection = beeLine.getDatabaseConnection();
+    if (connection != null) {
+      new MatchingStringsCompleter(beeLine.getDatabaseConnection().getTableNames(true))
+              .complete(reader, line, candidates);
+    }
   }
 }

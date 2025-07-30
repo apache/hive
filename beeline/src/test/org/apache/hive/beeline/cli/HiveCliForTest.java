@@ -15,16 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline;
+package org.apache.hive.beeline.cli;
 
-import org.apache.hive.common.util.MatchingStringsCompleter;
+import org.apache.hive.beeline.BeeLine;
+import org.apache.hive.beeline.BeeLineDummyTerminal;
 
-/**
- * JLine completer boolean value (true/false)
- */
-class BooleanCompleter extends MatchingStringsCompleter {
+public class HiveCliForTest extends HiveCli {
 
-  public BooleanCompleter(){
-    super("true", "false");
+  @Override
+  BeeLine createBeeline() {
+    return new BeeLineDummyTerminal(false);
   }
 }
