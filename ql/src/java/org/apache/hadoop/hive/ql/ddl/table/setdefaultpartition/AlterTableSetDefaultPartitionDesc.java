@@ -28,15 +28,15 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.util.Map;
 
 /**
- * DDL task description for ALTER TABLE ... SET DEFAULT PARTITION NAME ... command.
+ * DDL task description for ALTER TABLE ... SET DEFAULT PARTITION ... command.
  */
-@Explain(displayName = "Set Default Partition Name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Set Default Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class AlterTableSetDefaultPartitionDesc extends AbstractAlterTableDesc {
   private static final long serialVersionUID = 1L;
   private final String tableLevelDefaultPartitionName;
 
   public AlterTableSetDefaultPartitionDesc(TableName tableName, String tableLevelDefaultPartitionName) throws SemanticException {
-    super(AlterTableType.SETDEFAULTPARTITIONNAME, tableName, null, null, false, false, null);
+    super(AlterTableType.SETDEFAULTPARTITION, tableName, null, null, false, false, null);
     this.tableLevelDefaultPartitionName = tableLevelDefaultPartitionName;
   }
 

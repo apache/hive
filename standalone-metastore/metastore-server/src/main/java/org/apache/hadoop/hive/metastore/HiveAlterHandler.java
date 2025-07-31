@@ -520,9 +520,9 @@ public class HiveAlterHandler implements AlterHandler {
                   throw me;
                 }
               }
-              LOG.warn("Alter table not cascaded to partitions.");
-              msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
             }
+            LOG.warn("Alter table not cascaded to partitions.");
+            msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
           }
         } else {
           msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);

@@ -990,7 +990,7 @@ public class Hive implements AutoCloseable {
   private static boolean isSetDefaultPartition(EnvironmentContext environmentContext) {
     if (environmentContext.isSetProperties()) {
       String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
-      return operation != null && AlterTableType.SETDEFAULTPARTITIONNAME == AlterTableType.valueOf(operation);
+      return operation != null && AlterTableType.SETDEFAULTPARTITION == AlterTableType.valueOf(operation);
     }
     return false;
   }

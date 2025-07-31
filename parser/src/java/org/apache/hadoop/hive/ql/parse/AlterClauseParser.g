@@ -235,8 +235,8 @@ alterStatementSuffixDropCol
 alterStatementSuffixSetDefaultPartition
 @init { gParent.pushMsg("set default partition statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_SET KW_DEFAULT KW_PARTITION KW_NAME KW_TO StringLiteral
-      -> ^(TOK_ALTERTABLE_SETDEFAULTPARTITIONNAME StringLiteral)
+    : KW_SET KW_DEFAULT KW_PARTITION KW_TO StringLiteral
+      -> ^(TOK_ALTERTABLE_SETDEFAULTPARTITION StringLiteral)
     ;
 
 alterStatementSuffixAddConstraint

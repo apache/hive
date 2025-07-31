@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * Analyzer for drop column command.
  */
-@DDLType(types = HiveParser.TOK_ALTERTABLE_SETDEFAULTPARTITIONNAME)
+@DDLType(types = HiveParser.TOK_ALTERTABLE_SETDEFAULTPARTITION)
 public class AlterTableSetDefaultPartitionAnalyser extends AbstractAlterTableAnalyzer {
 
   public AlterTableSetDefaultPartitionAnalyser(QueryState queryState) throws SemanticException {
