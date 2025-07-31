@@ -39,6 +39,7 @@ import java.util.TreeSet;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -492,5 +493,45 @@ public class TestSemanticAnalyzer {
     Set<String> result = analyzer.getQueryProperties().getUsedTables();
 
     Assert.assertEquals(new TreeSet<>(tables), new TreeSet<>(result));
+  }
+
+  @Test
+  public void testValidateJDBCTablePropertiesAreNonAmbiguous() {
+    StorageFormat storageFormat = mock(StorageFormat.class);
+    when(storageFormat.getStorageHandler()).thenReturn(Constants.JDBC_HIVE_STORAGE_HANDLER_ID);
+    Map<String, String> props;
+    
+    // Test case where both Constants.JDBC_QUERY and Constants.JDBC_TABLE are set for external JDBC table
+    try {
+      props = new HashMap<>();
+      props.put(Constants.JDBC_QUERY, "SELECT * FROM test");
+      props.put(Constants.JDBC_TABLE, "test");
+
+      SemanticAnalyzer.validateJDBCTablePropertiesAreNonAmbiguous(true, storageFormat, props);
+      fail("Expected SemanticException but none was thrown");
+    } catch (SemanticException e) {
+      assertEquals("Cannot specify both " + Constants.JDBC_QUERY 
+          + " and " + Constants.JDBC_TABLE + " for JDBC tables.", e.getMessage());
+    }
+    
+    // Test case where only Constants.JDBC_QUERY is set for external JDBC table
+    try {
+      props = new HashMap<>();
+      props.put(Constants.JDBC_QUERY, "SELECT * FROM test");
+
+      SemanticAnalyzer.validateJDBCTablePropertiesAreNonAmbiguous(true, storageFormat, props);
+    } catch (SemanticException e) {
+      fail(e.getMessage());
+    }
+    
+    // Test case where only Constants.JDBC_TABLE is set for external JDBC table
+    try {
+      props = new HashMap<>();
+      props.put(Constants.JDBC_TABLE, "test");
+
+      SemanticAnalyzer.validateJDBCTablePropertiesAreNonAmbiguous(true, storageFormat, props);
+    } catch (SemanticException e) {
+      fail(e.getMessage());
+    }
   }
 }
