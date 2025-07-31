@@ -27,22 +27,13 @@ import java.util.Properties;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.kudu.KuduOutputFormat.KuduRecordWriter;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
-import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -57,7 +48,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides a HiveStorageHandler implementation for Apache Kudu.
  */
-public class KuduStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
+public class KuduStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(KuduStorageHandler.class);
 
@@ -72,8 +63,6 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
   public static final List<String> KUDU_TABLE_PROPERTIES =
       Arrays.asList(KUDU_TABLE_ID_KEY, KUDU_TABLE_NAME_KEY, KUDU_MASTER_ADDRS_KEY);
 
-  private Configuration conf;
-
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
     return KuduInputFormat.class;
@@ -87,26 +76,6 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
   @Override
   public Class<? extends AbstractSerDe> getSerDeClass() {
     return KuduSerDe.class;
-  }
-
-  @Override
-  public HiveMetaHook getMetaHook() {
-    return null;
-  }
-
-  @Override
-  public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
-    return new DefaultHiveAuthorizationProvider();
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
-  }
-
-  @Override
-  public void setConf(Configuration conf) {
-    this.conf = conf;
   }
 
   @Override
@@ -192,11 +161,4 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
     return KuduPredicateHandler.decompose(predicate, schema);
   }
 
-  /**
-   * Used to fetch runtime information about storage handler during DESCRIBE EXTENDED statement.
-   */
-  @Override
-  public StorageHandlerInfo getStorageHandlerInfo(Table table) throws MetaException {
-    return null;
-  }
 }

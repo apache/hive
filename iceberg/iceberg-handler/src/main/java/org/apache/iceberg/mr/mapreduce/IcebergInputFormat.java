@@ -266,6 +266,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
   @Override
   public RecordReader<Void, T> createRecordReader(InputSplit split, TaskAttemptContext context) {
-    return split instanceof IcebergMergeSplit ? new IcebergMergeRecordReader<>() : new IcebergRecordReader<T>();
+    return split instanceof IcebergMergeSplit ?
+        new IcebergMergeRecordReader<>() : new IcebergRecordReader<>();
   }
 }

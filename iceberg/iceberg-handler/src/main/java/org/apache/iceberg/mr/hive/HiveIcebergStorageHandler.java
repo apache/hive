@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -222,7 +223,7 @@ import static org.apache.iceberg.TableProperties.FORMAT_VERSION;
 import static org.apache.iceberg.TableProperties.MERGE_MODE;
 import static org.apache.iceberg.TableProperties.UPDATE_MODE;
 
-public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
+public class HiveIcebergStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
 
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
@@ -244,8 +245,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       orderBy(PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION);
 
   private static final List<FieldSchema> EMPTY_ORDERING = ImmutableList.of();
-
-  private Configuration conf;
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
@@ -317,17 +316,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> map) {
-
-  }
-
-  // Override annotation commented out, since this interface method has been introduced only in Hive 3
-  // @Override
-  public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
-
-  }
-
-  @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
@@ -376,21 +364,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean supportsPartitioning() {
     return true;
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
-  }
-
-  @Override
-  public void setConf(Configuration conf) {
-    this.conf = conf;
-  }
-
-  @Override
-  public String toString() {
-    return this.getClass().getName();
   }
 
   /**
@@ -1357,11 +1330,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(rawString);
   }
 
-  String getPathForAuth(String locationProperty) {
+  private String getPathForAuth(String locationProperty) {
     return getPathForAuth(locationProperty,
         SessionStateUtil.getProperty(conf, SessionStateUtil.DEFAULT_TABLE_LOCATION).orElse(null));
   }
 
+  @VisibleForTesting
   String getPathForAuth(String locationProperty, String defaultTableLocation) {
     boolean maskDefaultLocation = conf.getBoolean(ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname,
         ConfVars.HIVE_ICEBERG_MASK_DEFAULT_LOCATION.defaultBoolVal);
@@ -1393,7 +1367,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
-    HiveStorageHandler.super.validateSinkDesc(sinkDesc);
     if (sinkDesc.getInsertOverwrite()) {
       Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
       if (table.currentSnapshot() != null &&
@@ -1486,7 +1459,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         s.transform().toString(), s.direction().name(), s.nullOrder().name()))).collect(Collectors.toList());
   }
 
-  private void setCommonJobConf(JobConf jobConf) {
+  private static void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
   }
 
@@ -1642,12 +1615,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
       // serialize table object into config
       Table serializableTable = SerializableTable.copyOf(table);
+
       // set table format-version and write-mode information from tableDesc
-      List<String> writeConfigList = ImmutableList.of(
+      final List<String> writeConfigList = ImmutableList.of(
           FORMAT_VERSION, DELETE_MODE, UPDATE_MODE, MERGE_MODE);
-      if (IcebergTableUtil.isV2TableOrAbove(props::getProperty)) {
-        writeConfigList.forEach(cfg -> serializableTable.properties().computeIfAbsent(cfg, props::getProperty));
-      }
+      writeConfigList.forEach(cfg ->
+          serializableTable.properties().computeIfAbsent(cfg, props::getProperty));
+
       checkAndSkipIoConfigSerialization(configuration, serializableTable);
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
           SerializationUtil.serializeToBase64(serializableTable));
@@ -2038,12 +2012,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     List<PartitionField> partitionFields = IcebergTableUtil.getPartitionFields(table,
         policy != RewritePolicy.PARTITION);
-    validatePartSpecImpl(hmsTable, partitionSpec, partitionFields);
-  }
-
-  private void validatePartSpecImpl(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Map<String, String> partitionSpec, List<PartitionField> partitionFields) throws SemanticException {
-    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     if (hmsTable.getSnapshotRef() != null && IcebergTableUtil.hasUndergonePartitionEvolution(table)) {
       // for this case we rewrite the query as delete query, so validations would be done as part of delete.
       return;
@@ -2139,11 +2107,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
     validatePartSpec(table, partitionSpec, policy);
-    return getPartitionImpl(table, partitionSpec);
-  }
-
-  private Partition getPartitionImpl(org.apache.hadoop.hive.ql.metadata.Table table,
-      Map<String, String> partitionSpec) throws SemanticException {
     try {
       String partName = Warehouse.makePartName(partitionSpec, false);
       return new DummyPartition(table, partName, partitionSpec);

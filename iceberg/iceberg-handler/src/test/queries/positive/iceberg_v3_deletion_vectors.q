@@ -52,7 +52,7 @@ select * from ice01 order by id;
 insert into icepart01 values (1,1),(2,1),(3,2),(4,2);
 
 -- check the inserted values
-select * from icepart01 order by id;;
+select * from icepart01 order by id;
 
 -- delete some values
 delete from icepart01 where id>=2 AND id<4;
@@ -72,7 +72,7 @@ delete from icepart01 where id=7;
 select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files;
 
 -- check the entries, the deleted entries shouldn't be there.
-select * from icepart01 order by id;;
+select * from icepart01 order by id;
 
 -- clean up
 drop table ice01;
