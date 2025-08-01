@@ -309,6 +309,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request) = 0;
   virtual void drop_package(const DropPackageRequest& request) = 0;
   virtual void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) = 0;
+  virtual void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1219,6 +1220,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_all_write_event_info(std::vector<WriteEventInfo> & /* _return */, const GetAllWriteEventInfoRequest& /* request */) override {
+    return;
+  }
+  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& /* _return */, const std::string& /* policyName */) override {
     return;
   }
 };
@@ -35547,6 +35551,119 @@ class ThriftHiveMetastore_get_all_write_event_info_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset {
+  _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset() : policyName(false) {}
+  bool policyName :1;
+} _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset;
+
+class ThriftHiveMetastore_get_replayed_txns_for_policy_args {
+ public:
+
+  ThriftHiveMetastore_get_replayed_txns_for_policy_args(const ThriftHiveMetastore_get_replayed_txns_for_policy_args&);
+  ThriftHiveMetastore_get_replayed_txns_for_policy_args& operator=(const ThriftHiveMetastore_get_replayed_txns_for_policy_args&);
+  ThriftHiveMetastore_get_replayed_txns_for_policy_args() noexcept
+                                                        : policyName() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_args() noexcept;
+  std::string policyName;
+
+  _ThriftHiveMetastore_get_replayed_txns_for_policy_args__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  bool operator == (const ThriftHiveMetastore_get_replayed_txns_for_policy_args & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_replayed_txns_for_policy_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_replayed_txns_for_policy_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_replayed_txns_for_policy_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_pargs() noexcept;
+  const std::string* policyName;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset {
+  _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset;
+
+class ThriftHiveMetastore_get_replayed_txns_for_policy_result {
+ public:
+
+  ThriftHiveMetastore_get_replayed_txns_for_policy_result(const ThriftHiveMetastore_get_replayed_txns_for_policy_result&);
+  ThriftHiveMetastore_get_replayed_txns_for_policy_result& operator=(const ThriftHiveMetastore_get_replayed_txns_for_policy_result&);
+  ThriftHiveMetastore_get_replayed_txns_for_policy_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_result() noexcept;
+  ReplayedTxnsForPolicyResult success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_replayed_txns_for_policy_result__isset __isset;
+
+  void __set_success(const ReplayedTxnsForPolicyResult& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_replayed_txns_for_policy_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_replayed_txns_for_policy_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_replayed_txns_for_policy_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset {
+  _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset;
+
+class ThriftHiveMetastore_get_replayed_txns_for_policy_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_replayed_txns_for_policy_presult() noexcept;
+  ReplayedTxnsForPolicyResult* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_replayed_txns_for_policy_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -36407,6 +36524,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) override;
   void send_get_all_write_event_info(const GetAllWriteEventInfoRequest& request);
   void recv_get_all_write_event_info(std::vector<WriteEventInfo> & _return);
+  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override;
+  void send_get_replayed_txns_for_policy(const std::string& policyName);
+  void recv_get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -36700,6 +36820,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_all_packages(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_package(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_write_event_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_replayed_txns_for_policy(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(::std::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -36987,6 +37108,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_all_packages"] = &ThriftHiveMetastoreProcessor::process_get_all_packages;
     processMap_["drop_package"] = &ThriftHiveMetastoreProcessor::process_drop_package;
     processMap_["get_all_write_event_info"] = &ThriftHiveMetastoreProcessor::process_get_all_write_event_info;
+    processMap_["get_replayed_txns_for_policy"] = &ThriftHiveMetastoreProcessor::process_get_replayed_txns_for_policy;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -39737,6 +39859,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_replayed_txns_for_policy(_return, policyName);
+    }
+    ifaces_[i]->get_replayed_txns_for_policy(_return, policyName);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -40602,6 +40734,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) override;
   int32_t send_get_all_write_event_info(const GetAllWriteEventInfoRequest& request);
   void recv_get_all_write_event_info(std::vector<WriteEventInfo> & _return, const int32_t seqid);
+  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) override;
+  int32_t send_get_replayed_txns_for_policy(const std::string& policyName);
+  void recv_get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const int32_t seqid);
 };
 
 #ifdef _MSC_VER

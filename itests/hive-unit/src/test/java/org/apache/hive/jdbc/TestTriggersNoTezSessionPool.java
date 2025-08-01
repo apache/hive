@@ -72,6 +72,7 @@ public class TestTriggersNoTezSessionPool extends AbstractJdbcTriggersTest {
     runQueryWithTrigger(query, getConfigs(), trigger + " violated", 50);
   }
 
+  @org.junit.Ignore("HIVE-29061")
   @Test(timeout = 60000)
   public void testTriggerTotalLaunchedTasks() throws Exception {
     Expression expression = ExpressionFactory.fromString("TOTAL_LAUNCHED_TASKS > 20");

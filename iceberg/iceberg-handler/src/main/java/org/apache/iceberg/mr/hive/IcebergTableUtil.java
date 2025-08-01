@@ -21,12 +21,14 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,16 +41,20 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -56,6 +62,8 @@ import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.util.Sets;
+import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
@@ -95,6 +103,9 @@ import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_NAME;
+import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE;
 
 public class IcebergTableUtil {
 
@@ -572,4 +583,53 @@ public class IcebergTableUtil {
             .map(ManifestFile::partitionSpecId)
             .anyMatch(id -> id != table.spec().specId());
   }
+
+  public static <T extends ContentFile> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
+      Boolean latestSpecOnly) {
+    Set<String> partitions = Sets.newHashSet();
+    int tableSpecId = icebergTable.spec().specId();
+    for (T file : files) {
+      if (latestSpecOnly == null || Boolean.TRUE.equals(latestSpecOnly) && file.specId() == tableSpecId ||
+          Boolean.FALSE.equals(latestSpecOnly) && file.specId() != tableSpecId) {
+        String partName = icebergTable.specs().get(file.specId()).partitionToPath(file.partition());
+        partitions.add(partName);
+      }
+    }
+    return partitions;
+  }
+
+  public static List<Partition> convertNameToMetastorePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Collection<String> partNames) {
+    List<Partition> partitions = Lists.newArrayList();
+    for (String partName : partNames) {
+      Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+      Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+      partitions.add(new DummyPartition(hmsTable, partName, partSpecMap));
+    }
+    return partitions;
+  }
+
+  public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern,
+      String tablePattern) {
+    return new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(
+            "EXTERNAL_TABLE")
+        .tableCondition(
+            hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "table_type like \"ICEBERG\" ")
+        .build();
+  }
+
+  public static String defaultWarehouseLocation(TableIdentifier tableIdentifier,
+      Configuration conf, Properties catalogProperties) {
+    StringBuilder sb = new StringBuilder();
+    String warehouseLocation = conf.get(String.format(
+        CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
+    );
+    sb.append(warehouseLocation).append('/');
+    for (String level : tableIdentifier.namespace().levels()) {
+      sb.append(level).append('/');
+    }
+    sb.append(tableIdentifier.name());
+    return sb.toString();
+  }
+
 }

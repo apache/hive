@@ -1,0 +1,214 @@
+PREHOOK: query: DROP TABLE IF EXISTS sales_p_int
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS sales_p_int
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE sales_p_int (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_int INT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sales_p_int
+POSTHOOK: query: CREATE EXTERNAL TABLE sales_p_int (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_int INT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sales_p_int
+PREHOOK: query: DROP TABLE IF EXISTS sales_p_bigint
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS sales_p_bigint
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE sales_p_bigint (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_bigint BIGINT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sales_p_bigint
+POSTHOOK: query: CREATE EXTERNAL TABLE sales_p_bigint (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_bigint BIGINT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sales_p_bigint
+PREHOOK: query: DROP TABLE IF EXISTS sales_p_double
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS sales_p_double
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE sales_p_double (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_double DOUBLE) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sales_p_double
+POSTHOOK: query: CREATE EXTERNAL TABLE sales_p_double (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_double DOUBLE) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sales_p_double
+PREHOOK: query: DROP TABLE IF EXISTS sales_p_decimal
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS sales_p_decimal
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE sales_p_decimal (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_decimal DECIMAL(10,2)) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sales_p_decimal
+POSTHOOK: query: CREATE EXTERNAL TABLE sales_p_decimal (ss_quantity INT, ss_sales_price DECIMAL(7,2)) PARTITIONED BY (ss_sold_date_sk_decimal DECIMAL(10,2)) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sales_p_decimal
+PREHOOK: query: DROP TABLE IF EXISTS date_dim_multi
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS date_dim_multi
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE date_dim_multi (
+    d_date_sk_int INT,
+    d_date_sk_bigint BIGINT,
+    d_date_sk_double DOUBLE,
+    d_date_sk_decimal DECIMAL(10,2),
+    d_date DATE,
+    d_year INT
+) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim_multi
+POSTHOOK: query: CREATE EXTERNAL TABLE date_dim_multi (
+    d_date_sk_int INT,
+    d_date_sk_bigint BIGINT,
+    d_date_sk_double DOUBLE,
+    d_date_sk_decimal DECIMAL(10,2),
+    d_date DATE,
+    d_year INT
+) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim_multi
+PREHOOK: query: INSERT INTO sales_p_int PARTITION (ss_sold_date_sk_int) VALUES (1, 9.99, 24518), (2, 5.55, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sales_p_int
+POSTHOOK: query: INSERT INTO sales_p_int PARTITION (ss_sold_date_sk_int) VALUES (1, 9.99, 24518), (2, 5.55, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sales_p_int
+POSTHOOK: Output: default@sales_p_int@ss_sold_date_sk_int=24518
+POSTHOOK: Output: default@sales_p_int@ss_sold_date_sk_int=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: sales_p_int PARTITION(ss_sold_date_sk_int=24518).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_int PARTITION(ss_sold_date_sk_int=24518).ss_sales_price SCRIPT []
+POSTHOOK: Lineage: sales_p_int PARTITION(ss_sold_date_sk_int=__HIVE_DEFAULT_PARTITION__).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_int PARTITION(ss_sold_date_sk_int=__HIVE_DEFAULT_PARTITION__).ss_sales_price SCRIPT []
+PREHOOK: query: INSERT INTO sales_p_bigint PARTITION (ss_sold_date_sk_bigint) VALUES (1, 9.99, 2451800001), (2, 5.55, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sales_p_bigint
+POSTHOOK: query: INSERT INTO sales_p_bigint PARTITION (ss_sold_date_sk_bigint) VALUES (1, 9.99, 2451800001), (2, 5.55, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sales_p_bigint
+POSTHOOK: Output: default@sales_p_bigint@ss_sold_date_sk_bigint=2451800001
+POSTHOOK: Output: default@sales_p_bigint@ss_sold_date_sk_bigint=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: sales_p_bigint PARTITION(ss_sold_date_sk_bigint=2451800001).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_bigint PARTITION(ss_sold_date_sk_bigint=2451800001).ss_sales_price SCRIPT []
+POSTHOOK: Lineage: sales_p_bigint PARTITION(ss_sold_date_sk_bigint=__HIVE_DEFAULT_PARTITION__).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_bigint PARTITION(ss_sold_date_sk_bigint=__HIVE_DEFAULT_PARTITION__).ss_sales_price SCRIPT []
+PREHOOK: query: INSERT INTO sales_p_double PARTITION (ss_sold_date_sk_double) VALUES (1, 9.99, 24518.01), (2, 5.55, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sales_p_double
+POSTHOOK: query: INSERT INTO sales_p_double PARTITION (ss_sold_date_sk_double) VALUES (1, 9.99, 24518.01), (2, 5.55, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sales_p_double
+POSTHOOK: Output: default@sales_p_double@ss_sold_date_sk_double=24518.01
+POSTHOOK: Output: default@sales_p_double@ss_sold_date_sk_double=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: sales_p_double PARTITION(ss_sold_date_sk_double=24518.01).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_double PARTITION(ss_sold_date_sk_double=24518.01).ss_sales_price SCRIPT []
+POSTHOOK: Lineage: sales_p_double PARTITION(ss_sold_date_sk_double=__HIVE_DEFAULT_PARTITION__).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_double PARTITION(ss_sold_date_sk_double=__HIVE_DEFAULT_PARTITION__).ss_sales_price SCRIPT []
+PREHOOK: query: INSERT INTO sales_p_decimal PARTITION (ss_sold_date_sk_decimal) VALUES (1, 9.99, 24518.01), (2, 5.55, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sales_p_decimal
+POSTHOOK: query: INSERT INTO sales_p_decimal PARTITION (ss_sold_date_sk_decimal) VALUES (1, 9.99, 24518.01), (2, 5.55, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sales_p_decimal
+POSTHOOK: Output: default@sales_p_decimal@ss_sold_date_sk_decimal=24518.01
+POSTHOOK: Output: default@sales_p_decimal@ss_sold_date_sk_decimal=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: sales_p_decimal PARTITION(ss_sold_date_sk_decimal=24518.01).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_decimal PARTITION(ss_sold_date_sk_decimal=24518.01).ss_sales_price SCRIPT []
+POSTHOOK: Lineage: sales_p_decimal PARTITION(ss_sold_date_sk_decimal=__HIVE_DEFAULT_PARTITION__).ss_quantity SCRIPT []
+POSTHOOK: Lineage: sales_p_decimal PARTITION(ss_sold_date_sk_decimal=__HIVE_DEFAULT_PARTITION__).ss_sales_price SCRIPT []
+PREHOOK: query: INSERT INTO date_dim_multi VALUES
+  (24518, 2451800001, 24518.01, 24518.01, '2020-01-01', 2020),
+  (24519, 2451900002, 24519.02, 24519.02, '2020-01-02', 2020)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@date_dim_multi
+POSTHOOK: query: INSERT INTO date_dim_multi VALUES
+  (24518, 2451800001, 24518.01, 24518.01, '2020-01-01', 2020),
+  (24519, 2451900002, 24519.02, 24519.02, '2020-01-02', 2020)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@date_dim_multi
+POSTHOOK: Lineage: date_dim_multi.d_date SCRIPT []
+POSTHOOK: Lineage: date_dim_multi.d_date_sk_bigint SCRIPT []
+POSTHOOK: Lineage: date_dim_multi.d_date_sk_decimal SCRIPT []
+POSTHOOK: Lineage: date_dim_multi.d_date_sk_double SCRIPT []
+POSTHOOK: Lineage: date_dim_multi.d_date_sk_int SCRIPT []
+POSTHOOK: Lineage: date_dim_multi.d_year SCRIPT []
+PREHOOK: query: SELECT d_date FROM sales_p_int s, date_dim_multi d WHERE s.ss_sold_date_sk_int = d.d_date_sk_int and d.d_year = 2020 GROUP BY d_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_multi
+PREHOOK: Input: default@sales_p_int
+PREHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=24518
+PREHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT d_date FROM sales_p_int s, date_dim_multi d WHERE s.ss_sold_date_sk_int = d.d_date_sk_int and d.d_year = 2020 GROUP BY d_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_multi
+POSTHOOK: Input: default@sales_p_int
+POSTHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=24518
+POSTHOOK: Input: default@sales_p_int@ss_sold_date_sk_int=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2020-01-01
+PREHOOK: query: SELECT d_date FROM sales_p_bigint s JOIN date_dim_multi d ON s.ss_sold_date_sk_bigint = d.d_date_sk_bigint WHERE d.d_year = 2020 GROUP BY d_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_multi
+PREHOOK: Input: default@sales_p_bigint
+PREHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=2451800001
+PREHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT d_date FROM sales_p_bigint s JOIN date_dim_multi d ON s.ss_sold_date_sk_bigint = d.d_date_sk_bigint WHERE d.d_year = 2020 GROUP BY d_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_multi
+POSTHOOK: Input: default@sales_p_bigint
+POSTHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=2451800001
+POSTHOOK: Input: default@sales_p_bigint@ss_sold_date_sk_bigint=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2020-01-01
+PREHOOK: query: SELECT d_date FROM sales_p_double s JOIN date_dim_multi d ON s.ss_sold_date_sk_double = d.d_date_sk_double WHERE d.d_year = 2020 GROUP BY d_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_multi
+PREHOOK: Input: default@sales_p_double
+PREHOOK: Input: default@sales_p_double@ss_sold_date_sk_double=24518.01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT d_date FROM sales_p_double s JOIN date_dim_multi d ON s.ss_sold_date_sk_double = d.d_date_sk_double WHERE d.d_year = 2020 GROUP BY d_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_multi
+POSTHOOK: Input: default@sales_p_double
+POSTHOOK: Input: default@sales_p_double@ss_sold_date_sk_double=24518.01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2020-01-01
+PREHOOK: query: SELECT d_date FROM sales_p_decimal s JOIN date_dim_multi d ON s.ss_sold_date_sk_decimal = d.d_date_sk_decimal WHERE d.d_year = 2020 GROUP BY d_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_multi
+PREHOOK: Input: default@sales_p_decimal
+PREHOOK: Input: default@sales_p_decimal@ss_sold_date_sk_decimal=24518.01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT d_date FROM sales_p_decimal s JOIN date_dim_multi d ON s.ss_sold_date_sk_decimal = d.d_date_sk_decimal WHERE d.d_year = 2020 GROUP BY d_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_multi
+POSTHOOK: Input: default@sales_p_decimal
+POSTHOOK: Input: default@sales_p_decimal@ss_sold_date_sk_decimal=24518.01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2020-01-01

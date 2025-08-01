@@ -2533,6 +2533,10 @@ struct DeleteColumnStatisticsRequest {
   7: optional bool tableLevel = false
 }
 
+struct ReplayedTxnsForPolicyResult {
+  1: map<string, string> replTxnMapEntry
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -3333,6 +3337,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
   void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
   list<WriteEventInfo> get_all_write_event_info(1: GetAllWriteEventInfoRequest request) throws (1:MetaException o1)
+  ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(1: string policyName) throws (1: MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

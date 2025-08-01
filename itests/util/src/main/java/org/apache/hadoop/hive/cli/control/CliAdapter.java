@@ -72,11 +72,10 @@ public abstract class CliAdapter {
         return new Statement() {
           @Override
           public void evaluate() throws Throwable {
-            metaStoreHandler.setSystemProperties(); // for QTestUtil pre-initialization
-            CliAdapter.this.beforeClass(); // instantiating QTestUtil
-
             metaStoreHandler.getRule().before();
             metaStoreHandler.getRule().install();
+            metaStoreHandler.setSystemProperties(); // for QTestUtil pre-initialization
+            CliAdapter.this.beforeClass(); // instantiating QTestUtil
 
             if (getQt() != null) {
               metaStoreHandler.setMetaStoreConfiguration(getQt().getConf());

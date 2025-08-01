@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 
 public class TestHiveCli {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
@@ -248,7 +249,7 @@ public class TestHiveCli {
     int ret = 0;
     try {
       if (input != null) {
-        inputStream = IOUtils.toInputStream(input);
+        inputStream = IOUtils.toInputStream(input, Charset.defaultCharset());
       }
       ret = cli.runWithArgs(args, inputStream);
     } catch (Throwable e) {
@@ -270,11 +271,11 @@ public class TestHiveCli {
     String output = os.toString();
     LOG.debug(output);
     if (contains) {
-      Assert.assertTrue("The expected keyword \"" + keywords + "\" occur in the output: " + output,
+      Assert.assertTrue("The expected keyword \"" + keywords + "\" should appear in the output: " + output,
           output.contains(keywords));
     } else {
       Assert.assertFalse(
-          "The expected keyword \"" + keywords + "\" should be excluded occurred in the output: "
+          "The expected keyword \"" + keywords + "\" should not appear in the output: "
               + output, output.contains(keywords));
     }
   }
@@ -293,9 +294,9 @@ public class TestHiveCli {
   @Before
   public void setup() throws IOException, URISyntaxException {
     System.setProperty("datanucleus.schema.autoCreateAll", "true");
-    cli = new HiveCli();
-    initFromFile();
+    cli = new HiveCliForTest();
     redirectOutputStream();
+    initFromFile();
   }
 
   private void redirectOutputStream() {

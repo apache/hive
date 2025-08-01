@@ -2044,4 +2044,10 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_all_write_event_info(\metastore\GetAllWriteEventInfoRequest $request);
+    /**
+     * @param string $policyName
+     * @return \metastore\ReplayedTxnsForPolicyResult
+     * @throws \metastore\MetaException
+     */
+    public function get_replayed_txns_for_policy($policyName);
 }

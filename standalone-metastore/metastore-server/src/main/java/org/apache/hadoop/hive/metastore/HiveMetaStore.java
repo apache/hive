@@ -252,9 +252,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     startupShutdownMessage(HiveMetaStore.class, args, LOG);
 
     try {
-      String msg = "Starting hive metastore on port " + cli.getPort();
+      String msg =
+          "Starting hive metastore on port %d. PID is %d"
+              .formatted(cli.getPort(), ProcessHandle.current().pid());
       LOG.info(msg);
-      if (cli.isVerbose()) {
+      if (isCliVerbose) {
         System.err.println(msg);
       }
 
@@ -265,6 +267,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       //for metastore process, all metastore call should be embedded metastore call.
       conf.set(ConfVars.THRIFT_URIS.getHiveName(), "");
+      conf.set(ConfVars.THRIFT_URIS.getVarname(), "");
 
       // Add shutdown hook.
       shutdownHookMgr.addShutdownHook(() -> {
@@ -495,7 +498,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
     int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
-    boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf);
@@ -631,7 +633,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         HMSHandler.LOG.info("Started the new metaserver on port [{}]...", port);
         HMSHandler.LOG.info("Options.minWorkerThreads = {}", minWorkerThreads);
         HMSHandler.LOG.info("Options.maxWorkerThreads = {}", maxWorkerThreads);
-        HMSHandler.LOG.info("TCP keepalive = {}", tcpKeepAlive);
         HMSHandler.LOG.info("Enable SSL = {}", useSSL);
         tServer.serve();
       }

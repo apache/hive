@@ -30,7 +30,6 @@
   <!-- dependencies are always listed in sorted order by groupId, artifactId -->
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
-    <druid.avatica.version>1.15.0</druid.avatica.version>
     <druid.curator.version>4.0.0</druid.curator.version>
     <druid.jersey.version>1.19.3</druid.jersey.version>
     <druid.jetty.version>9.4.57.v20241219</druid.jetty.version>
@@ -99,6 +98,10 @@
       <version>${druid.version}</version>
       <exclusions>
         <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs-client</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-servlet</artifactId>
         </exclusion>
@@ -158,26 +161,6 @@
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-recipes</artifactId>
       <version>${druid.curator.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite.avatica</groupId>
-      <artifactId>avatica</artifactId>
-      <version>${avatica.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite.avatica</groupId>
-      <artifactId>avatica-core</artifactId>
-      <version>${avatica.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite.avatica</groupId>
-      <artifactId>avatica-metrics</artifactId>
-      <version>${avatica.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite.avatica</groupId>
-      <artifactId>avatica-server</artifactId>
-      <version>${avatica.version}</version>
     </dependency>
     <dependency>
       <groupId>com.sun.jersey</groupId>

@@ -27,14 +27,8 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-common</artifactId>
+      <artifactId>hive-standalone-metastore-client</artifactId>
       <version>${hive.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
-      <version>${hive.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -309,7 +303,7 @@
       <artifactId>sqlline</artifactId>
     </dependency>
     <dependency>
-      <groupId>jline</groupId>
+      <groupId>org.jline</groupId>
       <artifactId>jline</artifactId>
     </dependency>
     <dependency>
@@ -439,6 +433,31 @@
       <groupId>uk.org.webcompere</groupId>
       <artifactId>system-stubs-core</artifactId>
       <version>2.1.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mariadb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mysql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>oracle-xe</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mssqlserver</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -737,8 +756,8 @@
         <configuration>
           <api>JDO</api>
           <verbose>false</verbose>
-          <log4jConfiguration>${basedir}/src/main/resources/datanucleus-log4j.properties
-          </log4jConfiguration>
+          <log4j2Configuration>${basedir}/src/main/resources/datanucleus-log4j2.xml
+          </log4j2Configuration>
           <metadataIncludes>**/*.jdo</metadataIncludes>
           <fork>false</fork>
         </configuration>

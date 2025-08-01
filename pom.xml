@@ -97,6 +97,8 @@
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
+    <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+    <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
@@ -109,7 +111,6 @@
     <!-- Make sure to sync it with standalone-metastore/pom.xml -->
     <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
-    <avatica.version>1.23.0</avatica.version>
     <avro.version>1.12.0</avro.version>
     <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
     <calcite.version>1.33.0</calcite.version>
@@ -160,7 +161,8 @@
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
     <jersey.version>1.19.4</jersey.version>
-    <jline.version>2.14.6</jline.version>
+    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
+    <jline.version>3.25.0</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
@@ -207,6 +209,7 @@
     <tez.version>0.10.5</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
     <snappy.version>1.1.10.4</snappy.version>
     <jersey-wadl-doclet.version>4.0.0-M2</jersey-wadl-doclet.version>
     <jaxb-runtime.version>4.0.0-M2</jaxb-runtime.version>
@@ -246,16 +249,6 @@
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
-    </repository>
-    <repository>
-      <id>repository-release</id>
-      <url>https://repository.apache.org/content/repositories/releases/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
     </repository>
     <repository>
       <!-- shibboleth doesn't publish artifacts on maven central
@@ -460,7 +453,7 @@
         <version>${javolution.version}</version>
       </dependency>
       <dependency>
-        <groupId>jline</groupId>
+        <groupId>org.jline</groupId>
         <artifactId>jline</artifactId>
         <version>${jline.version}</version>
       </dependency>
@@ -553,26 +546,6 @@
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-trace</artifactId>
         <version>${accumulo.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica</artifactId>
-        <version>${avatica.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica-core</artifactId>
-        <version>${avatica.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica-metrics</artifactId>
-        <version>${avatica.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite.avatica</groupId>
-        <artifactId>avatica-server</artifactId>
-        <version>${avatica.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.avro</groupId>
@@ -1428,6 +1401,11 @@
         <artifactId>spring-core</artifactId>
         <version>${spring.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>${jansi.version}</version>
+      </dependency>
       <!-- JDBC drivers -->
       <dependency>
         <groupId>com.microsoft.sqlserver</groupId>
@@ -1464,6 +1442,36 @@
         <artifactId>postgresql</artifactId>
         <version>${postgres.version}</version>
         <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mariadb</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>oracle-xe</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mssqlserver</artifactId>
+        <version>${testcontainers.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -1557,6 +1565,16 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven.javadoc.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>com.github.os72</groupId>

@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn.retry;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,17 +28,16 @@ public class TestSqlRetryHandler {
 
   @Test
   public void testRetryableRegex() {
-    HiveConf conf = new HiveConf();
+    Configuration conf = MetastoreConf.newMetastoreConf();
     SQLException sqlException = new SQLException("ORA-08177: can't serialize access for this transaction", "72000");
     // Note that we have 3 regex'es below
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX, "^Deadlock detected, roll back,.*08177.*,.*08178.*");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_RETRYABLE_SQLEX_REGEX, "^Deadlock detected, roll back,.*08177.*,.*08178.*");
     boolean result = SqlRetryHandler.isRetryable(conf, sqlException);
     Assert.assertTrue("regex should be retryable", result);
 
     sqlException = new SQLException("This error message, has comma in it");
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX, ".*comma.*");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_RETRYABLE_SQLEX_REGEX, ".*comma.*");
     result = SqlRetryHandler.isRetryable(conf, sqlException);
     Assert.assertTrue("regex should be retryable", result);
   }
-  
 }

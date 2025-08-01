@@ -30,23 +30,23 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.thrift.transport.TTransportException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class TestClientPoolImpl {
 
   HiveClientPool clients;
 
-  @Before
+  @BeforeEach
   public void before() {
     HiveClientPool clientPool = new HiveClientPool(2, new Configuration());
     clients = Mockito.spy(clientPool);
   }
 
-  @After
+  @AfterEach
   public void after() {
     clients.close();
     clients = null;
@@ -84,7 +84,7 @@ public class TestClientPoolImpl {
 
     Mockito.doReturn(databases).when(newClient).getAllDatabases();
     // The return is OK when the reconnect method is called.
-    Assert.assertEquals(databases, clients.run(client -> client.getAllDatabases(), true));
+    Assertions.assertEquals(databases, clients.run(client -> client.getAllDatabases(), true));
 
     // Verify that the method is called.
     Mockito.verify(clients).reconnect(hmsClient);
@@ -104,7 +104,7 @@ public class TestClientPoolImpl {
         new Function("concat", "db1", "classname", "root", PrincipalType.USER, 100, FunctionType.JAVA, null));
     Mockito.doReturn(response).when(newClient).getAllFunctions();
 
-    Assert.assertEquals(response, clients.run(client -> client.getAllFunctions(), true));
+    Assertions.assertEquals(response, clients.run(client -> client.getAllFunctions(), true));
 
     Mockito.verify(clients).reconnect(hmsClient);
     Mockito.verify(clients, Mockito.never()).reconnect(newClient);

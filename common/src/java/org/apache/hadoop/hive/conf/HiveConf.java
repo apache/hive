@@ -92,7 +92,8 @@ public class HiveConf extends Configuration {
   private static boolean loadHiveServer2Config = false;
   private static URL hiveDefaultURL = null;
   private static URL hiveSiteURL = null;
-  private static URL hivemetastoreSiteUrl = null;
+  private static URL hiveMetastoreSiteUrl = null;
+  private static URL metastoreSiteUrl = null;
   private static URL hiveServer2SiteUrl = null;
 
   private static byte[] confVarByteArray = null;
@@ -198,8 +199,9 @@ public class HiveConf extends Configuration {
 
     // Look for hive-site.xml on the CLASSPATH and log its location if found.
     hiveSiteURL = findConfigFile(classLoader, "hive-site.xml", true);
-    hivemetastoreSiteUrl = findConfigFile(classLoader, "hivemetastore-site.xml", false);
-    hiveServer2SiteUrl = findConfigFile(classLoader, "hiveserver2-site.xml", false);
+    hiveMetastoreSiteUrl = findConfigFile(classLoader, "hivemetastore-site.xml", true);
+    hiveServer2SiteUrl = findConfigFile(classLoader, "hiveserver2-site.xml", true);
+    metastoreSiteUrl = findConfigFile(classLoader, "metastore-site.xml", true);
 
     for (ConfVars confVar : ConfVars.values()) {
       vars.put(confVar.varname, confVar);
@@ -281,7 +283,6 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY,
       HiveConf.ConfVars.METASTORE_SERVER_MIN_THREADS,
       HiveConf.ConfVars.METASTORE_SERVER_MAX_THREADS,
-      HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE,
       HiveConf.ConfVars.METASTORE_INT_ORIGINAL,
       HiveConf.ConfVars.METASTORE_INT_ARCHIVED,
       HiveConf.ConfVars.METASTORE_INT_EXTRACTED,
@@ -630,6 +631,8 @@ public class HiveConf extends Configuration {
     HIVE_REPL_FAILOVER_START("hive.repl.failover.start",false,
             "A replication policy level config to indicate if user wants to initiate fail-over " +
                     "to replicate the database in reverse direction."),
+    HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET("hive.repl.clear.dangling.txns.on.target", true,
+                                                    "Indicates whether to clear dangling transactions on the target during replication."),
     REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
       true,
       "This configuration will add a deny policy on the target database for all users except hive"
@@ -1092,13 +1095,6 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_SERVER_MAX_THREADS("hive.metastore.server.max.threads", 1000,
         "Maximum number of worker threads in the Thrift server's pool."),
-    /**
-     * @deprecated Use MetastoreConf.TCP_KEEP_ALIVE
-     */
-    @Deprecated
-    METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true,
-        "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
-
     /**
      * @deprecated Use MetastoreConf.WM_DEFAULT_POOL_SIZE
      */
@@ -3441,13 +3437,6 @@ public class HiveConf extends Configuration {
       new RangeValidator(0, 100), "Determines how many failed compaction records will be " +
       "retained in compaction history for a given table/partition."),
     /**
-     * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE
-     */
-    @Deprecated
-    COMPACTOR_HISTORY_RETENTION_ATTEMPTED("hive.compactor.history.retention.attempted", 2,
-      new RangeValidator(0, 100), "Determines how many attempted compaction records will be " +
-      "retained in compaction history for a given table/partition."),
-    /**
      * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
     @Deprecated
@@ -4608,8 +4597,6 @@ public class HiveConf extends Configuration {
     SERVER_READ_SOCKET_TIMEOUT("hive.server.read.socket.timeout", "10s",
         new TimeValidator(TimeUnit.SECONDS),
         "Timeout for the HiveServer to close the connection if no response from the client. By default, 10 seconds."),
-    SERVER_TCP_KEEP_ALIVE("hive.server.tcp.keepalive", true,
-        "Whether to enable TCP keepalive for the Hive Server. Keepalive will prevent accumulation of half-open connections."),
 
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
@@ -6624,15 +6611,20 @@ public class HiveConf extends Configuration {
       setLoadMetastoreConfig(true);
     }
 
-    // load hivemetastore-site.xml if this is metastore and file exists
-    if (isLoadMetastoreConfig() && hivemetastoreSiteUrl != null) {
-      addResource(hivemetastoreSiteUrl);
+    // load the legacy hivemetastore-site.xml and metastore-site.xml if this is metastore and file exists
+    if (isLoadMetastoreConfig()) {
+      if (hiveMetastoreSiteUrl != null) {
+        addResource(hiveMetastoreSiteUrl);
+      }
+      if (metastoreSiteUrl != null) {
+        addResource(metastoreSiteUrl);
+      }
     }
 
     // load hiveserver2-site.xml if this is hiveserver2 and file exists
     // metastore can be embedded within hiveserver2, in such cases
     // the conf params in hiveserver2-site.xml will override whats defined
-    // in hivemetastore-site.xml
+    // in hivemetastore-site.xml/metastore-site.xml
     if (isLoadHiveServer2Config()) {
       // set the hardcoded value first, so anything in hiveserver2-site.xml can override it
       set(ConfVars.METASTORE_CLIENT_CAPABILITIES.varname, "EXTWRITE,EXTREAD,HIVEBUCKET2,HIVEFULLACIDREAD,"
@@ -7032,16 +7024,25 @@ public class HiveConf extends Configuration {
     hiveSiteURL = location;
   }
 
+  /**
+   * @deprecated use setMetastoreSiteLocation(URL location)
+   * @param location the Metastore property source
+   */
+  @Deprecated
   public static void setHivemetastoreSiteUrl(URL location) {
-    hivemetastoreSiteUrl = location;
+    setMetastoreSiteLocation(location);
   }
 
   public static URL getHiveSiteLocation() {
     return hiveSiteURL;
   }
 
+  public static void setMetastoreSiteLocation(URL location) {
+    metastoreSiteUrl = location;
+  }
+
   public static URL getMetastoreSiteLocation() {
-    return hivemetastoreSiteUrl;
+    return metastoreSiteUrl;
   }
 
   public static URL getHiveServer2SiteLocation() {

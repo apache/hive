@@ -25,7 +25,6 @@
   <name>Hive Integration - Unit Tests</name>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
-    <testcontainers.version>1.15.2</testcontainers.version>
     <htmlunit.version>2.70.0</htmlunit.version>
   </properties>
   <dependencies>
@@ -500,7 +499,6 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

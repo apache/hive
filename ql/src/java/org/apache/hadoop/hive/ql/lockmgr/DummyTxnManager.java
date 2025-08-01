@@ -273,6 +273,12 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public Map<String, String> getReplayedTxnsForPolicy(String replPolicy) throws LockException {
+//    No-op
+    return new HashMap<>();
+  }
+
+  @Override
   public void heartbeat() throws LockException {
     // No-op
   }

@@ -26,13 +26,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * The class is in charge of connecting and populating dockerized databases for qtest.
@@ -43,7 +47,44 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractExternalDB {
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractExternalDB.class);
 
-    protected static final String dbName = "qtestDB";
+    /**
+     * A connection property that is accessible through system properties when a specific database is running.
+     */
+    public enum ConnectionProperty {
+        JDBC_URL("jdbc.url", AbstractExternalDB::getJdbcUrl),
+        JDBC_USERNAME("jdbc.username", AbstractExternalDB::getRootUser),
+        JDBC_PASSWORD("jdbc.password", AbstractExternalDB::getRootPassword),
+        HOST("host", AbstractExternalDB::getContainerHostAddress),
+        PORT("port", db -> String.valueOf(db.getPort()));
+
+        private final String suffix;
+        private final Function<AbstractExternalDB, String> valueSupplier;
+        ConnectionProperty(String suffix, Function<AbstractExternalDB, String> valueSupplier) {
+            this.suffix = suffix;
+            this.valueSupplier = valueSupplier;
+        }
+
+        private String fullName(String dbName) {
+            return "hive.test.database." + dbName + "." + suffix;
+        }
+
+        public void set(AbstractExternalDB db) {
+            String property = fullName(db.dbName);
+            String value = System.getProperty(property);
+            if (value == null) {
+                System.setProperty(property, valueSupplier.apply(db));
+            } else {
+                throw new IllegalStateException("Connection property " + property + " is already set.");
+            }
+        }
+
+        public void clear(AbstractExternalDB db) {
+            System.clearProperty(fullName(db.dbName));
+        }
+    }
+
+    protected String dbName = "qtestDB";
+    private Path initScript;
 
     private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
@@ -181,6 +222,8 @@ public abstract class AbstractExternalDB {
 
     protected abstract String getJdbcDriver();
 
+    protected abstract int getPort();
+
     protected abstract String getDockerImageName();
 
     protected abstract String[] getDockerAdditionalArgs();
@@ -195,6 +238,49 @@ public abstract class AbstractExternalDB {
                             "--isolation=TRANSACTION_READ_COMMITTED",
                             "-f", sqlScriptFile};
 
+    }
+
+    /**
+     * Sets the name of the database. Must not be called after the database has been started.
+     * @param name the name of the database
+     */
+    public void setName(String name) {
+        this.dbName = Objects.requireNonNull(name);
+    }
+
+    /**
+     * Sets the path to the initialization script.
+     * @param initScript the path to the initialization script
+     * @throws IllegalArgumentException if the script does not exist on the filesystem
+     */
+    public void setInitScript(Path initScript) {
+        if (Files.exists(initScript)) {
+            this.initScript = initScript;
+        } else {
+            throw new IllegalArgumentException("Initialization script does not exist: " + initScript);
+        }
+    }
+
+    /**
+     * Starts the database and performs any initialization required.
+     */
+    public void start() throws Exception {
+        launchDockerContainer();
+        if (initScript != null) {
+            execute(initScript.toString());
+        }
+        Arrays.stream(ConnectionProperty.values()).forEach(p -> p.set(this));
+    }
+
+    /**
+     * Stops the database and cleans up any resources.
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws InterruptedException if the thread is interrupted while waiting for the process to finish
+     */
+    public void stop() throws IOException, InterruptedException {
+        Arrays.stream(ConnectionProperty.values()).forEach(p -> p.clear(this));
+        cleanupDockerContainer();
     }
 
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {

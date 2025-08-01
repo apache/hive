@@ -116,6 +116,9 @@ public class ReplUtils {
   // Root base directory name for hive.
   public static final String REPL_HIVE_BASE_DIR = "hive";
 
+  //file to hold open transactions during replication.
+  public static final String OPEN_TXNS = "_open_txns";
+
   // Root base directory name for ranger.
   public static final String REPL_RANGER_BASE_DIR = "ranger";
 

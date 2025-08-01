@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 
 /**
  * IOPrepareCache is used to cache pre-query io-related objects.
@@ -31,7 +30,8 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
  */
 public class IOPrepareCache {
   
-  private static ThreadLocal<IOPrepareCache> threadLocalIOPrepareCache = new ThreadLocal<IOPrepareCache>();
+  private static final ThreadLocal<IOPrepareCache> threadLocalIOPrepareCache =
+      new ThreadLocal<>();
   
   public static IOPrepareCache get() {
     IOPrepareCache cache = IOPrepareCache.threadLocalIOPrepareCache.get();
@@ -39,32 +39,25 @@ public class IOPrepareCache {
       threadLocalIOPrepareCache.set(new IOPrepareCache());
       cache = IOPrepareCache.threadLocalIOPrepareCache.get();
     }
-
     return cache;
   }
   
-  public void clear() {
-    if(partitionDescMap != null) {
-      partitionDescMap.clear();      
-    }
-  }
+  private Map<Path, Path> partitionDescMap;
   
-  private Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> partitionDescMap;
-  
-  public Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> allocatePartitionDescMap() {
+  public Map<Path, Path> allocatePartitionDescMap() {
     if (partitionDescMap == null) {
       partitionDescMap = new HashMap<>();
     }
     return partitionDescMap;
   }
 
-  public Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> getPartitionDescMap() {
+  public Map<Path, Path> getPartitionDescMap() {
     return partitionDescMap;
   }
 
-  public void setPartitionDescMap(
-      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> partitionDescMap) {
-    this.partitionDescMap = partitionDescMap;
-  } 
-
+  public void clear() {
+    if (partitionDescMap != null) {
+      partitionDescMap.clear();
+    }
+  }
 }

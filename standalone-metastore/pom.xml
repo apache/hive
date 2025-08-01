@@ -27,6 +27,7 @@
   <inceptionYear>2008</inceptionYear>
   <modules>
     <module>metastore-common</module>
+    <module>metastore-client</module>
     <module>metastore-server</module>
     <module>metastore-tools</module>
     <module>metastore-rest-catalog</module>
@@ -100,7 +101,8 @@
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <io.grpc.version>1.72.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
-    <jline.version>2.14.6</jline.version>
+    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
+    <jline.version>3.25.0</jline.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.2.0-SNAPSHOT</storage-api.version>
     <beanutils.version>1.9.4</beanutils.version>
@@ -120,6 +122,7 @@
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
@@ -336,9 +339,15 @@
         <groupId>sqlline</groupId>
         <artifactId>sqlline</artifactId>
         <version>${sqlline.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jline</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
-        <groupId>jline</groupId>
+        <groupId>org.jline</groupId>
         <artifactId>jline</artifactId>
         <version>${jline.version}</version>
       </dependency>
@@ -506,6 +515,31 @@
         <artifactId>slf4j-simple</artifactId>
         <version>${slf4j.version}</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mariadb</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mysql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>oracle-xe</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>mssqlserver</artifactId>
+        <version>${testcontainers.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
