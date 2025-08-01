@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -149,9 +148,9 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.PartitionStatisticsFile;
 import org.apache.iceberg.PartitionStats;
 import org.apache.iceberg.Partitioning;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
-import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SortDirection;
 import org.apache.iceberg.SortField;
@@ -173,7 +172,6 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
-import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.CloseableIterable;
@@ -189,7 +187,6 @@ import org.apache.iceberg.puffin.PuffinReader;
 import org.apache.iceberg.puffin.PuffinWriter;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
-import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -218,20 +215,15 @@ import static org.apache.iceberg.SnapshotSummary.TOTAL_EQ_DELETES_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_FILE_SIZE_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_POS_DELETES_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_RECORDS_PROP;
-import static org.apache.iceberg.TableProperties.DELETE_MODE;
-import static org.apache.iceberg.TableProperties.FORMAT_VERSION;
-import static org.apache.iceberg.TableProperties.MERGE_MODE;
-import static org.apache.iceberg.TableProperties.UPDATE_MODE;
 
 public class HiveIcebergStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
 
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
-  private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
   // Column index for partition metadata table
-  public static final String COPY_ON_WRITE = "copy-on-write";
-  public static final String MERGE_ON_READ = "merge-on-read";
+  public static final String COPY_ON_WRITE = RowLevelOperationMode.COPY_ON_WRITE.modeName();
+  public static final String MERGE_ON_READ = RowLevelOperationMode.MERGE_ON_READ.modeName();
   public static final String STATS = "/stats/snap-";
 
   public static final String TABLE_DEFAULT_LOCATION = "TABLE_DEFAULT_LOCATION";
@@ -337,7 +329,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, true);
       }
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
-      tables = tables == null ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
+      tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
       jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
 
       String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
@@ -820,8 +812,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           "Disable `engine.hive.lock-enabled` to use Hive locking");
     }
     return switch (writeEntity.getWriteType()) {
-      case INSERT_OVERWRITE ->
-        LockType.EXCL_WRITE;
+      case INSERT_OVERWRITE -> LockType.EXCL_WRITE;
       case UPDATE, DELETE -> sharedWrite ?
         LockType.SHARED_WRITE : LockType.EXCL_WRITE;
       default -> LockType.SHARED_WRITE;
@@ -990,8 +981,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (location != null) {
       HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
-    List<JobContext> jobContextList = HiveIcebergOutputCommitter
-            .generateJobContext(configuration, tableName, snapshotRef);
+    List<JobContext> jobContextList = HiveIcebergOutputCommitter.generateJobContexts(
+        configuration, tableName, snapshotRef);
     if (jobContextList.isEmpty()) {
       return;
     }
@@ -1503,75 +1494,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   /**
-   * Returns the Table serialized to the configuration based on the table name.
-   * If configuration is missing from the FileIO of the table, it will be populated with the input config.
-   *
-   * @param config The configuration used to get the data from
-   * @param name The name of the table we need as returned by TableDesc.getTableName()
-   * @return The Table
-   */
-  public static Table table(Configuration config, String name) {
-    Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
-    if (table == null &&
-            config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
-            StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION))) {
-      table = HiveTableUtil.readTableObjectFromFile(config);
-    }
-    checkAndSetIoConfig(config, table);
-    return table;
-  }
-
-  /**
-   * If enabled, it populates the FileIO's hadoop configuration with the input config object.
-   * This might be necessary when the table object was serialized without the FileIO config.
-   *
-   * @param config Configuration to set for FileIO, if enabled
-   * @param table The Iceberg table object
-   */
-  public static void checkAndSetIoConfig(Configuration config, Table table) {
-    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
-          InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
-      ((HadoopConfigurable) table.io()).setConf(config);
-    }
-  }
-
-  /**
-   * If enabled, it ensures that the FileIO's hadoop configuration will not be serialized.
-   * This might be desirable for decreasing the overall size of serialized table objects.
-   *
-   * Note: Skipping FileIO config serialization in this fashion might in turn necessitate calling
-   * {@link #checkAndSetIoConfig(Configuration, Table)} on the deserializer-side to enable subsequent use of the FileIO.
-   *
-   * @param config Configuration to set for FileIO in a transient manner, if enabled
-   * @param table The Iceberg table object
-   */
-  public static void checkAndSkipIoConfigSerialization(Configuration config, Table table) {
-    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
-          InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
-      ((HadoopConfigurable) table.io()).serializeConfWith(conf -> new NonSerializingConfig(config)::get);
-    }
-  }
-
-  /**
-   * Returns the names of the output tables stored in the configuration.
-   * @param config The configuration used to get the data from
-   * @return The collection of the table names as returned by TableDesc.getTableName()
-   */
-  public static Set<String> outputTables(Configuration config) {
-    return Sets.newHashSet(TABLE_NAME_SPLITTER.split(config.get(InputFormatConfig.OUTPUT_TABLES)));
-  }
-
-  /**
-   * Returns the catalog name serialized to the configuration.
-   * @param config The configuration used to get the data from
-   * @param name The name of the table we neeed as returned by TableDesc.getTableName()
-   * @return catalog name
-   */
-  public static String catalogName(Configuration config, String name) {
-    return config.get(InputFormatConfig.TABLE_CATALOG_PREFIX + name);
-  }
-
-  /**
    * Returns the Table Schema serialized to the configuration.
    * @param config The configuration used to get the data from
    * @return The Table Schema object
@@ -1601,30 +1523,24 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Properties props = tableDesc.getProperties();
 
     Maps.fromProperties(props).entrySet().stream()
-        .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
-        .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+      .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
+      .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
 
     String location;
     Schema schema;
     PartitionSpec spec;
+    String bytes;
     try {
       Table table = IcebergTableUtil.getTable(configuration, props);
       location = table.location();
+      // set table format-version and write-mode information from tableDesc
+      bytes = HiveTableUtil.serializeTable(table, configuration, props,
+          ImmutableList.of(
+              TableProperties.FORMAT_VERSION,
+              TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE));
       schema = table.schema();
       spec = table.spec();
 
-      // serialize table object into config
-      Table serializableTable = SerializableTable.copyOf(table);
-
-      // set table format-version and write-mode information from tableDesc
-      final List<String> writeConfigList = ImmutableList.of(
-          FORMAT_VERSION, DELETE_MODE, UPDATE_MODE, MERGE_MODE);
-      writeConfigList.forEach(cfg ->
-          serializableTable.properties().computeIfAbsent(cfg, props::getProperty));
-
-      checkAndSkipIoConfigSerialization(configuration, serializableTable);
-      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
-          SerializationUtil.serializeToBase64(serializableTable));
     } catch (NoSuchTableException ex) {
       if (!HiveTableUtil.isCtas(props)) {
         throw ex;
@@ -1635,21 +1551,20 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
 
       location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
-
-      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
-              SerializationUtil.serializeToBase64(null));
+      bytes = SerializationUtil.serializeToBase64(null);
 
       try {
-        AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
-        HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;
+        HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) tableDesc.getDeserializer(configuration);
         schema = icebergSerDe.getTableSchema();
         spec = IcebergTableUtil.spec(configuration, icebergSerDe.getTableSchema());
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
-
+    // serialize table object into config
+    map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(), bytes);
     map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
+
     if (StringUtils.isNotBlank(location)) {
       map.put(InputFormatConfig.TABLE_LOCATION, location);
     }
@@ -1808,23 +1723,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         .orElse(Operation.OTHER.name());
   }
 
-  private static class NonSerializingConfig implements Serializable {
-
-    private final transient Configuration conf;
-
-    NonSerializingConfig(Configuration conf) {
-      this.conf = conf;
-    }
-
-    public Configuration get() {
-      if (conf == null) {
-        throw new IllegalStateException("Configuration was not serialized on purpose but was not set manually either");
-      }
-
-      return conf;
-    }
-  }
-
   @Override
   public boolean areSnapshotsSupported() {
     return true;
@@ -1907,10 +1805,13 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Map<String, String> origParams) {
     // Preserve the format-version of the iceberg table and filter out rest.
     if (IcebergTableUtil.isV2TableOrAbove(origParams)) {
-      tbl.getParameters().put(TableProperties.FORMAT_VERSION, IcebergTableUtil.formatVersion(origParams).toString());
-      tbl.getParameters().put(TableProperties.DELETE_MODE, MERGE_ON_READ);
-      tbl.getParameters().put(TableProperties.UPDATE_MODE, MERGE_ON_READ);
-      tbl.getParameters().put(TableProperties.MERGE_MODE, MERGE_ON_READ);
+      tbl.getParameters().putAll(
+          Map.of(
+            TableProperties.FORMAT_VERSION, IcebergTableUtil.formatVersion(origParams).toString(),
+            TableProperties.DELETE_MODE, MERGE_ON_READ,
+            TableProperties.UPDATE_MODE, MERGE_ON_READ,
+            TableProperties.MERGE_MODE, MERGE_ON_READ
+          ));
     }
 
     // check if the table is being created as managed table, in that case we translate it to external
@@ -2278,11 +2179,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FileStatus> getMergeTaskInputFiles(Properties properties) throws IOException {
-    List<JobContext> jobContextList = IcebergMergeTaskProperties.getJobContexts(properties);
+    List<JobContext> jobContextList = HiveIcebergOutputCommitter.getJobContexts(properties);
     if (jobContextList.isEmpty()) {
       return Collections.emptyList();
     }
-    return new HiveIcebergOutputCommitter().getOutputFiles(jobContextList);
+    return HiveIcebergOutputCommitter.getOutputFiles(jobContextList);
   }
 
   @Override

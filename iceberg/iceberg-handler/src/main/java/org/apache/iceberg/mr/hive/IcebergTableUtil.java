@@ -564,7 +564,6 @@ public class IcebergTableUtil {
     }
   }
 
-
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
       throws MetaException, HiveException {
     if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {

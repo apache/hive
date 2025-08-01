@@ -62,7 +62,7 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
   private static HiveIcebergWriter writer(JobConf jc) {
     TaskAttemptID taskAttemptID = TezUtil.taskAttemptWrapper(jc);
     // It gets the config from the FileSinkOperator which has its own config for every target table
-    Table table = HiveIcebergStorageHandler.table(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
+    Table table = HiveTableUtil.deserializeTable(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
     setWriterLevelConfiguration(jc, table);
 
     return WriterBuilder.builderFor(table, jc::get)

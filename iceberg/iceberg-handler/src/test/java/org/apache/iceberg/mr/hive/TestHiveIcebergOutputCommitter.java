@@ -261,7 +261,7 @@ public class TestHiveIcebergOutputCommitter {
                                     JobConf conf, OutputCommitter committer) throws IOException {
     List<Record> expected = Lists.newArrayListWithExpectedSize(RECORD_NUM * taskNum);
 
-    Table table = HiveIcebergStorageHandler.table(conf, name);
+    Table table = HiveTableUtil.deserializeTable(conf, name);
     Schema schema = HiveIcebergStorageHandler.schema(conf);
 
     for (int i = 0; i < taskNum; ++i) {

@@ -58,7 +58,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
+import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.SerializationUtil;
@@ -158,7 +158,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   public List<InputSplit> getSplits(JobContext context) {
     Configuration conf = context.getConfiguration();
     Table table = Optional
-        .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
+        .ofNullable(HiveTableUtil.deserializeTable(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
         .orElseGet(() -> {
           Table tbl = Catalogs.loadTable(conf);
           conf.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.name());
@@ -211,9 +211,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     // However, do not skip serialization for metatable queries, because some metadata tasks cache the IO object and we
     // wouldn't be able to inject the config into these tasks on the deserializer-side, unlike for standard queries
     if (scan instanceof DataTableScan) {
-      HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, table);
+      HiveTableUtil.checkAndSkipIoConfigSerialization(conf, table);
     }
-
     return splits;
   }
 

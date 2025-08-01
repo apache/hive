@@ -53,7 +53,6 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
   private static final Logger LOG = LoggerFactory.getLogger(KuduStorageHandler.class);
 
   private static final String KUDU_PREFIX = "kudu:";
-
   private static final String KUDU_PROPERTY_PREFIX = "kudu.";
 
   /** Table Properties. Used in the hive table definition when creating a new table. */
@@ -102,8 +101,8 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
     if (UserGroupInformation.isSecurityEnabled()) {
       // AM can not do Kerberos Auth so will do the input split generation in the HS2
       LOG.debug("Setting {} to {} to enable split generation on HS2",
-          HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(),
-          Boolean.FALSE.toString());
+          HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION,
+          Boolean.FALSE);
       jobConf.set(HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(), Boolean.FALSE.toString());
     }
     try {
