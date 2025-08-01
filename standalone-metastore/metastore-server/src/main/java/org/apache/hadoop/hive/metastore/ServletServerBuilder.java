@@ -25,7 +25,6 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
@@ -174,7 +173,7 @@ public class ServletServerBuilder {
    */
   private static SslContextFactory createSslContextFactory(Configuration conf) {
     try {
-      return ServletSecurity.createSslContextFactory(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS);
+      return ServletSecurity.createSslContextFactoryIf(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS);
     } catch (IOException e) {
       LOGGER.error("Failed to create SSL context factory", e);
       return null;
