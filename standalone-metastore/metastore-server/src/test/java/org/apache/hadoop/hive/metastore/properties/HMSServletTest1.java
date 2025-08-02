@@ -22,7 +22,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +39,11 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(MetastoreUnitTest.class)
@@ -57,23 +60,25 @@ public class HMSServletTest1 extends HMSServletTest {
   @Override
   protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
     String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    URL url = new URL("http://hive@localhost:" + sport + "/" + path + "/" + NS);
+    String scheme = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS)
+            ? "https" : "http";
+    URI uri = new URI(scheme + "://hive@localhost:" + sport + "/" + path + "/" + NS);
     String jwt = generateJWT();
-    return new JSonHttpClient(jwt, url.toString());
+    return new JSonHttpClient(conf, jwt, uri);
   }
 
   /**
    * A property client that uses Apache HttpClient as base.
    */
   public static class JSonHttpClient implements HttpPropertyClient, AutoCloseable {
-    private final String uri;
+    private final URI uri;
     private final HttpClient client;
     private final String jwt;
 
-    JSonHttpClient(String token, String uri) {
+    JSonHttpClient(Configuration conf, String token, URI uri) throws MalformedURLException {
       this.jwt = token;
       this.uri = uri;
-      this.client = HttpClients.createDefault();
+      this.client = HMSServletTest.createHttpClient(conf);
     }
     @Override
     public void close() throws Exception {
@@ -167,4 +172,54 @@ public class HMSServletTest1 extends HMSServletTest {
     }
   }
 
+  @Test
+  public void testServletEchoB() throws Exception {
+    HttpClient client = createHttpClient(conf);
+    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    String scheme = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS)
+            ? "https" : "http";
+    URI uri = new URI(scheme + "://hive@localhost:" + servletPort + "/" + path + "/" + NS);
+    HttpResponse response = null;
+    try {
+      String jwt = generateJWT();
+      String msgBody = "{\"method\":\"echo\"}";
+      HttpPost post = createPost(jwt, uri, msgBody);
+      response = client.execute(post);
+      Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+      String resp = null;
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        ContentType contentType = ContentType.getOrDefault(entity);
+        Charset charset = contentType.getCharset();
+        Reader reader = new InputStreamReader(entity.getContent(), charset);
+        resp = readString(reader);
+      }
+      Assert.assertNotNull(resp);
+      Assert.assertEquals(msgBody, resp);
+    } finally {
+      if (response instanceof AutoCloseable) {
+        ((AutoCloseable) response).close();
+      }
+      if (client instanceof AutoCloseable) {
+        ((AutoCloseable) client).close();
+      }
+    }
+  }
+
+  /**
+   * Create a PostMethod populated with the expected attributes.
+   * @param jwt the security token
+   * @param msgBody the actual (json) payload
+   * @return the method to be executed by the Http client
+   */
+  protected HttpPost createPost(String jwt, URI uri, String msgBody) {
+    HttpPost method = new HttpPost(uri);
+    method.addHeader("Authorization", "Bearer " + jwt);
+    method.addHeader("Content-Type", "application/json");
+    method.addHeader("Accept", "application/json");
+
+    StringEntity sre = new StringEntity(msgBody, ContentType.APPLICATION_JSON);
+    method.setEntity(sre);
+    return method;
+  }
 }
