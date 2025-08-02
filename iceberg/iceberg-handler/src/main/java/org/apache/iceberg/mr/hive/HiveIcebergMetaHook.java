@@ -45,14 +45,16 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClient;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -1223,7 +1225,25 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     } catch (IOException e) {
       throw new MetaException(String.format("Error while fetching the partitions due to: %s", e));
     }
-    context.putToProperties(ThriftHiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
+    context.putToProperties(BaseMetaStoreClient.SKIP_DROP_PARTITION, "true");
+  }
+
+  @Override
+  public void preDropPartitions(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+                                EnvironmentContext context,
+                                RequestPartsSpec partsSpec) throws MetaException {
+    if (partsSpec.isSetExprs()) {
+      List<DropPartitionsExpr> exprs = partsSpec.getExprs();
+      List<org.apache.commons.lang3.tuple.Pair<Integer, byte[]>> partExprs = Lists.newArrayList();
+      for (DropPartitionsExpr expr : exprs) {
+        partExprs.add(
+            org.apache.commons.lang3.tuple.Pair.of(expr.getPartArchiveLevel(), expr.getExpr()));
+      }
+      preDropPartitions(hmsTable, context, partExprs);
+    } else if (partsSpec.isSetNames()) {
+      preTruncateTable(hmsTable, context, partsSpec.getNames());
+      context.putToProperties(BaseMetaStoreClient.SKIP_DROP_PARTITION, "true");
+    }
   }
 
   private static void validatePartitionSpec(SearchArgument sarg, PartitionSpec partitionSpec) {
