@@ -21,12 +21,16 @@ package org.apache.hadoop.hive.ql.parse.repl;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TestFileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -34,13 +38,16 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -59,9 +66,19 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TestCopyUtils {
+  private static final Path basePath = new Path("/tmp/");
+
+  private static HiveConf hiveConf;
+  private static FileSystem fileSystem;
+
+  @BeforeClass
+  public static void setup() throws Exception {
+    hiveConf = new HiveConf(TestFileUtils.class);
+    fileSystem = FileSystem.get(hiveConf);
+  }
   /*
   Distcp currently does not copy a single file in a distributed manner hence we dont care about
-  the size of file, if there is only file, we dont want to launch distcp.
+  the size of file, if there is only file, we don't want to launch distcp.
    */
   @Test
   public void distcpShouldNotBeCalledOnlyForOneFile() throws Exception {
@@ -242,6 +259,93 @@ public class TestCopyUtils {
       //File count is greater than 1 do thread pool invoked
       Mockito.verify(mockExecutorService,
         Mockito.times(1)).invokeAll(callableCapture.capture());
+    }
+  }
+
+  @Test
+  public void testCopyFilesBetweenFSWithDestDirNotExistFailure() throws IOException {
+    Path srcPath1 = new Path(basePath, "file1.txt");
+    Path srcPath2 = new Path(basePath, "file2.txt");
+    Path dstPath = new Path(basePath, "copyDst");
+
+    try {
+      // Create source files
+      fileSystem.create(srcPath1).write("Content of file1".getBytes());
+      fileSystem.create(srcPath2).write("Content of file2".getBytes());
+
+      // Prepare source paths array
+      Path[] srcPaths = {srcPath1, srcPath2};
+
+
+      CopyUtils copyUtils = new CopyUtils("hive", hiveConf, fileSystem);
+      DataCopyStatistics copyStatistics = new DataCopyStatistics();
+      IOException thrown =
+              Assert.assertThrows(IOException.class, () -> {
+                copyUtils.copyFilesBetweenFS(fileSystem, srcPaths, fileSystem, dstPath, false, true, copyStatistics);
+              });
+      // this is supposed to come out of retryable function immediately without waiting as FileNotFound is not auto-recoverable error
+      Assert.assertEquals(IOException.class, thrown.getCause().getClass());
+      Assert.assertEquals(FileNotFoundException.class, thrown.getCause().getCause().getClass());
+      Assert.assertEquals("'/tmp/copyDst': specified destination directory does not exist", thrown.getCause().getMessage());
+
+    } finally {
+      // Clean up
+      fileSystem.delete(srcPath1, false);
+      fileSystem.delete(srcPath2, false);
+      fileSystem.delete(dstPath, true);
+    }
+  }
+
+  @Test
+  public void testCopyFilesBetweenFSWithSourceFileGettingDeletedFailure() throws IOException {
+    CountDownLatch copyStartedLatch = new CountDownLatch(1);
+    Path srcPath1 = new Path(basePath, "file3.txt");
+    Path srcPath2 = new Path(basePath, "file4.txt");
+    Path dstPath = new Path(basePath, "copyDst");
+    fileSystem.mkdirs(dstPath);
+
+    try {
+      // Create source files
+      fileSystem.create(srcPath1).write("Content of file3".getBytes());
+      fileSystem.create(srcPath2).write("Content of file4".getBytes());
+
+      // Prepare source paths array
+      Path[] srcPaths = {srcPath1, srcPath2};
+
+      // Use a separate thread to delete the file during copy
+      new Thread(() -> {
+        try {
+          copyStartedLatch.await(100, TimeUnit.MILLISECONDS); // This will wait for 100ms and then will delete the file
+          fileSystem.delete(srcPath1, false); // Delete source file mid-operation
+        } catch (Exception e) {
+          // Ignore exception
+        }
+      }).start();
+
+      CopyUtils copyUtils = new CopyUtils("hive", hiveConf, fileSystem);
+      DataCopyStatistics copyStatistics = new DataCopyStatistics();
+      try {
+        copyUtils.copyFilesBetweenFS(fileSystem, srcPaths, fileSystem, dstPath, false, true, copyStatistics);
+        // Assert that files have been copied
+        for (Path srcPath : srcPaths) {
+          Path dstFilePath = new Path(dstPath, srcPath.getName());
+         // If above thread deletes the file after copy is done then there will be no error
+          Assert.assertTrue("File " + dstFilePath + " should exist", fileSystem.exists(dstFilePath));
+        }
+      } catch (IOException e) {
+        // If before copy operation above thread deletes the file from the source then it is expected to throw FileNotFoundException
+        // Earlier it was IOException and because of that replication load was getting stuck for 24 hours because of hive.repl.retry.total.duration
+        // this is supposed to come out of retryable function immediately without waiting as FileNotFound is not auto-recoverable error
+        Assert.assertEquals(IOException.class, e.getCause().getClass());
+        Assert.assertEquals(FileNotFoundException.class, e.getCause().getCause().getClass());
+        Assert.assertTrue(e.getCause().getCause().getMessage().contains("File /tmp/file3.txt does not exist"));
+      }
+
+    } finally {
+      // Clean up
+      fileSystem.delete(srcPath1, false);
+      fileSystem.delete(srcPath2, false);
+      fileSystem.delete(dstPath, true);
     }
   }
 }
