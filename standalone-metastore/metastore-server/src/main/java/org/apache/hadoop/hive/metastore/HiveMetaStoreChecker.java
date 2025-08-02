@@ -267,7 +267,7 @@ public class HiveMetaStoreChecker {
       if (filterExp != null) {
         List<Partition> results = new ArrayList<>();
         getPartitionListByFilterExp(getMsc(), table, filterExp,
-            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME), results);
+            getDefaultPartitionName(table.getParameters(), conf), results);
         parts = new PartitionIterable(results);
       } else {
         GetProjectionsSpec projectionsSpec = new GetPartitionProjectionsSpecBuilder()
@@ -287,6 +287,15 @@ public class HiveMetaStoreChecker {
     }
 
     checkTable(table, parts, filterExp, result);
+  }
+
+  private String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
+    String DEFAULT_PARTITION_KEY = "DEFAULT_PARTITION_NAME";
+    if (tableParams != null && tableParams.containsKey(DEFAULT_PARTITION_KEY)) {
+      return tableParams.get(DEFAULT_PARTITION_KEY);
+    } else {
+      return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME);
+    }
   }
 
   /**
@@ -338,7 +347,7 @@ public class HiveMetaStoreChecker {
 
       // Remove all partition paths which does not matches the filter expression.
       expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
-              conf.get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), partitions);
+              getDefaultPartitionName(table.getParameters(), conf), partitions);
 
       // now the partition list will contain all the paths that matches the filter expression.
       // add them back to partDirs.

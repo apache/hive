@@ -65,7 +65,7 @@ public  class AlterTableExchangePartitionAnalyzer extends AbstractAlterTableAnal
 
     // Get the partition specs
     Map<String, String> partitionSpecs = getValidatedPartSpec(sourceTable, (ASTNode)command.getChild(0), conf, false);
-    PartitionUtils.validatePartitions(conf, partitionSpecs);
+    PartitionUtils.validatePartitions(conf, partitionSpecs, sourceTable.getParameters());
 
     boolean sameColumns = MetaStoreUtils.compareFieldColumns(destTable.getAllCols(), sourceTable.getAllCols());
     boolean samePartitions = MetaStoreUtils.compareFieldColumns(destTable.getPartitionKeys(),

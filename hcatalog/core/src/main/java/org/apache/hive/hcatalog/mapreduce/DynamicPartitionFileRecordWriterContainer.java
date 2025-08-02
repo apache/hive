@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -72,7 +73,8 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
    */
   public DynamicPartitionFileRecordWriterContainer(
       RecordWriter<? super WritableComparable<?>, ? super Writable> baseWriter,
-      TaskAttemptContext context) throws IOException, InterruptedException {
+      TaskAttemptContext context, org.apache.hadoop.hive.metastore.api.Table tbl)
+      throws IOException, InterruptedException {
     super(baseWriter, context);
     maxDynamicPartitions = jobInfo.getMaxDynamicPartitions();
     dynamicPartCols = jobInfo.getPosOfDynPartCols();
@@ -88,7 +90,8 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
     this.dynamicContexts = new HashMap<String, org.apache.hadoop.mapred.TaskAttemptContext>();
     this.dynamicObjectInspectors = new HashMap<String, ObjectInspector>();
     this.dynamicOutputJobInfo = new HashMap<String, OutputJobInfo>();
-    this.HIVE_DEFAULT_PARTITION_VALUE = HiveConf.getVar(context.getConfiguration(), HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
+    this.HIVE_DEFAULT_PARTITION_VALUE = PartitionUtils.getDefaultPartitionName(tbl.getParameters(),
+            (HiveConf)context.getConfiguration());
   }
 
   @Override
