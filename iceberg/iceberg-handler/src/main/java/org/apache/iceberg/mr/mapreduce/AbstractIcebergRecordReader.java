@@ -33,7 +33,7 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
+import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 
 public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, T> {
@@ -53,8 +53,7 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
     this.context = newContext;
     this.conf = newContext.getConfiguration();
-    this.table = HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER));
-    HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
+    this.table = HiveTableUtil.deserializeTable(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER));
     this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
     this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
     this.expectedSchema = readSchema(conf, table, caseSensitive);

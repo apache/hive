@@ -158,9 +158,9 @@ public class HiveIcebergFilterFactory {
       case HOUR:
         return Expressions.hour(columnName);
       case TRUNCATE:
-        return Expressions.truncate(columnName, transformSpec.getTransformParam().get());
+        return Expressions.truncate(columnName, transformSpec.getTransformParam());
       case BUCKET:
-        return Expressions.bucket(columnName, transformSpec.getTransformParam().get());
+        return Expressions.bucket(columnName, transformSpec.getTransformParam());
       case IDENTITY:
         return null;
       default:
@@ -212,10 +212,10 @@ public class HiveIcebergFilterFactory {
         case HOUR:
           return parseHourToTransformHour(literal.toString());
         case TRUNCATE:
-          return Transforms.truncate(transform.getTransformParam().get()).bind(Types.StringType.get())
+          return Transforms.truncate(transform.getTransformParam()).bind(Types.StringType.get())
               .apply(literal.toString());
         case BUCKET:
-          return Transforms.bucket(transform.getTransformParam().get()).bind(Types.StringType.get())
+          return Transforms.bucket(transform.getTransformParam()).bind(Types.StringType.get())
               .apply(literal.toString());
         case IDENTITY:
           return literal;

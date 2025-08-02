@@ -23,7 +23,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -31,22 +30,19 @@ import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.util.SerializationUtil;
 
 public class IcebergMergeSplit extends FileSplit implements org.apache.hadoop.mapred.InputSplit {
-  private transient Configuration conf;
-  private ContentFile contentFile;
+  private ContentFile<?> contentFile;
 
   // public no-argument constructor for deserialization
   public IcebergMergeSplit() {
   }
 
-  public IcebergMergeSplit(Configuration conf,
-                           CombineHiveInputFormat.CombineHiveInputSplit split,
-                           Integer partition, Properties properties) throws IOException {
-    super(split.getPaths()[partition], split
-            .getStartOffsets()[partition], split.getLengths()[partition], split
-            .getLocations());
-    this.conf = conf;
+  public IcebergMergeSplit(CombineHiveInputFormat.CombineHiveInputSplit split,
+        Integer partition, Properties properties) throws IOException {
+    super(split.getPaths()[partition],
+          split.getStartOffsets()[partition], split.getLengths()[partition],
+          split.getLocations());
     Path path = split.getPaths()[partition];
-    contentFile = (ContentFile) properties.get(path);
+    contentFile = (ContentFile<?>) properties.get(path);
   }
 
   @Override
@@ -73,7 +69,7 @@ public class IcebergMergeSplit extends FileSplit implements org.apache.hadoop.ma
     this.contentFile = SerializationUtil.deserializeFromBytes(data);
   }
 
-  public ContentFile getContentFile() {
+  public ContentFile<?> getContentFile() {
     return contentFile;
   }
 }

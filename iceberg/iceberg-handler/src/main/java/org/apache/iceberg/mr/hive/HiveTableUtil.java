@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -58,6 +60,7 @@ import org.apache.iceberg.Transaction;
 import org.apache.iceberg.data.TableMigrationUtil;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.io.FileIO;
@@ -134,10 +137,10 @@ public class HiveTableUtil {
           tasks.add(task);
         }
         int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_SERVER2_ICEBERG_METADATA_GENERATOR_THREADS);
-        ExecutorService executor = Executors.newFixedThreadPool(numThreads,
-            new ThreadFactoryBuilder().setNameFormat("iceberg-metadata-generator-%d").setDaemon(true).build());
-        executor.invokeAll(tasks);
-        executor.shutdown();
+        try (ExecutorService executor = Executors.newFixedThreadPool(numThreads,
+              new ThreadFactoryBuilder().setNameFormat("iceberg-metadata-generator-%d").setDaemon(true).build())) {
+          executor.invokeAll(tasks);
+        }
       }
       append.commit();
     } catch (IOException | InterruptedException e) {
@@ -209,20 +212,101 @@ public class HiveTableUtil {
     }
   }
 
-  static String generateTableObjectLocation(String tableLocation, Configuration conf) {
+  /**
+   * Serializes the Iceberg table object.
+   */
+  public static String serializeTable(Table table, Configuration config, Properties props,
+      List<String> broadcastConfig) {
+    Table serializableTable = SerializableTable.copyOf(table);
+    if (broadcastConfig != null) {
+      broadcastConfig.forEach(cfg ->
+          serializableTable.properties().computeIfAbsent(cfg, props::getProperty));
+    }
+    checkAndSkipIoConfigSerialization(config, serializableTable);
+    return SerializationUtil.serializeToBase64(serializableTable);
+  }
+
+  /**
+   * Returns the Table serialized to the configuration based on the table name.
+   * If configuration is missing from the FileIO of the table, it will be populated with the input config.
+   *
+   * @param config The configuration used to get the data from
+   * @param name The name of the table we need as returned by TableDesc.getTableName()
+   * @return The Table
+   */
+  public static Table deserializeTable(Configuration config, String name) {
+    Table table = SerializationUtil.deserializeFromBase64(
+        config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
+    String location = config.get(InputFormatConfig.TABLE_LOCATION);
+    if (table == null &&
+          config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
+          StringUtils.isNotBlank(location)) {
+      table = readTableObjectFromFile(location, config);
+    }
+    checkAndSetIoConfig(config, table);
+    return table;
+  }
+
+  /**
+   * If enabled, it populates the FileIO's hadoop configuration with the input config object.
+   * This might be necessary when the table object was serialized without the FileIO config.
+   *
+   * @param config Configuration to set for FileIO, if enabled
+   * @param table The Iceberg table object
+   */
+  private static void checkAndSetIoConfig(Configuration config, Table table) {
+    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
+            InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) &&
+          table.io() instanceof HadoopConfigurable fileIO) {
+      fileIO.setConf(config);
+    }
+  }
+
+  /**
+   * If enabled, it ensures that the FileIO's hadoop configuration will not be serialized.
+   * This might be desirable for decreasing the overall size of serialized table objects.
+   *
+   * Note: Skipping FileIO config serialization in this fashion might in turn necessitate calling
+   * {@link #checkAndSetIoConfig(Configuration, Table)} on the deserializer-side to enable subsequent use of the FileIO.
+   *
+   * @param config Configuration to set for FileIO in a transient manner, if enabled
+   * @param table The Iceberg table object
+   */
+  public static void checkAndSkipIoConfigSerialization(Configuration config, Table table) {
+    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
+            InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) &&
+          table.io() instanceof HadoopConfigurable fileIO) {
+      fileIO.serializeConfWith(conf ->
+          new NonSerializingConfig(config)::get);
+    }
+  }
+
+  private static class NonSerializingConfig implements Serializable {
+    private final transient Configuration conf;
+
+    NonSerializingConfig(Configuration conf) {
+      this.conf = conf;
+    }
+
+    public Configuration get() {
+      if (conf == null) {
+        throw new IllegalStateException(
+            "Configuration was not serialized on purpose but was not set manually either");
+      }
+      return conf;
+    }
+  }
+
+  private static String generateTableObjectLocation(String tableLocation, Configuration conf) {
     return tableLocation + "/temp/" + conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname) + TABLE_EXTENSION;
   }
 
   static void createFileForTableObject(Table table, Configuration conf) {
     String filePath = generateTableObjectLocation(table.location(), conf);
-
-    Table serializableTable = SerializableTable.copyOf(table);
-    HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, serializableTable);
-    String serialized = SerializationUtil.serializeToBase64(serializableTable);
-
+    String bytes = serializeTable(table, conf, null, null);
     OutputFile serializedTableFile = table.io().newOutputFile(filePath);
     try (ObjectOutputStream oos = new ObjectOutputStream(serializedTableFile.createOrOverwrite())) {
-      oos.writeObject(serialized);
+      oos.writeObject(bytes);
     } catch (IOException ex) {
       throw new UncheckedIOException(ex);
     }
@@ -230,9 +314,9 @@ public class HiveTableUtil {
   }
 
   static void cleanupTableObjectFile(String location, Configuration configuration) {
-    String tableObjectLocation = HiveTableUtil.generateTableObjectLocation(location, configuration);
+    String filePath = generateTableObjectLocation(location, configuration);
+    Path toDelete = new Path(filePath);
     try {
-      Path toDelete = new Path(tableObjectLocation);
       FileSystem fs = Util.getFs(toDelete, configuration);
       fs.delete(toDelete, true);
     } catch (IOException ex) {
@@ -240,10 +324,8 @@ public class HiveTableUtil {
     }
   }
 
-  static Table readTableObjectFromFile(Configuration config) {
-    String location = config.get(InputFormatConfig.TABLE_LOCATION);
-    String filePath = HiveTableUtil.generateTableObjectLocation(location, config);
-
+  private static Table readTableObjectFromFile(String location, Configuration config) {
+    String filePath = generateTableObjectLocation(location, config);
     try (FileIO io = new HadoopFileIO(config)) {
       try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
         return SerializationUtil.deserializeFromBase64((String) ois.readObject());

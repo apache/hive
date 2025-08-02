@@ -11,9 +11,9 @@
 -- Mask iceberg version
 --! qt:replace:/("iceberg-version":")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))/$1#Masked#/
 
--- create an unpartitioned table with skip delete data set to false
+-- create an unpartitioned table
  create table ice01 (id int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false');
+ TBLPROPERTIES('format-version'='3');
 
 -- check the property value
 show create table ice01;
@@ -26,6 +26,7 @@ select * from ice01;
 
 -- delete some values
 delete from ice01 where id>2;
+select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
 
 -- check the values, the delete value should be there
 select * from ice01 order by id;
@@ -38,22 +39,14 @@ select * from ice01 order by id;
 
 -- delete one value
 delete from ice01 where id=7;
-
--- change to skip the row data now
-Alter table ice01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true');
-
--- check the property value
-show create table ice01;
-
--- delete some more rows now
-delete from ice01 where id=5;
+select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
 
 -- check the entries, the deleted entries shouldn't be there.
 select * from ice01 order by id;
 
--- create a partitioned table with skip row data set to false
+-- create a partitioned table
  create table icepart01 (id int) partitioned by (part int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false');
+ TBLPROPERTIES('format-version'='3');
 
 -- insert some values
 insert into icepart01 values (1,1),(2,1),(3,2),(4,2);
@@ -63,6 +56,7 @@ select * from icepart01 order by id;
 
 -- delete some values
 delete from icepart01 where id>=2 AND id<4;
+select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files;
 
 -- check the values, the delete value should be there
 select * from icepart01;
@@ -75,15 +69,7 @@ select * from icepart01 order by id;
 
 -- delete one value
 delete from icepart01 where id=7;
-
--- change to skip the row data now
-Alter table icepart01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true');
-
--- check the property value
-show create table icepart01;
-
--- delete some more rows now
-delete from icepart01 where id=5;
+select content, file_format, spec_id, record_count, content_offset from default.icepart01.delete_files;
 
 -- check the entries, the deleted entries shouldn't be there.
 select * from icepart01 order by id;
