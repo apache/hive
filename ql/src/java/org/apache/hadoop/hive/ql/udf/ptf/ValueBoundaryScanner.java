@@ -927,7 +927,7 @@ class DoublePrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundarySc
   @Override
   public boolean isEqualPrimitive(Double d1, Double d2) {
     if (d1 != null && d2 != null) {
-      return d1 == d2;
+      return d1.equals(d2);
     }
 
     return d1 == null && d2 == null; // True if both are null
