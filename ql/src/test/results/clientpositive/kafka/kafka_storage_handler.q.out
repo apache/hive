@@ -1569,72 +1569,12 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.kafka.KafkaOutputFormat
                     properties:
                       EXTERNAL TRUE
-                      avro.schema.literal {
-  "type" : "record",
-  "name" : "Wikipedia",
-  "namespace" : "org.apache.hive.kafka",
-  "version": "1",
-  "fields" : [ {
-    "name" : "isrobot",
-    "type" : "boolean"
-  }, {
-    "name" : "channel",
-    "type" : "string"
-  }, {
-    "name" : "timestamp",
-    "type" : "string"
-  }, {
-    "name" : "flags",
-    "type" : "string"
-  }, {
-    "name" : "isunpatrolled",
-    "type" : "boolean"
-  }, {
-    "name" : "page",
-    "type" : "string"
-  }, {
-    "name" : "diffurl",
-    "type" : "string"
-  }, {
-    "name" : "added",
-    "type" : "long"
-  }, {
-    "name" : "comment",
-    "type" : "string"
-  }, {
-    "name" : "commentlength",
-    "type" : "long"
-  }, {
-    "name" : "isnew",
-    "type" : "boolean"
-  }, {
-    "name" : "isminor",
-    "type" : "boolean"
-  }, {
-    "name" : "delta",
-    "type" : "long"
-  }, {
-    "name" : "isanonymous",
-    "type" : "boolean"
-  }, {
-    "name" : "user",
-    "type" : "string"
-  }, {
-    "name" : "deltabucket",
-    "type" : "double"
-  }, {
-    "name" : "deleted",
-    "type" : "long"
-  }, {
-    "name" : "namespace",
-    "type" : "string"
-  } ]
-}
+                      avro.schema.literal {"type":"record","name":"Wikipedia","namespace":"org.apache.hive.kafka","fields":[{"name":"isrobot","type":"boolean"},{"name":"channel","type":"string"},{"name":"timestamp","type":"string"},{"name":"flags","type":"string"},{"name":"isunpatrolled","type":"boolean"},{"name":"page","type":"string"},{"name":"diffurl","type":"string"},{"name":"added","type":"long"},{"name":"comment","type":"string"},{"name":"commentlength","type":"long"},{"name":"isnew","type":"boolean"},{"name":"isminor","type":"boolean"},{"name":"delta","type":"long"},{"name":"isanonymous","type":"boolean"},{"name":"user","type":"string"},{"name":"deltabucket","type":"double"},{"name":"deleted","type":"long"},{"name":"namespace","type":"string"}],"version":"1"}
                       bucketing_version 2
                       column.name.delimiter ,
-                      columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
+                      columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace
                       columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
-                      columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
+                      columns.types boolean,string,string,string,boolean,string,string,bigint,string,bigint,boolean,boolean,bigint,boolean,string,double,bigint,string
 #### A masked pattern was here ####
                       hive.kafka.max.retries 6
                       hive.kafka.metadata.poll.timeout.ms 30000
