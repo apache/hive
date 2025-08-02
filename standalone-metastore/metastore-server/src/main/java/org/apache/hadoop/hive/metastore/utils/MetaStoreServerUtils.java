@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -51,14 +58,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import javax.annotation.Nullable;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
@@ -114,8 +114,6 @@ import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-
 /**
  * Utility methods used by Hive standalone metastore server.
  */
@@ -132,7 +130,7 @@ public class MetaStoreServerUtils {
       = new com.google.common.base.Function<String, String>() {
     @Override
     public String apply(@Nullable String string) {
-      return org.apache.commons.lang3.StringUtils.defaultString(string);
+      return StringUtils.defaultString(string);
     }
   };
 
@@ -255,31 +253,43 @@ public class MetaStoreServerUtils {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
   }
 
-  public static void validatePartitionNameCharacters(List<String> partVals,
-                                                     Pattern partitionValidationPattern) throws MetaException {
+  private static Pattern getPartitionValidationRegex(Configuration conf) {
+    return Optional.ofNullable(
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN))
+        .filter(StringUtils::isNotBlank)
+        .map(Pattern::compile)
+        .orElse(null);
+  }
 
+  public static void validatePartitionNameCharacters(List<String> partVals, Configuration conf)
+      throws MetaException {
+
+    Pattern partitionValidationPattern = getPartitionValidationRegex(conf);
     String invalidPartitionVal = getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+
     if (invalidPartitionVal != null) {
-      throw new MetaException("Partition value '" + invalidPartitionVal +
-          "' contains a character " + "not matched by whitelist pattern '" +
-          partitionValidationPattern.toString() + "'.  " + "(configure with " +
-          MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname() + ")");
+      String errorMsg =
+          ("Partition value '%s' contains a character not matched by whitelist pattern '%s'. Configure with %s")
+              .formatted(
+                  invalidPartitionVal,
+                  partitionValidationPattern.toString(),
+                  MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname());
+
+      throw new MetaException(errorMsg);
     }
   }
 
-  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
-                                                            Pattern partitionValidationPattern) {
-    if (partitionValidationPattern == null) {
-      return null;
+  private static String getPartitionValWithInvalidCharacter(
+      List<String> partVals, Pattern partitionValidationPattern) {
+    String result = null;
+    if (partitionValidationPattern != null) {
+      result =
+          partVals.stream()
+              .filter(partVal -> !partitionValidationPattern.matcher(partVal).matches())
+              .findFirst()
+              .orElse(null);
     }
-
-    for (String partVal : partVals) {
-      if (!partitionValidationPattern.matcher(partVal).matches()) {
-        return partVal;
-      }
-    }
-
-    return null;
+    return result;
   }
 
   /**
@@ -351,7 +361,7 @@ public class MetaStoreServerUtils {
         SortedSet<String> sortedOuterList = new TreeSet<>();
         for (List<String> innerList : skewed.getSkewedColValues()) {
           SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
-          sortedOuterList.add(org.apache.commons.lang3.StringUtils.join(sortedInnerList, "."));
+          sortedOuterList.add(StringUtils.join(sortedInnerList, "."));
         }
         for (String colval : sortedOuterList) {
           md.update(colval.getBytes(ENCODING));
@@ -361,7 +371,7 @@ public class MetaStoreServerUtils {
         SortedMap<String, String> sortedMap = new TreeMap<>();
         for (Map.Entry<List<String>, String> smap : skewed.getSkewedColValueLocationMaps().entrySet()) {
           SortedSet<String> sortedKey = new TreeSet<>(smap.getKey());
-          sortedMap.put(org.apache.commons.lang3.StringUtils.join(sortedKey, "."), smap.getValue());
+          sortedMap.put(StringUtils.join(sortedKey, "."), smap.getValue());
         }
         for (Map.Entry<String, String> e : sortedMap.entrySet()) {
           md.update(e.getKey().getBytes(ENCODING));
@@ -775,9 +785,8 @@ public class MetaStoreServerUtils {
     return copySkewedColNames.toString();
   }
 
-  public static boolean partitionNameHasValidCharacters(List<String> partVals,
-                                                        Pattern partitionValidationPattern) {
-    return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  public static boolean partitionNameHasValidCharacters(List<String> partVals, Configuration conf) {
+    return getPartitionValWithInvalidCharacter(partVals, getPartitionValidationRegex(conf)) == null;
   }
 
   public static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {

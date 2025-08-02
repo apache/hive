@@ -91,7 +91,7 @@ public class DynamicPartitionCtx implements Serializable {
     this.spPath = null;
     String confVal;
     try {
-      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getHiveName());
+      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname());
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -126,7 +126,7 @@ public class DynamicPartitionCtx implements Serializable {
     }
     String confVal;
     try {
-      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getHiveName());
+      confVal = Hive.get().getMetaConf(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname());
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
