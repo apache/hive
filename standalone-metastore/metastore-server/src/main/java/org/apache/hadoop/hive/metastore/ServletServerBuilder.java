@@ -49,12 +49,11 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Helper class to ease creation of embedded Jetty serving servlets on
+ * Helper class to ease the creation of embedded Jetty serving servlets on
  * different ports.
  */
 public class ServletServerBuilder {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServletServerBuilder.class);
-  private static final String HTTP11 = "http/1.1";
   private static final String HTTP = "http";
   private static final String HTTPS = "https";
   /**
@@ -101,7 +100,7 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Helper for generic use case.
+   * Helper for the generic use case.
    *
    * @param logger   the logger
    * @param conf     the configuration
@@ -123,7 +122,7 @@ public class ServletServerBuilder {
   /**
    * Adds a servlet instance.
    * <p>The servlet port can be shared between servlets; if 0, the system will provide
-   * a port. If the port is &lt; 0, the system will provide a port dedicated (ie non-shared)
+   * a port. If the port is &lt; 0, the system will provide a port dedicated (i.e., non-shared)
    * to the servlet.</p>
    *
    * @param port    the servlet port
@@ -171,13 +170,8 @@ public class ServletServerBuilder {
    * @param conf The configuration to use
    * @return The created SslContextFactory or null if creation failed
    */
-  private static SslContextFactory createSslContextFactory(Configuration conf) {
-    try {
+  private static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
       return ServletSecurity.createSslContextFactoryIf(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS);
-    } catch (IOException e) {
-      LOGGER.error("Failed to create SSL context factory", e);
-      return null;
-    }
   }
 
   /**
@@ -194,7 +188,6 @@ public class ServletServerBuilder {
     if (sslContextFactory == null) {
       connector = new ServerConnector(server);
       connector.setName(HTTP);
-      connector.setReuseAddress(true);
       HttpConnectionFactory httpFactory = connector.getConnectionFactory(HttpConnectionFactory.class);
       // do not leak information
       if (httpFactory != null) {
@@ -242,7 +235,7 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Convenience method to start a http server that serves all configured
+   * Convenience method to start an http server that serves all configured
    * servlets.
    *
    * @return the server instance or null if no servlet was configured
@@ -307,7 +300,7 @@ public class ServletServerBuilder {
    * Creates and starts the server.
    *
    * @param logger a logger to output info
-   * @return the server instance (or null if error)
+   * @return the server instance (or null if an error occurred)
    */
   public Server start(Logger logger) {
     try {
@@ -331,7 +324,7 @@ public class ServletServerBuilder {
 
   /**
    * A descriptor of a servlet.
-   * <p>After server is started, unspecified port will be updated to reflect
+   * <p>After the server is started, unspecified port will be updated to reflect
    * what the system allocated.</p>
    */
   public static class Descriptor {
@@ -342,7 +335,7 @@ public class ServletServerBuilder {
     /**
      * Create a servlet descriptor.
      *
-     * @param port    the servlet port (or 0 if system allocated)
+     * @param port    the servlet port (or 0 if the port is to be chosen by the system)
      * @param path    the servlet path
      * @param servlet the servlet instance
      */

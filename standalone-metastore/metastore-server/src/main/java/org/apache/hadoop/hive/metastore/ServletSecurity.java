@@ -320,7 +320,8 @@ public class ServletSecurity {
    * @return null if no ssl in config, an instance otherwise
    * @throws IOException if getting password fails
    */
-  static SslContextFactory createSslContextFactoryIf(Configuration conf, MetastoreConf.ConfVars condition) throws IOException {
+  static SslContextFactory createSslContextFactoryIf(Configuration conf, MetastoreConf.ConfVars condition)
+          throws IOException {
     final boolean useSsl = MetastoreConf.getBoolVar(conf, condition);
     if (!useSsl) {
       return null;

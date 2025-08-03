@@ -159,9 +159,11 @@ public abstract class HMSTestBase {
   /**
    * This is how we created a self-signed certificate for localhost needed for https (ssl) configuration
    * The keystore and truststore were generated using the following commands:
-   * % keytool -genkeypair -alias Hive -keyalg RSA -keysize 2048 -validity 3650 -storetype PKCS12 -keystore hive_keystore.p12 -storepass apache -keypass apache
+   * % keytool -genkeypair -alias Hive -keyalg RSA -keysize 2048 -validity 3650
+   *   -storetype PKCS12 -keystore hive_keystore.p12 -storepass apache -keypass apache
    * % keytool -export -alias Hive -file hive.crt -keystore hive_keystore.p12 -storepass apache
-   * % keytool -import -alias Hive -file hive.crt -keystore hive_trusstore.p012 -storepass apache -noprompt -storetype PKCS12
+   * % keytool -import -alias Hive -file hive.crt -keystore hive_truststore.p012
+   *   -storepass apache -noprompt -storetype PKCS12
   */
   private static final String LOCALHOST_KEY_STORE_NAME = "hive_keystore.p12";
   private static final String KEY_STORE_TRUST_STORE_PASSWORD = "apache";
@@ -170,7 +172,7 @@ public abstract class HMSTestBase {
 
   /**
    * Sets the metastore configuration to use SSL.
-
+   * This method adds configuration variables needed to use HTTPS with a self-signed certificate.
    * @param conf the configuration to set
    */
   public static void setHttpsConf(Configuration conf) {
@@ -181,7 +183,8 @@ public abstract class HMSTestBase {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD,
             KEY_STORE_TRUST_STORE_PASSWORD);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE, "PKCS12");
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM, KeyManagerFactory.getDefaultAlgorithm());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM,
+            KeyManagerFactory.getDefaultAlgorithm());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH,
             STORES_DIR + File.separator + TRUST_STORE_NAME);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD,
@@ -236,7 +239,7 @@ public abstract class HMSTestBase {
   }
 
   private static String generateJWT(String user, Path keyFile, long lifeTimeMillis) throws Exception {
-    RSAKey rsaKeyPair = RSAKey.parse(new String(java.nio.file.Files.readAllBytes(keyFile), StandardCharsets.UTF_8));
+    RSAKey rsaKeyPair = RSAKey.parse(Files.readString(keyFile));
     // Create RSA-signer with the private key
     JWSSigner signer = new RSASSASigner(rsaKeyPair);
     JWSHeader header = new JWSHeader
@@ -354,8 +357,7 @@ public abstract class HMSTestBase {
     Assert.assertNotNull(maps);
     Assert.assertEquals(5, maps.size());
 
-    if (client instanceof HttpPropertyClient) {
-      HttpPropertyClient httpClient = (HttpPropertyClient) client;
+    if (client instanceof HttpPropertyClient httpClient) {
       // get fillfactors using getProperties, create args array from previous result
       List<String> keys = new ArrayList<>(maps.keySet());
       keys.replaceAll(s -> s + ".fillFactor");

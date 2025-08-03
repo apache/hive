@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -35,13 +36,18 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -64,21 +70,28 @@ public class HMSServletTest1 extends HMSServletTest {
             ? "https" : "http";
     URI uri = new URI(scheme + "://hive@localhost:" + sport + "/" + path + "/" + NS);
     String jwt = generateJWT();
-    return new JSonHttpClient(conf, jwt, uri);
+    return new JsonHttpClient(conf, jwt, uri);
+  }
+
+  protected static HttpClient createHttpClient(Configuration conf) {
+    SSLContext sslCtxt = clientSSLContextFactory(conf);
+    return sslCtxt != null
+            ? HttpClients.custom().setSSLContext(sslCtxt).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build()
+            : HttpClients.createDefault();
   }
 
   /**
    * A property client that uses Apache HttpClient as base.
    */
-  public static class JSonHttpClient implements HttpPropertyClient, AutoCloseable {
+  public static class JsonHttpClient implements HttpPropertyClient, AutoCloseable {
     private final URI uri;
     private final HttpClient client;
     private final String jwt;
 
-    JSonHttpClient(Configuration conf, String token, URI uri) throws MalformedURLException {
+    JsonHttpClient(Configuration conf, String token, URI uri) throws MalformedURLException {
       this.jwt = token;
       this.uri = uri;
-      this.client = HMSServletTest.createHttpClient(conf);
+      this.client = createHttpClient(conf);
     }
     @Override
     public void close() throws Exception {
@@ -113,21 +126,21 @@ public class HMSServletTest1 extends HMSServletTest {
       HttpPost post = prepareMethod(new HttpPost(uri), new Gson().toJson(args));
       HttpResponse response = client.execute(post);
       try {
-      if (HttpServletResponse.SC_OK == response.getStatusLine().getStatusCode()) {
-        HttpEntity entity = response.getEntity();
-        if (entity != null) {
-          Gson gson = new GsonBuilder().create();
-          ContentType contentType = ContentType.getOrDefault(entity);
-          Charset charset = contentType.getCharset();
-          Reader reader = new InputStreamReader(entity.getContent(), charset);
-          return gson.fromJson(reader,Object.class);
+        if (HttpServletResponse.SC_OK == response.getStatusLine().getStatusCode()) {
+          HttpEntity entity = response.getEntity();
+          if (entity != null) {
+            Gson gson = new GsonBuilder().create();
+            ContentType contentType = ContentType.getOrDefault(entity);
+            Charset charset = contentType.getCharset();
+            Reader reader = new InputStreamReader(entity.getContent(), charset);
+            return gson.fromJson(reader,Object.class);
+          }
         }
+      } finally {
+          if (response instanceof Closeable) {
+            ((Closeable) response).close();
+          }
       }
-    } finally {
-        if (response instanceof Closeable) {
-          ((Closeable) response).close();
-        }
-    }
       return null;
     }
 
@@ -173,17 +186,69 @@ public class HMSServletTest1 extends HMSServletTest {
   }
 
   @Test
-  public void testServletEchoB() throws Exception {
+  public void testPropertiesFilter() throws Exception {
+    HttpClient httpClient = createHttpClient(conf);
+    String jwt = generateJWT();
+    NameValuePair[] nvp = new NameValuePair[]{
+            new BasicNameValuePair("key", "db0.table01.fillFactor"),
+            new BasicNameValuePair("key", "db0.table04.fillFactor")
+    };
+    String scheme = getScheme(conf);
+    URI uri = new URIBuilder()
+            .setScheme(scheme)
+            .setUserInfo("hive")
+            .setHost("localhost")
+            .setPort(servletPort)
+            .setPath("/" + path + "/" + NS)
+            .setParameters(nvp)
+            .build();
+    HttpGet get = new HttpGet(uri);
+    get.addHeader("Authorization", "Bearer " + jwt);
+    get.addHeader("Content-Type", "application/json");
+    get.addHeader("Accept", "application/json");
+    get.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, "hive");
+
+    Map<String,String> result = null;
+    HttpResponse response = httpClient.execute(get);
+    try {
+      Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        Gson gson = new GsonBuilder().create();
+        ContentType contentType = ContentType.getOrDefault(entity);
+        Charset charset = contentType.getCharset();
+        Reader reader = new InputStreamReader(entity.getContent(), charset);
+        result = (Map<String, String>) gson.fromJson(reader, Object.class);
+      }
+      Assert.assertNotNull(result);
+      Assert.assertEquals(2, result.size());
+    } finally {
+      if (response instanceof AutoCloseable) {
+        ((AutoCloseable) response).close();
+      }
+      if (httpClient instanceof AutoCloseable) {
+        ((AutoCloseable) httpClient).close();
+      }
+    }
+  }
+
+
+  @Test
+  public void testEchoHttpClient() throws Exception {
     HttpClient client = createHttpClient(conf);
     String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    String scheme = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS)
-            ? "https" : "http";
+    String scheme = getScheme(conf);
     URI uri = new URI(scheme + "://hive@localhost:" + servletPort + "/" + path + "/" + NS);
     HttpResponse response = null;
     try {
       String jwt = generateJWT();
       String msgBody = "{\"method\":\"echo\"}";
-      HttpPost post = createPost(jwt, uri, msgBody);
+      HttpPost post = new HttpPost(uri);
+      post.addHeader("Authorization", "Bearer " + jwt);
+      post.addHeader("Content-Type", "application/json");
+      post.addHeader("Accept", "application/json");
+      StringEntity sre = new StringEntity(msgBody, ContentType.APPLICATION_JSON);
+      post.setEntity(sre);
       response = client.execute(post);
       Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
       String resp = null;
@@ -206,20 +271,4 @@ public class HMSServletTest1 extends HMSServletTest {
     }
   }
 
-  /**
-   * Create a PostMethod populated with the expected attributes.
-   * @param jwt the security token
-   * @param msgBody the actual (json) payload
-   * @return the method to be executed by the Http client
-   */
-  protected HttpPost createPost(String jwt, URI uri, String msgBody) {
-    HttpPost method = new HttpPost(uri);
-    method.addHeader("Authorization", "Bearer " + jwt);
-    method.addHeader("Content-Type", "application/json");
-    method.addHeader("Accept", "application/json");
-
-    StringEntity sre = new StringEntity(msgBody, ContentType.APPLICATION_JSON);
-    method.setEntity(sre);
-    return method;
-  }
 }
