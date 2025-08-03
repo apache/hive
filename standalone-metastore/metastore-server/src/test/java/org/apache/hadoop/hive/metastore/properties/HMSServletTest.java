@@ -52,7 +52,8 @@ public class HMSServletTest extends HMSTestBase {
   String path = null;
   Server servletServer = null;
   int servletPort = -1;
-  
+
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();

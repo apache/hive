@@ -310,14 +310,14 @@ public class ServletServerBuilder {
           logger.error("Unable to start servlet server on {}", server.getURI());
         } else {
           descriptorsMap.values().forEach(descriptor -> logger.info("Started {} servlet on {}:{}",
-                  descriptor.toString(),
+                  descriptor,
                   descriptor.getPort(),
                   descriptor.getPath()));
         }
       }
       return server;
-    } catch (Throwable throwable) {
-      logger.error("Unable to start servlet server", throwable);
+    } catch (Exception e) {
+      logger.error("Unable to start servlet server", e);
       return null;
     }
   }
