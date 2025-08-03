@@ -162,7 +162,7 @@ public abstract class HMSTestBase {
    * % keytool -genkeypair -alias Hive -keyalg RSA -keysize 2048 -validity 3650
    *   -storetype PKCS12 -keystore hive_keystore.p12 -storepass apache -keypass apache
    * % keytool -export -alias Hive -file hive.crt -keystore hive_keystore.p12 -storepass apache
-   * % keytool -import -alias Hive -file hive.crt -keystore hive_truststore.p012
+   * % keytool -import -alias Hive -file hive.crt -keystore hive_truststore.p12
    *   -storepass apache -noprompt -storetype PKCS12
   */
   private static final String LOCALHOST_KEY_STORE_NAME = "hive_keystore.p12";
