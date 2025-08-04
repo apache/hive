@@ -19,13 +19,20 @@
 
 package org.apache.iceberg.rest;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Ticker;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.CachingCatalog;
+import org.apache.iceberg.HasTableOperations;
+import org.apache.iceberg.MetadataTableType;
+import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
@@ -64,23 +71,44 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
 
   @Override
   public Table loadTable(TableIdentifier identifier) {
-    TableIdentifier canonicalIdentifier = identifier.toLowerCase();
-    Table cachedTable = tableCache.getIfPresent(canonicalIdentifier);
+    final Cache<TableIdentifier, Table> cache = this.tableCache;
+    final HiveCatalog catalog = this.hiveCatalog;
+    final TableIdentifier canonicalized = identifier.toLowerCase();
+    Table cachedTable = cache.getIfPresent(canonicalized);
     if (cachedTable != null) {
-      String location = hiveCatalog.getTableLocation(canonicalIdentifier);
+      String location = catalog.getTableLocation(canonicalized);
       if (location == null) {
-        LOG.debug("Table {} has no location, returning cached table without location", canonicalIdentifier);
+        LOG.debug("Table {} has no location, returning cached table without location", canonicalized);
       } else if (!location.equals(cachedTable.location())) {
         LOG.debug("Cached table {} has a different location than the one in the catalog: {} != {}",
-                 canonicalIdentifier, cachedTable.location(), location);
+                 canonicalized, cachedTable.location(), location);
+        // Invalidate the cached table if the location is different
+        invalidateTable(canonicalized);
       } else {
-        LOG.debug("Returning cached table: {}", canonicalIdentifier);
+        LOG.debug("Returning cached table: {}", canonicalized);
         return cachedTable;
       }
-      // Invalidate the cached table if the location is different
-      tableCache.invalidate(cachedTable);
     }
-    return super.loadTable(identifier);
+    Table table = cache.get(canonicalized, catalog::loadTable);
+    if (table instanceof BaseMetadataTable) {
+      // Cache underlying table
+      TableIdentifier originTableIdentifier =
+              TableIdentifier.of(canonicalized.namespace().levels());
+      Table originTable = cache.get(originTableIdentifier, catalog::loadTable);
+      // Share TableOperations instance of origin table for all metadata tables, so that metadata
+      // table instances are refreshed as well when origin table instance is refreshed.
+      if (originTable instanceof HasTableOperations) {
+        TableOperations ops = ((HasTableOperations) originTable).operations();
+        MetadataTableType type = MetadataTableType.from(canonicalized.name());
+
+        Table metadataTable =
+                MetadataTableUtils.createMetadataTableInstance(
+                        ops, catalog.name(), originTableIdentifier, canonicalized, type);
+        cache.put(canonicalized, metadataTable);
+        return metadataTable;
+      }
+    }
+    return table;
   }
 
   @Override
