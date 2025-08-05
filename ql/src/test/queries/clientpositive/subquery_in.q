@@ -305,4 +305,15 @@ select * from part where p_size IN (select max(p_size) from part p where p.p_typ
 explain select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name);
 select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name);
 
+-- Two uncorrelated subqueries that join reordering rule can be applied on.
+create table big (col1 string, col2 int, col3 double);
+create table mid (col1 string, col2 int, col3 double);
+create table small (col1 string, col2 int, col3 double);
+
+alter table big update statistics set('numRows'='123456', 'rawDataSize'='1234567');
+alter table mid update statistics set('numRows'='12345', 'rawDataSize'='123456');
+alter table small update statistics set('numRows'='1234', 'rawDataSize'='12345');
+
+explain cbo
+select col1 from small where col2 in (select col2 from mid) and col3 in (select col3 from big);
 

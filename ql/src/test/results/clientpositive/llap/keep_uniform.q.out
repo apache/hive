@@ -447,16 +447,18 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 10 <- Map 1 (SIMPLE_EDGE), Map 16 (SIMPLE_EDGE)
-        Reducer 11 <- Map 1 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
-        Reducer 3 <- Map 13 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Map 14 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 4 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 11 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
+        Reducer 11 <- Map 1 (SIMPLE_EDGE), Map 17 (SIMPLE_EDGE)
+        Reducer 12 <- Map 1 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
+        Reducer 13 <- Reducer 12 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 14 (SIMPLE_EDGE)
+        Reducer 3 <- Map 15 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 13 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Map 18 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 7 (CUSTOM_SIMPLE_EDGE)
-        Reducer 9 <- Map 1 (SIMPLE_EDGE), Map 15 (SIMPLE_EDGE)
+        Reducer 9 <- Map 1 (SIMPLE_EDGE), Map 16 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -484,18 +486,18 @@ STAGE PLANS:
                           projectedOutputColumnNums: [2, 11, 13, 17, 28, 33]
                       Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumns: 2:int
+                            keyColumns: 11:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 11:int, 13:int, 17:int, 28:decimal(7,2), 33:decimal(7,2)
+                            valueColumns: 2:int, 13:int, 17:int, 28:decimal(7,2), 33:decimal(7,2)
                         Statistics: Num rows: 1 Data size: 240 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -567,59 +569,7 @@ STAGE PLANS:
                     dataColumns: ws_sold_date_sk:int, ws_sold_time_sk:int, ws_ship_date_sk:int, ws_item_sk:int, ws_bill_customer_sk:int, ws_bill_cdemo_sk:int, ws_bill_hdemo_sk:int, ws_bill_addr_sk:int, ws_ship_customer_sk:int, ws_ship_cdemo_sk:int, ws_ship_hdemo_sk:int, ws_ship_addr_sk:int, ws_web_page_sk:int, ws_web_site_sk:int, ws_ship_mode_sk:int, ws_warehouse_sk:int, ws_promo_sk:int, ws_order_number:int, ws_quantity:int, ws_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_list_price:decimal(7,2)/DECIMAL_64, ws_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, ws_ext_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_ext_list_price:decimal(7,2)/DECIMAL_64, ws_ext_tax:decimal(7,2)/DECIMAL_64, ws_coupon_amt:decimal(7,2)/DECIMAL_64, ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, ws_net_paid:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, ws_net_profit:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Map 12 
-            Map Operator Tree:
-                TableScan
-                  alias: date_dim
-                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' and d_date_sk is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
-                      vectorizationSchemaColumns: [0:d_date_sk:int, 1:d_date_id:string, 2:d_date:string, 3:d_month_seq:int, 4:d_week_seq:int, 5:d_quarter_seq:int, 6:d_year:int, 7:d_dow:int, 8:d_moy:int, 9:d_dom:int, 10:d_qoy:int, 11:d_fy_year:int, 12:d_fy_quarter_seq:int, 13:d_fy_week_seq:int, 14:d_day_name:string, 15:d_quarter_name:string, 16:d_holiday:string, 17:d_weekend:string, 18:d_following_holiday:string, 19:d_first_dom:int, 20:d_last_dom:int, 21:d_same_day_ly:int, 22:d_same_day_lq:int, 23:d_current_day:string, 24:d_current_week:string, 25:d_current_month:string, 26:d_current_quarter:string, 27:d_current_year:string, 28:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 29:ROW__IS__DELETED:boolean]
-                  Filter Operator
-                    Filter Vectorization:
-                        className: VectorFilterOperator
-                        native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterTimestampColumnBetween(col 30:timestamp, left 1999-04-30 17:00:00.0, right 1999-06-29 17:00:00.0)(children: CastStringToTimestamp(col 2:string) -> 30:timestamp), SelectColumnIsNotNull(col 0:int))
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: d_date_sk (type: int)
-                      outputColumnNames: _col0
-                      Select Vectorization:
-                          className: VectorSelectOperator
-                          native: true
-                          projectedOutputColumnNums: [0]
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkLongOperator
-                            keyColumns: 0:int
-                            native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 28
-                    includeColumns: [0, 2]
-                    dataColumns: d_date_sk:int, d_date_id:string, d_date:string, d_month_seq:int, d_week_seq:int, d_quarter_seq:int, d_year:int, d_dow:int, d_moy:int, d_dom:int, d_qoy:int, d_fy_year:int, d_fy_quarter_seq:int, d_fy_week_seq:int, d_day_name:string, d_quarter_name:string, d_holiday:string, d_weekend:string, d_following_holiday:string, d_first_dom:int, d_last_dom:int, d_same_day_ly:int, d_same_day_lq:int, d_current_day:string, d_current_week:string, d_current_month:string, d_current_quarter:string, d_current_year:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [timestamp]
-        Map 13 
+        Map 14 
             Map Operator Tree:
                 TableScan
                   alias: customer_address
@@ -671,7 +621,7 @@ STAGE PLANS:
                     dataColumns: ca_address_sk:int, ca_address_id:string, ca_street_number:string, ca_street_name:string, ca_street_type:string, ca_suite_number:string, ca_city:string, ca_county:string, ca_state:string, ca_zip:string, ca_country:string, ca_gmt_offset:decimal(5,2)/DECIMAL_64, ca_location_type:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Map 14 
+        Map 15 
             Map Operator Tree:
                 TableScan
                   alias: web_site
@@ -723,10 +673,10 @@ STAGE PLANS:
                     dataColumns: web_site_sk:int, web_site_id:string, web_rec_start_date:string, web_rec_end_date:string, web_name:string, web_open_date_sk:int, web_close_date_sk:int, web_class:string, web_manager:string, web_mkt_id:int, web_mkt_class:string, web_mkt_desc:string, web_market_manager:string, web_company_id:int, web_company_name:string, web_street_number:string, web_street_name:string, web_street_type:string, web_suite_number:string, web_city:string, web_county:string, web_state:string, web_zip:string, web_country:string, web_gmt_offset:decimal(5,2)/DECIMAL_64, web_tax_percentage:decimal(5,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Map 15 
+        Map 16 
             Map Operator Tree:
                 TableScan
-                  alias: ws2
+                  alias: ws1
                   filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -777,7 +727,7 @@ STAGE PLANS:
                     dataColumns: ws_sold_date_sk:int, ws_sold_time_sk:int, ws_ship_date_sk:int, ws_item_sk:int, ws_bill_customer_sk:int, ws_bill_cdemo_sk:int, ws_bill_hdemo_sk:int, ws_bill_addr_sk:int, ws_ship_customer_sk:int, ws_ship_cdemo_sk:int, ws_ship_hdemo_sk:int, ws_ship_addr_sk:int, ws_web_page_sk:int, ws_web_site_sk:int, ws_ship_mode_sk:int, ws_warehouse_sk:int, ws_promo_sk:int, ws_order_number:int, ws_quantity:int, ws_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_list_price:decimal(7,2)/DECIMAL_64, ws_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_discount_amt:decimal(7,2)/DECIMAL_64, ws_ext_sales_price:decimal(7,2)/DECIMAL_64, ws_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, ws_ext_list_price:decimal(7,2)/DECIMAL_64, ws_ext_tax:decimal(7,2)/DECIMAL_64, ws_coupon_amt:decimal(7,2)/DECIMAL_64, ws_ext_ship_cost:decimal(7,2)/DECIMAL_64, ws_net_paid:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, ws_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, ws_net_profit:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
-        Map 16 
+        Map 17 
             Map Operator Tree:
                 TableScan
                   alias: web_returns
@@ -829,7 +779,98 @@ STAGE PLANS:
                     dataColumns: wr_returned_date_sk:int, wr_returned_time_sk:int, wr_item_sk:int, wr_refunded_customer_sk:int, wr_refunded_cdemo_sk:int, wr_refunded_hdemo_sk:int, wr_refunded_addr_sk:int, wr_returning_customer_sk:int, wr_returning_cdemo_sk:int, wr_returning_hdemo_sk:int, wr_returning_addr_sk:int, wr_web_page_sk:int, wr_reason_sk:int, wr_order_number:int, wr_return_quantity:int, wr_return_amt:decimal(7,2)/DECIMAL_64, wr_return_tax:decimal(7,2)/DECIMAL_64, wr_return_amt_inc_tax:decimal(7,2)/DECIMAL_64, wr_fee:decimal(7,2)/DECIMAL_64, wr_return_ship_cost:decimal(7,2)/DECIMAL_64, wr_refunded_cash:decimal(7,2)/DECIMAL_64, wr_reversed_charge:decimal(7,2)/DECIMAL_64, wr_account_credit:decimal(7,2)/DECIMAL_64, wr_net_loss:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
+        Map 18 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:d_date_sk:int, 1:d_date_id:string, 2:d_date:string, 3:d_month_seq:int, 4:d_week_seq:int, 5:d_quarter_seq:int, 6:d_year:int, 7:d_dow:int, 8:d_moy:int, 9:d_dom:int, 10:d_qoy:int, 11:d_fy_year:int, 12:d_fy_quarter_seq:int, 13:d_fy_week_seq:int, 14:d_day_name:string, 15:d_quarter_name:string, 16:d_holiday:string, 17:d_weekend:string, 18:d_following_holiday:string, 19:d_first_dom:int, 20:d_last_dom:int, 21:d_same_day_ly:int, 22:d_same_day_lq:int, 23:d_current_day:string, 24:d_current_week:string, 25:d_current_month:string, 26:d_current_quarter:string, 27:d_current_year:string, 28:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 29:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterTimestampColumnBetween(col 30:timestamp, left 1999-04-30 17:00:00.0, right 1999-06-29 17:00:00.0)(children: CastStringToTimestamp(col 2:string) -> 30:timestamp), SelectColumnIsNotNull(col 0:int))
+                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumns: 0:int
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 28
+                    includeColumns: [0, 2]
+                    dataColumns: d_date_sk:int, d_date_id:string, d_date:string, d_month_seq:int, d_week_seq:int, d_quarter_seq:int, d_year:int, d_dow:int, d_moy:int, d_dom:int, d_qoy:int, d_fy_year:int, d_fy_quarter_seq:int, d_fy_week_seq:int, d_day_name:string, d_quarter_name:string, d_holiday:string, d_weekend:string, d_following_holiday:string, d_first_dom:int, d_last_dom:int, d_same_day_ly:int, d_same_day_lq:int, d_current_day:string, d_current_week:string, d_current_month:string, d_current_quarter:string, d_current_year:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [timestamp]
         Reducer 10 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: KEY._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:int
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkLongOperator
+                      keyColumns: 0:int
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 11 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -850,7 +891,7 @@ STAGE PLANS:
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
-        Reducer 11 
+        Reducer 12 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -864,10 +905,10 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col2 (type: int)
-                  outputColumnNames: _col0
+                  outputColumnNames: _col2
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int)
+                    keys: _col2 (type: int)
                     minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0
@@ -881,6 +922,45 @@ STAGE PLANS:
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
+        Reducer 13 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: z
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: KEY._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:int
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkLongOperator
+                      keyColumns: 0:int
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -888,17 +968,17 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col0 (type: int)
+                  0 _col1 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col1, _col2, _col3, _col4, _col5
+                outputColumnNames: _col0, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col1 (type: int)
+                  key expressions: _col2 (type: int)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: int)
+                  Map-reduce partition columns: _col2 (type: int)
                   Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+                  value expressions: _col0 (type: int), _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -909,17 +989,17 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
+                  0 _col2 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col2, _col3, _col4, _col5
+                outputColumnNames: _col0, _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 290 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col2 (type: int)
+                  key expressions: _col3 (type: int)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col2 (type: int)
+                  Map-reduce partition columns: _col3 (type: int)
                   Statistics: Num rows: 1 Data size: 290 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+                  value expressions: _col0 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -930,9 +1010,9 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col2 (type: int)
+                  0 _col3 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col3, _col4, _col5
+                outputColumnNames: _col0, _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 319 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col3 (type: int)
@@ -940,7 +1020,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col3 (type: int)
                   Statistics: Num rows: 1 Data size: 319 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+                  value expressions: _col0 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -949,19 +1029,19 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 _col3 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col3, _col4, _col5
+                outputColumnNames: _col0, _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col3 (type: int)
+                  key expressions: _col0 (type: int)
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col3 (type: int)
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 350 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
+                  value expressions: _col3 (type: int), _col4 (type: decimal(7,2)), _col5 (type: decimal(7,2))
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
@@ -970,9 +1050,9 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
-                  0 _col3 (type: int)
+                  0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 385 Basic stats: COMPLETE Column stats: NONE
@@ -1097,10 +1177,10 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col1 (type: int)
-                  outputColumnNames: _col0
+                  outputColumnNames: _col1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int)
+                    keys: _col1 (type: int)
                     minReductionHashAggr: 0.99
                     mode: hash
                     outputColumnNames: _col0

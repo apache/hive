@@ -390,24 +390,18 @@ STAGE PLANS:
                     expressions: (UDFToDouble(_col0) / _col1) (type: double)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: _col0 (type: double)
-                      minReductionHashAggr: 0.4
-                      mode: hash
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: double)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: double)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 UDFToDouble(_col1) (type: double)
                   1 _col0 (type: double)
@@ -1185,17 +1179,13 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col1 (type: int), _col0 (type: int), _col2 (type: int)
-                  outputColumnNames: _col0, _col1, _col3
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col1 (type: int)
-                    null sort order: z
-                    sort order: +
-                    Map-reduce partition columns: _col1 (type: int)
-                    Statistics: Num rows: 14 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col3 (type: int)
+                  value expressions: _col1 (type: int), _col2 (type: int)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1203,12 +1193,12 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 _col1 (type: int)
+                  0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col3
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 14 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col3 (type: int)
+                  expressions: _col1 (type: int), _col2 (type: int)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 14 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1634,15 +1624,15 @@ STAGE PLANS:
                     predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), (p_size - 1) (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: (_col5 - 1) (type: int)
+                        key expressions: _col9 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: (_col5 - 1) (type: int)
-                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col9 (type: int)
+                        Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1685,7 +1675,7 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 (_col5 - 1) (type: int)
+                  0 _col9 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1769,15 +1759,15 @@ STAGE PLANS:
                     predicate: (p_partkey is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), (p_partkey * p_size) (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: (_col0 * _col5) (type: int)
+                        key expressions: _col9 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: (_col0 * _col5) (type: int)
-                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col9 (type: int)
+                        Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1820,7 +1810,7 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 (_col0 * _col5) (type: int)
+                  0 _col9 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 24 Data size: 14856 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2016,15 +2006,15 @@ STAGE PLANS:
                     predicate: p_retailprice is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), floor(p_retailprice) (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 26 Data size: 16302 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: floor(_col7) (type: bigint)
+                        key expressions: _col9 (type: bigint)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: floor(_col7) (type: bigint)
-                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col9 (type: bigint)
+                        Statistics: Num rows: 26 Data size: 16302 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2067,7 +2057,7 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 floor(_col7) (type: bigint)
+                  0 _col9 (type: bigint)
                   1 _col0 (type: bigint)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 24 Data size: 14856 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2746,7 +2736,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 _col1 (type: bigint)
                   1 _col0 (type: bigint)
@@ -2779,18 +2769,12 @@ STAGE PLANS:
                       expressions: _col1 (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        keys: _col0 (type: bigint)
-                        minReductionHashAggr: 0.4
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: bigint)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: bigint)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -2976,7 +2960,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 _col1 (type: bigint)
                   1 _col0 (type: bigint)
@@ -3009,18 +2993,12 @@ STAGE PLANS:
                       expressions: _col1 (type: bigint)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        keys: _col0 (type: bigint)
-                        minReductionHashAggr: 0.4
-                        mode: hash
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: bigint)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: bigint)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -3116,15 +3094,15 @@ STAGE PLANS:
                     predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), (p_size - 1) (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: (_col5 - 1) (type: int)
+                        key expressions: _col9 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: (_col5 - 1) (type: int)
-                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col9 (type: int)
+                        Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3167,7 +3145,7 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 (_col5 - 1) (type: int)
+                  0 _col9 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3265,15 +3243,15 @@ STAGE PLANS:
                     predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string), (p_size - 1) (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: (_col5 - 1) (type: int)
+                        key expressions: _col9 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: (_col5 - 1) (type: int)
-                        Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col9 (type: int)
+                        Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3316,7 +3294,7 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 keys:
-                  0 (_col5 - 1) (type: int)
+                  0 _col9 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5351,7 +5329,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 UDFToLong(_col0) (type: bigint)
                   1 _col0 (type: bigint)
@@ -5375,18 +5353,12 @@ STAGE PLANS:
                 Filter Operator
                   predicate: _col0 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                  Group By Operator
-                    keys: _col0 (type: bigint)
-                    minReductionHashAggr: 0.99
-                    mode: hash
-                    outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions: _col0 (type: bigint)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: bigint)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: bigint)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: bigint)
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -6051,3 +6023,80 @@ POSTHOOK: Input: default@part
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+PREHOOK: query: create table big (col1 string, col2 int, col3 double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@big
+POSTHOOK: query: create table big (col1 string, col2 int, col3 double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@big
+PREHOOK: query: create table mid (col1 string, col2 int, col3 double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mid
+POSTHOOK: query: create table mid (col1 string, col2 int, col3 double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mid
+PREHOOK: query: create table small (col1 string, col2 int, col3 double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small
+POSTHOOK: query: create table small (col1 string, col2 int, col3 double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small
+PREHOOK: query: alter table big update statistics set('numRows'='123456', 'rawDataSize'='1234567')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@big
+PREHOOK: Output: default@big
+POSTHOOK: query: alter table big update statistics set('numRows'='123456', 'rawDataSize'='1234567')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@big
+POSTHOOK: Output: default@big
+PREHOOK: query: alter table mid update statistics set('numRows'='12345', 'rawDataSize'='123456')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@mid
+PREHOOK: Output: default@mid
+POSTHOOK: query: alter table mid update statistics set('numRows'='12345', 'rawDataSize'='123456')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@mid
+POSTHOOK: Output: default@mid
+PREHOOK: query: alter table small update statistics set('numRows'='1234', 'rawDataSize'='12345')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@small
+PREHOOK: Output: default@small
+POSTHOOK: query: alter table small update statistics set('numRows'='1234', 'rawDataSize'='12345')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@small
+POSTHOOK: Output: default@small
+PREHOOK: query: explain cbo
+select col1 from small where col2 in (select col2 from mid) and col3 in (select col3 from big)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@big
+PREHOOK: Input: default@mid
+PREHOOK: Input: default@small
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col1 from small where col2 in (select col2 from mid) and col3 in (select col3 from big)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@big
+POSTHOOK: Input: default@mid
+POSTHOOK: Input: default@small
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0])
+  HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
+    HiveProject(col1=[$0], col2=[$1])
+      HiveSemiJoin(condition=[=($2, $3)], joinType=[semi])
+        HiveProject(col1=[$0], col2=[$1], col3=[$2])
+          HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($2))])
+            HiveTableScan(table=[[default, small]], table:alias=[small])
+        HiveProject(col3=[$2])
+          HiveFilter(condition=[IS NOT NULL($2)])
+            HiveTableScan(table=[[default, big]], table:alias=[big])
+    HiveProject(col2=[$1])
+      HiveFilter(condition=[IS NOT NULL($1)])
+        HiveTableScan(table=[[default, mid]], table:alias=[mid])
+
