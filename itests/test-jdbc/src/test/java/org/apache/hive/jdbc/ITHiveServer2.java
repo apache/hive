@@ -54,9 +54,8 @@ public class ITHiveServer2 extends ITAbstractContainer {
   }
 
   public ITHiveServer2(File workDir) throws Exception {
-    this.workDir = new File(workDir, "test-standalone-jdbc-file");
+    this.workDir = workDir;
     this.miniKdc = new MiniJdbcKdc(this.workDir);
-
     String principal = MiniJdbcKdc.HIVE_TEST_USER_1;
     Configuration configuration = new Configuration();
     configuration.set("hadoop.security.authentication", "kerberos");

@@ -75,6 +75,9 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <argLine>${maven.test.jvm.args} -Djdk.net.hosts.file=${test.conf.dir}/custom_hosts_file</argLine>
+          <systemPropertyVariables>
+            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>

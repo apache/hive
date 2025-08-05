@@ -42,28 +42,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class TestStandaloneJdbc {
-  private static File workDir = new File(createTempDir(), "test-it-standalone-jdbc");
+  private static File workDir = new File(System.getProperty("java.io.tmpdir"), "test-it-standalone-jdbc");
   private static ITAbstractContainer HS2;
   private static ITAbstractContainer ZK_HS2;
-
-  public static File createTempDir() {
-    File baseDir = new File(System.getProperty("java.io.tmpdir"));
-    String baseName = System.currentTimeMillis() + "-";
-
-    for (int counter = 0; counter < 100; counter++) {
-      File tempDir = new File(baseDir, baseName + counter);
-      if (tempDir.mkdir()) {
-        return tempDir;
-      }
-    }
-    throw new IllegalStateException(
-        "Failed to create directory within 100 attempts (tried "
-            + baseName
-            + "0 to "
-            + baseName
-            + 99
-            + ')');
-  }
 
   @BeforeClass
   public static void setup() throws Exception {
