@@ -49,9 +49,32 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>setup-test-dirs</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete dir="${test.conf.dir}"/>
+                <mkdir dir="${test.conf.dir}"/>
+                <!-- copies hive-site.xml so it can be modified -->
+                <copy todir="${test.conf.dir}">
+                  <fileset dir="${basedir}/src/test/resources/"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${maven.test.jvm.args} -Djdk.net.hosts.file=${basedir}/src/test/resources/custom_hosts_file</argLine>
+          <argLine>${maven.test.jvm.args} -Djdk.net.hosts.file=${test.conf.dir}/custom_hosts_file</argLine>
         </configuration>
       </plugin>
     </plugins>

@@ -30,10 +30,10 @@ import org.testcontainers.utility.DockerImageName;
 
 public class ITZKHiveServer2 extends ITHiveServer2 {
   private final String hostName = "test-standalone-jdbc-plain";
-  private final TestItZookeeper zookeeper;
+  private final ITZookeeper zookeeper;
   public ITZKHiveServer2(File workDir) throws Exception {
     super();
-    zookeeper = new TestItZookeeper();
+    zookeeper = new ITZookeeper();
     zookeeper.start();
   }
 
@@ -89,7 +89,7 @@ public class ITZKHiveServer2 extends ITHiveServer2 {
     }
   }
 
-  private static class TestItZookeeper extends ITAbstractContainer {
+  private static class ITZookeeper extends ITAbstractContainer {
     Network network = Network.newNetwork();
     GenericContainer<?> zookeeper;
 

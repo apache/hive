@@ -83,23 +83,13 @@ public class ITHiveServer2 extends ITAbstractContainer {
 
   private Map<String, String> prepareFiles() {
     Map<String, String> boundFiles = new HashMap<>();
-
     boundFiles.put(createNewKrbConf().getPath(), "/etc/krb5.conf");
     boundFiles.put(miniKdc.getKeyTabFile(miniKdc.getServicePrincipalForUser("hive")), "/opt/hive/conf/hive.keytab");
-    StringBuilder core_site = new StringBuilder("<configuration>").append(System.lineSeparator());
-    core_site.append("<property>\n" + "    <name>hadoop.security.authentication</name>\n" + "    <value>kerberos</value>\n" + "  </property>");
-    core_site.append("<property>\n" + "    <name>hadoop.proxyuser.hive.groups</name>\n" + "    <value>*</value>\n" + "  </property>");
-    core_site.append("<property>\n" + "    <name>hadoop.proxyuser.hive.hosts</name>\n" + "    <value>*</value>\n" + "  </property>");
-    core_site.append("</configuration>");
-    boundFiles.put(genConfFile("core-site.xml", core_site.toString()), "/opt/hive/conf/core-site.xml");
-
-    // java.io.IOException: Can't get Master Kerberos principal for use as renewer if missing the yarn-site
-    StringBuilder yarn_site = new StringBuilder("<configuration>").append(System.lineSeparator());
-    yarn_site.append("<property>\n" + "    <name>yarn.resourcemanager.principal</name>\n" +
-        "    <value>yarn/_HOST@" + miniKdc.getRealm() + "</value>\n" + "  </property>");
-    yarn_site.append("</configuration>");
-    boundFiles.put(genConfFile("yarn-site.xml", yarn_site.toString()), "/opt/hive/conf/yarn-site.xml");
-
+    boundFiles.put(ITHiveServer2.class.getClassLoader().getResource("core-site.xml").getPath(),
+        "/opt/hive/conf/core-site.xml");
+    // java.io.IOException: Can't get Master Kerberos principal for use as renewer if the yarn-site is not present
+    boundFiles.put(ITHiveServer2.class.getClassLoader().getResource("yarn-site.xml").getPath(),
+        "/opt/hive/conf/yarn-site.xml");
     return boundFiles;
   }
 
@@ -141,17 +131,6 @@ public class ITHiveServer2 extends ITAbstractContainer {
     if (realmPorts != null) {
       org.testcontainers.Testcontainers.exposeHostPorts(realmPorts);
     }
-  }
-
-  private String genConfFile(String fileName, String content) {
-    File coreFile = new File(workDir, fileName);
-    try (FileWriter writer = new FileWriter(coreFile, false)) {
-      writer.write(content);
-      writer.flush();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    return coreFile.getPath();
   }
 
   private File createNewKrbConf() {
