@@ -241,7 +241,7 @@ public class HiveSplitGenerator extends InputInitializer {
         mrSplit.writeTo(out);
       }
       LOG.debug("Split #{} event to output path: {} written in {} ms", count, filePath,
-          fileWriteStarted - Time.monotonicNow());
+          Time.monotonicNow() - fileWriteStarted);
     }
 
     Path getSerializedFilePath(int index) {
