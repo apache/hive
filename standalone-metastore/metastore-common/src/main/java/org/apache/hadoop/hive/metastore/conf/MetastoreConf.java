@@ -696,7 +696,7 @@ public class MetastoreConf {
     HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS("metastore.compactor.connectionPool.maxPoolSize",
             "hive.compactor.connectionPool.maxPoolSize", 5,
             "Specify the maximum number of connections in the connection pool used by the compactor."),
-    HIVE_ICEBERG_CATALOG_TYPE("metastore.iceberg.catalog.type", "hive.iceberg.catalog.type", "", 
+    HIVE_ICEBERG_CATALOG_TYPE("iceberg.catalog.type", "iceberg.catalog.type", "", 
         "Default Iceberg catalog."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",

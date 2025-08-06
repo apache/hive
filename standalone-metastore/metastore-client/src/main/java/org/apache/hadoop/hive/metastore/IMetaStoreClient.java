@@ -4925,8 +4925,4 @@ public interface IMetaStoreClient extends AutoCloseable {
       String mapPredicate, String... selection) throws TException {
     throw new UnsupportedOperationException();
   }
-  
-  default boolean isReconnectable() {
-    return true;
-  }
 }

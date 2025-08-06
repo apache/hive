@@ -100,9 +100,6 @@ public class HiveMetaStoreClientBuilder {
         throw new MetaException(rootCause.getMessage());
       }
     }
-    if (baseMetaStoreClient.isReconnectable()) {
-      baseMetaStoreClient.reconnect(); 
-    }
     return baseMetaStoreClient;
   }
 }

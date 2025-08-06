@@ -45,6 +45,7 @@ import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.collect.BiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
@@ -171,10 +172,10 @@ public class HMSTablePropertyHelper {
           builder.hour(spec.getColumnName());
           break;
         case TRUNCATE:
-          builder.truncate(spec.getColumnName(), spec.getTransformParam().get());
+          builder.truncate(spec.getColumnName(), spec.getTransformParam());
           break;
         case BUCKET:
-          builder.bucket(spec.getColumnName(), spec.getTransformParam().get());
+          builder.bucket(spec.getColumnName(), spec.getTransformParam());
           break;
       }
     });
@@ -191,8 +192,8 @@ public class HMSTablePropertyHelper {
    * Calculates the properties we would like to send to the catalog.
    * <ul>
    * <li>The base of the properties is the properties stored at the Hive Metastore for the given table
-   * <li>We add the {@link HiveIcebergRESTCatalogClientAdapter#LOCATION} as the table location
-   * <li>We add the {@link HiveIcebergRESTCatalogClientAdapter#NAME} as
+   * <li>We add the {@link HiveRESTCatalogClient#LOCATION} as the table location
+   * <li>We add the {@link HiveRESTCatalogClient#NAME} as
    * TableIdentifier defined by the database name and table name
    * <li>We add the serdeProperties of the HMS table
    * <li>We remove some parameters that we don't want to push down to the Iceberg table props

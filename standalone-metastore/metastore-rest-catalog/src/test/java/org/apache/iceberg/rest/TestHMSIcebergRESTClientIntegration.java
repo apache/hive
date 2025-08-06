@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
   * This test is an integration test for the hive-iceberg REST Catalog client and HMS REST Catalog Server.
   * It uses the HiveMetaStoreClient backed by hive-iceberg REST catalog adapter to connect to the HMS RESTCatalog Server.
   * The flow is as follows:
-  * Hive ql wrapper --> HiveMetaStoreClient --> HiveIcebergRESTCatalogClientAdapter --> HMS RESTCatalog Server --> HMS
+  * Hive ql wrapper --> HiveMetaStoreClient --> HiveRESTCatalogClient --> HMS RESTCatalog Server --> HMS
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TestHMSIcebergRESTClientIntegration {
@@ -65,9 +65,9 @@ public class TestHMSIcebergRESTClientIntegration {
   public void setup() throws Exception {
     // Starting msClient with Iceberg REST Catalog client underneath
     conf = REST_CATALOG_EXTENSION.getConf();
-    conf.set(HiveConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.varname, "rest");
-    conf.set(HiveConf.ConfVars.HIVE_METASTORE_CLIENT_IMPL.varname,
-        "org.apache.iceberg.hive.HiveIcebergRESTCatalogClientAdapter");
+    conf.set(MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getVarname(), "rest");
+    conf.set(MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL.getVarname(),
+        "org.apache.iceberg.hive.client.HiveRESTCatalogClient");
     conf.set("iceberg.rest-catalog.uri", REST_CATALOG_EXTENSION.getRestEndpoint());
     msClient = new HiveMetaStoreClient(conf);
     hiveConf = new HiveConf(conf, HiveConf.class);

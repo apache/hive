@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive;
+package org.apache.iceberg.hive.client;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -52,9 +52,9 @@ import org.mockito.Mockito;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-public class TestHiveIcebergRESTCatalogClientAdapter {
+public class TestHiveRESTCatalogClient {
 
-  static HiveIcebergRESTCatalogClientAdapter hiveIcebergRESTCatalogClientAdapter;
+  static HiveRESTCatalogClient hiveRESTCatalogClient;
   static RESTCatalog restCatalog;
   private static MockedStatic<CatalogUtil> catalogUtilMockedStatic;
 
@@ -66,8 +66,8 @@ public class TestHiveIcebergRESTCatalogClientAdapter {
     catalogUtilMockedStatic = Mockito.mockStatic(CatalogUtil.class);
     restCatalog = Mockito.mock(RESTCatalog.class);
     catalogUtilMockedStatic.when(() -> CatalogUtil.buildIcebergCatalog(any(), any(), any())).thenReturn(restCatalog);
-    hiveIcebergRESTCatalogClientAdapter = Mockito.spy(new HiveIcebergRESTCatalogClientAdapter(configuration));
-    hiveIcebergRESTCatalogClientAdapter.reconnect();
+    hiveRESTCatalogClient = Mockito.spy(new HiveRESTCatalogClient(configuration));
+    hiveRESTCatalogClient.reconnect();
     TableOperations ops = new TableOperations() {
       @Override
       public TableMetadata current() {
@@ -160,7 +160,7 @@ public class TestHiveIcebergRESTCatalogClientAdapter {
 
   @Test
   public void testGetTable() throws TException {
-    hiveIcebergRESTCatalogClientAdapter.getTable("default", "tableName");
+    hiveRESTCatalogClient.getTable("default", "tableName");
     Mockito.verify(restCatalog).loadTable(TableIdentifier.of("default", "tableName"));
   }
 
@@ -172,13 +172,13 @@ public class TestHiveIcebergRESTCatalogClientAdapter {
     table.setSd(new StorageDescriptor());
     table.getSd().setCols(new LinkedList<>());
     table.setParameters(Maps.newHashMap());
-    hiveIcebergRESTCatalogClientAdapter.createTable(table);
+    hiveRESTCatalogClient.createTable(table);
     Mockito.verify(restCatalog).buildTable(any(), any());
   }
 
   @Test
   public void testGetDatabase() throws TException {
-    Database aDefault = hiveIcebergRESTCatalogClientAdapter.getDatabase("default");
+    Database aDefault = hiveRESTCatalogClient.getDatabase("default");
     assertThat(aDefault.getName()).isEqualTo("default");
     Mockito.verify(restCatalog).listNamespaces(Namespace.empty());
   }

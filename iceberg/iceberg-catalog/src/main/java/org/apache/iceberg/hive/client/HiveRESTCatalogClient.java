@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive;
+package org.apache.iceberg.hive.client;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -56,6 +56,10 @@ import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveOperationsBase;
+import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.RESTCatalog;
@@ -63,7 +67,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
+public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
   public static final String NAMESPACE_SEPARATOR = ".";
   public static final String NAME = "name";
@@ -76,26 +80,34 @@ public class HiveIcebergRESTCatalogClientAdapter extends BaseMetaStoreClient {
   public static final String DEFAULT_SERDE_CLASS = "org.apache.iceberg.mr.hive.HiveIcebergSerDe";
   public static final String WAREHOUSE = "warehouse";
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRESTCatalogClientAdapter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveRESTCatalogClient.class);
   private final Configuration conf;
   private RESTCatalog restCatalog;
   private final long maxHiveTablePropertySize;
 
-  public HiveIcebergRESTCatalogClientAdapter(Configuration conf, boolean allowEmbedded) {
+  public HiveRESTCatalogClient(Configuration conf, boolean allowEmbedded) {
     this(conf);
   }
 
-  public HiveIcebergRESTCatalogClientAdapter(Configuration conf) {
+  public HiveRESTCatalogClient(Configuration conf) {
     super(conf);
     this.conf = conf;
     this.maxHiveTablePropertySize = conf.getLong(HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE,
         HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
+    reconnect();
   }
 
   @Override
   public void reconnect()  {
     Map<String, String> properties = getCatalogPropertiesFromConf(conf);
     String catalogName = properties.get(WAREHOUSE);
+    if (restCatalog != null) {
+      try {
+        restCatalog.close();
+      } catch (IOException e) {
+        throw new RuntimeMetaException(e.getCause(), "Failed to close existing REST catalog");
+      }
+    }
     restCatalog = new RESTCatalog();
     restCatalog.initialize(catalogName, properties);
   }
