@@ -37,7 +37,7 @@ import org.apache.iceberg.hive.HiveCatalog;
  * can serve as a base for specialization.</p>
  */
 public class HMSCatalogFactory {
- private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
+  private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
 
   protected final Configuration configuration;
   protected final int port;
