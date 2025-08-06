@@ -44,7 +44,6 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
   public VectorPTFEvaluatorDecimalFirstValue(WindowFrameDef windowFrameDef,
       VectorExpression inputVecExpr, int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
-    firstValue = new HiveDecimalWritable();
     resetEvaluator();
   }
 
@@ -66,7 +65,6 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
       }
       DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
       if (decimalColVector.isRepeating) {
-
         if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
           firstValue.set(decimalColVector.vector[0]);
           isGroupResultNull = false;
@@ -74,13 +72,25 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
       } else if (decimalColVector.noNulls) {
         firstValue.set(decimalColVector.vector[0]);
         isGroupResultNull = false;
-      } else {
+      } else if (doesRespectNulls()) {
         if (!decimalColVector.isNull[0]) {
           firstValue.set(decimalColVector.vector[0]);
           isGroupResultNull = false;
         }
+      } else {
+        // If we do not respect nulls, we just take the first value and ignore nulls.
+        for (int i = 0; i < size; i++) {
+          if (!decimalColVector.isNull[i]) {
+            firstValue.set(decimalColVector.vector[i]);
+            isGroupResultNull = false;
+            break;
+          }
+        }
       }
-      haveFirstValue = true;
+      // If nulls are respected, we set haveFirstValue to true as we don't need to look for a non-null value
+      // Otherwise, we should keep looking for a non-null value in the next batches, i.e.,
+      // until group result is not null.
+      haveFirstValue = doesRespectNulls() || !isGroupResultNull;
     }
 
     /*
@@ -105,7 +115,7 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
   }
 
   public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    return isGroupResultNull && doesRespectNulls();
   }
 
   @Override
@@ -122,7 +132,7 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
   public void resetEvaluator() {
     haveFirstValue = false;
     isGroupResultNull = true;
-    firstValue.set(HiveDecimal.ZERO);
+    firstValue = new HiveDecimalWritable();
   }
 
   // this is not necessarily needed, because first_value is evaluated in a streaming way, therefore

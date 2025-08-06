@@ -37,7 +37,7 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
 
   protected boolean haveFirstValue;
   protected boolean isGroupResultNull;
-  protected double firstValue;
+  protected Double firstValue = null;
 
   public VectorPTFEvaluatorDoubleFirstValue(WindowFrameDef windowFrameDef,
       VectorExpression inputVecExpr, int outputColumnNum) {
@@ -63,7 +63,6 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
       }
       DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
       if (doubleColVector.isRepeating) {
-
         if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
           firstValue = doubleColVector.vector[0];
           isGroupResultNull = false;
@@ -71,13 +70,25 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
       } else if (doubleColVector.noNulls) {
         firstValue = doubleColVector.vector[0];
         isGroupResultNull = false;
-      } else {
+      } else if (doesRespectNulls()) {
         if (!doubleColVector.isNull[0]) {
           firstValue = doubleColVector.vector[0];
           isGroupResultNull = false;
         }
+      } else {
+        // If we do not respect nulls, we just take the first value and ignore nulls.
+        for (int i = 0; i < size; i++) {
+          if (!doubleColVector.isNull[i]) {
+            firstValue = doubleColVector.vector[i];
+            isGroupResultNull = false;
+            break;
+          }
+        }
       }
-      haveFirstValue = true;
+      // If nulls are respected, we set haveFirstValue to true as we don't need to look for a non-null value
+      // Otherwise, we should keep looking for a non-null value in the next batches, i.e.,
+      // until group result is not null.
+      haveFirstValue = doesRespectNulls() || !isGroupResultNull;
     }
 
     /*
@@ -102,7 +113,7 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
   }
 
   public boolean isGroupResultNull() {
-    return isGroupResultNull;
+    return isGroupResultNull && doesRespectNulls();
   }
 
   @Override
@@ -119,7 +130,7 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
   public void resetEvaluator() {
     haveFirstValue = false;
     isGroupResultNull = true;
-    firstValue = 0.0;
+    firstValue = null;
   }
 
   // this is not necessarily needed, because first_value is evaluated in a streaming way, therefore
