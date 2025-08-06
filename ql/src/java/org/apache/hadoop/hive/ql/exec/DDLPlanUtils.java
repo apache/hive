@@ -1017,7 +1017,7 @@ public class DDLPlanUtils {
           partitionTransforms.add(unparseIdentifier(spec.getColumnName()));
         } else {
           partitionTransforms.add(spec.getTransformType().name() + "(" +
-            (spec.getTransformParam().isPresent() ? spec.getTransformParam().get() + ", " : "") +
+            (spec.getTransformParam() != null ? spec.getTransformParam() + ", " : "") +
             unparseIdentifier(spec.getColumnName()) + ")");
         }
       }
