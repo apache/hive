@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -72,16 +74,21 @@ public class TestStandaloneJdbc {
         // show tables
         String sql = "show tables '" + tableName + "'";
         System.out.println("Running: " + sql);
-        ResultSet res = stmt.executeQuery(sql);
-        if (res.next()) {
-          System.out.println(res.getString(1));
+        try (ResultSet res = stmt.executeQuery(sql)) {
+          ResultSetMetaData metaData = res.getMetaData();
+          assertTrue(metaData.getColumnCount() > 0);
+          assertFalse(metaData.getColumnName(1).isEmpty());
+          assertTrue(metaData.getColumnType(1) > 0);
+          assertTrue(res.next());
+          assertFalse(res.getString(1).trim().isEmpty());
         }
         // describe table
         sql = "describe " + tableName;
         System.out.println("Running: " + sql);
-        res = stmt.executeQuery(sql);
-        while (res.next()) {
-          System.out.println(res.getString(1) + "\t" + res.getString(2));
+        try (ResultSet res = stmt.executeQuery(sql)) {
+          assertTrue(res.next());
+          assertFalse(res.getString(1).trim().isEmpty());
+          assertFalse(res.getString(2).trim().isEmpty());
         }
 
         // "Client cannot authenticate via:[TOKEN, KERBEROS]" in running the Kerberized tez local mode
@@ -91,19 +98,21 @@ public class TestStandaloneJdbc {
           // select * query
           sql = "select * from " + tableName;
           System.out.println("Running: " + sql);
-          res = stmt.executeQuery(sql);
-          List<String> list = new ArrayList<>();
-          while (res.next()) {
-            list.add("('" + res.getString(1) + "','" + res.getString(2) + "')");
+          try (ResultSet res = stmt.executeQuery(sql)) {
+            List<String> list = new ArrayList<>();
+            while (res.next()) {
+              list.add("('" + res.getString(1) + "','" + res.getString(2) + "')");
+            }
+            assertEquals(values, list.stream().collect(Collectors.joining(",")));
           }
-          assertEquals(values, list.stream().collect(Collectors.joining(",")));
 
           // regular hive query
           sql = "select count(1) from " + tableName;
           System.out.println("Running: " + sql);
-          res = stmt.executeQuery(sql);
-          assertTrue(res.next());
-          assertEquals(4, res.getInt(1));
+          try (ResultSet res = stmt.executeQuery(sql)) {
+            assertTrue(res.next());
+            assertEquals(4, res.getInt(1));
+          }
         }
       }
     }
@@ -112,20 +121,20 @@ public class TestStandaloneJdbc {
   private void testDataSourceOp(String url) throws Exception {
     try (Connection con = DriverManager.getConnection(url)) {
       DatabaseMetaData metaData = con.getMetaData();
-      ResultSet rs = metaData.getSchemas();
-      assertTrue(rs.next());
-      while (rs.next()) {
-        System.out.println("DatabaseMetaData.getSchemas: " + rs.getString(1));
+
+      try (ResultSet rs = metaData.getSchemas()) {
+        assertTrue(rs.next());
+        assertFalse(rs.getString(1).trim().isEmpty());
       }
-      ResultSet resultSet = metaData.getColumns("hive", ".*", ".*", ".*");
-      assertTrue(resultSet.next());
-      while (resultSet.next()) {
-        System.out.println("DatabaseMetaData.getColumns: " + rs.getString(1));
+
+      try (ResultSet resultSet = metaData.getColumns("hive", ".*", ".*", ".*")) {
+        assertTrue(resultSet.next());
+        assertFalse(resultSet.getString(3).trim().isEmpty());
       }
-      resultSet = metaData.getTypeInfo();
-      assertTrue(resultSet.next());
-      while (resultSet.next()) {
-        System.out.println("DatabaseMetaData.getTypeInfo: " + rs.getString(1));
+
+      try (ResultSet resultSet = metaData.getTypeInfo()) {
+        assertTrue(resultSet.next());
+        assertFalse(resultSet.getString(1).trim().isEmpty());
       }
     }
   }
@@ -138,16 +147,13 @@ public class TestStandaloneJdbc {
     testNegativeJdbc(HS2.getHttpJdbcUrl());
   }
 
-  private void testNegativeJdbc(String url) throws Exception {
-    Connection con = DriverManager.getConnection(url);
-    try {
-      Statement stmt = con.createStatement();
+  private void testNegativeJdbc(String url) {
+    try (Connection con = DriverManager.getConnection(url);
+         Statement stmt = con.createStatement()) {
       stmt.execute("insert into table this_is_not_exist_table values (1),(3),(5)");
       fail("A SQLException is expected");
     } catch (SQLException e) {
-      e.printStackTrace();
-    } finally {
-      con.close();
+      assertTrue(e.getMessage().contains("Table not found"));
     }
   }
 
@@ -176,7 +182,7 @@ public class TestStandaloneJdbc {
     testMetaOp(url, true);
   }
 
-  public void updateEnv(String name, String val) throws ReflectiveOperationException {
+  private void updateEnv(String name, String val) throws ReflectiveOperationException {
     Map<String, String> env = System.getenv();
     Field field = env.getClass().getDeclaredField("m");
     field.setAccessible(true);
