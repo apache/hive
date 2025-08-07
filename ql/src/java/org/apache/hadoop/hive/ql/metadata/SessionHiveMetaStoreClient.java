@@ -1574,8 +1574,8 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         if (partsSpec.isSetExprs()) {
           List<DropPartitionsExpr> exprs = partsSpec.getExprs();
           for (DropPartitionsExpr expr : exprs) {
-            String filter = generateJDOFilter(table, expr.getExpr(),
-                PartitionUtils.getDefaultPartitionName(table.getParameters(), (HiveConf) conf));
+            String filter = generateJDOFilter(table, expr.getExpr(), PartitionUtils.getDefaultPartitionName(
+                table.getParameters(), conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname)));
             List<Partition> partitions = tt.listPartitionsByFilter(filter);
             for (Partition p : partitions) {
               partValues.add(p.getValues());
