@@ -33,7 +33,6 @@ import org.apache.calcite.adapter.jdbc.JdbcRules;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
-import org.apache.calcite.rel.RelHomogeneousShuttle;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.core.Aggregate;
@@ -58,9 +57,10 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
@@ -132,21 +132,6 @@ public class PlanModifierForASTConv {
       LOG.debug("Final plan after modifier\n " + RelOptUtil.toString(newTopNode));
     }
     return newTopNode;
-  }
-
-  private static String getTblAlias(RelNode rel) {
-    if (rel instanceof HiveTableScan) {
-      return ((HiveTableScan)rel).getTableAlias();
-    }
-    if (rel instanceof DruidQuery) {
-      DruidQuery dq = (DruidQuery) rel;
-      return ((HiveTableScan) dq.getTableScan()).getTableAlias();
-    }
-    if (rel instanceof HiveJdbcConverter) {
-      HiveJdbcConverter conv = (HiveJdbcConverter) rel;
-      return conv.getTableScan().getHiveTableScan().getTableAlias();
-    }
-    return null;
   }
 
   private static void convertOpTree(RelNode rel, RelNode parent) {
@@ -231,38 +216,54 @@ public class PlanModifierForASTConv {
    * When the same alias occurs in both branches of a join, it introduces a derive table (Project)
    * over the left branch to break the ambiguity.
    */
-  private static class SelfJoinHandler extends RelHomogeneousShuttle {
+  private static class SelfJoinHandler extends HiveRelShuttleImpl {
     private final Set<String> aliases = new HashSet<>();
 
     @Override
-    public RelNode visit(final RelNode rel) {
-      if (rel instanceof Join join) {
-        SelfJoinHandler lf = new SelfJoinHandler();
-        RelNode newL = join.getLeft().accept(lf);
-        SelfJoinHandler rf = new SelfJoinHandler();
-        RelNode newR = join.getRight().accept(rf);
-        if (Sets.intersection(lf.aliases, rf.aliases).isEmpty()) {
-          // No self-join detected, return the join as is
-          aliases.addAll(lf.aliases);
-          aliases.addAll(rf.aliases);
-          return join.copy(join.getTraitSet(), Arrays.asList(newL, newR));
-        }
-        // Self-join detected, introduce a derived table for the left side
+    public RelNode visit(HiveJoin join) {
+      SelfJoinHandler lf = new SelfJoinHandler();
+      RelNode newL = join.getLeft().accept(lf);
+      SelfJoinHandler rf = new SelfJoinHandler();
+      RelNode newR = join.getRight().accept(rf);
+      if (Sets.intersection(lf.aliases, rf.aliases).isEmpty()) {
+        // No self-join detected, return the join as is
+        aliases.addAll(lf.aliases);
         aliases.addAll(rf.aliases);
-        introduceDerivedTable(newL, join);
-        return join;
+        return join.copy(join.getTraitSet(), Arrays.asList(newL, newR));
       }
-      String leafAlias = getTblAlias(rel);
-      if (leafAlias != null) {
-        aliases.add(leafAlias.toLowerCase());
-        return rel;
+      // Self-join detected, introduce a derived table for the left side
+      aliases.addAll(rf.aliases);
+      introduceDerivedTable(newL, join);
+      return join;
+    }
+
+    @Override
+    public RelNode visit(HiveProject project) {
+      RelNode rel = super.visit(project);
+      // Project denotes a derived table, so aliases can be cleared
+      aliases.clear();
+      return rel;
+    }
+
+    @Override
+    public RelNode visit(HiveTableScan scan) {
+      aliases.add(scan.getTableAlias().toLowerCase());
+      return scan;
+    }
+
+    @Override
+    public RelNode visit(HiveJdbcConverter conv) {
+      aliases.add(conv.getTableScan().getHiveTableScan().getTableAlias().toLowerCase());
+      return conv;
+    }
+
+    @Override
+    public RelNode visit(final RelNode rel) {
+      if (rel instanceof DruidQuery dq) {
+        aliases.add(((HiveTableScan) dq.getTableScan()).getTableAlias().toLowerCase());
+        return dq;
       }
-      RelNode nRel = super.visit(rel);
-      if (nRel instanceof Project) {
-        // Project denotes a derived table, so aliases can be cleared
-        aliases.clear();
-      }
-      return nRel;
+      return super.visit(rel);
     }
   }
 
