@@ -719,3 +719,333 @@ NULL	80	NULL	80
 6	62	62	60
 6	60	62	60
 7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	20	20
+2	20	20	20
+2	NULL	20	20
+3	NULL	20	30
+3	32	20	30
+3	30	20	30
+4	NULL	20	40
+4	40	20	40
+5	50	20	50
+5	NULL	20	50
+6	60	20	62
+6	62	20	62
+7	NULL	20	62
+NULL	NULL	20	80
+NULL	80	20	80
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+NULL	NULL	80	80
+NULL	80	80	80
+1	NULL	80	80
+1	NULL	80	80
+1	NULL	80	80
+2	NULL	80	20
+2	NULL	80	20
+2	20	80	20
+3	NULL	80	32
+3	30	80	32
+3	32	80	32
+4	NULL	80	40
+4	40	80	40
+5	NULL	80	50
+5	50	80	50
+6	60	80	62
+6	62	80	62
+7	NULL	80	62
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	20	20
+2	20	20	20
+2	NULL	20	20
+3	NULL	20	30
+3	32	20	30
+3	30	20	30
+4	NULL	20	40
+4	40	20	40
+5	50	20	50
+5	NULL	20	50
+6	60	20	62
+6	62	20	62
+7	NULL	20	62
+NULL	NULL	20	80
+NULL	80	20	80
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+NULL	NULL	80	80
+NULL	80	80	80
+1	NULL	80	80
+1	NULL	80	80
+1	NULL	80	80
+2	NULL	80	20
+2	NULL	80	20
+2	20	80	20
+3	NULL	80	32
+3	30	80	32
+3	32	80	32
+4	NULL	80	40
+4	40	80	40
+5	NULL	80	50
+5	50	80	50
+6	60	80	62
+6	62	80	62
+7	NULL	80	62
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+3	NULL	30	32
+3	30	30	32
+3	32	30	32
+5	50	50	50
+5	NULL	50	50
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	20	20
+2	20	20	20
+2	NULL	20	20
+4	NULL	40	40
+4	40	40	40
+6	62	62	60
+6	60	62	60
+7	NULL	NULL	NULL
+NULL	80	80	80
+NULL	NULL	80	80
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+NULL	NULL	80	80
+NULL	80	80	80
+2	20	20	20
+2	NULL	20	20
+2	NULL	20	20
+3	NULL	30	32
+3	30	30	32
+3	32	30	32
+4	40	40	40
+4	NULL	40	40
+5	NULL	50	50
+5	50	50	50
+6	62	62	60
+6	60	62	60
+7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) OVER(ORDER BY id) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) OVER(ORDER BY id) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	NULL
+2	20	NULL	NULL
+2	NULL	NULL	NULL
+3	NULL	NULL	30
+3	32	NULL	30
+3	30	NULL	30
+4	NULL	NULL	40
+4	40	NULL	40
+5	50	NULL	NULL
+5	NULL	NULL	NULL
+6	60	NULL	62
+6	62	NULL	62
+7	NULL	NULL	NULL
+NULL	NULL	NULL	80
+NULL	80	NULL	80
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+NULL	NULL	NULL	80
+NULL	80	NULL	80
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	20
+2	NULL	NULL	20
+2	20	NULL	20
+3	NULL	NULL	32
+3	30	NULL	32
+3	32	NULL	32
+4	NULL	NULL	40
+4	40	NULL	40
+5	NULL	NULL	50
+5	50	NULL	50
+6	60	NULL	62
+6	62	NULL	62
+7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+3	NULL	NULL	32
+3	30	NULL	32
+3	32	NULL	32
+5	50	50	NULL
+5	NULL	50	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	NULL
+2	20	NULL	NULL
+2	NULL	NULL	NULL
+4	NULL	NULL	40
+4	40	NULL	40
+6	62	62	60
+6	60	62	60
+7	NULL	NULL	NULL
+NULL	80	80	NULL
+NULL	NULL	80	NULL
+PREHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_int_test
+#### A masked pattern was here ####
+id	int_col	first_int	last_int
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+NULL	NULL	NULL	80
+NULL	80	NULL	80
+2	20	20	NULL
+2	NULL	20	NULL
+2	NULL	20	NULL
+3	NULL	NULL	32
+3	30	NULL	32
+3	32	NULL	32
+4	40	40	NULL
+4	NULL	40	NULL
+5	NULL	NULL	50
+5	50	NULL	50
+6	62	62	60
+6	60	62	60
+7	NULL	NULL	NULL

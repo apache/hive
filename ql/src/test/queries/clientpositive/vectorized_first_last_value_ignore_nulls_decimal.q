@@ -160,3 +160,60 @@ SELECT id, decimal_col,
   FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
   LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
 FROM window_decimal_test;
+
+
+--========================================================================================
+-- Test with reducer batch size set to 2
+--========================================================================================
+set hive.vectorized.testing.reducer.batch.size=2;
+set hive.vectorized.execution.enabled=true;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+FROM window_decimal_test;
+
+SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test;

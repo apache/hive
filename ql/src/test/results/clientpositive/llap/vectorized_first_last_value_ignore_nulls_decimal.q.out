@@ -719,3 +719,333 @@ NULL	800.00	NULL	800.00
 6	610.00	610.00	600.00
 6	600.00	610.00	600.00
 7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	200.00	200.00
+2	200.00	200.00	200.00
+2	NULL	200.00	200.00
+3	NULL	200.00	300.75
+3	300.50	200.00	300.75
+3	300.75	200.00	300.75
+4	NULL	200.00	400.00
+4	400.00	200.00	400.00
+5	500.20	200.00	500.20
+5	NULL	200.00	500.20
+6	600.00	200.00	610.00
+6	610.00	200.00	610.00
+7	NULL	200.00	610.00
+NULL	NULL	200.00	800.00
+NULL	800.00	200.00	800.00
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+NULL	NULL	800.00	800.00
+NULL	800.00	800.00	800.00
+1	NULL	800.00	800.00
+1	NULL	800.00	800.00
+1	NULL	800.00	800.00
+2	NULL	800.00	200.00
+2	NULL	800.00	200.00
+2	200.00	800.00	200.00
+3	NULL	800.00	300.50
+3	300.75	800.00	300.50
+3	300.50	800.00	300.50
+4	NULL	800.00	400.00
+4	400.00	800.00	400.00
+5	NULL	800.00	500.20
+5	500.20	800.00	500.20
+6	600.00	800.00	610.00
+6	610.00	800.00	610.00
+7	NULL	800.00	610.00
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	200.00	200.00
+2	200.00	200.00	200.00
+2	NULL	200.00	200.00
+3	NULL	200.00	300.75
+3	300.50	200.00	300.75
+3	300.75	200.00	300.75
+4	NULL	200.00	400.00
+4	400.00	200.00	400.00
+5	500.20	200.00	500.20
+5	NULL	200.00	500.20
+6	600.00	200.00	610.00
+6	610.00	200.00	610.00
+7	NULL	200.00	610.00
+NULL	NULL	200.00	800.00
+NULL	800.00	200.00	800.00
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+NULL	NULL	800.00	800.00
+NULL	800.00	800.00	800.00
+1	NULL	800.00	800.00
+1	NULL	800.00	800.00
+1	NULL	800.00	800.00
+2	NULL	800.00	200.00
+2	NULL	800.00	200.00
+2	200.00	800.00	200.00
+3	NULL	800.00	300.50
+3	300.75	800.00	300.50
+3	300.50	800.00	300.50
+4	NULL	800.00	400.00
+4	400.00	800.00	400.00
+5	NULL	800.00	500.20
+5	500.20	800.00	500.20
+6	600.00	800.00	610.00
+6	610.00	800.00	610.00
+7	NULL	800.00	610.00
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+3	NULL	300.75	300.50
+3	300.75	300.75	300.50
+3	300.50	300.75	300.50
+5	500.20	500.20	500.20
+5	NULL	500.20	500.20
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	200.00	200.00
+2	200.00	200.00	200.00
+2	NULL	200.00	200.00
+4	NULL	400.00	400.00
+4	400.00	400.00	400.00
+6	610.00	610.00	600.00
+6	600.00	610.00	600.00
+7	NULL	NULL	NULL
+NULL	800.00	800.00	800.00
+NULL	NULL	800.00	800.00
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+NULL	NULL	800.00	800.00
+NULL	800.00	800.00	800.00
+2	200.00	200.00	200.00
+2	NULL	200.00	200.00
+2	NULL	200.00	200.00
+3	NULL	300.75	300.50
+3	300.75	300.75	300.50
+3	300.50	300.75	300.50
+4	400.00	400.00	400.00
+4	NULL	400.00	400.00
+5	NULL	500.20	500.20
+5	500.20	500.20	500.20
+6	610.00	610.00	600.00
+6	600.00	610.00	600.00
+7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(ORDER BY id) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	NULL
+2	200.00	NULL	NULL
+2	NULL	NULL	NULL
+3	NULL	NULL	300.75
+3	300.50	NULL	300.75
+3	300.75	NULL	300.75
+4	NULL	NULL	400.00
+4	400.00	NULL	400.00
+5	500.20	NULL	NULL
+5	NULL	NULL	NULL
+6	600.00	NULL	610.00
+6	610.00	NULL	610.00
+7	NULL	NULL	NULL
+NULL	NULL	NULL	800.00
+NULL	800.00	NULL	800.00
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+NULL	NULL	NULL	800.00
+NULL	800.00	NULL	800.00
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	200.00
+2	NULL	NULL	200.00
+2	200.00	NULL	200.00
+3	NULL	NULL	300.50
+3	300.75	NULL	300.50
+3	300.50	NULL	300.50
+4	NULL	NULL	400.00
+4	400.00	NULL	400.00
+5	NULL	NULL	500.20
+5	500.20	NULL	500.20
+6	600.00	NULL	610.00
+6	610.00	NULL	610.00
+7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+3	NULL	NULL	300.50
+3	300.75	NULL	300.50
+3	300.50	NULL	300.50
+5	500.20	500.20	NULL
+5	NULL	500.20	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	NULL
+2	200.00	NULL	NULL
+2	NULL	NULL	NULL
+4	NULL	NULL	400.00
+4	400.00	NULL	400.00
+6	610.00	610.00	600.00
+6	600.00	610.00	600.00
+7	NULL	NULL	NULL
+NULL	800.00	800.00	NULL
+NULL	NULL	800.00	NULL
+PREHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, decimal_col,
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+FROM window_decimal_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_decimal_test
+#### A masked pattern was here ####
+id	decimal_col	first_decimal	last_decimal
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+NULL	NULL	NULL	800.00
+NULL	800.00	NULL	800.00
+2	200.00	200.00	NULL
+2	NULL	200.00	NULL
+2	NULL	200.00	NULL
+3	NULL	NULL	300.50
+3	300.75	NULL	300.50
+3	300.50	NULL	300.50
+4	400.00	400.00	NULL
+4	NULL	400.00	NULL
+5	NULL	NULL	500.20
+5	500.20	NULL	500.20
+6	610.00	610.00	600.00
+6	600.00	610.00	600.00
+7	NULL	NULL	NULL

@@ -323,7 +323,6 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
-      evaluator.setRespectNulls(respectNulls);
       break;
     case LAST_VALUE:
       switch (columnVectorType) {
@@ -339,7 +338,6 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
-      evaluator.setRespectNulls(respectNulls);
       break;
     case COUNT:
       if (inputVectorExpression == null) {
@@ -420,6 +418,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     default:
       throw new RuntimeException("Unexpected function type " + functionType);
     }
+    evaluator.setRespectNulls(respectNulls);
     return evaluator;
   }
 

@@ -160,3 +160,60 @@ SELECT id, double_col,
   FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
   LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
 FROM window_double_test;
+
+
+--========================================================================================
+-- Test with reducer batch size set to 2
+--========================================================================================
+set hive.vectorized.testing.reducer.batch.size=2;
+set hive.vectorized.execution.enabled=true;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) OVER(ORDER BY id) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS last_double
+FROM window_double_test;
+
+SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test;

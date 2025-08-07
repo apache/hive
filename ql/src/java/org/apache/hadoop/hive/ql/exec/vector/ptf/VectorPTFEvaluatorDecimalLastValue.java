@@ -82,7 +82,7 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
       }
     } else {
       // If we do not respect nulls, we can keep checking from the end of the batch
-      isGroupResultNull = true;
+      isGroupResultNull = !lastValue.isSet();
       for (int i = size-1; i >= 0; i--) {
         if (!decimalColVector.isNull[i]) {
           lastValue.set(decimalColVector.vector[i]);
@@ -101,7 +101,7 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
 
   @Override
   public boolean isGroupResultNull() {
-    return isGroupResultNull && doesRespectNulls();
+    return isGroupResultNull;
   }
 
   @Override

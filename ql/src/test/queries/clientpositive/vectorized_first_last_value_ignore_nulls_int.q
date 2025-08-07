@@ -1,4 +1,4 @@
-SET hive.cli.print.header=true;
+set hive.cli.print.header=true;
 
 CREATE TABLE window_int_test (
   id INT,
@@ -156,6 +156,62 @@ SELECT id, int_col,
 FROM window_int_test;
 
 set hive.vectorized.execution.enabled=true;
+SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test;
+
+--========================================================================================
+-- Test with reducer batch size set to 2
+--========================================================================================
+set hive.vectorized.testing.reducer.batch.size=2;
+set hive.vectorized.execution.enabled=true;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) OVER(ORDER BY id) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_int
+FROM window_int_test;
+
+SELECT id, int_col,
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS last_int
+FROM window_int_test;
+
 SELECT id, int_col,
   FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
   LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int

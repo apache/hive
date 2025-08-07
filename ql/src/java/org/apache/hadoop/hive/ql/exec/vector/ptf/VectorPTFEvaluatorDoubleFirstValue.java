@@ -113,7 +113,7 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
   }
 
   public boolean isGroupResultNull() {
-    return isGroupResultNull && doesRespectNulls();
+    return isGroupResultNull;
   }
 
   @Override

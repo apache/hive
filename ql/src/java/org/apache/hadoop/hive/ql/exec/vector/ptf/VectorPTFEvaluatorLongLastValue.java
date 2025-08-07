@@ -80,7 +80,7 @@ public class VectorPTFEvaluatorLongLastValue extends VectorPTFEvaluatorBase {
       }
     } else {
       // If we do not respect nulls, we can keep checking from the end of the batch
-      isGroupResultNull = true;
+      isGroupResultNull = lastValue == null;
       for (int i = size-1; i >= 0; i--) {
         if (!longColVector.isNull[i]) {
           lastValue = longColVector.vector[i];
@@ -99,7 +99,7 @@ public class VectorPTFEvaluatorLongLastValue extends VectorPTFEvaluatorBase {
 
   @Override
   public boolean isGroupResultNull() {
-    return isGroupResultNull && doesRespectNulls();
+    return isGroupResultNull;
   }
 
   @Override

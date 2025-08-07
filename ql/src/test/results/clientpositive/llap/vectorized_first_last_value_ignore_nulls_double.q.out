@@ -719,3 +719,333 @@ NULL	80.5	NULL	80.5
 6	65.5	65.5	65.2
 6	65.2	65.5	65.2
 7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	25.5	25.5
+2	25.5	25.5	25.5
+2	NULL	25.5	25.5
+3	NULL	25.5	32.5
+3	30.5	25.5	32.5
+3	32.5	25.5	32.5
+4	NULL	25.5	42.3
+4	42.3	25.5	42.3
+5	50.5	25.5	50.5
+5	NULL	25.5	50.5
+6	65.2	25.5	65.5
+6	65.5	25.5	65.5
+7	NULL	25.5	65.5
+NULL	NULL	25.5	80.5
+NULL	80.5	25.5	80.5
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) IGNORE NULLS OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+NULL	NULL	80.5	80.5
+NULL	80.5	80.5	80.5
+1	NULL	80.5	80.5
+1	NULL	80.5	80.5
+1	NULL	80.5	80.5
+2	NULL	80.5	25.5
+2	NULL	80.5	25.5
+2	25.5	80.5	25.5
+3	NULL	80.5	30.5
+3	32.5	80.5	30.5
+3	30.5	80.5	30.5
+4	NULL	80.5	42.3
+4	42.3	80.5	42.3
+5	NULL	80.5	50.5
+5	50.5	80.5	50.5
+6	65.2	80.5	65.5
+6	65.5	80.5	65.5
+7	NULL	80.5	65.5
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	25.5	25.5
+2	25.5	25.5	25.5
+2	NULL	25.5	25.5
+3	NULL	25.5	32.5
+3	30.5	25.5	32.5
+3	32.5	25.5	32.5
+4	NULL	25.5	42.3
+4	42.3	25.5	42.3
+5	50.5	25.5	50.5
+5	NULL	25.5	50.5
+6	65.2	25.5	65.5
+6	65.5	25.5	65.5
+7	NULL	25.5	65.5
+NULL	NULL	25.5	80.5
+NULL	80.5	25.5	80.5
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+NULL	NULL	80.5	80.5
+NULL	80.5	80.5	80.5
+1	NULL	80.5	80.5
+1	NULL	80.5	80.5
+1	NULL	80.5	80.5
+2	NULL	80.5	25.5
+2	NULL	80.5	25.5
+2	25.5	80.5	25.5
+3	NULL	80.5	30.5
+3	32.5	80.5	30.5
+3	30.5	80.5	30.5
+4	NULL	80.5	42.3
+4	42.3	80.5	42.3
+5	NULL	80.5	50.5
+5	50.5	80.5	50.5
+6	65.2	80.5	65.5
+6	65.5	80.5	65.5
+7	NULL	80.5	65.5
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+3	NULL	32.5	30.5
+3	32.5	32.5	30.5
+3	30.5	32.5	30.5
+5	50.5	50.5	50.5
+5	NULL	50.5	50.5
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	25.5	25.5
+2	25.5	25.5	25.5
+2	NULL	25.5	25.5
+4	NULL	42.3	42.3
+4	42.3	42.3	42.3
+6	65.5	65.5	65.2
+6	65.2	65.5	65.2
+7	NULL	NULL	NULL
+NULL	80.5	80.5	80.5
+NULL	NULL	80.5	80.5
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+NULL	NULL	80.5	80.5
+NULL	80.5	80.5	80.5
+2	25.5	25.5	25.5
+2	NULL	25.5	25.5
+2	NULL	25.5	25.5
+3	NULL	32.5	30.5
+3	32.5	32.5	30.5
+3	30.5	32.5	30.5
+4	42.3	42.3	42.3
+4	NULL	42.3	42.3
+5	NULL	50.5	50.5
+5	50.5	50.5	50.5
+6	65.5	65.5	65.2
+6	65.2	65.5	65.2
+7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) OVER(ORDER BY id) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) OVER(ORDER BY id) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	NULL
+2	25.5	NULL	NULL
+2	NULL	NULL	NULL
+3	NULL	NULL	32.5
+3	30.5	NULL	32.5
+3	32.5	NULL	32.5
+4	NULL	NULL	42.3
+4	42.3	NULL	42.3
+5	50.5	NULL	NULL
+5	NULL	NULL	NULL
+6	65.2	NULL	65.5
+6	65.5	NULL	65.5
+7	NULL	NULL	NULL
+NULL	NULL	NULL	80.5
+NULL	80.5	NULL	80.5
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+NULL	NULL	NULL	80.5
+NULL	80.5	NULL	80.5
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	25.5
+2	NULL	NULL	25.5
+2	25.5	NULL	25.5
+3	NULL	NULL	30.5
+3	32.5	NULL	30.5
+3	30.5	NULL	30.5
+4	NULL	NULL	42.3
+4	42.3	NULL	42.3
+5	NULL	NULL	50.5
+5	50.5	NULL	50.5
+6	65.2	NULL	65.5
+6	65.5	NULL	65.5
+7	NULL	NULL	NULL
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+3	NULL	NULL	30.5
+3	32.5	NULL	30.5
+3	30.5	NULL	30.5
+5	50.5	50.5	NULL
+5	NULL	50.5	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+2	NULL	NULL	NULL
+2	25.5	NULL	NULL
+2	NULL	NULL	NULL
+4	NULL	NULL	42.3
+4	42.3	NULL	42.3
+6	65.5	65.5	65.2
+6	65.2	65.5	65.2
+7	NULL	NULL	NULL
+NULL	80.5	80.5	NULL
+NULL	NULL	80.5	NULL
+PREHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, double_col,
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+FROM window_double_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@window_double_test
+#### A masked pattern was here ####
+id	double_col	first_double	last_double
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+1	NULL	NULL	NULL
+NULL	NULL	NULL	80.5
+NULL	80.5	NULL	80.5
+2	25.5	25.5	NULL
+2	NULL	25.5	NULL
+2	NULL	25.5	NULL
+3	NULL	NULL	30.5
+3	32.5	NULL	30.5
+3	30.5	NULL	30.5
+4	42.3	42.3	NULL
+4	NULL	42.3	NULL
+5	NULL	NULL	50.5
+5	50.5	NULL	50.5
+6	65.5	65.5	65.2
+6	65.2	65.5	65.2
+7	NULL	NULL	NULL
