@@ -23,11 +23,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -69,8 +69,11 @@ public class TestIcebergHouseKeeperService {
 
     TableFetcher tableFetcher = IcebergTableUtil.getTableFetcher(db.getMSC(), null, "default", "*");
 
-    List<TableName> tables = tableFetcher.getTables();
-    Assert.assertEquals(new TableName("hive", "default", "iceberg_table"), tables.get(0));
+    int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    List<org.apache.hadoop.hive.metastore.api.Table> tables = tableFetcher.getTables(maxBatchSize);
+    Assert.assertEquals("hive", tables.get(0).getCatName());
+    Assert.assertEquals("default", tables.get(0).getDbName());
+    Assert.assertEquals("iceberg_table", tables.get(0).getTableName());
   }
 
   @Test
