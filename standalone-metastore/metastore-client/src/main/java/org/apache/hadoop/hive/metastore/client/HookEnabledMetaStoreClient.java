@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -327,10 +328,10 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+  public List<Partition> dropPartitions(TableName tableName,
       RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws TException {
-    Table table = delegate.getTable(catName, dbName, tblName);
+    Table table = delegate.getTable(tableName.getCat(), tableName.getDb(), tableName.getTable());
     HiveMetaHook hook = getHook(table);
     if (hook != null) {
       if (context == null) {
@@ -338,7 +339,7 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
       }
       hook.preDropPartitions(table, context, partsSpec);
     }
-    return delegate.dropPartitions(catName, dbName, tblName, partsSpec, options, context);
+    return delegate.dropPartitions(tableName, partsSpec, options, context);
   }
 
   @Override

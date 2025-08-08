@@ -25,6 +25,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
@@ -1587,15 +1588,18 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+  public List<Partition> dropPartitions(TableName tableName,
       RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException {
-    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, partsSpec);
-    req.setCatName(catName);
+    DropPartitionsRequest req = new DropPartitionsRequest(tableName.getDb(), tableName.getTable(), partsSpec);
+    req.setCatName(tableName.getCat());
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
 
+    if (context == null) {
+      context = new EnvironmentContext();
+    }
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
       context.putToProperties("ifPurge", "true");

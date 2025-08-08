@@ -2092,7 +2092,7 @@ public interface IMetaStoreClient extends AutoCloseable {
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException;
 
-  List<Partition> dropPartitions(String catName, String dbName, String tblName,
+  List<Partition> dropPartitions(TableName tableName,
       RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException;
 

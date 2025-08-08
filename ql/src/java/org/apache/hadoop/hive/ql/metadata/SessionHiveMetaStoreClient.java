@@ -1562,11 +1562,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+  public List<Partition> dropPartitions(TableName tableName,
       RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws TException {
-    if (isDefaultCatalog(catName)) {
-      Table table = getTempTable(dbName, tblName);
+    if (isDefaultCatalog(tableName.getCat())) {
+      Table table = getTempTable(tableName.getDb(), tableName.getTable());
       if (table != null) {
         TempTable tt = getPartitionedTempTable(table);
             List<List<String>> partValues = new ArrayList<>();
@@ -1602,7 +1602,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       }
     }
 
-    return delegate.dropPartitions(catName, dbName, tblName, partsSpec, options, context);
+    return delegate.dropPartitions(tableName, partsSpec, options, context);
   }
 
   @Override

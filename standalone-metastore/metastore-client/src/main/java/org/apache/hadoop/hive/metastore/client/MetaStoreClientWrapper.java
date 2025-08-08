@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -504,10 +504,10 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+  public List<Partition> dropPartitions(TableName tableName,
       RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException {
-    return delegate.dropPartitions(catName, dbName, tblName, partsSpec, options, context);
+    return delegate.dropPartitions(tableName, partsSpec, options, context);
   }
 
   @Override

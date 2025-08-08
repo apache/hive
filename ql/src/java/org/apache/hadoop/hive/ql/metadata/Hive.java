@@ -4081,13 +4081,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       exprs.add(dpe);
     }
     rps.setExprs(exprs);
-    return dropPartitions(getDefaultCatalog(conf), dbName, tableName, rps, dropOptions);
+    return dropPartitions(new TableName(getDefaultCatalog(conf), dbName, tableName), rps, dropOptions);
   }
 
-  public List<Partition> dropPartitions(String catName, String dbName, String tableName,
+  public List<Partition> dropPartitions(TableName tableName,
       RequestPartsSpec partsSpec, PartitionDropOptions dropOptions) throws HiveException {
     try {
-      Table table = getTable(dbName, tableName);
+      Table table = getTable(tableName.getDb(), tableName.getTable());
       if (!dropOptions.deleteData) {
         AcidUtils.TableSnapshot snapshot = AcidUtils.getTableSnapshot(conf, table, true);
         if (snapshot != null) {
@@ -4098,7 +4098,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         dropOptions.setTxnId(txnId);
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(
-          catName, dbName, tableName, partsSpec, dropOptions, null);
+          tableName, partsSpec, dropOptions, null);
       return convertFromMetastore(table, partitions);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
