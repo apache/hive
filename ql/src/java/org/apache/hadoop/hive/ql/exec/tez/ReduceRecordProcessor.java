@@ -351,7 +351,7 @@ public class ReduceRecordProcessor extends RecordProcessor {
     }
 
     try {
-      for (ReduceRecordSource rs: sources) {
+      for (ReduceRecordSource rs : sources) {
         boolean abort = rs.close();
         if (!isAborted() && abort) {
           setAborted(true);
