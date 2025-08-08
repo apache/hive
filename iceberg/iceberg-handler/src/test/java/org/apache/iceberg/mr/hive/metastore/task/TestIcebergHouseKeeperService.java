@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -69,8 +68,10 @@ public class TestIcebergHouseKeeperService {
 
     TableFetcher tableFetcher = IcebergTableUtil.getTableFetcher(db.getMSC(), null, "default", "*");
 
-    List<TableName> tables = tableFetcher.getTables();
-    Assert.assertEquals(new TableName("hive", "default", "iceberg_table"), tables.get(0));
+    List<org.apache.hadoop.hive.metastore.api.Table> tables = tableFetcher.getTables();
+    Assert.assertEquals("hive", tables.get(0).getCatName());
+    Assert.assertEquals("default", tables.get(0).getDbName());
+    Assert.assertEquals("iceberg_table", tables.get(0).getTableName());
   }
 
   @Test
