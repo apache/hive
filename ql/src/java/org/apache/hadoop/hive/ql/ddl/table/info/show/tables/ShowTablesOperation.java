@@ -61,7 +61,7 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
   private void showTables() throws HiveException {
     String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false, true);
     List<String> tableNames = new ArrayList<>(
-        context.getDb().getTablesByType(desc.getDbName(), pattern, desc.getTypeFilter()));
+        context.getDb().getTablesByType(desc.getDbName(), pattern, desc.getTypeFilter(), desc.isIceberg()));
     Collections.sort(tableNames);
     LOG.debug("Found {} table(s) matching the SHOW TABLES statement.", tableNames.size());
 
@@ -79,7 +79,7 @@ public class ShowTablesOperation extends DDLOperation<ShowTablesDesc> {
     TableType typeFilter = desc.getTypeFilter();
     TableType[] tableTypes = typeFilter == null ? TableType.values() : new TableType[]{typeFilter};
     for (TableType tableType : tableTypes) {
-      List<String> tables = context.getDb().getTablesByType(desc.getDbName(), pattern, tableType);
+      List<String> tables = context.getDb().getTablesByType(desc.getDbName(), pattern, tableType, desc.isIceberg());
       tables.forEach(name -> tableNameToType.put(name, tableType.toString()));
     }
     LOG.debug("Found {} table(s) matching the SHOW EXTENDED TABLES statement.", tableNameToType.size());

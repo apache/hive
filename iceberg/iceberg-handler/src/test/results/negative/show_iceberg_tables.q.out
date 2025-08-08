@@ -1,0 +1,4 @@
+PREHOOK: query: SHOW extended TABLES where `format`="iceberg"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Iceberg Tables by default is External Table

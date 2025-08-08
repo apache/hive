@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
@@ -128,7 +129,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
 
   private List<org.apache.hadoop.hive.common.TableName> getTables() {
     try {
-      return IcebergTableUtil.getTableFetcher(client, null, "*", null).getTables();
+      return Hive.getIcebergTables(client, null, "*", null).getTables();
     } catch (Exception e) {
       throw new RuntimeMetaException(e, "Error getting table names");
     }

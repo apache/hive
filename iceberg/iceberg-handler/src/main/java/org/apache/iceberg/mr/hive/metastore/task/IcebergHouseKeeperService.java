@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.NoMutex;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.iceberg.ExpireSnapshots;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
@@ -81,7 +82,7 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
     try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
       // TODO: HIVE-28952 – modify TableFetcher to return HMS Table API objects directly,
       // avoiding the need for subsequent msc.getTable calls to fetch each matched table individually
-      List<TableName> tables = IcebergTableUtil.getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables();
+      List<TableName> tables = Hive.getIcebergTables(msc, catalogName, dbPattern, tablePattern).getTables();
 
       LOG.debug("{} candidate tables found", tables.size());
 

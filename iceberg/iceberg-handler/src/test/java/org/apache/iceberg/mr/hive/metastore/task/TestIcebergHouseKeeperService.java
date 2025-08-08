@@ -67,7 +67,7 @@ public class TestIcebergHouseKeeperService {
   public void testIcebergTableFetched() throws Exception {
     createIcebergTable("iceberg_table");
 
-    TableFetcher tableFetcher = IcebergTableUtil.getTableFetcher(db.getMSC(), null, "default", "*");
+    TableFetcher tableFetcher = Hive.getIcebergTables(db.getMSC(), null, "default", "*");
 
     List<TableName> tables = tableFetcher.getTables();
     Assert.assertEquals(new TableName("hive", "default", "iceberg_table"), tables.get(0));
