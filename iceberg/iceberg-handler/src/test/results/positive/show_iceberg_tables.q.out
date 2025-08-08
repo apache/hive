@@ -1,0 +1,436 @@
+PREHOOK: query: drop table iceberg_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table iceberg_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table iceberg_table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table iceberg_table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table iceberg_table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table iceberg_table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table orc_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table orc_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table text_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table text_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table parquet_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table parquet_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table avro_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table avro_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE iceberg_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_table
+POSTHOOK: query: CREATE TABLE iceberg_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_table
+PREHOOK: query: CREATE TABLE iceberg_table1(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_table1
+POSTHOOK: query: CREATE TABLE iceberg_table1(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_table1
+PREHOOK: query: CREATE TABLE iceberg_table2(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_table2
+POSTHOOK: query: CREATE TABLE iceberg_table2(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_table2
+PREHOOK: query: CREATE TABLE orc_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: CREATE TABLE orc_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table
+PREHOOK: query: CREATE TABLE parquet_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_table
+POSTHOOK: query: CREATE TABLE parquet_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_table
+PREHOOK: query: CREATE TABLE text_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@text_table
+POSTHOOK: query: CREATE TABLE text_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@text_table
+PREHOOK: query: CREATE TABLE avro_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as avro
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_table
+POSTHOOK: query: CREATE TABLE avro_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as avro
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+avro_table
+iceberg_table
+iceberg_table1
+iceberg_table2
+orc_table
+parquet_table
+text_table
+PREHOOK: query: SHOW TABLES from default where `format`="iceberg"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES from default where `format`="iceberg"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+iceberg_table
+iceberg_table1
+iceberg_table2
+PREHOOK: query: SHOW TABLES in default where `format`="iceberg"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES in default where `format`="iceberg"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+iceberg_table
+iceberg_table1
+iceberg_table2
+PREHOOK: query: SHOW TABLES where `format`="iceberg"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES where `format`="iceberg"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+iceberg_table
+iceberg_table1
+iceberg_table2
+PREHOOK: query: drop table iceberg_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iceberg_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_table
+POSTHOOK: query: drop table iceberg_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iceberg_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_table
+PREHOOK: query: drop table iceberg_table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iceberg_table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_table1
+POSTHOOK: query: drop table iceberg_table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iceberg_table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_table1
+PREHOOK: query: drop table iceberg_table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iceberg_table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_table2
+POSTHOOK: query: drop table iceberg_table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iceberg_table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_table2
+PREHOOK: query: drop table orc_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_table
+POSTHOOK: query: drop table orc_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_table
+PREHOOK: query: drop table text_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@text_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@text_table
+POSTHOOK: query: drop table text_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@text_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@text_table
+PREHOOK: query: drop table parquet_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_table
+POSTHOOK: query: drop table parquet_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_table
+PREHOOK: query: drop table avro_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@avro_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_table
+POSTHOOK: query: drop table avro_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@avro_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_table
+PREHOOK: query: create database testdb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: create database testdb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: drop table testdb.iceberg_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop table testdb.iceberg_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: drop table testdb.iceberg_table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop table testdb.iceberg_table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: drop table testdb.iceberg_table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop table testdb.iceberg_table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: drop table testdb.orc_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop table testdb.orc_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: drop table testdb.text_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop table testdb.text_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: drop table testdb.parquet_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop table testdb.parquet_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: drop table testdb.avro_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop table testdb.avro_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: CREATE TABLE testdb.iceberg_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@iceberg_table
+POSTHOOK: query: CREATE TABLE testdb.iceberg_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@iceberg_table
+PREHOOK: query: CREATE TABLE testdb.iceberg_table1(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@iceberg_table1
+POSTHOOK: query: CREATE TABLE testdb.iceberg_table1(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@iceberg_table1
+PREHOOK: query: CREATE TABLE testdb.iceberg_table2(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@iceberg_table2
+POSTHOOK: query: CREATE TABLE testdb.iceberg_table2(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@iceberg_table2
+PREHOOK: query: CREATE TABLE testdb.orc_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@orc_table
+POSTHOOK: query: CREATE TABLE testdb.orc_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@orc_table
+PREHOOK: query: CREATE TABLE testdb.parquet_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@parquet_table
+POSTHOOK: query: CREATE TABLE testdb.parquet_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@parquet_table
+PREHOOK: query: CREATE TABLE testdb.text_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@text_table
+POSTHOOK: query: CREATE TABLE testdb.text_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@text_table
+PREHOOK: query: CREATE TABLE testdb.avro_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as avro
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@avro_table
+POSTHOOK: query: CREATE TABLE testdb.avro_table(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED as avro
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@avro_table
+PREHOOK: query: SHOW TABLES from testdb where `format`="iceberg"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:testdb
+POSTHOOK: query: SHOW TABLES from testdb where `format`="iceberg"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:testdb
+iceberg_table
+iceberg_table1
+iceberg_table2
+PREHOOK: query: SHOW TABLES in testdb where `format`="iceberg"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:testdb
+POSTHOOK: query: SHOW TABLES in testdb where `format`="iceberg"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:testdb
+iceberg_table
+iceberg_table1
+iceberg_table2
+PREHOOK: query: use testdb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:testdb
+POSTHOOK: query: use testdb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:testdb
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:testdb
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:testdb
+avro_table
+iceberg_table
+iceberg_table1
+iceberg_table2
+orc_table
+parquet_table
+text_table
+PREHOOK: query: SHOW TABLES where `format`="iceberg"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:testdb
+POSTHOOK: query: SHOW TABLES where `format`="iceberg"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:testdb
+iceberg_table
+iceberg_table1
+iceberg_table2
+PREHOOK: query: drop table testdb.iceberg_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb@iceberg_table
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@iceberg_table
+POSTHOOK: query: drop table testdb.iceberg_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb@iceberg_table
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@iceberg_table
+PREHOOK: query: drop table testdb.iceberg_table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb@iceberg_table1
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@iceberg_table1
+POSTHOOK: query: drop table testdb.iceberg_table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb@iceberg_table1
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@iceberg_table1
+PREHOOK: query: drop table testdb.iceberg_table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb@iceberg_table2
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@iceberg_table2
+POSTHOOK: query: drop table testdb.iceberg_table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb@iceberg_table2
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@iceberg_table2
+PREHOOK: query: drop table testdb.orc_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb@orc_table
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@orc_table
+POSTHOOK: query: drop table testdb.orc_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb@orc_table
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@orc_table
+PREHOOK: query: drop table testdb.text_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb@text_table
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@text_table
+POSTHOOK: query: drop table testdb.text_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb@text_table
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@text_table
+PREHOOK: query: drop table testdb.parquet_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb@parquet_table
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@parquet_table
+POSTHOOK: query: drop table testdb.parquet_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb@parquet_table
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@parquet_table
+PREHOOK: query: drop table testdb.avro_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb@avro_table
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@avro_table
+POSTHOOK: query: drop table testdb.avro_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb@avro_table
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@avro_table
+PREHOOK: query: drop database if exists testdb cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb
+PREHOOK: Output: database:testdb
+POSTHOOK: query: drop database if exists testdb cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb
+POSTHOOK: Output: database:testdb

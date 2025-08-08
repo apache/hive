@@ -1,0 +1,1 @@
+SHOW extended TABLES where `format`="iceberg";
