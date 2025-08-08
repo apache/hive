@@ -724,7 +724,7 @@ PREHOOK: query: select identity, ep1_id from relations
 PREHOOK: type: QUERY
 PREHOOK: Input: default@relations
 #### A masked pattern was here ####
-{"version":"1.0","engine":"tez","database":"default","hash":"436a649a0d9540e8f093f8353d86813a","queryText":"select identity, ep1_id from relations\n  lateral view explode(ep1_ids) nav_rel as ep1_id","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"relations._col12","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"identity"},{"id":1,"vertexType":"COLUMN","vertexId":"ep1_id"},{"id":2,"vertexType":"COLUMN","vertexId":"default.relations.identity"},{"id":3,"vertexType":"COLUMN","vertexId":"default.relations.ep1_ids"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"436a649a0d9540e8f093f8353d86813a","queryText":"select identity, ep1_id from relations\n  lateral view explode(ep1_ids) nav_rel as ep1_id","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"nav_rel.ep1_id","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"identity"},{"id":1,"vertexType":"COLUMN","vertexId":"ep1_id"},{"id":2,"vertexType":"COLUMN","vertexId":"default.relations.identity"},{"id":3,"vertexType":"COLUMN","vertexId":"default.relations.ep1_ids"}]}
 PREHOOK: query: insert into rels_exploded select identity, type,
   ep1_src_type, ep1_type, ep2_src_type, ep2_type, ep1_id, ep2_id
 from relations lateral view explode(ep1_ids) rel1 as ep1_id
