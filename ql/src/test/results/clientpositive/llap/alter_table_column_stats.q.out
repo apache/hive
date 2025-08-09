@@ -1105,7 +1105,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -1146,7 +1145,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	154                 
@@ -1238,7 +1236,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	312                 
@@ -1343,7 +1340,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -1384,7 +1380,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	154                 
@@ -1476,7 +1471,7 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	312                 
@@ -1581,7 +1576,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -1622,7 +1616,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	154                 
@@ -1714,7 +1707,7 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	312                 
@@ -1819,7 +1812,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -3102,7 +3094,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -3143,7 +3134,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	154                 
@@ -3235,7 +3225,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	312                 
@@ -3340,7 +3329,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -3381,7 +3369,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	154                 
@@ -3473,7 +3460,7 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	312                 
@@ -3578,7 +3565,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
@@ -3619,7 +3605,6 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	154                 
@@ -3711,7 +3696,7 @@ Database:           	statsdb1
 Table:              	testpart1           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	312                 
@@ -3816,7 +3801,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
