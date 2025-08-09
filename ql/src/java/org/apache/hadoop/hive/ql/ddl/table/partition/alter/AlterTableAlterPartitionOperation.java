@@ -21,12 +21,12 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.alter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -96,7 +96,7 @@ public class AlterTableAlterPartitionOperation extends DDLOperation<AlterTableAl
       try {
         List<String> values = Warehouse.getPartValuesFromPartName(partName);
         String value = values.get(colIndex);
-        if (value.equals(context.getConf().getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME))) {
+        if (value.equals(PartitionUtils.getDefaultPartitionName(tbl.getParameters(), context.getConf()))) {
           continue;
         }
         Object convertedValue = converter.convert(value);

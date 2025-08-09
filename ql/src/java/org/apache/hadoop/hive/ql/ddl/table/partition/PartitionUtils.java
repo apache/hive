@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,11 +61,12 @@ public final class PartitionUtils {
    * with these reserved values. The check that this function is more restrictive than the actual limitation, but it's
    * simpler. Should be okay since the reserved names are fairly long and uncommon.
    */
-  public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec) {
+  public static void validatePartitions(HiveConf conf, Map<String, String> partitionSpec,
+      Map<String, String> tableParams) {
     // Partition can't have this name
     Set<String> reservedPartitionValues =
         new HashSet<String>() {{
-          add(HiveConf.getVar(conf, ConfVars.DEFAULT_PARTITION_NAME));
+          add(getDefaultPartitionName(tableParams, conf));
           add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
         }};
 
@@ -189,6 +190,19 @@ public final class PartitionUtils {
         // Don't request any locks here, as the table has already been locked.
         outputs.add(new WriteEntity(p, writeType));
       }
+    }
+  }
+
+  public static String getDefaultPartitionName(Map<String, String> tableParams, HiveConf conf) {
+    return getDefaultPartitionName(tableParams, HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
+  }
+
+  public static String getDefaultPartitionName(Map<String, String> tableParams, String defaultPartitionName) {
+    // Check if the table has an override for the default partition name
+    if (tableParams != null && tableParams.containsKey(HiveStringUtils.DEFAULT_PARTITION_NAME)) {
+      return tableParams.get(HiveStringUtils.DEFAULT_PARTITION_NAME);
+    } else {
+      return defaultPartitionName;
     }
   }
 }
