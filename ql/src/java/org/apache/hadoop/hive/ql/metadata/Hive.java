@@ -6465,6 +6465,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void setMetaConf(String propName, String propValue) throws HiveException {
     try {
+      /*
+       * Updates the 'conf' object with session-level metastore variables
+       * ('metaConfVars'). This object is used to initialize the
+       * Thrift client connection to the Hive Metastore, ensuring that any
+       * session-specific overrides are propagated to the underlying connection.
+       *
+       * For reference on how this 'conf' object is consumed, see the client
+       * instantiation logic in:
+       * org.apache.hadoop.hive.ql.metadata.Hive#createMetaStoreClient()
+       */
+      if (Arrays.stream(MetastoreConf.metaConfVars)
+          .anyMatch(s -> s.getVarname().equals(propName))) {
+        // Storing varname prevents conflicts with HiveServer2-level configurations
+        conf.set(propName, propValue);
+      }
       getMSC().setMetaConf(propName, propValue);
     } catch (TException te) {
       throw new HiveException(te);
