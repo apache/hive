@@ -18,10 +18,14 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Sets;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRel;
@@ -53,8 +57,10 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
@@ -100,6 +106,11 @@ public class PlanModifierForASTConv {
       LOG.debug("Plan after nested convertOpTree\n " + RelOptUtil.toString(newTopNode));
     }
 
+    newTopNode = newTopNode.accept(new SelfJoinHandler());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after self-join disambiguation\n " + RelOptUtil.toString(newTopNode));
+    }
+
     if (alignColumns) {
       HiveRelColumnsAlignment propagator = new HiveRelColumnsAlignment(
           HiveRelFactories.HIVE_BUILDER.create(newTopNode.getCluster(), null));
@@ -123,31 +134,6 @@ public class PlanModifierForASTConv {
     return newTopNode;
   }
 
-  private static String getTblAlias(RelNode rel) {
-
-    if (null == rel) {
-      return null;
-    }
-    if (rel instanceof HiveTableScan) {
-      return ((HiveTableScan)rel).getTableAlias();
-    }
-    if (rel instanceof DruidQuery) {
-      DruidQuery dq = (DruidQuery) rel;
-      return ((HiveTableScan) dq.getTableScan()).getTableAlias();
-    }
-    if (rel instanceof HiveJdbcConverter) {
-      HiveJdbcConverter conv = (HiveJdbcConverter) rel;
-      return conv.getTableScan().getHiveTableScan().getTableAlias();
-    }
-    if (rel instanceof Project) {
-      return null;
-    }
-    if (rel.getInputs().size() == 1) {
-      return getTblAlias(rel.getInput(0));
-    }
-    return null;
-  }
-
   private static void convertOpTree(RelNode rel, RelNode parent) {
 
     if (rel instanceof HepRelVertex) {
@@ -155,12 +141,6 @@ public class PlanModifierForASTConv {
     } else if (rel instanceof Join) {
       if (!validJoinParent(rel, parent)) {
         introduceDerivedTable(rel, parent);
-      }
-      String leftChild = getTblAlias(((Join)rel).getLeft());
-      if (null != leftChild && leftChild.equalsIgnoreCase(getTblAlias(((Join)rel).getRight()))) {
-        // introduce derived table above one child, if this is self-join
-        // since user provided aliases are lost at this point.
-        introduceDerivedTable(((Join)rel).getLeft(), rel);
       }
     } else if (rel instanceof MultiJoin) {
       throw new RuntimeException("Found MultiJoin");
@@ -227,6 +207,63 @@ public class PlanModifierForASTConv {
       for (RelNode r : childNodes) {
         convertOpTree(r, rel);
       }
+    }
+  }
+
+  /**
+   * A handler that detects self-joins in the plan and rewrites them to resolve ambiguous aliases.
+   * The handler traverses the plan and collects aliases of tables it encounters for each join branch.
+   * When the same alias occurs in both branches of a join, it introduces a derive table (Project)
+   * over the left branch to break the ambiguity.
+   */
+  private static class SelfJoinHandler extends HiveRelShuttleImpl {
+    private final Set<String> aliases = new HashSet<>();
+
+    @Override
+    public RelNode visit(HiveJoin join) {
+      SelfJoinHandler lf = new SelfJoinHandler();
+      RelNode newL = join.getLeft().accept(lf);
+      SelfJoinHandler rf = new SelfJoinHandler();
+      RelNode newR = join.getRight().accept(rf);
+      if (Sets.intersection(lf.aliases, rf.aliases).isEmpty()) {
+        // No self-join detected, return the join as is
+        aliases.addAll(lf.aliases);
+        aliases.addAll(rf.aliases);
+        return join.copy(join.getTraitSet(), Arrays.asList(newL, newR));
+      }
+      // Self-join detected, introduce a derived table for the left side
+      aliases.addAll(rf.aliases);
+      introduceDerivedTable(newL, join);
+      return join;
+    }
+
+    @Override
+    public RelNode visit(HiveProject project) {
+      RelNode rel = super.visit(project);
+      // Project denotes a derived table, so aliases can be cleared
+      aliases.clear();
+      return rel;
+    }
+
+    @Override
+    public RelNode visit(HiveTableScan scan) {
+      aliases.add(scan.getTableAlias().toLowerCase());
+      return scan;
+    }
+
+    @Override
+    public RelNode visit(HiveJdbcConverter conv) {
+      aliases.add(conv.getTableScan().getHiveTableScan().getTableAlias().toLowerCase());
+      return conv;
+    }
+
+    @Override
+    public RelNode visit(final RelNode rel) {
+      if (rel instanceof DruidQuery dq) {
+        aliases.add(((HiveTableScan) dq.getTableScan()).getTableAlias().toLowerCase());
+        return dq;
+      }
+      return super.visit(rel);
     }
   }
 

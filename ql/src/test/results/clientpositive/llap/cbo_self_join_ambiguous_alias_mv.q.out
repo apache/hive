@@ -1,0 +1,52 @@
+PREHOOK: query: create table t1 (key int, value int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (key int, value int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create materialized view mv as
+select * from t1 where key < 6
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv
+POSTHOOK: query: create materialized view mv as
+select * from t1 where key < 6
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv
+POSTHOOK: Lineage: mv.key SIMPLE [(t1)t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: mv.value SIMPLE [(t1)t1.FieldSchema(name:value, type:int, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, default.mv]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, default.mv]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain cbo
+select * from 
+  (select * from t1 where key < 6) a join
+  (select * from t1 where key < 6) b join
+  (select * from t1 where key < 6) c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from 
+  (select * from t1 where key < 6) a join
+  (select * from t1 where key < 6) b join
+  (select * from t1 where key < 6) c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1], key0=[$2], value0=[$3])
+      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(key=[$0], value=[$1])
+          HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
+        HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
+    HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
+
