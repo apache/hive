@@ -3045,18 +3045,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
       tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
-      if (tableDataShouldBeDeleted && tbl.getSd().getLocation() != null) {
-        tblPath = new Path(tbl.getSd().getLocation());
-        String target = indexName == null ? "Table" : "Index table";
-	 // HIVE-28804 drop table user should have table path and parent path permission
-        if (!wh.isWritable(tblPath.getParent())) {
-          throw new MetaException("%s metadata not deleted since %s is not writable by %s"
-              .formatted(target, tblPath.getParent(), SecurityUtils.getUser()));
-        } else if (!wh.isWritable(tblPath)) {
-          throw new MetaException("%s metadata not deleted since %s is not writable by %s"
-              .formatted(target, tblPath, SecurityUtils.getUser()));
-        }
-      }
 
       // Drop the partitions and get a list of locations which need to be deleted
       // In case of drop database cascade we need not to drop the partitions, they are already dropped.
@@ -3085,11 +3073,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!success) {
         ms.rollbackTransaction();
       } else if (tableDataShouldBeDeleted) {
-        // Data needs deletion. Check if trash may be skipped.
-        // Delete the data in the partitions which have other locations
-        deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
-        // Delete the data in the table
-        deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
+        try {
+          // Data needs deletion. Check if trash may be skipped.
+          // Delete the data in the partitions which have other locations
+          deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
+          // Delete the data in the table
+          deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
+        } catch (Exception e) {
+          ms.rollbackTransaction();
+          throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+        }
       }
 
       if (!listeners.isEmpty()) {
@@ -3119,7 +3112,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
+  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
     if (tablePath != null) {
       deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
     }
@@ -3153,7 +3146,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
+  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
     if (partPaths != null && !partPaths.isEmpty()) {
       for (Path partPath : partPaths) {
         deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
@@ -3192,7 +3185,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) {
+  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
     try {
       if (shouldEnableCm) {
         //Don't delete cmdir if its inside the partition path
@@ -3211,7 +3204,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      LOG.error("Failed to delete directory: {}", path, e);
+      throw new MetaException("Failed to delete directory: " + path.toString() + " . Exception detail : "
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
 
