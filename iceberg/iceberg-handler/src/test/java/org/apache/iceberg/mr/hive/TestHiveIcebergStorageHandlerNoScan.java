@@ -2022,7 +2022,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testSnycProperties() throws TException, InterruptedException {
+  public void testSyncProperties() throws TException, InterruptedException {
     Assume.assumeTrue("This test is only for hive catalog", testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     // Test create v2 iceberg table and check iceberg properties & hms properties

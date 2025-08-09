@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
 import org.apache.hadoop.hive.metastore.auth.jwt.JWTValidator;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -238,6 +239,15 @@ public class ServletSecurity {
       Thread.currentThread().interrupt();
     } catch (RuntimeException e) {
       throw new IOException("Exception when executing http request as user: "+ clientUgi.getUserName(), e);
+    } finally {
+      try {
+        FileSystem.closeAllForUGI(clientUgi);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Successfully cleaned up FileSystem handles for user: {}", clientUgi.getUserName());
+        }
+      } catch (IOException cleanupException) {
+        LOG.error("Failed to clean up FileSystem handles for UGI: {}", clientUgi, cleanupException);
+      }
     }
   }
 

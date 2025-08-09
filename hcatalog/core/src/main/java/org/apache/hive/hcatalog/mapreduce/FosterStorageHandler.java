@@ -19,28 +19,20 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
-import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,12 +46,6 @@ import java.util.Map;
  *  the supplied storage artifacts are for a file-based storage system.
  */
 public class FosterStorageHandler extends DefaultStorageHandler {
-
-  private static final Logger LOG = LoggerFactory.getLogger(FosterStorageHandler.class);
-
-  public Configuration conf;
-  /** The directory under which data is initially written for a non partitioned table */
-  protected static final String TEMP_DIR_NAME = "_TEMP";
 
   private Class<? extends InputFormat> ifClass;
   private Class<? extends OutputFormat> ofClass;
@@ -92,16 +78,6 @@ public class FosterStorageHandler extends DefaultStorageHandler {
   @Override
   public Class<? extends AbstractSerDe> getSerDeClass() {
     return serDeClass;  //To change body of implemented methods use File | Settings | File Templates.
-  }
-
-  @Override
-  public HiveMetaHook getMetaHook() {
-    return null;
-  }
-
-  @Override
-  public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
-    //do nothing currently
   }
 
   @Override
@@ -148,7 +124,6 @@ public class FosterStorageHandler extends DefaultStorageHandler {
     } catch (IOException e) {
       throw new IllegalStateException("Failed to set output path", e);
     }
-
   }
 
   @Override
@@ -224,39 +199,11 @@ public class FosterStorageHandler extends DefaultStorageHandler {
 
       SpecialCases.addSpecialCasesParametersToOutputJobProperties(jobProperties, jobInfo, ofClass);
 
-
       jobProperties.put(HCatConstants.HCAT_KEY_OUTPUT_INFO,
         HCatUtil.serialize(jobInfo));
     } catch (IOException e) {
       throw new IllegalStateException("Failed to set output path", e);
     }
-
-  }
-
-  public void configureTableJobProperties(TableDesc tableDesc,
-      Map<String, String> jobProperties) {
-    return;
-  }
-
-  OutputFormatContainer getOutputFormatContainer(
-    org.apache.hadoop.mapred.OutputFormat outputFormat) {
-    return new FileOutputFormatContainer(outputFormat);
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
-  }
-
-  @Override
-  public void setConf(Configuration conf) {
-    this.conf = conf;
-  }
-
-  @Override
-  public HiveAuthorizationProvider getAuthorizationProvider()
-    throws HiveException {
-    return new DefaultHiveAuthorizationProvider();
   }
 
 }

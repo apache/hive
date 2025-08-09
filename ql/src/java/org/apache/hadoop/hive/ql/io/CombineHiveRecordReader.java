@@ -92,12 +92,12 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     // create a split for the given partition
     if (inputFormat instanceof CombineHiveInputFormat.MergeSplits) {
       mrwork = getMrWork(jobConf);
-      inputSplit = ((CombineHiveInputFormat.MergeSplits) inputFormat).createMergeSplit(jobConf, hsplit, partition,
-              mrwork.getMergeSplitProperties());
+      inputSplit = ((CombineHiveInputFormat.MergeSplits) inputFormat).createMergeSplit(hsplit, partition,
+          mrwork.getMergeSplitProperties());
     } else {
-      inputSplit = new FileSplit(hsplit.getPaths()[partition], hsplit
-              .getStartOffsets()[partition], hsplit.getLengths()[partition], hsplit
-              .getLocations());
+      inputSplit = new FileSplit(hsplit.getPaths()[partition],
+          hsplit.getStartOffsets()[partition], hsplit.getLengths()[partition],
+          hsplit.getLocations());
     }
 
     this.setRecordReader(inputFormat.getRecordReader(inputSplit, jobConf, reporter));
