@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,8 +45,8 @@ public class PartitionTransform {
    */
   public static List<TransformSpec> getPartitionTransformSpec(List<FieldSchema> fields) {
     return fields.stream()
-               .map(field -> new TransformSpec(field.getName(), TransformType.IDENTITY, Optional.empty()))
-               .collect(Collectors.toList());
+        .map(field -> new TransformSpec(field.getName(), TransformType.IDENTITY, null))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -74,7 +73,7 @@ public class PartitionTransform {
           case HiveParser.TOK_TRUNCATE:
           case HiveParser.TOK_BUCKET:
             spec.setTransformType(TRANSFORMS.get(grandChild.getToken().getType()));
-            spec.setTransformParam(Optional.of(Integer.valueOf(grandChild.getChild(0).getText())));
+            spec.setTransformParam(Integer.valueOf(grandChild.getChild(0).getText()));
             spec.setColumnName(grandChild.getChild(1).getText().toLowerCase());
             break;
         }

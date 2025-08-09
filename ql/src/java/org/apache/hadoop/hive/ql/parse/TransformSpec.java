@@ -38,14 +38,14 @@ public class TransformSpec {
 
   private String columnName;
   private TransformType transformType;
-  private Optional<Integer> transformParam;
+  private Integer transformParam;
 
   private String fieldName;
 
   public TransformSpec() {
   }
 
-  public TransformSpec(String columnName, TransformType transformType, Optional<Integer> transformParam) {
+  public TransformSpec(String columnName, TransformType transformType, Integer transformParam) {
     this.columnName = columnName;
     this.transformType = transformType;
     this.transformParam = transformParam;
@@ -67,11 +67,11 @@ public class TransformSpec {
     this.transformType = transformType;
   }
 
-  public Optional<Integer> getTransformParam() {
+  public Integer getTransformParam() {
     return transformParam;
   }
 
-  public void setTransformParam(Optional<Integer> transformParam) {
+  public void setTransformParam(Integer transformParam) {
     this.transformParam = transformParam;
   }
 
@@ -87,7 +87,7 @@ public class TransformSpec {
     if (transformType == null) {
       return null;
     }
-    return transformType.name() + transformParam.map(width -> 
+    return transformType.name() + Optional.ofNullable(transformParam).map(width ->
         "[" + width + "]").orElse("");
   }
     
@@ -108,7 +108,7 @@ public class TransformSpec {
     switch (transformType) {
       case BUCKET:
       case TRUNCATE:
-        fn += ", " + transformParam.get();
+        fn += ", " + transformParam;
     }
     return  fn + ")";
   }
@@ -123,18 +123,19 @@ public class TransformSpec {
 
   public static TransformSpec fromString(String transfromString, String columnName) {
     Matcher widthMatcher = HAS_WIDTH.matcher(transfromString);
-    Optional<Integer> width = Optional.empty();
     if (widthMatcher.matches()) {
       transfromString = widthMatcher.group(1);
-      width = Optional.of(Integer.parseInt(widthMatcher.group(2)));
-      return new TransformSpec(columnName, TransformType.valueOf(transfromString.toUpperCase(Locale.ROOT)), width);
+      int width = Integer.parseInt(widthMatcher.group(2));
+      return new TransformSpec(columnName, TransformType.valueOf(transfromString.toUpperCase(Locale.ROOT)),
+          width);
     }
-    return new TransformSpec(columnName, TransformType.valueOf(transfromString.toUpperCase(Locale.ROOT)), width);
+    return new TransformSpec(columnName, TransformType.valueOf(transfromString.toUpperCase(Locale.ROOT)),
+        null);
   }
 
   public static TransformSpec fromStringWithColumnName(String transformString) {
     if (transformString == null || !transformString.contains("(")) {
-      return new TransformSpec(transformString, TransformType.IDENTITY, Optional.empty());
+      return new TransformSpec(transformString, TransformType.IDENTITY, null);
     }
     transformString = transformString.trim();
 
@@ -155,11 +156,11 @@ public class TransformSpec {
       int width = Integer.parseInt(parts[0].trim()); // First is width
       String columnName = parts[1].trim(); // Second is column
       return new TransformSpec(columnName, TransformType.valueOf(transformName.toUpperCase(Locale.ROOT)),
-          Optional.of(width));
+          width);
     }
 
     // Handle other cases (year, month, day, hour)
     return new TransformSpec(innerContent, TransformType.valueOf(transformName.toUpperCase(Locale.ROOT)),
-        Optional.empty());
+        null);
   }
 }

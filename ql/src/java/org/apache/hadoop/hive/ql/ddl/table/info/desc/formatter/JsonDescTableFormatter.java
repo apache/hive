@@ -251,8 +251,8 @@ public class JsonDescTableFormatter extends DescTableFormatter {
           Map<String, String> result = new LinkedHashMap<>();
           result.put("column_name", s.getColumnName());
           result.put("transform_type", s.getTransformType().name());
-          if (s.getTransformParam().isPresent()) {
-            result.put("transform_param", String.valueOf(s.getTransformParam().get()));
+          if (s.getTransformParam() != null) {
+            result.put("transform_param", String.valueOf(s.getTransformParam()));
           }
           return result;
         }).collect(Collectors.toList()));
