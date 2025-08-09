@@ -100,7 +100,6 @@ public class HiveMetaStoreClientBuilder {
         throw new MetaException(rootCause.getMessage());
       }
     }
-
     return baseMetaStoreClient;
   }
 }

@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -31,16 +32,14 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SortOrder;
-import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.parquet.Strings;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -73,6 +72,7 @@ public final class Catalogs {
   public static final String SNAPSHOT_REF = "snapshot_ref";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
+
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
               InputFormatConfig.CATALOG_NAME);
@@ -144,7 +144,7 @@ public final class Catalogs {
     Map<String, String> map = filterIcebergTableProperties(props);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
-    SortOrder sortOrder = getSortOrder(props, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
     if (catalog.isPresent()) {
       String name = props.getProperty(NAME);
       Preconditions.checkNotNull(name, "Table identifier not set");
@@ -154,12 +154,6 @@ public final class Catalogs {
 
     Preconditions.checkNotNull(location, "Table location not set");
     return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
-  }
-
-  private static SortOrder getSortOrder(Properties props, Schema schema) {
-    String sortOrderJsonString = props.getProperty(TableProperties.DEFAULT_SORT_ORDER);
-    return Strings.isNullOrEmpty(sortOrderJsonString) ?
-        SortOrder.unsorted() : SortOrderParser.fromJson(schema, sortOrderJsonString);
   }
 
   /**
@@ -241,7 +235,7 @@ public final class Catalogs {
       return catalog.get().registerTable(TableIdentifier.parse(name), metadataLocation);
     }
     Preconditions.checkNotNull(location, "Table location not set");
-    SortOrder sortOrder = getSortOrder(props, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
     return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
   }
 
@@ -272,12 +266,17 @@ public final class Catalogs {
   /**
    * Collect all the catalog specific configuration from the global hive configuration.
    * @param conf a Hadoop configuration
-   * @param catalogName name of the catalog
+   * @param catalogType type of the catalog
    * @return complete map of catalog properties
    */
-  private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName) {
+  private static Map<String, String> getCatalogProperties(Configuration conf, String catalogType) {
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
+
+    String icebergCatalogType = MetastoreConf.get(conf, MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getHiveName());
+    final String catalogConfigPrefix = String.format("iceberg.%s-catalog.", icebergCatalogType);
+
+    String keyPrefix = icebergCatalogType.equals(catalogType) ?
+        catalogConfigPrefix : InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogType;
     conf.forEach(config -> {
       if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
         catalogProperties.putIfAbsent(
@@ -289,7 +288,9 @@ public final class Catalogs {
                 config.getValue());
       }
     });
-
+    if (icebergCatalogType.equals(catalogType)) {
+      catalogProperties.put("type", icebergCatalogType);
+    }
     return catalogProperties;
   }
 
@@ -312,7 +313,8 @@ public final class Catalogs {
         return catalogType;
       }
     } else {
-      String catalogType = conf.get(CatalogUtil.ICEBERG_CATALOG_TYPE);
+      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey("",
+          CatalogUtil.ICEBERG_CATALOG_TYPE));
       if (catalogType != null && catalogType.equals(LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {
