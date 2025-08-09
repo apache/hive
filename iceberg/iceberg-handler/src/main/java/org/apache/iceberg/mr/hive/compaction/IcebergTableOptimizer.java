@@ -88,7 +88,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
       Set<String> skipDBs, Set<String> skipTables) {
     Set<CompactionInfo> compactionTargets = Sets.newHashSet();
 
-    getTables().stream()
+    getTableNames().stream()
         .filter(table -> !skipDBs.contains(table.getDb()))
         .filter(table -> !skipTables.contains(table.getNotEmptyDbTable()))
         .map(table -> {
@@ -126,9 +126,9 @@ public class IcebergTableOptimizer extends TableOptimizer {
     return compactionTargets;
   }
 
-  private List<org.apache.hadoop.hive.common.TableName> getTables() {
+  private List<org.apache.hadoop.hive.common.TableName> getTableNames() {
     try {
-      return IcebergTableUtil.getTableFetcher(client, null, "*", null).getTables();
+      return IcebergTableUtil.getTableFetcher(client, null, "*", null).getTableNames();
     } catch (Exception e) {
       throw new RuntimeMetaException(e, "Error getting table names");
     }
