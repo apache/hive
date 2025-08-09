@@ -584,7 +584,7 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
       exprs.add(dpe);
     }
     rps.setExprs(exprs);
-    return dropPartitions(catName, dbName, tblName, rps, options, context);
+    return dropPartitions(new TableName(catName, dbName, tblName), rps, options, context);
   }
 
   @Override
