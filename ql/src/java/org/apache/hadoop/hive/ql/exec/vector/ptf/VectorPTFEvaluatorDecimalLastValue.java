@@ -43,7 +43,6 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
   public VectorPTFEvaluatorDecimalLastValue(WindowFrameDef windowFrameDef,
       VectorExpression inputVecExpr, int outputColumnNum) {
     super(windowFrameDef, inputVecExpr, outputColumnNum);
-    lastValue = new HiveDecimalWritable();
     resetEvaluator();
   }
 
@@ -64,7 +63,6 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
     }
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
     if (decimalColVector.isRepeating) {
-
       if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
         lastValue.set(decimalColVector.vector[0]);
         isGroupResultNull = false;
@@ -74,13 +72,23 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
     } else if (decimalColVector.noNulls) {
       lastValue.set(decimalColVector.vector[size - 1]);
       isGroupResultNull = false;
-    } else {
+    } else if (doesRespectNulls()) {
       final int lastBatchIndex = size - 1;
       if (!decimalColVector.isNull[lastBatchIndex]) {
         lastValue.set(decimalColVector.vector[lastBatchIndex]);
         isGroupResultNull = false;
       } else {
         isGroupResultNull = true;
+      }
+    } else {
+      // If we do not respect nulls, we can keep checking from the end of the batch
+      isGroupResultNull = !lastValue.isSet();
+      for (int i = size-1; i >= 0; i--) {
+        if (!decimalColVector.isNull[i]) {
+          lastValue.set(decimalColVector.vector[i]);
+          isGroupResultNull = false;
+          break;
+        }
       }
     }
   }
@@ -109,7 +117,7 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
   @Override
   public void resetEvaluator() {
     isGroupResultNull = true;
-    lastValue.set(HiveDecimal.ZERO);
+    lastValue = new HiveDecimalWritable();
   }
 
   public boolean isCacheableForRange() {

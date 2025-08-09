@@ -35,7 +35,7 @@ import com.google.common.base.Preconditions;
 public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
 
   protected boolean isGroupResultNull;
-  protected double lastValue;
+  protected Double lastValue = null;
 
   public VectorPTFEvaluatorDoubleLastValue(WindowFrameDef windowFrameDef,
     VectorExpression inputVecExpr, int outputColumnNum) {
@@ -60,7 +60,6 @@ public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
-
       if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
         lastValue = doubleColVector.vector[0];
         isGroupResultNull = false;
@@ -70,13 +69,23 @@ public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
     } else if (doubleColVector.noNulls) {
       lastValue = doubleColVector.vector[size - 1];
       isGroupResultNull = false;
-    } else {
+    } else if (doesRespectNulls()) {
       final int lastBatchIndex = size - 1;
       if (!doubleColVector.isNull[lastBatchIndex]) {
         lastValue = doubleColVector.vector[lastBatchIndex];
         isGroupResultNull = false;
       } else {
         isGroupResultNull = true;
+      }
+    } else {
+      // If we do not respect nulls, we can keep checking from the end of the batch
+      isGroupResultNull = lastValue == null;
+      for (int i = size-1; i >= 0; i--) {
+        if (!doubleColVector.isNull[i]) {
+          lastValue = doubleColVector.vector[i];
+          isGroupResultNull = false;
+          break;
+        }
       }
     }
   }
@@ -105,7 +114,7 @@ public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
   @Override
   public void resetEvaluator() {
     isGroupResultNull = true;
-    lastValue = 0.0;
+    lastValue = null;
   }
 
   public boolean isCacheableForRange() {
