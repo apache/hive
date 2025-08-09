@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
@@ -602,12 +604,26 @@ public class ASTConverter {
 
       // retrieve the base table source.
       QueryBlockInfo tableFunctionSource = convertSource(tfs.getInput(0));
-      String sqAlias = tableFunctionSource.schema.get(0).table;
-      // the schema will contain the base table source fields
-      s = new Schema(tfs, sqAlias);
 
-      ast = createASTLateralView(tfs, s, tableFunctionSource, sqAlias);
+      // Create schema that preserves base table columns with original alias,
+      // but gives new UDTF columns the unique lateral view alias
+      int baseFieldCount = tableFunctionSource.schema.size();
+      List<RelDataTypeField> allOutputFields = tfs.getRowType().getFieldList();
 
+      final String baseAlias = tableFunctionSource.schema.get(0).table;
+      Stream<ColumnInfo> baseColumnsStream = allOutputFields.subList(0, baseFieldCount).stream()
+          .map(field -> new ColumnInfo(baseAlias, field.getName()));
+
+      final String lateralViewAlias = nextAlias();
+      Stream<ColumnInfo> udtfColumnsStream =
+          allOutputFields.subList(baseFieldCount, allOutputFields.size()).stream()
+              .map(field -> new ColumnInfo(lateralViewAlias, field.getName()));
+
+      s = new Schema(
+          Stream.concat(baseColumnsStream, udtfColumnsStream).collect(Collectors.toList())
+      );
+
+      ast = createASTLateralView(tfs, s, tableFunctionSource, lateralViewAlias);
     } else if (r instanceof TableSpool) {
       TableSpool spool = (TableSpool) r;
       ASTConverter cteConverter =
@@ -1236,6 +1252,10 @@ public class ASTConverter {
       for (RelDataTypeField field : fieldList) {
         add(new ColumnInfo(tabAlias, field.getName()));
       }
+    }
+
+    Schema(java.util.Collection<? extends ColumnInfo> c) {
+      super(c);
     }
   }
 
