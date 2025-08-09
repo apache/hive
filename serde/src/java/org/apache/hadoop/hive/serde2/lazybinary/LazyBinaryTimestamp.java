@@ -17,11 +17,16 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /**
  * LazyBinaryTimestamp
@@ -32,14 +37,12 @@ public class LazyBinaryTimestamp extends
     LazyBinaryPrimitive<WritableTimestampObjectInspector, TimestampWritableV2> {
   static final Logger LOG = LoggerFactory.getLogger(LazyBinaryTimestamp.class);
 
-  LazyBinaryTimestamp(WritableTimestampObjectInspector oi) {
+  private final boolean legacyConversionEnabled;
+
+  LazyBinaryTimestamp(WritableTimestampObjectInspector oi, boolean legacyConversionEnabled) {
     super(oi);
     data = new TimestampWritableV2();
-  }
-
-  LazyBinaryTimestamp(LazyBinaryTimestamp copy) {
-    super(copy);
-    data = new TimestampWritableV2(copy.data);
+    this.legacyConversionEnabled = legacyConversionEnabled;
   }
 
   /**
@@ -52,6 +55,28 @@ public class LazyBinaryTimestamp extends
    */
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    data.set(bytes.getData(), start);
+    if (!legacyConversionEnabled) {
+      // Hive 3.x default: interpret as UTC
+      data.set(bytes.getData(), start);
+    } else {
+      // Legacy Hive 2.x behavior: interpret as local time
+      data.set(bytes.getData(), start);
+
+      // Convert to java.sql.Timestamp
+      Timestamp ts = data.getTimestamp();
+      java.sql.Timestamp javaTs = ts.toSqlTimestamp();
+      Instant utcInstant = javaTs.toInstant();
+
+      // Shift from UTC to local time
+      LocalDateTime localDateTime = LocalDateTime.ofInstant(utcInstant, ZoneId.systemDefault());
+
+      // Format in SQL-style string for Hive Timestamp parser
+      String formatted = localDateTime.toString().replace('T', ' ');
+
+      // Construct Hive Timestamp using string-based factory
+      Timestamp legacyTs = Timestamp.valueOf(formatted);
+
+      data.set(legacyTs);
+    }
   }
 }
