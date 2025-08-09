@@ -90,8 +90,6 @@ class TestVectorMapJoinFastHashTableLoader {
         vectorMapJoinFastHashTableLoader.initHTLoadingService(1048577);
         List<CompletableFuture<Void>> loaderTasks = vectorMapJoinFastHashTableLoader.submitQueueDrainThreads(mockTableContainer);
         assertEquals(2, loaderTasks.size());
-        vectorMapJoinFastHashTableLoader.getLoadExecService().shutdown();
-
         ExecutionException thrown = assertThrows(ExecutionException.class, () -> {
             CompletableFuture.allOf(loaderTasks.toArray(new CompletableFuture[0]))
                     .get(2, TimeUnit.MINUTES);

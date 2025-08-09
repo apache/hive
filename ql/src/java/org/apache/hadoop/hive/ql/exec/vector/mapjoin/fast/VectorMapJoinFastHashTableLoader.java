@@ -158,7 +158,7 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
   }
 
    List<CompletableFuture<Void>> submitQueueDrainThreads(VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer)
-          throws InterruptedException, IOException, SerDeException {
+          throws InterruptedException {
     List<CompletableFuture<Void>> loaderTasks = new ArrayList<>();
     for (int partitionId = 0; partitionId < numLoadThreads; partitionId++) {
       int finalPartitionId = partitionId;
@@ -319,20 +319,11 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
 
         LOG.info("Finished loading the queue for input: {} waiting {} minutes for TPool shutdown", inputName, 2);
         addQueueDoneSentinel();
-        loadExecService.shutdown();
         try {
           CompletableFuture.allOf(loaderTasks.toArray(new CompletableFuture[0]))
                   .get(2, TimeUnit.MINUTES);
-        } catch (TimeoutException e) {
-          throw new HiveException("Failed to complete the hash table loader. Loading timed out.");
-        } catch (ExecutionException e) {
-          throw new HiveException("One of the loader threads failed", e.getCause());
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        } finally {
-          if (loadExecService != null && !loadExecService.isTerminated()) {
-            loadExecService.shutdownNow();
-          }
+        } catch (ExecutionException | TimeoutException e) {
+          throw new HiveException("Failed to complete the hash table loader.", e.getCause());
         }
         batchPool.clear();
         LOG.info("Total received entries: {} Threads {} HT entries: {}", receivedEntries, numLoadThreads, totalEntries.get());
