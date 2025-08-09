@@ -17,7 +17,6 @@
 package org.apache.hadoop.hive.metastore.properties;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -26,41 +25,35 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.PropertyServlet;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.eclipse.jetty.server.Server;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.TestMethodOrder;
 
+@TestMethodOrder(MethodOrderer.MethodName.class)
 @Category(MetastoreUnitTest.class)
 public class HMSServletTest extends HMSTestBase {
   String path = null;
   Server servletServer = null;
   int servletPort = -1;
-  
+
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -70,6 +63,7 @@ public class HMSServletTest extends HMSTestBase {
   @Override
   protected int createServer(Configuration conf) throws Exception {
     if (servletServer == null) {
+      setHttpsConf(conf);
       servletServer = PropertyServlet.startServer(conf);
       if (servletServer == null || !servletServer.isStarted()) {
         Assert.fail("http server did not start");
@@ -92,30 +86,34 @@ public class HMSServletTest extends HMSTestBase {
     }
   }
 
+  protected static String getScheme(Configuration conf) {
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS) ? "https" : "http";
+  }
 
   @Override
-  protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
-    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    URL url = new URL("http://hive@localhost:" + sport + "/" + path + "/" + NS);
+  protected PropertyClient createClient(Configuration conf, int port) throws Exception {
+    String servletPath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    String scheme = getScheme(conf);
+    URI uri = new URI(scheme + "://hive@localhost:" + port + "/" + servletPath + "/" + NS);
     String jwt = generateJWT();
-    return new JSonClient(jwt, url);
+    return new JsonClient(jwt, uri);
   }
 
   /**
    * A property client that uses http as transport.
    */
   @SuppressWarnings("unchecked")
-  public static class JSonClient implements HttpPropertyClient {
-    private final URL url;
+  public class JsonClient implements HttpPropertyClient {
+    private final URI uri;
     private final String jwt;
-    JSonClient(String token, URL url) {
+    JsonClient(String token, URI uri) {
       this.jwt = token;
-      this.url = url;
+      this.uri = uri;
     }
 
     public boolean setProperties(Map<String, String> properties) {
       try {
-        clientCall(jwt, url, "PUT", properties);
+        clientCall(jwt, uri, "PUT", properties);
         return true;
       } catch(IOException xio) {
         return false;
@@ -133,7 +131,7 @@ public class HMSServletTest extends HMSTestBase {
         args.put("selection", selection);
       }
       try {
-        Object result = clientCall(jwt, url, "POST", args);
+        Object result = clientCall(jwt, uri, "POST", args);
         return result instanceof Map? (Map<String, Map<String, String>>) result : null ;
       } catch(IOException xio) {
         return null;
@@ -146,7 +144,7 @@ public class HMSServletTest extends HMSTestBase {
         Map<String, Object> args = new TreeMap<>();
         args.put("method", "fetchProperties");
         args.put("keys", selection);
-        Object result = clientCall(jwt, url, "POST", args);
+        Object result = clientCall(jwt, uri, "POST", args);
         return result instanceof Map? (Map<String, String>) result : null ;
       } catch(IOException xio) {
         return null;
@@ -154,77 +152,15 @@ public class HMSServletTest extends HMSTestBase {
     }
   }
 
-  @Test
-  public void testServletEchoA() throws Exception {
-    URL url = new URL("http://hive@localhost:" + servletPort + "/" + path + "/" + NS);
-    Map<String, String> json = Collections.singletonMap("method", "echo");
-    String jwt = generateJWT();
-    // succeed
-    Object response = clientCall(jwt, url, "POST", json);
-    Assert.assertNotNull(response);
-    Assert.assertEquals(json, response);
-    // fail (bad jwt)
-    String badJwt = generateJWT(jwtUnauthorizedKeyFile.toPath());
-    response = clientCall(badJwt, url, "POST", json);
-    Assert.assertNull(response);
-  }
-
-  @Test
-  public void testProperties1() throws Exception {
-      runOtherProperties1(client);
-  }
-
-  @Test
-  public void testProperties0() throws Exception {
-      runOtherProperties0(client);
-
-    HttpClient client = HttpClients.createDefault();
-    String jwt = generateJWT();
-    NameValuePair[] nvp = new NameValuePair[]{
-        new BasicNameValuePair("key", "db0.table01.fillFactor"),
-        new BasicNameValuePair("key", "db0.table04.fillFactor")
-    };
-    URI uri = new URIBuilder()
-        .setScheme("http")
-        .setUserInfo("hive")
-        .setHost("localhost")
-        .setPort(servletPort)
-        .setPath("/" + path + "/" + NS)
-        .setParameters(nvp)
-        .build();
-    HttpGet get = new HttpGet(uri);
-    get.addHeader("Authorization", "Bearer " + jwt);
-    get.addHeader("Content-Type", "application/json");
-    get.addHeader("Accept", "application/json");
-    get.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, "hive");
-
-    Map<String,String> result = null;
-    HttpResponse response = client.execute(get);
-    try {
-      Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-      HttpEntity entity = response.getEntity();
-      if (entity != null) {
-        Gson gson = new GsonBuilder().create();
-        ContentType contentType = ContentType.getOrDefault(entity);
-        Charset charset = contentType.getCharset();
-        Reader reader = new InputStreamReader(entity.getContent(), charset);
-        result = (Map<String, String>) gson.fromJson(reader, Object.class);
-      }
-      Assert.assertNotNull(result);
-      Assert.assertEquals(2, result.size());
-    } finally {
-      if (response instanceof AutoCloseable) {
-        ((AutoCloseable) response).close();
-      }
-      if (client instanceof AutoCloseable) {
-        ((AutoCloseable) client).close();
-      }
-    }
-  }
-
-  private String readString(Reader reader) throws IOException {
+  /**
+   * Reads the content of a Reader into a String.
+   * @param reader the reader to read from
+   * @return the content as a String
+   * @throws IOException if an I/O error occurs
+   */
+  protected static String readString(Reader reader) throws IOException {
     BufferedReader in = new BufferedReader(reader);
-    String line = null;
+    String line;
     StringBuilder rslt = new StringBuilder();
     while ((line = in.readLine()) != null) {
       rslt.append(line);
@@ -232,50 +168,38 @@ public class HMSServletTest extends HMSTestBase {
     return rslt.toString();
   }
 
-  @Test
-  public void testServletEchoB() throws Exception {
-    HttpClient client = HttpClients.createDefault();
-    HttpResponse response = null;
-    try {
-      String jwt = generateJWT();
-      String msgBody = "{\"method\":\"echo\"}";
-      HttpPost post = createPost(jwt, msgBody);
-
-      response = client.execute(post);
-      Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-      String resp = null;
-      HttpEntity entity = response.getEntity();
-      if (entity != null) {
-        ContentType contentType = ContentType.getOrDefault(entity);
-        Charset charset = contentType.getCharset();
-        Reader reader = new InputStreamReader(entity.getContent(), charset);
-        resp = readString(reader);
-      }
-      Assert.assertNotNull(resp);
-      Assert.assertEquals(msgBody, resp);
-    } finally {
-      if (response instanceof AutoCloseable) {
-        ((AutoCloseable) response).close();
-      }
-      if (client instanceof AutoCloseable) {
-        ((AutoCloseable) client).close();
+  /**
+   * Opens a connection to the given URL.
+   * <p>This handles setting a socket factory suitable for https/ssl tests.</p>
+   * @param url the URL to connect to
+   * @return the HttpURLConnection
+   * @throws IOException if an I/O error occurs
+   */
+  private HttpURLConnection openConnection(URL url) throws IOException {
+    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    if (con instanceof HttpsURLConnection httpsConnection) {
+      SSLContext sslContext = clientSSLContextFactory(conf);
+      if (sslContext != null) {
+        httpsConnection.setSSLSocketFactory(sslContext.getSocketFactory());
+        httpsConnection.setHostnameVerifier((hostname, session) -> true);
       }
     }
+    return con;
   }
 
   /**
    * Performs a Json client call.
    * @param jwt the jwt token
-   * @param url the url
+   * @param uri the url
    * @param method the http method
    * @param arg the argument that will be transported as JSon
    * @return the result the was returned through Json
    * @throws IOException if marshalling the request/response fail
    */
-  public static Object clientCall(String jwt, URL url, String method, Object arg) throws IOException {
-    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+  public Object clientCall(String jwt, URI uri, String method, Object arg) throws IOException {
+    final HttpURLConnection con = openConnection(uri.toURL());
     con.setRequestMethod(method);
-    con.setRequestProperty(MetaStoreUtils.USER_NAME_HTTP_HEADER, url.getUserInfo());
+    con.setRequestProperty(MetaStoreUtils.USER_NAME_HTTP_HEADER, uri.getUserInfo());
     con.setRequestProperty("Content-Type", "application/json");
     con.setRequestProperty("Accept", "application/json");
     if (jwt != null) {
@@ -290,29 +214,37 @@ public class HMSServletTest extends HMSTestBase {
     int responseCode = con.getResponseCode();
     if (responseCode == HttpServletResponse.SC_OK) {
       try (Reader reader = new BufferedReader(
-          new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
+              new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
         return new Gson().fromJson(reader, Object.class);
       }
     }
     return null;
   }
 
-  /**
-   * Create a PostMethod populated with the expected attributes.
-   * @param jwt the security token
-   * @param msgBody the actual (json) payload
-   * @return the method to be executed by a Http client
-   * @throws Exception
-   */
-  private HttpPost createPost(String jwt, String msgBody) {
-    HttpPost method = new HttpPost("http://hive@localhost:" + servletPort + "/" + path + "/" + NS);
-    method.addHeader("Authorization", "Bearer " + jwt);
-    method.addHeader("Content-Type", "application/json");
-    method.addHeader("Accept", "application/json");
-
-    StringEntity sre = new StringEntity(msgBody, ContentType.APPLICATION_JSON);
-    method.setEntity(sre);
-    return method;
+  @Test
+  public void testEcho() throws Exception {
+    String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
+    String scheme = getScheme(conf);
+    URI uri = new URI(scheme + "://hive@localhost:" + servletPort + "/" + path + "/" + NS);
+    Map<String, String> json = Collections.singletonMap("method", "echo");
+    String jwt = generateJWT();
+    // succeed
+    Object response = clientCall(jwt, uri, "POST", json);
+    Assert.assertNotNull(response);
+    Assert.assertEquals(json, response);
+    // fail (bad jwt)
+    String badJwt = generateJWT(jwtUnauthorizedKeyFile.toPath());
+    response = clientCall(badJwt, uri, "POST", json);
+    Assert.assertNull(response);
   }
 
+  @Test
+  public void testProperties1() throws Exception {
+      runOtherProperties1(client);
+  }
+
+  @Test
+  public void testProperties0() throws Exception {
+    runOtherProperties0(client);
+  }
 }
