@@ -91,6 +91,7 @@
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
     <junit.vintage.version>5.13.3</junit.vintage.version>
+    <junit.platform.version>1.13.3</junit.platform.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.24.3</log4j2.version>
@@ -461,6 +462,12 @@
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
         <version>${junit.vintage.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-launcher</artifactId>
+        <version>${junit.platform.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
