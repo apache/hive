@@ -21,7 +21,6 @@ package org.apache.iceberg.hive;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configurable;
@@ -32,7 +31,6 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -410,46 +408,23 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
    */
   @Override
   public boolean tableExists(TableIdentifier identifier) {
-    return Objects.nonNull(fetchTable(identifier));
-  }
-
-  /**
-   * Check whether table or metadata table exists and return its location.
-   *
-   * <p>Note: If a hive table with the same identifier exists in catalog, this method will return
-   * {@code null}.
-   *
-   * @param identifier a table identifier
-   * @return the location of the table if it exists, null otherwise
-   */
-  public String getTableLocation(TableIdentifier identifier) {
-    Table table =  fetchTable(identifier);
-    if (table == null) {
-      return null;
-    }
-    return table.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-  }
-
-  private Table fetchTable(TableIdentifier identifier) {
     TableIdentifier baseTableIdentifier = identifier;
     if (!isValidIdentifier(identifier)) {
       if (!isValidMetadataIdentifier(identifier)) {
-        return null;
+        return false;
       } else {
         baseTableIdentifier = TableIdentifier.of(identifier.namespace().levels());
       }
     }
+
     String database = baseTableIdentifier.namespace().level(0);
     String tableName = baseTableIdentifier.name();
     try {
-      GetTableRequest request = new GetTableRequest();
-      request.setDbName(database);
-      request.setTblName(tableName);
-      Table table = clients.run(client -> client.getTable(request));
+      Table table = clients.run(client -> client.getTable(database, tableName));
       HiveOperationsBase.validateTableIsIceberg(table, fullTableName(name, baseTableIdentifier));
-      return table;
+      return true;
     } catch (NoSuchTableException | NoSuchObjectException e) {
-      return null;
+      return false;
     } catch (TException e) {
       throw new RuntimeException("Failed to check table existence of " + baseTableIdentifier, e);
     } catch (InterruptedException e) {
@@ -458,7 +433,6 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
               "Interrupted in call to check table existence of " + baseTableIdentifier, e);
     }
   }
-
 
   @Override
   public boolean viewExists(TableIdentifier viewIdentifier) {

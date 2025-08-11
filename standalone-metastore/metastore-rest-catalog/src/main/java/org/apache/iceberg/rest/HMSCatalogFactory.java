@@ -33,10 +33,8 @@ import org.apache.iceberg.hive.HiveCatalog;
 
 /**
  * Catalog &amp; servlet factory.
- * <p>This class is derivable on purpose; the factory class name is a configuration property, this class
- * can serve as a base for specialization.</p>
  */
-public final class HMSCatalogFactory {
+public class HMSCatalogFactory {
   private static final String SERVLET_ID_KEY = "metastore.in.test.iceberg.catalog.servlet.id";
 
   private final Configuration configuration;
@@ -54,12 +52,12 @@ public final class HMSCatalogFactory {
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_CATALOG_SERVLET_PATH);
     this.configuration = conf;
   }
-
-  private int getPort() {
+  
+  public int getPort() {
     return port;
   }
-
-  private String getPath() {
+  
+  public String getPath() {
     return path;
   }
 
@@ -112,8 +110,7 @@ public final class HMSCatalogFactory {
    */
   private HttpServlet createServlet() {
     if (port >= 0 && path != null && !path.isEmpty()) {
-      Catalog actualCatalog = createCatalog();
-      return createServlet(actualCatalog);
+      return createServlet(createCatalog());
     }
     return null;
   }

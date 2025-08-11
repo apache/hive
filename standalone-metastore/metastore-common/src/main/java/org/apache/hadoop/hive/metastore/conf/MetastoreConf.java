@@ -1880,7 +1880,7 @@ public class MetastoreConf {
         "HMS Iceberg Catalog servlet path component of URL endpoint."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
-        "hive.metastore.iceberg.catalog.cache.expiry", 600_000L,
+        "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
