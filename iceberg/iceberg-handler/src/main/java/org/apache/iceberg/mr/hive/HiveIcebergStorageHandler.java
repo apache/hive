@@ -90,7 +90,6 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -1862,19 +1861,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
   }
 
-  /**
-   * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
-   * @param hmsTable table metadata stored in Hive Metastore
-   * @param since the snapshot preceding the oldest snapshot which should be checked.
-   *              The value null means all should be checked.
-   * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s,
-   * false otherwise.
-   *
-   * @deprecated
-   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(
-   * org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
-   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
-   */
   @Deprecated
   @Override
   public Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
@@ -2130,23 +2116,24 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         .caseSensitive(false).includeColumnStats().ignoreResiduals();
 
     try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
-      FluentIterable.from(tasks).filter(task -> task.spec().isPartitioned()).forEach(task -> {
-        DataFile file = task.file();
-        PartitionSpec spec = task.spec();
+      FluentIterable.from(tasks)
+          .filter(task -> task.spec().isPartitioned())
+          .forEach(task -> {
+            DataFile file = task.file();
+            PartitionSpec spec = task.spec();
 
-        if (latestSpecOnly == null || latestSpecOnly && file.specId() == tableSpecId ||
-              !latestSpecOnly && file.specId() != tableSpecId) {
+            if (latestSpecOnly == null || latestSpecOnly && file.specId() == tableSpecId ||
+                  !latestSpecOnly && file.specId() != tableSpecId) {
+              PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
+              String partName = spec.partitionToPath(partitionData);
 
-          PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
-          String partName = spec.partitionToPath(partitionData);
+              Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+              Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
 
-          Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-          Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-
-          DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
-          partitions.add(partition);
-        }
-      });
+              DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
+              partitions.add(partition);
+            }
+          });
     } catch (IOException e) {
       throw new SemanticException(String.format("Error while fetching the partitions due to: %s", e));
     }

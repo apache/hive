@@ -612,7 +612,7 @@ public class IcebergTableUtil {
 
       if (filter != null) {
         blobMetadata = blobMetadata.stream().filter(filter)
-          .collect(Collectors.toList());
+          .toList();
       }
       Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
       LOG.info("Using col stats from : {}", statsPath);
