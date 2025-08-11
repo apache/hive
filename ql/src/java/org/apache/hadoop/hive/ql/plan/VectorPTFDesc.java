@@ -137,6 +137,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   private String[] evaluatorFunctionNames;
   private boolean[] evaluatorsAreDistinct;
+  private boolean[] evaluatorsRespectNulls;
   private WindowFrameDef[] evaluatorWindowFrameDefs;
   private List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists;
 
@@ -156,6 +157,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
     evaluatorFunctionNames = null;
     evaluatorsAreDistinct = null;
+    evaluatorsRespectNulls = null;
     evaluatorInputExprNodeDescLists = null;
 
     orderExprNodeDescs = null;
@@ -170,7 +172,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   // We provide this public method to help EXPLAIN VECTORIZATION show the evaluator classes.
   public static VectorPTFEvaluatorBase getEvaluator(SupportedFunctionType functionType,
-      boolean isDistinct, WindowFrameDef windowFrameDef, Type[] columnVectorTypes,
+      boolean isDistinct, boolean respectNulls, WindowFrameDef windowFrameDef, Type[] columnVectorTypes,
       VectorExpression[] inputVectorExpressions, int outputColumnNum) {
 
     final boolean isRowEndCurrent = (windowFrameDef.getWindowType() == WindowType.ROWS
@@ -416,12 +418,14 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     default:
       throw new RuntimeException("Unexpected function type " + functionType);
     }
+    evaluator.setRespectNulls(respectNulls);
     return evaluator;
   }
 
   public static VectorPTFEvaluatorBase[] getEvaluators(VectorPTFDesc vectorPTFDesc, VectorPTFInfo vectorPTFInfo) {
     String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
     boolean[] evaluatorsAreDistinct = vectorPTFDesc.getEvaluatorsAreDistinct();
+    boolean[] evaluatorsRespectNulls = vectorPTFDesc.getEvaluatorsRespectNulls();
     int evaluatorCount = evaluatorFunctionNames.length;
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
     VectorExpression[][] evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
@@ -433,6 +437,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     for (int i = 0; i < evaluatorCount; i++) {
       String functionName = evaluatorFunctionNames[i].toLowerCase();
       boolean isDistinct = evaluatorsAreDistinct[i];
+      boolean respectNulls = evaluatorsRespectNulls[i];
       WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
       SupportedFunctionType functionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
       VectorExpression[] inputVectorExpressions = evaluatorInputExpressions[i];
@@ -442,7 +447,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       final int outputColumnNum = outputColumnMap[i];
 
       VectorPTFEvaluatorBase evaluator =
-          VectorPTFDesc.getEvaluator(functionType, isDistinct,
+          VectorPTFDesc.getEvaluator(functionType, isDistinct, respectNulls,
               windowFrameDef, columnVectorTypes, inputVectorExpressions, outputColumnNum);
 
       evaluators[i] = evaluator;
@@ -494,6 +499,14 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   public boolean[] getEvaluatorsAreDistinct() {
     return evaluatorsAreDistinct;
+  }
+
+  public boolean[] getEvaluatorsRespectNulls() {
+    return evaluatorsRespectNulls;
+  }
+
+  public void setEvaluatorsRespectNulls(boolean[] evaluatorsRespectNulls) {
+    this.evaluatorsRespectNulls = evaluatorsRespectNulls;
   }
 
   public WindowFrameDef[] getEvaluatorWindowFrameDefs() {
