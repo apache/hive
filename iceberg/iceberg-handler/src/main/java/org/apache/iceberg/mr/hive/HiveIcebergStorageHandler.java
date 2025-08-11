@@ -661,7 +661,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   private boolean canProvideColStats(Table table, long snapshotId) {
-    return IcebergTableUtil.getColStatsPath(table, snapshotId).isPresent();
+    return IcebergTableUtil.getColStatsPath(table, snapshotId) != null;
   }
 
   @Override
@@ -753,7 +753,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   private boolean shouldRewriteColStats(Table tbl) {
     return SessionStateUtil.getQueryState(conf).map(QueryState::getHiveOperation)
               .filter(opType -> HiveOperation.ANALYZE_TABLE == opType).isPresent() ||
-          IcebergTableUtil.getColStatsPath(tbl).isPresent();
+          IcebergTableUtil.getColStatsPath(tbl) != null;
   }
 
   private void checkAndMergeColStats(List<ColumnStatistics> statsNew, Table tbl) throws InvalidObjectException {

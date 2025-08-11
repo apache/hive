@@ -233,18 +233,18 @@ public class IcebergTableUtil {
     return table.currentSnapshot();
   }
 
-  static Optional<Path> getColStatsPath(Table table) {
+  static Path getColStatsPath(Table table) {
     return getColStatsPath(table, table.currentSnapshot().snapshotId());
   }
 
-  static Optional<Path> getColStatsPath(Table table, long snapshotId) {
+  static Path getColStatsPath(Table table, long snapshotId) {
     return table.statisticsFiles().stream()
       .filter(stats -> stats.snapshotId() == snapshotId)
       .filter(stats -> stats.blobMetadata().stream()
         .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
       )
       .map(stats -> new Path(stats.path()))
-      .findAny();
+      .findAny().orElse(null);
   }
 
   static PartitionStatisticsFile getPartitionStatsFile(Table table, long snapshotId) {
@@ -603,8 +603,8 @@ public class IcebergTableUtil {
   public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
     List<T> colStats = Lists.newArrayList();
 
-    Optional<Path> statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
-    if (statsPath.isEmpty()) {
+    Path statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
+    if (statsPath == null) {
       return colStats;
     }
     try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath.toString())).build()) {
