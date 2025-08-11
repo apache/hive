@@ -218,11 +218,13 @@ public interface HiveMetaHook {
 
   /**
    * Called before dropping the partitions from the table in the metastore during ALTER TABLE DROP PARTITION.
+   * @deprecated Use {@link #preDropPartitions(Table, EnvironmentContext, RequestPartsSpec)} instead.
    * @param table table whose partition needs to be dropped
    * @param context context of the  operation
    * @param partExprs List of partition expressions
    * @throws MetaException
    */
+  @Deprecated
   default void preDropPartitions(Table table,
       EnvironmentContext context, List<Pair<Integer, byte[]>> partExprs) throws MetaException {
     // Do nothing

@@ -1600,16 +1600,18 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     if (context == null) {
       context = new EnvironmentContext();
     }
+    if (context.getProperties() != null &&
+        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
+      return Lists.newArrayList();
+    }
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
       context.putToProperties("ifPurge", "true");
     }
     if (options.writeId != null) {
-      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
       context.putToProperties(hive_metastoreConstants.WRITE_ID, options.writeId.toString());
     }
     if (options.txnId != null) {
-      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
       context.putToProperties(hive_metastoreConstants.TXN_ID, options.txnId.toString());
     }
     req.setEnvironmentContext(context);
