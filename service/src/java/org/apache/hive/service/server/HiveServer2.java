@@ -96,7 +96,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
-import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.common.IPStackUtils;
@@ -270,7 +269,7 @@ public class HiveServer2 extends CompositeService {
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
     }
-
+    setUpZooKeeperAuth(hiveConf);
     // Do not allow sessions - leader election or initialization will allow them for an active HS2.
     cliService = new CLIService(this, false);
     addService(cliService);
@@ -608,7 +607,9 @@ public class HiveServer2 extends CompositeService {
   private ACLProvider zooKeeperAclProvider;
 
   private ACLProvider getACLProvider(HiveConf hiveConf) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(hiveConf);
+    final boolean isSecure =
+        AuthType.isKerberosAuthMode(hiveConf) &&
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
 
     return new ACLProvider() {
       @Override
@@ -682,18 +683,17 @@ public class HiveServer2 extends CompositeService {
    * @return
    * @throws Exception
    */
-  private static void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
-    if (ZookeeperUtils.isKerberosEnabled(hiveConf)) {
-      String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
-      if (principal.isEmpty()) {
-        throw new IOException("HiveServer2 Kerberos principal is empty");
+  private static void setUpZooKeeperAuth(HiveConf hiveConf) {
+    try {
+      if (AuthType.isKerberosAuthMode(hiveConf) &&
+          StringUtils.isNotEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM)) &&
+          HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS)) {
+        // Install the JAAS Configuration for the runtime
+        Utils.setZookeeperClientKerberosJaasConfig(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+            hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB));
       }
-      String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-      if (keyTabFile.isEmpty()) {
-        throw new IOException("HiveServer2 Kerberos keytab is empty");
-      }
-      // Install the JAAS Configuration for the runtime
-      Utils.setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to configure the jaas for ZooKeeper", e);
     }
   }
 
@@ -1186,7 +1186,6 @@ public class HiveServer2 extends CompositeService {
     }
 
     if (policyContainer.size() > 0) {
-      setUpZooKeeperAuth(hiveConf);
       zKClientForPrivSync = hiveConf.getZKConfig().startZookeeperClient(zooKeeperAclProvider, true);
       String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
       String path = ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace

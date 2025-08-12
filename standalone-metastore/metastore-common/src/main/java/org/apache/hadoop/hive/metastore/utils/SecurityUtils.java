@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import com.google.common.base.Preconditions;
 import java.io.FileInputStream;
+import java.lang.reflect.Method;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -74,6 +75,20 @@ import java.util.Map;
 public class SecurityUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
 
+  private static Method getKeytab = null;
+  static {
+    Class<?> clz = UserGroupInformation.class;
+
+    try {
+      getKeytab = clz.getDeclaredMethod("getKeytab");
+      getKeytab.setAccessible(true);
+    } catch(NoSuchMethodException nme) {
+      LOG.warn("Cannot find private method \"getKeytab\" in class:" +
+          UserGroupInformation.class.getCanonicalName(), nme);
+      getKeytab = null;
+    }
+  }
+
   public static UserGroupInformation getUGI() throws LoginException, IOException {
     String doAs = System.getenv("HADOOP_USER_NAME");
     if (doAs != null && doAs.length() > 0) {
@@ -87,6 +102,25 @@ public class SecurityUtils {
     }
     return UserGroupInformation.getCurrentUser();
   }
+
+  /**
+   * This is used for Metastore client to authenticate with zk, where we don't know the exact principal.
+   * @throws Exception
+   */
+  public static void setZookeeperClientKerberosJaasConfig() throws Exception {
+    String principal = null, keyTabFile = null;
+    UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
+    if (getKeytab != null && UserGroupInformation.isSecurityEnabled() &&
+        UserGroupInformation.isLoginKeytabBased()) {
+      principal = loginUser.getUserName();
+      keyTabFile = (String) getKeytab.invoke(loginUser);
+    } else if (System.getProperty("java.security.auth.login.config") != null) {
+      // The client provides the jaas configuration, use it
+      return;
+    }
+    setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
+  }
+
   /**
    * Dynamically sets up the JAAS configuration that uses kerberos
    * @param principal
@@ -96,6 +130,10 @@ public class SecurityUtils {
   public static void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile) throws IOException {
     // ZooKeeper property name to pick the correct JAAS conf section
     final String SASL_LOGIN_CONTEXT_NAME = "HiveZooKeeperClient";
+    if (System.getProperties().containsKey(SASL_LOGIN_CONTEXT_NAME)) {
+      LOG.info("ZooKeeper JAAS context: {} has been set, ignore...", SASL_LOGIN_CONTEXT_NAME);
+      return;
+    }
     System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY, SASL_LOGIN_CONTEXT_NAME);
 
     principal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
@@ -131,14 +169,23 @@ public class SecurityUtils {
         Map<String, String> krbOptions = new HashMap<String, String>();
         if (IBM_JAVA) {
           krbOptions.put("credsType", "both");
-          krbOptions.put("useKeytab", keyTabFile);
+          if (keyTabFile != null) {
+            krbOptions.put("useKeytab", keyTabFile);
+          } else {
+            krbOptions.put("useDefaultCcache", "true");
+          }
         } else {
           krbOptions.put("doNotPrompt", "true");
-          krbOptions.put("storeKey", "true");
-          krbOptions.put("useKeyTab", "true");
-          krbOptions.put("keyTab", keyTabFile);
+          if (keyTabFile != null) {
+            krbOptions.put("useKeyTab", "true");
+            krbOptions.put("keyTab", keyTabFile);
+          } else {
+            krbOptions.put("useTicketCache", "true");
+          }
         }
-  krbOptions.put("principal", principal);
+        if (principal != null) {
+          krbOptions.put("principal", principal);
+        }
         krbOptions.put("refreshKrb5Config", "true");
         AppConfigurationEntry hiveZooKeeperClientEntry = new AppConfigurationEntry(
             KerberosUtil.getKrb5LoginModuleName(), LoginModuleControlFlag.REQUIRED, krbOptions);

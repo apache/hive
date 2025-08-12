@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils.ServiceRecordMarshal;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
@@ -187,7 +188,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   public static String getRootNamespace(Configuration conf, String userProvidedNamespace,
       String defaultNamespacePrefix) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    final boolean isSecure = UserGroupInformation.isSecurityEnabled() &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
     String rootNs = userProvidedNamespace;
     if (rootNs == null) {
       rootNs = defaultNamespacePrefix + (isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE);
@@ -196,7 +198,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private ACLProvider getACLProviderForZKPath(String zkPath) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    final boolean isSecure = UserGroupInformation.isSecurityEnabled() &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
     return new ACLProvider() {
       @Override
       public List<ACL> getDefaultAcl() {
@@ -405,7 +408,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private void checkAndSetAcls() throws Exception {
-    if (!ZookeeperUtils.isKerberosEnabled(conf)) {
+    if (!(UserGroupInformation.isSecurityEnabled() &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS))) {
       return;
     }
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
@@ -670,10 +674,19 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   public void start() throws IOException {
     if (zooKeeperClient != null) {
-      String principal = ZookeeperUtils.setupZookeeperAuth(
-          conf, saslLoginContextName, zkPrincipal, zkKeytab);
-      if (principal != null) {
-        userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(principal);
+      if (UserGroupInformation.isSecurityEnabled() &&
+          HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS)) {
+        if (saslLoginContextName != null) {
+          if (StringUtils.isNotEmpty(zkPrincipal) &&
+              StringUtils.isNotEmpty(zkKeytab)) {
+            Utils.setZookeeperClientKerberosJaasConfig(zkPrincipal, zkKeytab, saslLoginContextName);
+          } else {
+            Utils.setZookeeperClientKerberosJaasConfig();
+          }
+        }
+        if (zkPrincipal != null) {
+          userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(zkPrincipal);
+        }
       }
       zooKeeperClient.start();
     }
