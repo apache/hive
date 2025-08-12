@@ -49,6 +49,9 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.leader.AuditLeaderListener;
+import org.apache.hadoop.hive.metastore.leader.HouseKeepingTasks;
+import org.apache.hadoop.hive.metastore.leader.StaticLeaderElection;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -237,7 +240,7 @@ public class TestPartitionManagement {
   }
 
   @Test
-  public void testPartitionDiscoveryEnabledBothTableTypes() throws TException, IOException {
+  public void testPartitionDiscoveryEnabledBothTableTypes() throws Exception {
     String dbName = "db2";
     String tableName = "tbl2";
     Map<String, Column> colMap = buildAllColumns();
@@ -326,7 +329,12 @@ public class TestPartitionManagement {
     Assert.assertTrue(fs.mkdirs(new Path(tablePath, "state=NV/dt=2025-07-02")));
     assertEquals(6, fs.listStatus(tablePath).length);
     conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_FREQUENCY.getVarname(), "0");
-    runPartitionManagementTask(conf);
+    conf.set(MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY.getVarname(),
+        "org.apache.hadoop.hive.metastore.PartitionManagementTask");
+    HouseKeepingTasks listener = new HouseKeepingTasks(conf, true);
+    StaticLeaderElection election = new StaticLeaderElection();
+    election.setName("TestPartitionManagement");
+    listener.takeLeadership(election);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(4, partitions.size());
 
