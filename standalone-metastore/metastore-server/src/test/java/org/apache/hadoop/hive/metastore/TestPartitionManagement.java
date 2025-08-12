@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.leader.AuditLeaderListener;
 import org.apache.hadoop.hive.metastore.leader.HouseKeepingTasks;
 import org.apache.hadoop.hive.metastore.leader.StaticLeaderElection;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
