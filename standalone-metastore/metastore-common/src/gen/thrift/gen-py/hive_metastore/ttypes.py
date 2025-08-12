@@ -9589,15 +9589,17 @@ class DropConstraintRequest(object):
      - tablename
      - constraintname
      - catName
+     - ifExists
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, constraintname=None, catName=None,):
+    def __init__(self, dbname=None, tablename=None, constraintname=None, catName=None, ifExists=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.constraintname = constraintname
         self.catName = catName
+        self.ifExists = ifExists
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -9628,6 +9630,11 @@ class DropConstraintRequest(object):
                     self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.BOOL:
+                    self.ifExists = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -9653,6 +9660,10 @@ class DropConstraintRequest(object):
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 4)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.ifExists is not None:
+            oprot.writeFieldBegin('ifExists', TType.BOOL, 5)
+            oprot.writeBool(self.ifExists)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -33184,6 +33195,7 @@ DropConstraintRequest.thrift_spec = (
     (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'constraintname', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'catName', 'UTF8', None, ),  # 4
+    (5, TType.BOOL, 'ifExists', None, None, ),  # 5
 )
 all_structs.append(AddPrimaryKeyRequest)
 AddPrimaryKeyRequest.thrift_spec = (

@@ -249,8 +249,8 @@ alterStatementSuffixUpdateColumns
 alterStatementSuffixDropConstraint
 @init { gParent.pushMsg("drop constraint statement", state); }
 @after { gParent.popMsg(state); }
-   : KW_DROP KW_CONSTRAINT cName=identifier
-   ->^(TOK_ALTERTABLE_DROPCONSTRAINT $cName)
+   : KW_DROP KW_CONSTRAINT ifExists? cName=identifier
+   ->^(TOK_ALTERTABLE_DROPCONSTRAINT ifExists? $cName)
    ;
 
 alterStatementSuffixRenameCol

@@ -3079,12 +3079,14 @@ class DropConstraintRequest
   TABLENAME = 2
   CONSTRAINTNAME = 3
   CATNAME = 4
+  IFEXISTS = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
     CONSTRAINTNAME => {:type => ::Thrift::Types::STRING, :name => 'constraintname'},
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists', :optional => true}
   }
 
   def struct_fields; FIELDS; end

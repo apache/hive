@@ -16722,6 +16722,11 @@ void DropConstraintRequest::__set_catName(const std::string& val) {
   this->catName = val;
 __isset.catName = true;
 }
+
+void DropConstraintRequest::__set_ifExists(const bool val) {
+  this->ifExists = val;
+__isset.ifExists = true;
+}
 std::ostream& operator<<(std::ostream& out, const DropConstraintRequest& obj)
 {
   obj.printTo(out);
@@ -16785,6 +16790,14 @@ uint32_t DropConstraintRequest::read(::apache::thrift::protocol::TProtocol* ipro
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->ifExists);
+          this->__isset.ifExists = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16825,6 +16838,11 @@ uint32_t DropConstraintRequest::write(::apache::thrift::protocol::TProtocol* opr
     xfer += oprot->writeString(this->catName);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.ifExists) {
+    xfer += oprot->writeFieldBegin("ifExists", ::apache::thrift::protocol::T_BOOL, 5);
+    xfer += oprot->writeBool(this->ifExists);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16836,6 +16854,7 @@ void swap(DropConstraintRequest &a, DropConstraintRequest &b) {
   swap(a.tablename, b.tablename);
   swap(a.constraintname, b.constraintname);
   swap(a.catName, b.catName);
+  swap(a.ifExists, b.ifExists);
   swap(a.__isset, b.__isset);
 }
 
@@ -16844,6 +16863,7 @@ DropConstraintRequest::DropConstraintRequest(const DropConstraintRequest& other5
   tablename = other595.tablename;
   constraintname = other595.constraintname;
   catName = other595.catName;
+  ifExists = other595.ifExists;
   __isset = other595.__isset;
 }
 DropConstraintRequest& DropConstraintRequest::operator=(const DropConstraintRequest& other596) {
@@ -16851,6 +16871,7 @@ DropConstraintRequest& DropConstraintRequest::operator=(const DropConstraintRequ
   tablename = other596.tablename;
   constraintname = other596.constraintname;
   catName = other596.catName;
+  ifExists = other596.ifExists;
   __isset = other596.__isset;
   return *this;
 }
@@ -16861,6 +16882,7 @@ void DropConstraintRequest::printTo(std::ostream& out) const {
   out << ", " << "tablename=" << to_string(tablename);
   out << ", " << "constraintname=" << to_string(constraintname);
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
+  out << ", " << "ifExists="; (__isset.ifExists ? (out << to_string(ifExists)) : (out << "<null>"));
   out << ")";
 }
 

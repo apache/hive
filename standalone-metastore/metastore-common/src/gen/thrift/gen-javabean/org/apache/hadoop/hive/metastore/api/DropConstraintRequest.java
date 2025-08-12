@@ -15,6 +15,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField CONSTRAINTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("constraintname", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField IF_EXISTS_FIELD_DESC = new org.apache.thrift.protocol.TField("ifExists", org.apache.thrift.protocol.TType.BOOL, (short)5);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DropConstraintRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DropConstraintRequestTupleSchemeFactory();
@@ -23,13 +24,15 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String tablename; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String constraintname; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
+  private boolean ifExists; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     DBNAME((short)1, "dbname"),
     TABLENAME((short)2, "tablename"),
     CONSTRAINTNAME((short)3, "constraintname"),
-    CAT_NAME((short)4, "catName");
+    CAT_NAME((short)4, "catName"),
+    IF_EXISTS((short)5, "ifExists");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -53,6 +56,8 @@ package org.apache.hadoop.hive.metastore.api;
           return CONSTRAINTNAME;
         case 4: // CAT_NAME
           return CAT_NAME;
+        case 5: // IF_EXISTS
+          return IF_EXISTS;
         default:
           return null;
       }
@@ -94,7 +99,9 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.CAT_NAME};
+  private static final int __IFEXISTS_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.IF_EXISTS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -106,6 +113,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.IF_EXISTS, new org.apache.thrift.meta_data.FieldMetaData("ifExists", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DropConstraintRequest.class, metaDataMap);
   }
@@ -128,6 +137,7 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public DropConstraintRequest(DropConstraintRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetDbname()) {
       this.dbname = other.dbname;
     }
@@ -140,6 +150,7 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
+    this.ifExists = other.ifExists;
   }
 
   public DropConstraintRequest deepCopy() {
@@ -152,6 +163,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.tablename = null;
     this.constraintname = null;
     this.catName = null;
+    setIfExistsIsSet(false);
+    this.ifExists = false;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -250,6 +263,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public boolean isIfExists() {
+    return this.ifExists;
+  }
+
+  public void setIfExists(boolean ifExists) {
+    this.ifExists = ifExists;
+    setIfExistsIsSet(true);
+  }
+
+  public void unsetIfExists() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __IFEXISTS_ISSET_ID);
+  }
+
+  /** Returns true if field ifExists is set (has been assigned a value) and false otherwise */
+  public boolean isSetIfExists() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __IFEXISTS_ISSET_ID);
+  }
+
+  public void setIfExistsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __IFEXISTS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DBNAME:
@@ -284,6 +319,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case IF_EXISTS:
+      if (value == null) {
+        unsetIfExists();
+      } else {
+        setIfExists((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -301,6 +344,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case CAT_NAME:
       return getCatName();
+
+    case IF_EXISTS:
+      return isIfExists();
 
     }
     throw new java.lang.IllegalStateException();
@@ -321,6 +367,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetConstraintname();
     case CAT_NAME:
       return isSetCatName();
+    case IF_EXISTS:
+      return isSetIfExists();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -374,6 +422,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_ifExists = true && this.isSetIfExists();
+    boolean that_present_ifExists = true && that.isSetIfExists();
+    if (this_present_ifExists || that_present_ifExists) {
+      if (!(this_present_ifExists && that_present_ifExists))
+        return false;
+      if (this.ifExists != that.ifExists)
+        return false;
+    }
+
     return true;
   }
 
@@ -396,6 +453,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
     if (isSetCatName())
       hashCode = hashCode * 8191 + catName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetIfExists()) ? 131071 : 524287);
+    if (isSetIfExists())
+      hashCode = hashCode * 8191 + ((ifExists) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -444,6 +505,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetCatName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetIfExists(), other.isSetIfExists());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIfExists()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ifExists, other.ifExists);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -502,6 +573,12 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetIfExists()) {
+      if (!first) sb.append(", ");
+      sb.append("ifExists:");
+      sb.append(this.ifExists);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -533,6 +610,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -589,6 +668,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // IF_EXISTS
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.ifExists = iprot.readBool();
+              struct.setIfExistsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -624,6 +711,11 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetIfExists()) {
+        oprot.writeFieldBegin(IF_EXISTS_FIELD_DESC);
+        oprot.writeBool(struct.ifExists);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -648,9 +740,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetIfExists()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
+      }
+      if (struct.isSetIfExists()) {
+        oprot.writeBool(struct.ifExists);
       }
     }
 
@@ -663,10 +761,14 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTablenameIsSet(true);
       struct.constraintname = iprot.readString();
       struct.setConstraintnameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
+      java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.ifExists = iprot.readBool();
+        struct.setIfExistsIsSet(true);
       }
     }
   }

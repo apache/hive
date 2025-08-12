@@ -1422,8 +1422,15 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public void dropConstraint(String catName, String dbName, String tableName, String constraintName)
       throws TException {
+    dropConstraint(catName, dbName, tableName, constraintName, false);
+  }
+
+  @Override
+  public void dropConstraint(String catName, String dbName, String tableName, String constraintName, boolean ifExists)
+          throws TException {
     DropConstraintRequest rqst = new DropConstraintRequest(dbName, tableName, constraintName);
     rqst.setCatName(catName);
+    rqst.setIfExists(ifExists);
     client.drop_constraint(rqst);
   }
 

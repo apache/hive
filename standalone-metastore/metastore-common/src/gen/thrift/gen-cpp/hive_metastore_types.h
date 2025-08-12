@@ -7000,8 +7000,9 @@ void swap(AllTableConstraintsResponse &a, AllTableConstraintsResponse &b);
 std::ostream& operator<<(std::ostream& out, const AllTableConstraintsResponse& obj);
 
 typedef struct _DropConstraintRequest__isset {
-  _DropConstraintRequest__isset() : catName(false) {}
+  _DropConstraintRequest__isset() : catName(false), ifExists(false) {}
   bool catName :1;
+  bool ifExists :1;
 } _DropConstraintRequest__isset;
 
 class DropConstraintRequest : public virtual ::apache::thrift::TBase {
@@ -7013,7 +7014,8 @@ class DropConstraintRequest : public virtual ::apache::thrift::TBase {
                         : dbname(),
                           tablename(),
                           constraintname(),
-                          catName() {
+                          catName(),
+                          ifExists(0) {
   }
 
   virtual ~DropConstraintRequest() noexcept;
@@ -7021,6 +7023,7 @@ class DropConstraintRequest : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string constraintname;
   std::string catName;
+  bool ifExists;
 
   _DropConstraintRequest__isset __isset;
 
@@ -7031,6 +7034,8 @@ class DropConstraintRequest : public virtual ::apache::thrift::TBase {
   void __set_constraintname(const std::string& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_ifExists(const bool val);
 
   bool operator == (const DropConstraintRequest & rhs) const
   {
@@ -7043,6 +7048,10 @@ class DropConstraintRequest : public virtual ::apache::thrift::TBase {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.ifExists != rhs.__isset.ifExists)
+      return false;
+    else if (__isset.ifExists && !(ifExists == rhs.ifExists))
       return false;
     return true;
   }
