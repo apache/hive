@@ -414,7 +414,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
   }
 
   /**
-   * Check whether table or metadata table exists and return its location.
+   * Check whether table exists and return its current metadata location.
    *
    * <p>Note: If a hive table with the same identifier exists in catalog, this method will return
    * {@code null}.
@@ -422,7 +422,7 @@ public class HiveCatalog extends BaseMetastoreViewCatalog
    * @param identifier a table identifier
    * @return the location of the table if it exists, null otherwise
    */
-  public String getTableLocation(TableIdentifier identifier) {
+  public String getTableMetadataLocation(TableIdentifier identifier) {
     Table table =  fetchTable(identifier);
     if (table == null) {
       return null;
