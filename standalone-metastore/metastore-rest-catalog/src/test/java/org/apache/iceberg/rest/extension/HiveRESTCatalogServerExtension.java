@@ -42,8 +42,8 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
   private final JwksServer jwksServer;
   private final RESTCatalogServer restCatalogServer;
 
-  private HiveRESTCatalogServerExtension(AuthType authType) {
-    this.conf = MetastoreConf.newMetastoreConf();
+  private HiveRESTCatalogServerExtension(AuthType authType, Configuration configuration) {
+    this.conf = configuration == null ? MetastoreConf.newMetastoreConf() : configuration;
     MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, authType.name());
     if (authType == AuthType.JWT) {
       jwksServer = new JwksServer();
@@ -104,7 +104,10 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     }
 
     public HiveRESTCatalogServerExtension build() {
-      return new HiveRESTCatalogServerExtension(authType);
+      return new HiveRESTCatalogServerExtension(authType, null);
+    }
+    public HiveRESTCatalogServerExtension build(Configuration configuration) {
+      return new HiveRESTCatalogServerExtension(authType, configuration);
     }
   }
 
