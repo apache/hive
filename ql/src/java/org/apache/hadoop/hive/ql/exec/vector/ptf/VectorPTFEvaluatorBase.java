@@ -50,6 +50,7 @@ public abstract class VectorPTFEvaluatorBase {
   protected int inputColumnNum;
   protected final int outputColumnNum;
   private boolean nullsLast;
+  private boolean respectNulls = true;
 
   protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
@@ -193,5 +194,13 @@ public abstract class VectorPTFEvaluatorBase {
    * changed column layout by this call.
    */
   public void mapCustomColumns(int[] bufferedColumnMap) {
+  }
+
+  public boolean doesRespectNulls() {
+    return respectNulls;
+  }
+
+  public void setRespectNulls(boolean respectNulls) {
+    this.respectNulls = respectNulls;
   }
 }

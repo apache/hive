@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -72,7 +71,6 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
 
   protected AccumuloPredicateHandler predicateHandler = AccumuloPredicateHandler.getInstance();
   protected AccumuloConnectionParameters connectionParams;
-  protected Configuration conf;
   protected HiveAccumuloHelper helper = new HiveAccumuloHelper();
 
   /**
@@ -146,21 +144,10 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     return tableName;
   }
 
-  protected String getColumnTypes(TableDesc tableDesc)  {
-    Properties props = tableDesc.getProperties();
-    String columnTypes = props.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    return columnTypes;
-  }
-
   protected String getIndexTableName(TableDesc tableDesc) {
     Properties props = tableDesc.getProperties();
     String tableName = props.getProperty(AccumuloIndexParameters.INDEXTABLE_NAME);
     return tableName;
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
   }
 
   @Override
@@ -180,7 +167,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
   }
 
   @Override
-  public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
+  public HiveAuthorizationProvider getAuthorizationProvider() {
     return null;
   }
 
@@ -293,7 +280,6 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     StringBuilder sb = new StringBuilder();
 
     String cols = indexColumns;
-
 
     String hiveColString = tableDesc.getProperties().getProperty(serdeConstants.LIST_COLUMNS);
     // if there are actual accumulo index columns defined then build

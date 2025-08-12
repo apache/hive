@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
@@ -35,6 +36,7 @@ import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
+import org.apache.iceberg.util.DeleteFileSet;
 
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
@@ -42,9 +44,11 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   private final boolean skipRowData;
   private final boolean isMergeTask;
 
-  HiveIcebergDeleteWriter(Table table, HiveFileWriterFactory writerFactory,
-      OutputFileFactory deleteFileFactory, Context context) {
-    super(table, newDeleteWriter(table, writerFactory, deleteFileFactory, context));
+  HiveIcebergDeleteWriter(
+      Table table, Map<String, DeleteFileSet> rewritableDeletes,
+      HiveFileWriterFactory writerFactory, OutputFileFactory deleteFileFactory,
+      Context context) {
+    super(table, newDeleteWriter(table, rewritableDeletes, writerFactory, deleteFileFactory, context));
 
     this.rowDataTemplate = GenericRecord.create(table.schema());
     this.skipRowData = context.skipRowData();

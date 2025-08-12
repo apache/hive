@@ -156,7 +156,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
     job.set(InputFormatConfig.GROUPING_PARTITION_COLUMNS, job.get(TableScanDesc.GROUPING_PARTITION_COLUMNS, ""));
     job.setBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS,
-            job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
+        job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
     job.set(InputFormatConfig.AS_OF_TIMESTAMP, job.get(TableScanDesc.AS_OF_TIMESTAMP, "-1"));
     job.set(InputFormatConfig.SNAPSHOT_ID, job.get(TableScanDesc.AS_OF_VERSION, "-1"));
     job.set(InputFormatConfig.SNAPSHOT_ID_INTERVAL_FROM, job.get(TableScanDesc.FROM_VERSION, "-1"));
@@ -165,8 +165,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     String location = job.get(InputFormatConfig.TABLE_LOCATION);
     int numBuckets = job.getInt(TableScanDesc.GROUPING_NUM_BUCKETS, -1);
     return Arrays.stream(super.getSplits(job, numSplits))
-                 .map(split -> new HiveIcebergSplit((IcebergSplit) split, location, numBuckets))
-                 .toArray(InputSplit[]::new);
+       .map(split -> new HiveIcebergSplit((IcebergSplit) split, location, numBuckets))
+       .toArray(InputSplit[]::new);
   }
 
   @Override
@@ -174,7 +174,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
                                                                Reporter reporter) throws IOException {
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
     job.setBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS,
-            job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
+        job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
 
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) && Utilities.getIsVectorized(job)) {
       Preconditions.checkArgument(HiveVersion.min(HiveVersion.HIVE_3), "Vectorization only supported for Hive 3+");
@@ -232,9 +232,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   }
 
   @Override
-  public FileSplit createMergeSplit(Configuration conf,
-                                    CombineHiveInputFormat.CombineHiveInputSplit split,
-                                    Integer partition, Properties properties) throws IOException {
-    return new IcebergMergeSplit(conf, split, partition, properties);
+  public FileSplit createMergeSplit(CombineHiveInputFormat.CombineHiveInputSplit split,
+        Integer partition, Properties properties) throws IOException {
+    return new IcebergMergeSplit(split, partition, properties);
   }
 }

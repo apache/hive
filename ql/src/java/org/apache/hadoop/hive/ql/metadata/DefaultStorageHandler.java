@@ -41,7 +41,8 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
  * metadata even though its behavior is otherwise identical to a native table).
  */
 public class DefaultStorageHandler implements HiveStorageHandler {
-  private Configuration conf;
+
+  protected Configuration conf;
 
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
@@ -106,6 +107,7 @@ public class DefaultStorageHandler implements HiveStorageHandler {
   public void setConf(Configuration conf) {
     this.conf = conf;
   }
+
   @Override
   public String toString() {
     return this.getClass().getName();

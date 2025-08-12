@@ -121,13 +121,7 @@ class TextDescTableFormatter extends DescTableFormatter {
         partitionTransformOutput += LINE_DELIM + "# Partition Transform Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.PARTITION_TRANSFORM_SPEC_SCHEMA.split("#")[0].split(","));
         for (TransformSpec spec : partSpecs) {
-          String[] row = new String[2];
-          row[0] = spec.getColumnName();
-          if (spec.getTransformType() != null) {
-            row[1] = spec.getTransformParam().isPresent() ?
-                spec.getTransformType().name() + "[" + spec.getTransformParam().get() + "]" :
-                spec.getTransformType().name();
-          }
+          String[] row = new String[]{spec.getColumnName(), spec.transformTypeString()};
           metaDataTable.addRow(row);
         }
         partitionTransformOutput += metaDataTable.renderTable(isOutputPadded);

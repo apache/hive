@@ -113,7 +113,7 @@ df -h
 
 def sonarAnalysis(args) {
   withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
-      def mvnCmd = """mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+      def mvnCmd = """mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
       -Dsonar.organization=apache \
       -Dsonar.projectKey=apache_hive \
       -Dsonar.host.url=https://sonarcloud.io \
