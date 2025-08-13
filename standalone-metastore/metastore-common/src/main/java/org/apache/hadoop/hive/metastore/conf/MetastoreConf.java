@@ -1265,7 +1265,8 @@ public class MetastoreConf {
       "Similarly if partition object exists in metastore and partition location does not exist, partition object\n" +
       "will be dropped. The second piece in partition management is retention period. When 'discover.partition'\n" +
       "is set to true and if 'partition.retention.period' table property is defined, partitions that are older\n" +
-      "than the specified retention period will be automatically dropped from metastore along with the data."),
+      "than the specified retention period will be automatically dropped from metastore along with the data.\n" +
+      "Set this value to 0 inorder to disable Partition Management Task"),
     PARTITION_MANAGEMENT_TABLE_TYPES("metastore.partition.management.table.types",
       "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
       "Comma separated list of table types to use for partition management"),
@@ -1880,7 +1881,7 @@ public class MetastoreConf {
         "HMS Iceberg Catalog servlet path component of URL endpoint."
     ),
     ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
-        "hive.metastore.iceberg.catalog.cache.expiry", 600_000L,
+        "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",

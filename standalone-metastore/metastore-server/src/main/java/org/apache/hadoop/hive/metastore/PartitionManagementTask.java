@@ -112,10 +112,10 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         // will not be safe unless synchronized MSC is used. Using synchronized MSC in multi-threaded context also
         // defeats the purpose of thread pooled msck repair.
         int threadPoolSize = MetastoreConf.getIntVar(conf,
-          MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE);
+            MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE);
         final ExecutorService executorService = Executors
-          .newFixedThreadPool(Math.min(candidates.size(), threadPoolSize),
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
+            .newFixedThreadPool(Math.min(candidates.size(), threadPoolSize),
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
         CountDownLatch countDownLatch = new CountDownLatch(candidates.size());
         LOG.info("Found {} candidate tables for partition discovery", candidates.size());
         setupMsckPathInvalidation();
@@ -123,7 +123,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         for (TableName table : candidates) {
           // this always runs in 'sync' mode where partitions can be added and dropped
           MsckInfo msckInfo = new MsckInfo(table.getCat(), table.getDb(), table.getTable(),
-            null, null, true, true, true, -1);
+              null, null, true, true, true, -1);
           executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
         }
         countDownLatch.await();
