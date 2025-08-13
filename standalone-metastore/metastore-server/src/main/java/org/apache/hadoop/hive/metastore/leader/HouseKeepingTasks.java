@@ -114,8 +114,10 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
         task.setConf(configuration);
         task.enforceMutex(election.enforceMutex());
         long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-        runningTasks.add(task);
-        metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
+        if (freq > 0) {
+          runningTasks.add(task);
+          metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
+        }
       }
     }
 
