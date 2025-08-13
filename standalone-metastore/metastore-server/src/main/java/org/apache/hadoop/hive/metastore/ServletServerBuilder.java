@@ -18,6 +18,9 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import static org.eclipse.jetty.util.URIUtil.HTTP;
+import static org.eclipse.jetty.util.URIUtil.HTTPS;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -53,8 +56,6 @@ import java.util.function.Function;
  */
 public class ServletServerBuilder {
   private static final Logger LOGGER = LoggerFactory.getLogger(ServletServerBuilder.class);
-  private static final String HTTP = "http";
-  private static final String HTTPS = "https";
   /**
    * The configuration instance.
    */

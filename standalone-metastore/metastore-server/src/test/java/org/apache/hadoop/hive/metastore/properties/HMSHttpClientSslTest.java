@@ -53,7 +53,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(MetastoreUnitTest.class)
-public class HMSServletTest1 extends HMSServletTest {
+public class HMSHttpClientSslTest extends HMSJsonClientSslTest {
   @Override
   public void tearDown() throws Exception {
     if (client instanceof AutoCloseable) {
@@ -66,8 +66,7 @@ public class HMSServletTest1 extends HMSServletTest {
   @Override
   protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
     String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    String scheme = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL)
-            ? "https" : "http";
+    String scheme = getScheme(conf);
     URI uri = new URI(scheme + "://hive@localhost:" + sport + "/" + path + "/" + NS);
     String jwt = generateJWT();
     return new JsonHttpClient(conf, jwt, uri);
@@ -83,7 +82,7 @@ public class HMSServletTest1 extends HMSServletTest {
   /**
    * A property client that uses Apache HttpClient as base.
    */
-  public static class JsonHttpClient implements HttpPropertyClient, AutoCloseable {
+  private static class JsonHttpClient implements HttpPropertyClient, AutoCloseable {
     private final URI uri;
     private final HttpClient client;
     private final String jwt;

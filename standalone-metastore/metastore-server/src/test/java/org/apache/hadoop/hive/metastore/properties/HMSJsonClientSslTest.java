@@ -16,6 +16,8 @@
  */
 package org.apache.hadoop.hive.metastore.properties;
 
+import static org.eclipse.jetty.util.URIUtil.HTTP;
+import static org.eclipse.jetty.util.URIUtil.HTTPS;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -48,7 +50,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
 @Category(MetastoreUnitTest.class)
-public class HMSServletTest extends HMSTestBase {
+public class HMSJsonClientSslTest extends HMSTestBase {
   String path = null;
   Server servletServer = null;
   int servletPort = -1;
@@ -60,10 +62,14 @@ public class HMSServletTest extends HMSTestBase {
     path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
   }
 
+  protected void setConf(Configuration conf) throws Exception {
+    setHttpsConf(conf);
+  }
+
   @Override
   protected int createServer(Configuration conf) throws Exception {
     if (servletServer == null) {
-      setHttpsConf(conf);
+      setConf(conf);
       servletServer = PropertyServlet.startServer(conf);
       if (servletServer == null || !servletServer.isStarted()) {
         Assert.fail("http server did not start");
@@ -87,7 +93,7 @@ public class HMSServletTest extends HMSTestBase {
   }
 
   protected static String getScheme(Configuration conf) {
-    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL) ? "https" : "http";
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL) ? HTTPS : HTTP;
   }
 
   @Override
