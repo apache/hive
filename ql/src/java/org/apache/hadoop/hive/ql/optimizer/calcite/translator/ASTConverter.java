@@ -610,19 +610,16 @@ public class ASTConverter {
       int baseFieldCount = tableFunctionSource.schema.size();
       List<RelDataTypeField> allOutputFields = tfs.getRowType().getFieldList();
 
-      final String baseAlias = tableFunctionSource.schema.get(0).table;
+      final String sqAlias = tableFunctionSource.schema.get(0).table;
       Stream<ColumnInfo> baseColumnsStream = allOutputFields.subList(0, baseFieldCount).stream()
-          .map(field -> new ColumnInfo(baseAlias, field.getName()));
+          .map(field -> new ColumnInfo(sqAlias, field.getName()));
 
       final String lateralViewAlias = nextAlias();
       Stream<ColumnInfo> udtfColumnsStream =
           allOutputFields.subList(baseFieldCount, allOutputFields.size()).stream()
               .map(field -> new ColumnInfo(lateralViewAlias, field.getName()));
 
-      s = new Schema(
-          Stream.concat(baseColumnsStream, udtfColumnsStream).collect(Collectors.toList())
-      );
-
+      s = new Schema(Stream.concat(baseColumnsStream, udtfColumnsStream).toList());
       ast = createASTLateralView(tfs, s, tableFunctionSource, lateralViewAlias);
     } else if (r instanceof TableSpool) {
       TableSpool spool = (TableSpool) r;
