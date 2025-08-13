@@ -177,7 +177,6 @@ public abstract class HMSTestBase {
    */
   public static void setHttpsConf(Configuration conf) {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.USE_SSL, true);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PATH,
             STORES_DIR + File.separator + LOCALHOST_KEY_STORE_NAME);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD,
@@ -202,7 +201,7 @@ public abstract class HMSTestBase {
    */
   protected static SSLContext clientSSLContextFactory(Configuration conf) {
     try {
-      boolean sslEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS);
+      boolean sslEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
       if (!sslEnabled) {
         // SSL is not enabled in configuration
         return null;

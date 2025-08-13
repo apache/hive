@@ -171,7 +171,7 @@ public class ServletServerBuilder {
    * @return The created SslContextFactory or null if creation failed
    */
   private static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
-      return ServletSecurity.createSslContextFactoryIf(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS);
+      return ServletSecurity.createSslContextFactoryIf(conf, MetastoreConf.ConfVars.USE_SSL);
   }
 
   /**

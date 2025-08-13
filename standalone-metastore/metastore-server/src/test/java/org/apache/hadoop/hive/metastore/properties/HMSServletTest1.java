@@ -66,7 +66,7 @@ public class HMSServletTest1 extends HMSServletTest {
   @Override
   protected PropertyClient createClient(Configuration conf, int sport) throws Exception {
     String path = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH);
-    String scheme = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS)
+    String scheme = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL)
             ? "https" : "http";
     URI uri = new URI(scheme + "://hive@localhost:" + sport + "/" + path + "/" + NS);
     String jwt = generateJWT();

@@ -87,7 +87,7 @@ public class HMSServletTest extends HMSTestBase {
   }
 
   protected static String getScheme(Configuration conf) {
-    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HTTPSERVER_USE_HTTPS) ? "https" : "http";
+    return MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL) ? "https" : "http";
   }
 
   @Override
