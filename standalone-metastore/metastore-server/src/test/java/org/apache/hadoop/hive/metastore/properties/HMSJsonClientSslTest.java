@@ -45,10 +45,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.TestMethodOrder;
 
-@TestMethodOrder(MethodOrderer.MethodName.class)
 @Category(MetastoreUnitTest.class)
 public class HMSJsonClientSslTest extends HMSTestBase {
   String path = null;
