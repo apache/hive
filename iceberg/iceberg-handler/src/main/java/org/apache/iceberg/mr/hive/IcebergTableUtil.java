@@ -615,14 +615,14 @@ public class IcebergTableUtil {
           .toList();
       }
       Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
-      LOG.info("Using col stats from : {}", statsPath);
+      LOG.info("Using column stats from: {}", statsPath);
 
       while (it.hasNext()) {
         byte[] byteBuffer = ByteBuffers.toByteArray(it.next());
         colStats.add(SerializationUtils.deserialize(byteBuffer));
       }
     } catch (Exception e) {
-      LOG.warn(" Unable to read col stats: ", e);
+      LOG.warn("Unable to read column stats: {}", e.getMessage());
     }
     return colStats;
   }

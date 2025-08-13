@@ -635,7 +635,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
                     .collect(ImmutableList.toImmutableList())
             );
       } catch (IOException e) {
-        LOG.warn("Unable to write stats to puffin file {}", e.getMessage());
+        LOG.warn("Unable to write column stats to the Puffin file: {}", e.getMessage());
         return false;
       }
       tbl.updateStatistics()
@@ -644,7 +644,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return true;
 
     } catch (Exception e) {
-      LOG.warn("Unable to invalidate or merge stats: {}", e.getMessage());
+      LOG.warn("Unable to invalidate or merge column stats: {}", e.getMessage());
     }
     return false;
   }

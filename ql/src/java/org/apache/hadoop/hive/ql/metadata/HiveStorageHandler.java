@@ -189,7 +189,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param jobProperties receives properties copied or transformed from the table properties
    *
    * @deprecated since 4.0.1, will be removed in 5.0.0,
-   * use {@link #configureInputJobProperties,#configureOutputJobProperties} methods instead.
+   * use {@link #configureInputJobProperties} and {@link #configureOutputJobProperties} instead.
    */
   @Deprecated
   void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties);
