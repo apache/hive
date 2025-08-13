@@ -165,16 +165,6 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Create an SSL context factory using the configuration.
-   *
-   * @param conf The configuration to use
-   * @return The created SslContextFactory or null if creation failed
-   */
-  private static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
-      return ServletSecurity.createSslContextFactoryIf(conf, MetastoreConf.ConfVars.USE_SSL);
-  }
-
-  /**
    * Create an HTTP or HTTPS connector.
    *
    * @param server The server to create the connector for
@@ -185,26 +175,19 @@ public class ServletServerBuilder {
    */
   private ServerConnector createConnector(Server server, SslContextFactory sslContextFactory, int port) {
     final ServerConnector connector;
-    if (sslContextFactory == null) {
-      connector = new ServerConnector(server);
-      connector.setName(HTTP);
-      HttpConnectionFactory httpFactory = connector.getConnectionFactory(HttpConnectionFactory.class);
-      // do not leak information
-      if (httpFactory != null) {
-        HttpConfiguration httpConf = httpFactory.getHttpConfiguration();
-        httpConf.setSendServerVersion(false);
-        httpConf.setSendXPoweredBy(false);
-      }
-    } else {
-      HttpConfiguration httpsConf = new HttpConfiguration();
-      httpsConf.setSecureScheme(HTTPS);
-      httpsConf.setSecurePort(port);
-      // do not leak information
-      httpsConf.setSendServerVersion(false);
-      httpsConf.setSendXPoweredBy(false);
-      httpsConf.addCustomizer(new SecureRequestCustomizer());
-      connector = new ServerConnector(server, sslContextFactory, new HttpConnectionFactory(httpsConf));
+    HttpConfiguration httpConf = new HttpConfiguration();
+    // Do not leak information
+    httpConf.setSendServerVersion(false);
+    httpConf.setSendXPoweredBy(false);
+    if (sslContextFactory != null) {
+      httpConf.setSecureScheme(HTTPS);
+      httpConf.setSecurePort(port);
+      httpConf.addCustomizer(new SecureRequestCustomizer());
+      connector = new ServerConnector(server, sslContextFactory, new HttpConnectionFactory(httpConf));
       connector.setName(HTTPS);
+    } else {
+      connector = new ServerConnector(server, new HttpConnectionFactory(httpConf));
+      connector.setName(HTTP);
     }
     connector.setPort(port);
     connector.setReuseAddress(true);
@@ -253,7 +236,7 @@ public class ServletServerBuilder {
     }
     final Server server = createServer();
     // create the connectors
-    final SslContextFactory sslContextFactory = createSslContextFactory(configuration);
+    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(configuration);
     final ServerConnector[] connectors = new ServerConnector[size];
     final ServletContextHandler[] handlers = new ServletContextHandler[size];
     Iterator<Map.Entry<Integer, ServletContextHandler>> it = handlersMap.entrySet().iterator();

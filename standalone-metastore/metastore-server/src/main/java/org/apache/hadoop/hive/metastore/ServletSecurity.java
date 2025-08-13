@@ -320,19 +320,7 @@ public class ServletSecurity {
    * @throws IOException if getting password fails
    */
   static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
-    return createSslContextFactoryIf(conf, MetastoreConf.ConfVars.USE_SSL);
-  }
-
-  /**
-   * Creates an SSL context factory if a configuration variable states so.
-   * @param conf the configuration
-   * @param condition the condition variable to check for SSL
-   * @return null if no ssl in config, an instance otherwise
-   * @throws IOException if getting password fails
-   */
-  static SslContextFactory createSslContextFactoryIf(Configuration conf, MetastoreConf.ConfVars condition)
-          throws IOException {
-    final boolean useSsl = MetastoreConf.getBoolVar(conf, condition);
+    final boolean useSsl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     if (!useSsl) {
       return null;
     }
