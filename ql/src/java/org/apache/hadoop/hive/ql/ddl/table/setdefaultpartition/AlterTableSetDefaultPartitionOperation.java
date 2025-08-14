@@ -39,7 +39,7 @@ public class AlterTableSetDefaultPartitionOperation extends AbstractAlterTableOp
   protected void doAlteration(Table table, Partition partition) throws HiveException {
     if (table.isPartitioned()) {
       // put the tableLevelDefaultPartitionName in the table property
-      table.getParameters().put(HiveStringUtils.DEFAULT_PARTITION_NAME, desc.tableLevelDefaultPartitionName());
+      table.getParameters().put(HiveStringUtils.DEFAULT_PARTITION_NAME, desc.getTableLevelDefaultPartitionName());
     } else {
       throw new HiveException(ErrorMsg.NON_PARTITIONED_TABLE, table.getTableName());
     }

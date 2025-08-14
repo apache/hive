@@ -81,6 +81,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreChecker.getDefaultPartitionName;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -3439,13 +3440,5 @@ public class CachedStore implements RawStore, Configurable {
   private boolean shouldGetConstraintFromRawStore(String catName, String dbName, String tblName) {
     return !shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())
         || !sharedCache.isTableConstraintValid(catName, dbName, tblName);
-  }
-
-  public static String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
-    if (tableParams != null && tableParams.containsKey(HiveAlterHandler.DEFAULT_PARTITION_NAME)) {
-      return tableParams.get(HiveAlterHandler.DEFAULT_PARTITION_NAME);
-    } else {
-      return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME);
-    }
   }
 }

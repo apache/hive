@@ -39,12 +39,7 @@ public class AlterTableSetDefaultPartitionDesc extends AbstractAlterTableDesc {
   }
 
   @Explain(displayName = "default partition name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String tableLevelDefaultPartitionName() {
+  public String getTableLevelDefaultPartitionName() {
     return tableLevelDefaultPartitionName;
-  }
-
-  @Override
-  public boolean mayNeedWriteId() {
-    return true;
   }
 }

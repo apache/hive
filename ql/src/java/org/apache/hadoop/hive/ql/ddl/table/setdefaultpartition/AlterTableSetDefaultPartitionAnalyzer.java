@@ -34,9 +34,9 @@ import java.util.Map;
  * Analyzer for set default partition command.
  */
 @DDLType(types = HiveParser.TOK_ALTERTABLE_SETDEFAULTPARTITION)
-public class AlterTableSetDefaultPartitionAnalyser extends AbstractAlterTableAnalyzer {
+public class AlterTableSetDefaultPartitionAnalyzer extends AbstractAlterTableAnalyzer {
 
-  public AlterTableSetDefaultPartitionAnalyser(QueryState queryState) throws SemanticException {
+  public AlterTableSetDefaultPartitionAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -45,7 +45,7 @@ public class AlterTableSetDefaultPartitionAnalyser extends AbstractAlterTableAna
       throws SemanticException {
     String tableLevelDefaultPartitionName = unescapeSQLString(command.getChild(0).getText());
     AlterTableSetDefaultPartitionDesc desc = new AlterTableSetDefaultPartitionDesc(tableName,
-            tableLevelDefaultPartitionName);
+        tableLevelDefaultPartitionName);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }

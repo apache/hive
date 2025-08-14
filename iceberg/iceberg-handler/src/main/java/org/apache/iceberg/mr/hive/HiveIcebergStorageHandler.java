@@ -894,7 +894,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
-        PartitionUtils.getDefaultPartitionName(hmsTable.getParameters(), (HiveConf) conf),
+        PartitionUtils.getDefaultPartitionName(hmsTable.getParameters(), hiveConf),
         hiveConf.getIntVar(ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
 
     if (table.spec().isPartitioned() &&

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -193,16 +194,12 @@ public final class PartitionUtils {
     }
   }
 
-  public static String getDefaultPartitionName(Map<String, String> tableParams, HiveConf conf) {
-    return getDefaultPartitionName(tableParams, HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
-  }
-
-  public static String getDefaultPartitionName(Map<String, String> tableParams, String defaultPartitionName) {
+  public static String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
     // Check if the table has an override for the default partition name
     if (tableParams != null && tableParams.containsKey(HiveStringUtils.DEFAULT_PARTITION_NAME)) {
       return tableParams.get(HiveStringUtils.DEFAULT_PARTITION_NAME);
     } else {
-      return defaultPartitionName;
+      return conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname);
     }
   }
 }
