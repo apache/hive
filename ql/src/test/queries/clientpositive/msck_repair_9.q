@@ -15,6 +15,7 @@ SHOW PARTITIONS tbl_x;
 CREATE EXTERNAL TABLE tbl_y (id INT, name STRING) PARTITIONED BY (month INT, day INT) stored as ORC location '${system:test.tmp.dir}/apps/hive/warehouse/test.db/tbl_x/';
 alter table tbl_y set default partition to 'ANOTHER_PARTITION';
 
+dfs ${system:test.dfs.mkdir} -p ${system:test.tmp.dir}/apps/hive/warehouse/test.db/tbl_x/month=DEFAULT/day=DEFAULT;
 set hive.msck.path.validation=skip;
 
 MSCK REPAIR TABLE tbl_y;
@@ -31,7 +32,6 @@ SHOW PARTITIONS tbl_y;
 
 set hive.msck.path.validation=ignore;
 
-dfs ${system:test.dfs.mkdir} -p ${system:test.tmp.dir}/apps/hive/warehouse/test.db//tbl_x/month=DEFAULT/day=DEFAULT;
 MSCK REPAIR TABLE tbl_y;
 SHOW PARTITIONS tbl_y;
 

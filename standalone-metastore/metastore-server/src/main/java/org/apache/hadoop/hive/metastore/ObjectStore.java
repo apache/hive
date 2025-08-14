@@ -3350,7 +3350,7 @@ public class ObjectStore implements RawStore, Configurable {
     ExpressionTree tmp = null;
     if (!isEmptyFilter) {
       tmp = PartFilterExprUtil.makeExpressionTree(expressionProxy, exprBytes,
-              defaultPartitionName, conf);
+          defaultPartitionName, conf);
     }
     final ExpressionTree exprTree = tmp;
     return new GetListHelper<String>(catName, dbName, tblName, true, true) {
@@ -4763,7 +4763,7 @@ public class ObjectStore implements RawStore, Configurable {
           // if there are more than one filter string we AND them together
           initExpressionTree();
           return directSql.generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
-                  table.getPartitionKeys(), tree, null, filter, ctx.table.getParameters());
+                  table.getPartitionKeys(), tree, null, filter, table.getParameters());
         }
         // BY_VALUES and BY_NAMES are always supported
         return true;
