@@ -322,8 +322,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     }
 
     if (conf.getTableMetadata() != null) {
-      defaultPartitionName = PartitionUtils.getDefaultPartitionName(conf.getTableMetadata().getParameters(),
-              HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
+      defaultPartitionName = PartitionUtils.getDefaultPartitionName(conf.getTableMetadata().getParameters(), hconf);
     } else {
       // If the table metadata is not available, we cannot determine the default partition name.
       defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);

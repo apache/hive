@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -73,7 +74,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
    */
   public DynamicPartitionFileRecordWriterContainer(
       RecordWriter<? super WritableComparable<?>, ? super Writable> baseWriter,
-      TaskAttemptContext context, org.apache.hadoop.hive.metastore.api.Table tbl)
+      TaskAttemptContext context, Table tbl)
       throws IOException, InterruptedException {
     super(baseWriter, context);
     maxDynamicPartitions = jobInfo.getMaxDynamicPartitions();
@@ -91,7 +92,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
     this.dynamicObjectInspectors = new HashMap<String, ObjectInspector>();
     this.dynamicOutputJobInfo = new HashMap<String, OutputJobInfo>();
     this.HIVE_DEFAULT_PARTITION_VALUE = PartitionUtils.getDefaultPartitionName(tbl.getParameters(),
-            HiveConf.getVar(context.getConfiguration(), HiveConf.ConfVars.DEFAULT_PARTITION_NAME));
+        context.getConfiguration());
   }
 
   @Override
