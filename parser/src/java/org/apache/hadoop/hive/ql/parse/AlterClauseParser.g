@@ -85,6 +85,7 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameBranch
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
+    | alterStatementSuffixSetDefaultPartition
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -104,7 +105,6 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
   | alterStatementSuffixDropCol
-  | alterStatementSuffixSetDefaultPartition
   | alterStatementSuffixUpdateColumns
   ;
 

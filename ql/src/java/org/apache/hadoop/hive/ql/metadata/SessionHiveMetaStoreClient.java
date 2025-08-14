@@ -1571,7 +1571,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         for (Pair<Integer, byte[]> pair : partExprs) {
           byte[] expr = pair.getRight();
           String filter = generateJDOFilter(table, expr, PartitionUtils.getDefaultPartitionName(table.getParameters(),
-                  conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname)));
+              conf));
           List<Partition> partitions = tt.listPartitionsByFilter(filter);
           for (Partition p : partitions) {
             Partition droppedPartition = tt.dropPartition(p.getValues());

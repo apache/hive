@@ -30,7 +30,7 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
-import static org.apache.hadoop.hive.metastore.cache.CachedStore.getDefaultPartitionName;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreChecker.getDefaultPartitionName;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -887,7 +887,7 @@ class MetaStoreDirectSql {
     result.catName = catName;
     result.filter = PartitionFilterGenerator.generateSqlFilter(catName, dbName, tableName,
         partitionKeys, tree, result.params, result.joins, dbHasJoinCastBug,
-        ((defaultPartitionName == null) ? getDefaultPartitionName(tableParams, conf ) : defaultPartitionName),
+        ((defaultPartitionName == null) ? getDefaultPartitionName(tableParams, conf) : defaultPartitionName),
         dbType, schema, result.compactJoins);
     return result.filter != null;
   }
