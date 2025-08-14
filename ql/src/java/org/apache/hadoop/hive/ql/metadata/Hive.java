@@ -158,6 +158,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
+import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
@@ -1954,6 +1955,12 @@ public class Hive implements AutoCloseable {
     return getTablesByType(database, tablePattern, null);
   }
 
+  public static TableFetcher getIcebergTables(IMetaStoreClient msc, String catalogName, String dbPattern,
+      String tablePattern) {
+    return new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes("EXTERNAL_TABLE")
+            .tableCondition(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "table_type like \"ICEBERG\" ").build();
+  }
+
   /**
    * Returns all existing tables of a type (VIRTUAL_VIEW|EXTERNAL_TABLE|MANAGED_TABLE) from the specified
    * database which match the given pattern. The matching occurs as per Java regular expressions.
@@ -1965,6 +1972,21 @@ public class Hive implements AutoCloseable {
    */
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
+    return getTablesByType(dbName, pattern, type, false);
+  }
+
+  /**
+   * Returns all existing tables of a type (VIRTUAL_VIEW|EXTERNAL_TABLE|MANAGED_TABLE) from the specified
+   * database which match the given pattern. The matching occurs as per Java regular expressions.
+   * @param dbName Database name to find the tables in. if null, uses the current database in this session.
+   * @param pattern A pattern to match for the table names.If null, returns all names from this DB.
+   * @param type The type of tables to return. VIRTUAL_VIEWS for views. If null, returns all tables and views.
+   * @param isIceberg If to only return iceberg tables.
+   * @return list of table names that match the pattern.
+   * @throws HiveException
+   */
+  public List<String> getTablesByType(String dbName, String pattern, TableType type, boolean isIceberg)
+      throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
 
@@ -1974,6 +1996,15 @@ public class Hive implements AutoCloseable {
 
     try {
       List<String> result;
+      if (isIceberg) {
+        if (type != null) {
+          throw new HiveException("Iceberg Tables by default is External Table");
+        } else {
+          String icebergPattern = (pattern != null) ? pattern : ".*";
+          return getIcebergTables(getMSC(), null, dbName, icebergPattern).getTables().stream()
+                  .map(TableName::getTable).collect(Collectors.toList());
+        }
+      }
       if (type != null) {
         if (pattern != null) {
           result = getMSC().getTables(dbName, pattern, type);

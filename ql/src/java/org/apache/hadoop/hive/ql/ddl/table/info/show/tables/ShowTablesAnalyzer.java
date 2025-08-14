@@ -37,6 +37,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 @DDLType(types = HiveParser.TOK_SHOWTABLES)
 public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
+  public final String TABLE_TYPE = "table_type";
+  public final String FORMAT = "format";
+  public final String ICEBERG = "iceberg";
   public ShowTablesAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -53,6 +56,7 @@ public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
     String tableNames = null;
     TableType tableTypeFilter = null;
     boolean isExtended = false;
+    boolean isIceberg = false;
     for (int i = 0; i < root.getChildCount(); i++) {
       ASTNode child = (ASTNode) root.getChild(i);
       if (child.getType() == HiveParser.TOK_FROM) { // Specifies a DB
@@ -60,10 +64,21 @@ public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
         db.validateDatabaseExists(dbName);
       } else if (child.getType() == HiveParser.TOK_TABLE_TYPE) { // Filter on table type
         String tableType = unescapeIdentifier(child.getChild(0).getText());
-        if (!"table_type".equalsIgnoreCase(tableType)) {
-          throw new SemanticException("SHOW TABLES statement only allows equality filter on table_type value");
+        if (!TABLE_TYPE.equalsIgnoreCase(tableType) && !FORMAT.equalsIgnoreCase(tableType)) {
+          throw new SemanticException("SHOW TABLES statement only allows equality filter on table_type or format value");
         }
-        tableTypeFilter = TableType.valueOf(unescapeSQLString(child.getChild(1).getText()));
+        String typeValue = unescapeSQLString(child.getChild(1).getText());
+        if (TABLE_TYPE.equalsIgnoreCase(tableType)) {
+          tableTypeFilter = TableType.valueOf(typeValue);
+        } else if (FORMAT.equalsIgnoreCase(tableType)) {
+          if (isExtended) {
+            throw new SemanticException("SHOW TABLES statement does not allow extended with format value");
+          }
+          isIceberg = typeValue.equalsIgnoreCase(ICEBERG);
+          if (!isIceberg) {
+            throw new SemanticException("SHOW TABLES statement only allows iceberg format value");
+          }
+        }
       } else if (child.getType() == HiveParser.KW_EXTENDED) { // Include table type
         isExtended = true;
       } else { // Uses a pattern
@@ -73,7 +88,8 @@ public class ShowTablesAnalyzer extends BaseSemanticAnalyzer {
 
     inputs.add(new ReadEntity(getDatabase(dbName)));
 
-    ShowTablesDesc desc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames, tableTypeFilter, isExtended);
+    ShowTablesDesc desc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames, tableTypeFilter, isExtended,
+            isIceberg);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 

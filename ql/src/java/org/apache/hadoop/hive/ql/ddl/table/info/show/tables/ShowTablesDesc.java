@@ -41,13 +41,16 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
   private final String pattern;
   private final TableType typeFilter;
   private final boolean isExtended;
+  private final boolean isIceberg;
 
-  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType typeFilter, boolean isExtended) {
+  public ShowTablesDesc(Path resFile, String dbName, String pattern, TableType typeFilter, boolean isExtended,
+      boolean isIceberg) {
     this.resFile = resFile.toString();
     this.dbName = dbName;
     this.pattern = pattern;
     this.typeFilter = typeFilter;
     this.isExtended = isExtended;
+    this.isIceberg = isIceberg;
   }
 
   @Explain(displayName = "pattern")
@@ -83,5 +86,9 @@ public class ShowTablesDesc implements DDLDesc, Serializable {
 
   public String getSchema() {
     return isExtended ? EXTENDED_TABLES_SCHEMA : TABLES_VIEWS_SCHEMA;
+  }
+
+  public boolean isIceberg() {
+    return isIceberg;
   }
 }
