@@ -31,7 +31,6 @@ import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
@@ -46,12 +45,11 @@ import org.apache.iceberg.view.ViewBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Class that wraps an Iceberg Catalog to cache tables.
  */
 public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespaces, ViewCatalog {
-  private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
   protected final HiveCatalog hiveCatalog;
   
   public HMSCachingCatalog(HiveCatalog catalog, long expiration) {
@@ -69,41 +67,48 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
     return hiveCatalog.listNamespaces(nmspc);
   }
 
-  protected void cacheInvalidateInc(TableIdentifier tid) {
-    // This method is intentionally left empty. It can be overridden in subclasses if needed.
-  }
-
-  protected void cacheLoadInc(TableIdentifier tid) {
-    // This method is intentionally left empty. It can be overridden in subclasses if needed.
-  }
-
-  protected void cacheHitInc(TableIdentifier tid) {
-    // This method is intentionally left empty. It can be overridden in subclasses if needed.
-  }
-
-  protected void cacheMissInc(TableIdentifier tid) {
-    // This method is intentionally left empty. It can be overridden in subclasses if needed.
-  }
-
-  protected void cacheMetaLoadInc(TableIdentifier tid) {
+  /**
+   * Callback when cache invalidates the entry for a given table identifier.
+   *
+   * @param tid the table identifier to invalidate
+   */
+  protected void onCacheInvalidate(TableIdentifier tid) {
     // This method is intentionally left empty. It can be overridden in subclasses if needed.
   }
 
   /**
-   * Gets the metadata file location of a table.
+   * Callback when cache loads a table for a given table identifier.
    *
-   * @param table the table
-   * @return the location of the metadata file, or null if the table does not have a location
+   * @param tid the table identifier
    */
-  protected static String getMetadataLocation(final Table table) {
-    if (table instanceof HasTableOperations tableOps) {
-      final TableOperations ops = tableOps.operations();
-      final TableMetadata meta;
-      if (ops != null && (meta = ops.current()) != null) {
-        return meta.metadataFileLocation();
-      }
-    }
-    return null;
+  protected void onCacheLoad(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+
+  /**
+   * Callback when cache hit for a given table identifier.
+   *
+   * @param tid the table identifier
+   */
+  protected void onCacheHit(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+
+  /**
+   * Callback when cache miss occurs for a given table identifier.
+   *
+   * @param tid the table identifier
+   */
+  protected void onCacheMiss(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+  /**
+   * Callback when cache loads a metadata table for a given table identifier.
+   *
+   * @param tid the table identifier
+   */
+  protected void onCacheMetaLoad(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
   }
 
   @Override
@@ -117,21 +122,23 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
       if (location == null) {
         LOG.debug("Table {} has no location, returning cached table without location", canonicalized);
       } else {
-        String cachedLocation = getMetadataLocation(cachedTable);
+        String cachedLocation = cachedTable instanceof HasTableOperations tableOps
+                ? tableOps.operations().current().metadataFileLocation()
+                : null;
         if (!location.equals(cachedLocation)) {
-          LOG.debug("Invalidate table {}, cached location {} != actual location {}", canonicalized, cachedLocation, location);
+          LOG.debug("Invalidate table {}, cached {} != actual {}", canonicalized, cachedLocation, location);
           // Invalidate the cached table if the location is different
           invalidateTable(canonicalized);
-          cacheInvalidateInc(canonicalized);
+          onCacheInvalidate(canonicalized);
         } else {
           LOG.debug("Returning cached table: {}", canonicalized);
-          cacheHitInc(canonicalized);
+          onCacheHit(canonicalized);
           return cachedTable;
         }
       }
     } else {
       LOG.debug("Cache miss for table: {}", canonicalized);
-      cacheMissInc(canonicalized);
+      onCacheMiss(canonicalized);
     }
     Table table = cache.get(canonicalized, catalog::loadTable);
     if (table instanceof BaseMetadataTable) {
@@ -141,20 +148,20 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
       Table originTable = cache.get(originTableIdentifier, catalog::loadTable);
       // Share TableOperations instance of origin table for all metadata tables, so that metadata
       // table instances are refreshed as well when origin table instance is refreshed.
-      if (originTable instanceof HasTableOperations originTableOps) {
-        TableOperations ops = originTableOps.operations();
+      if (originTable instanceof HasTableOperations tableOps) {
+        TableOperations ops = tableOps.operations();
         MetadataTableType type = MetadataTableType.from(canonicalized.name());
         Table metadataTable =
                 MetadataTableUtils.createMetadataTableInstance(
                         ops, catalog.name(), originTableIdentifier, canonicalized, type);
         cache.put(canonicalized, metadataTable);
-        cacheMetaLoadInc(canonicalized);
+        onCacheMetaLoad(canonicalized);
         LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
         // Return the metadata table instead of the original table
         return metadataTable;
       }
     }
-    cacheLoadInc(canonicalized);
+    onCacheLoad(canonicalized);
     LOG.debug("Loaded table: {} ", canonicalized);
     return table;
   }

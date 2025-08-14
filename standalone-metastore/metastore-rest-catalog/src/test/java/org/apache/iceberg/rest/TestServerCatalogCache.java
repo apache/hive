@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.Files;
+import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Namespace;
@@ -183,7 +184,9 @@ class TestServerCatalogCache {
   }
 
   private static String metadataLocation(Table table) {
-    return HMSCachingCatalog.getMetadataLocation(table);
+    return table instanceof HasTableOperations tableOps
+          ? tableOps.operations().current().metadataFileLocation()
+          : null;
   }
 
   private void insertRows(Table table) throws IOException {

@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * misses, invalidations, and loads.
  */
 public class HMSTestCachingCatalog extends HMSCachingCatalog {
-  private final HiveCatalog hiveCatalog;
   protected final AtomicInteger cacheHitCount = new AtomicInteger(0);
   protected final AtomicInteger cacheMissCount = new AtomicInteger(0);
   protected final AtomicInteger cacheInvalidationCount = new AtomicInteger(0);
@@ -46,7 +45,6 @@ public class HMSTestCachingCatalog extends HMSCachingCatalog {
    */
   public HMSTestCachingCatalog(HiveCatalog catalog, long expiration) {
     super(catalog, expiration);
-    this.hiveCatalog = catalog;
   }
 
   public Map<String, Integer> getCacheMetrics() {
@@ -63,22 +61,22 @@ public class HMSTestCachingCatalog extends HMSCachingCatalog {
   }
 
   @Override
-  protected void cacheInvalidateInc(TableIdentifier tid) {
+  protected void onCacheInvalidate(TableIdentifier tid) {
     cacheInvalidationCount.incrementAndGet();
   }
 
   @Override
-  protected void cacheLoadInc(TableIdentifier tid) {
+  protected void onCacheLoad(TableIdentifier tid) {
     cacheLoadCount.incrementAndGet();
   }
 
   @Override
-  protected void cacheHitInc(TableIdentifier tid) {
+  protected void onCacheHit(TableIdentifier tid) {
     cacheHitCount.incrementAndGet();
   }
 
   @Override
-  protected void cacheMissInc(TableIdentifier tid) {
+  protected void onCacheMiss(TableIdentifier tid) {
     cacheMissCount.incrementAndGet();
   }
 }
