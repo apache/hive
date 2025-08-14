@@ -396,7 +396,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     // entry. Since the size of a entry
     // is not known, estimate that based on the number of entries
     if (hashAggr) {
-      computeMaxEntriesHashAggr();
+      computeMaxEntriesHashAggr(maxMemory);
     }
     memoryThreshold = this.getConf().getMemoryThreshold();
     LOG.info("isTez: {} isLlap: {} numExecutors: {} maxMemory: {}", isTez, isLlap, numExecutors, maxMemory);
@@ -407,11 +407,8 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
    * the total amount of memory to be used by the map-side hash. By default, all
    * available memory is used. The size of each row is estimated, rather
    * crudely, and the number of entries are figure out based on that.
-   *
-   * @return number of entries that can fit in hash table - useful for map-side
-   *         aggregation only
    **/
-  private void computeMaxEntriesHashAggr() throws HiveException {
+  private void computeMaxEntriesHashAggr(long maxMemory) throws HiveException {
     final float memoryPercentage = this.getConf().getGroupByMemoryUsage();
     maxHashTblMemory = (long) (memoryPercentage * maxMemory);
     if (LOG.isInfoEnabled()) {

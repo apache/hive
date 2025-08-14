@@ -37,7 +37,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.IConfigureJobConf;
@@ -156,8 +155,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private transient long maxMemory;
 
   private float hashTableMemoryPercentage;
-
-  private boolean isLlap = false;
 
   // tracks overall access count in map agg buffer any given time.
   private long totalAccessCount;
@@ -635,9 +632,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       maxHashTblMemory = (int)(maxMemory * hashTableMemoryPercentage);
 
       if (LOG.isInfoEnabled()) {
-        LOG.info("GBY memory limits - isTez: {} isLlap: {} maxHashTblMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
+        LOG.info("GBY memory limits - isTez: {} maxHashTblMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
           isTez,
-          isLlap,
           LlapUtil.humanReadableByteCount(maxHashTblMemory),
           LlapUtil.humanReadableByteCount(maxMemory),
           hashTableMemoryPercentage,
@@ -1128,7 +1124,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    isLlap = LlapProxy.isDaemon();
     VectorExpression.doTransientInit(keyExpressions, hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<>();
