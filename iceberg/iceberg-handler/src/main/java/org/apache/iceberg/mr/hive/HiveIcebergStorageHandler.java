@@ -441,7 +441,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Map<String, String> partitionSpec)
       throws SemanticException {
     Table icebergTbl = IcebergTableUtil.getTable(conf, table);
-    String format = table.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT);
+    String format = Optional.ofNullable(table.getParameters()).orElseGet(Maps::newHashMap)
+        .get(TableProperties.DEFAULT_FILE_FORMAT);
     HiveTableUtil.appendFiles(fromURI, format, icebergTbl, isOverwrite, partitionSpec, conf);
   }
 

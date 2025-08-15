@@ -133,8 +133,8 @@ public class IcebergTableUtil {
     Properties properties = new Properties();
     properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
     properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
-    hmsTable.getParameters().computeIfPresent(InputFormatConfig.CATALOG_NAME,
-        (k, v) -> {
+    Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap)
+        .computeIfPresent(InputFormatConfig.CATALOG_NAME, (k, v) -> {
           properties.setProperty(k, v);
           return v;
         });

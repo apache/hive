@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -225,6 +226,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     this.catalogProperties = getCatalogProperties(hmsTable);
 
     // Set the table type even for non HiveCatalog based tables
+    if (hmsTable.getParameters() == null) {
+      hmsTable.setParameters(Maps.newHashMap());
+    }
     hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
 
@@ -276,10 +280,18 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
-    catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
+    String specString = PartitionSpecParser.toJson(spec);
+    catalogProperties.put(InputFormatConfig.PARTITION_SPEC, specString);
+
+    EnvironmentContext envContext = request.getEnvContext();
+    if (envContext == null) {
+      request.setEnvContext(new EnvironmentContext());
+    }
+    request.getEnvContext().putToProperties(TableProperties.DEFAULT_PARTITION_SPEC, specString);
     setCommonHmsTablePropertiesForIceberg(hmsTable);
 
-    if (hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+    if (Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap)
+        .containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
       createHMSTableInHook = true;
     }
 
@@ -294,7 +306,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   private void setSortOrder(org.apache.hadoop.hive.metastore.api.Table hmsTable, Schema schema,
       Properties properties) {
-    String sortOderJSONString = hmsTable.getParameters().get(TableProperties.DEFAULT_SORT_ORDER);
+    String sortOderJSONString = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap)
+        .get(TableProperties.DEFAULT_SORT_ORDER);
     SortFields sortFields = null;
     if (!Strings.isNullOrEmpty(sortOderJSONString)) {
       try {
@@ -324,11 +337,18 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    String catalogType = MetastoreConf.get(conf, MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getHiveName());
+    if (catalogType != null && !catalogType.isEmpty()) {
+      // If the catalog type is set, we assume that the table has been created in the delegate.createTable(request) call
+      return;
+    }
+
     if (icebergTable == null) {
 
       setFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 
-      String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      String metadataLocation = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap)
+          .get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       Table table;
       if (metadataLocation != null) {
         table = Catalogs.registerTable(conf, catalogProperties, metadataLocation);
@@ -363,7 +383,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties) && deleteData) {
       // Store the metadata and the io for deleting the actual table data
       try {
-        String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+        String metadataLocation = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap)
+            .get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
         this.deleteIo = Catalogs.loadTable(conf, catalogProperties).io();
         this.deleteMetadata = TableMetadataParser.read(deleteIo, metadataLocation);
       } catch (Exception e) {
@@ -492,6 +513,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // all or some of its data files have not been written out using the Iceberg writer, and therefore those data
       // files do not contain Iceberg field IDs. This makes certain schema evolution operations problematic, so we
       // want to disable these ops for now using this new table prop
+      if (hmsTable.getParameters() == null) {
+        hmsTable.setParameters(Maps.newHashMap());
+      }
       hmsTable.getParameters().put(MIGRATED_TO_ICEBERG, "true");
       NameMapping nameMapping = MappingUtil.create(preAlterTableProperties.schema);
       hmsTable.getParameters().put(TableProperties.DEFAULT_NAME_MAPPING, NameMappingParser.toJson(nameMapping));
@@ -753,7 +777,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,
       Map<String, String> contextProperties) {
-    Map<String, String> hmsTableParameters = hmsTable.getParameters();
+    Map<String, String> hmsTableParameters = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap);
     Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
     UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
     if (contextProperties.containsKey(SET_PROPERTIES)) {
@@ -822,7 +846,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       Preconditions.checkArgument(location != null, "Table location not set");
     }
 
-    Map<String, String> hmsParams = hmsTable.getParameters();
+    Map<String, String> hmsParams = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap);
     COMMON_HMS_PROPERTIES.forEach(hmsParams::putIfAbsent);
 
     // Remove null values from hms table properties
@@ -848,12 +872,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
    */
   private static Properties getCatalogProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     Properties properties = new Properties();
-
-    hmsTable.getParameters().entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
-      // translate key names between HMS and Iceberg where needed
-      String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
-      properties.put(icebergKey, e.getValue());
-    });
+    properties.putAll(HMSTablePropertyHelper.toIcebergProperties(hmsTable.getParameters()));
 
     if (properties.get(Catalogs.LOCATION) == null &&
         hmsTable.getSd() != null && hmsTable.getSd().getLocation() != null) {
@@ -866,11 +885,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     SerDeInfo serdeInfo = hmsTable.getSd().getSerdeInfo();
     if (serdeInfo != null) {
-      serdeInfo.getParameters().entrySet().stream()
-          .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
-            String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
-            properties.put(icebergKey, e.getValue());
-          });
+      properties.putAll(HMSTablePropertyHelper.toIcebergProperties(serdeInfo.getParameters()));
     }
 
     // Remove HMS table parameters we don't want to propagate to Iceberg
@@ -923,15 +938,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
             InputFormatConfig.PARTITION_SPEC + " or already converted to a partition transform ");
 
     PartitionSpec spec = IcebergTableUtil.spec(configuration, schema);
+    Map<String, String> hmsParameters = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap);
     if (spec != null) {
-      Preconditions.checkArgument(hmsTable.getParameters().get(InputFormatConfig.PARTITION_SPEC) == null,
+      Preconditions.checkArgument(hmsParameters.get(InputFormatConfig.PARTITION_SPEC) == null,
           "Provide only one of the following: Hive partition transform specification, or the " +
               InputFormatConfig.PARTITION_SPEC + " property");
       return spec;
     }
 
-    if (hmsTable.getParameters().get(InputFormatConfig.PARTITION_SPEC) != null) {
-      return PartitionSpecParser.fromJson(schema, hmsTable.getParameters().get(InputFormatConfig.PARTITION_SPEC));
+    if (hmsParameters.get(InputFormatConfig.PARTITION_SPEC) != null) {
+      return PartitionSpecParser.fromJson(schema, hmsParameters.get(InputFormatConfig.PARTITION_SPEC));
     } else {
       return PartitionSpec.unpartitioned();
     }
@@ -1089,6 +1105,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void setOrcOnlyFilesParam(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable.getParameters() == null) {
+      hmsTable.setParameters(Maps.newHashMap());
+    }
     if (isOrcOnlyFiles(hmsTable)) {
       hmsTable.getParameters().put(ORC_FILES_ONLY, "true");
     } else {
@@ -1097,13 +1116,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) &&
+    Map<String, String> hmsParameters = Optional.ofNullable(hmsTable.getParameters()).orElseGet(Maps::newHashMap);
+    Map<String, String> serdeParameters = Optional.ofNullable(hmsTable.getSd().getSerdeInfo().getParameters())
+        .orElseGet(Maps::newHashMap);
+    return !"FALSE".equalsIgnoreCase(hmsParameters.get(ORC_FILES_ONLY)) &&
         (hmsTable.getSd().getInputFormat() != null &&
             hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name()) ||
             org.apache.iceberg.FileFormat.ORC.name()
-                .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters().get("write.format.default")) ||
+                .equalsIgnoreCase(serdeParameters.get("write.format.default")) ||
             org.apache.iceberg.FileFormat.ORC.name()
-                .equalsIgnoreCase(hmsTable.getParameters().get("write.format.default")));
+                .equalsIgnoreCase(hmsParameters.get("write.format.default")));
   }
 
   private void setWriteModeDefaults(Table icebergTbl, Map<String, String> newProps, EnvironmentContext context) {
@@ -1140,6 +1162,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       try {
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
         String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+        if (hmsTable.getParameters() == null) {
+          hmsTable.setParameters(Maps.newHashMap());
+        }
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
