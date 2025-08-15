@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.misc.msck;
 import static org.apache.hadoop.hive.metastore.Msck.getProxyClass;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -75,7 +78,25 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),
           desc.getFilterExp(), desc.getResFile(), desc.isRepairPartitions(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
-      return msck.repair(msckInfo);
+      int result = msck.repair(msckInfo);
+      if (msckInfo.getSmallFilesStats() != null && !msckInfo.getSmallFilesStats().isEmpty()){
+        List<String> logInfo = new ArrayList<>(msckInfo.getSmallFilesStats().size());
+        for (Map.Entry<String, String> me : msckInfo.getSmallFilesStats().entrySet()){
+          String partitionName = me.getKey();
+          String smallFilesStats = me.getValue();
+          logInfo.add("This table/partition average file size is less than Hive average file size.\n " +
+                  "The partition name is " + partitionName + ". " + smallFilesStats);
+        }
+        SessionState ss = SessionState.get();
+        if (ss != null && ss.getConsole() != null) {
+          ss.getConsole().printInfo("[MSCK] Small files detected.");
+          for (String line : logInfo) {
+            ss.getConsole().printInfo("[MSCK] " + line);
+          }
+        }
+        LOG.info("There are small files exist.\n{}", String.join("\n", logInfo));
+      }
+      return result;
     } catch (MetaException | MetastoreException e) {
       LOG.error("Unable to create msck instance.", e);
       throw e;
