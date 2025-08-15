@@ -1134,6 +1134,12 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
+  public void dropConstraint(String catName, String dbName, String tableName, String constraintName, boolean ifExists)
+          throws MetaException, NoSuchObjectException, TException {
+    delegate.dropConstraint(catName, dbName, tableName, constraintName, ifExists);
+  }
+
+  @Override
   public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols)
       throws MetaException, NoSuchObjectException, TException {
     delegate.addPrimaryKey(primaryKeyCols);

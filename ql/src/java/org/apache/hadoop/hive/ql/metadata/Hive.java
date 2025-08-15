@@ -6549,10 +6549,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void dropConstraint(String dbName, String tableName, String constraintName)
+  public void dropConstraint(String dbName, String tableName, String constraintName, boolean ifExists)
     throws HiveException, NoSuchObjectException {
     try {
-      getMSC().dropConstraint(dbName, tableName, constraintName);
+      getMSC().dropConstraint(getDefaultCatalog(conf), dbName, tableName, constraintName, ifExists);
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
