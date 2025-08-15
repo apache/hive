@@ -18,10 +18,14 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import static org.eclipse.jetty.util.URIUtil.HTTP;
+import static org.eclipse.jetty.util.URIUtil.HTTPS;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -32,6 +36,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
@@ -46,10 +51,11 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Helper class to ease creation of embedded Jetty serving servlets on
+ * Helper class to ease the creation of embedded Jetty serving servlets on
  * different ports.
  */
 public class ServletServerBuilder {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServletServerBuilder.class);
   /**
    * The configuration instance.
    */
@@ -94,7 +100,7 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Helper for generic use case.
+   * Helper for the generic use case.
    *
    * @param logger   the logger
    * @param conf     the configuration
@@ -116,7 +122,7 @@ public class ServletServerBuilder {
   /**
    * Adds a servlet instance.
    * <p>The servlet port can be shared between servlets; if 0, the system will provide
-   * a port. If the port is &lt; 0, the system will provide a port dedicated (ie non-shared)
+   * a port. If the port is &lt; 0, the system will provide a port dedicated (i.e., non-shared)
    * to the servlet.</p>
    *
    * @param port    the servlet port
@@ -159,24 +165,32 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Creates a server instance and a connector on a given port.
+   * Create an HTTP or HTTPS connector.
    *
-   * @param server            the server instance
-   * @param sslContextFactory the ssl factory
-   * @param port              the port
-   * @return the server connector listening to the port
+   * @param server The server to create the connector for
+   * @param sslContextFactory The ssl context factory to use;
+   *                          if null, the connector will be HTTP; if not null, the connector will be HTTPS
+   * @param port The port to bind the connector to
+   * @return The created ServerConnector
    */
   private ServerConnector createConnector(Server server, SslContextFactory sslContextFactory, int port) {
-    final ServerConnector connector = new ServerConnector(server, sslContextFactory);
+    final ServerConnector connector;
+    HttpConfiguration httpConf = new HttpConfiguration();
+    // Do not leak information
+    httpConf.setSendServerVersion(false);
+    httpConf.setSendXPoweredBy(false);
+    if (sslContextFactory != null) {
+      httpConf.setSecureScheme(HTTPS);
+      httpConf.setSecurePort(port);
+      httpConf.addCustomizer(new SecureRequestCustomizer());
+      connector = new ServerConnector(server, sslContextFactory, new HttpConnectionFactory(httpConf));
+      connector.setName(HTTPS);
+    } else {
+      connector = new ServerConnector(server, new HttpConnectionFactory(httpConf));
+      connector.setName(HTTP);
+    }
     connector.setPort(port);
     connector.setReuseAddress(true);
-    HttpConnectionFactory httpFactory = connector.getConnectionFactory(HttpConnectionFactory.class);
-    // do not leak information
-    if (httpFactory != null) {
-      HttpConfiguration httpConf = httpFactory.getHttpConfiguration();
-      httpConf.setSendServerVersion(false);
-      httpConf.setSendXPoweredBy(false);
-    }
     return connector;
   }
 
@@ -204,7 +218,7 @@ public class ServletServerBuilder {
   }
 
   /**
-   * Convenience method to start a http server that serves all configured
+   * Convenience method to start an http server that serves all configured
    * servlets.
    *
    * @return the server instance or null if no servlet was configured
@@ -222,7 +236,7 @@ public class ServletServerBuilder {
     }
     final Server server = createServer();
     // create the connectors
-    final SslContextFactory sslFactory = ServletSecurity.createSslContextFactory(configuration);
+    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(configuration);
     final ServerConnector[] connectors = new ServerConnector[size];
     final ServletContextHandler[] handlers = new ServletContextHandler[size];
     Iterator<Map.Entry<Integer, ServletContextHandler>> it = handlersMap.entrySet().iterator();
@@ -230,7 +244,8 @@ public class ServletServerBuilder {
       Map.Entry<Integer, ServletContextHandler> entry = it.next();
       int key = entry.getKey();
       int port = Math.max(key, 0);
-      ServerConnector connector = createConnector(server, sslFactory, port);
+      ServerConnector connector = createConnector(server, sslContextFactory, port);
+      LOGGER.info("Adding {} servlet connector on port {}", connector.getName(), port);
       connectors[c] = connector;
       ServletContextHandler handler = entry.getValue();
       handlers[c] = handler;
@@ -268,7 +283,7 @@ public class ServletServerBuilder {
    * Creates and starts the server.
    *
    * @param logger a logger to output info
-   * @return the server instance (or null if error)
+   * @return the server instance (or null if an error occurred)
    */
   public Server start(Logger logger) {
     try {
@@ -278,21 +293,21 @@ public class ServletServerBuilder {
           logger.error("Unable to start servlet server on {}", server.getURI());
         } else {
           descriptorsMap.values().forEach(descriptor -> logger.info("Started {} servlet on {}:{}",
-                  descriptor.toString(),
+                  descriptor,
                   descriptor.getPort(),
                   descriptor.getPath()));
         }
       }
       return server;
-    } catch (Throwable throwable) {
-      logger.error("Unable to start servlet server", throwable);
+    } catch (Exception e) {
+      logger.error("Unable to start servlet server", e);
       return null;
     }
   }
 
   /**
    * A descriptor of a servlet.
-   * <p>After server is started, unspecified port will be updated to reflect
+   * <p>After the server is started, unspecified port will be updated to reflect
    * what the system allocated.</p>
    */
   public static class Descriptor {
@@ -303,7 +318,7 @@ public class ServletServerBuilder {
     /**
      * Create a servlet descriptor.
      *
-     * @param port    the servlet port (or 0 if system allocated)
+     * @param port    the servlet port (or 0 if the port is to be chosen by the system)
      * @param path    the servlet path
      * @param servlet the servlet instance
      */

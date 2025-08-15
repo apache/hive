@@ -20,12 +20,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import java.nio.file.Files;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.junit.Assert;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -33,11 +30,11 @@ import org.junit.experimental.categories.Category;
  * the client based on Apache HttpClient.
  */
 @Category(MetastoreUnitTest.class)
-public class HMSServletTest1A extends HMSServletTest1 {
+public class HMSHttpClientTest extends HMSHttpClientSslTest {
   protected int thriftPort;
 
   @Override
-  protected int createServer(Configuration conf) throws Exception {
+  protected void setConf(Configuration conf) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH, "JWT");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT, 0);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
@@ -45,13 +42,6 @@ public class HMSServletTest1A extends HMSServletTest1 {
     MOCK_JWKS_SERVER.stubFor(get("/jwks")
         .willReturn(ok()
             .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
-    thriftPort = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-    servletServer = HiveMetaStore.getServletServer();
-    if (servletServer == null || !servletServer.isStarted()) {
-      Assert.fail("http server did not start");
-    }
-    servletPort = HiveMetaStore.getPropertyServletPort();
-    return servletPort;
   }
 
   @Override

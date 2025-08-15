@@ -20,37 +20,27 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import java.nio.file.Files;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.junit.Assert;
 import org.junit.experimental.categories.Category;
 
 /**
  * Test using the servlet server created by the MetaStore.
  */
 @Category(MetastoreUnitTest.class)
-public class HMSServletTestA extends HMSServletTest {
+public class HMSJsonClientTest extends HMSJsonClientSslTest {
   protected int thriftPort;
 
   @Override
-  protected int createServer(Configuration conf) throws Exception {
+  protected void setConf(Configuration conf) throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH, "JWT");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT, 0);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL,
-        "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
+            "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
     MOCK_JWKS_SERVER.stubFor(get("/jwks")
-        .willReturn(ok()
-            .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
-    thriftPort = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-    servletServer = HiveMetaStore.getServletServer();
-    if (servletServer == null || !servletServer.isStarted()) {
-      Assert.fail("http server did not start");
-    }
-    servletPort = HiveMetaStore.getPropertyServletPort();
-    return servletPort;
+            .willReturn(ok()
+                    .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
   }
 
   @Override
