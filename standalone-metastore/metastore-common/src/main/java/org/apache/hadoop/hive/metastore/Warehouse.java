@@ -472,7 +472,7 @@ public class Warehouse {
       LOG.warn("Har path {} is not supported to delete, skipping it.", f);
       return true;
     }
-    return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
+    return fsHandler.deleteDir(fs, f, ifPurge, conf);
   }
 
   public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
