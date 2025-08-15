@@ -87,7 +87,7 @@ public class TestPartitionManagement {
   public void tearDown() throws Exception {
     if (client != null) {
       // Drop any left over catalogs
-      List<String> catalogs = client.getCatalogs();
+      List<String> catalogs = client.getCatalogs(null);
       for (String catName : catalogs) {
         if (!catName.equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
           // First drop any databases in catalog

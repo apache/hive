@@ -185,10 +185,11 @@ public interface RawStore extends Configurable {
   Catalog getCatalog(String catalogName) throws NoSuchObjectException, MetaException;
 
   /**
-   * Get all the catalogs.
+   * Get all the catalog names matching catalogPattern.
+   * @param catalogPattern pattern names should match
    * @return list of names of all catalogs in the system
    */
-  List<String> getCatalogs();
+  List<String> getCatalogs(String catalogPattern);
 
   /**
    * Drop a catalog.  The catalog must be empty.

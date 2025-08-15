@@ -109,13 +109,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_catalog failed: unknown result')
     end
 
-    def get_catalogs()
-      send_get_catalogs()
+    def get_catalogs(pattern)
+      send_get_catalogs(pattern)
       return recv_get_catalogs()
     end
 
-    def send_get_catalogs()
-      send_message('get_catalogs', Get_catalogs_args)
+    def send_get_catalogs(pattern)
+      send_message('get_catalogs', Get_catalogs_args, :pattern => pattern)
     end
 
     def recv_get_catalogs()
@@ -4795,7 +4795,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_catalogs_args)
       result = Get_catalogs_result.new()
       begin
-        result.success = @handler.get_catalogs()
+        result.success = @handler.get_catalogs(args.pattern)
       rescue ::MetaException => o1
         result.o1 = o1
       end
@@ -8461,9 +8461,10 @@ module ThriftHiveMetastore
 
   class Get_catalogs_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    PATTERN = 1
 
     FIELDS = {
-
+      PATTERN => {:type => ::Thrift::Types::STRUCT, :name => 'pattern', :class => ::GetCatalogRequest}
     }
 
     def struct_fields; FIELDS; end

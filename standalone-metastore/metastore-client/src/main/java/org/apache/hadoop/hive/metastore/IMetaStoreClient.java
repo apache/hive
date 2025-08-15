@@ -129,7 +129,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the database.
    * @throws TException general thrift exception.
    */
-  List<String> getCatalogs() throws MetaException, TException;
+  List<String> getCatalogs(String catalogPattern) throws MetaException, TException;
 
   /**
    * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
