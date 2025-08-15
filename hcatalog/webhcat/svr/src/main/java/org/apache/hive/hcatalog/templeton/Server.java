@@ -837,7 +837,7 @@ public class Server {
    * @param srcFile    name of hive script file to run, equivalent to "-f" from hive
    *                   command line
    * @param hiveArgs   additional command line argument passed to the hive command line.
-   *                   Please check https://cwiki.apache.org/Hive/languagemanual-cli.html
+   *                   Please check https://hive.apache.org/docs/latest/language/languagemanual-cli
    *                   for detailed explanation of command line arguments
    * @param otherFiles additional files to be shipped to the launcher, such as the jars
    *                   used in "add jar" statement in hive script
