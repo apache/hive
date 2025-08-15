@@ -86,7 +86,7 @@ public class TestStats {
   @After
   public void tearDown() throws TException {
     // Drop any left over catalogs
-    List<String> catalogs = client.getCatalogs();
+    List<String> catalogs = client.getCatalogs(null);
     for (String catName : catalogs) {
       if (!catName.equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
         // First drop any databases in catalog

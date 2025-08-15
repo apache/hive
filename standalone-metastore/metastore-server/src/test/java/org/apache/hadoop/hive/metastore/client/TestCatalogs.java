@@ -71,7 +71,7 @@ public class TestCatalogs extends MetaStoreClientTest {
   @After
   public void tearDown() throws Exception {
     // Drop any left over catalogs
-    List<String> catalogs = client.getCatalogs();
+    List<String> catalogs = client.getCatalogs(null);
     for (String catName : catalogs) {
       if (!catName.equalsIgnoreCase(Warehouse.DEFAULT_CATALOG_NAME)) {
         // First drop any databases in catalog
@@ -137,8 +137,12 @@ public class TestCatalogs extends MetaStoreClientTest {
       Assert.assertEquals("file:" + cat.getLocationUri(), db.getLocationUri());
     }
 
-    List<String> catalogs = client.getCatalogs();
+    List<String> catalogs = client.getCatalogs(null);
     Assert.assertEquals(4, catalogs.size());
+    List<String> catalogsByPattern = client.getCatalogs("cat*");
+    Assert.assertEquals(2, catalogsByPattern.size());
+    List<String> catalogsByEmptyPattern = client.getCatalogs("");
+    Assert.assertEquals(0, catalogsByEmptyPattern.size());
     catalogs.sort(Comparator.naturalOrder());
     List<String> expected = new ArrayList<>(catNames.length + 1);
     expected.add(Warehouse.DEFAULT_CATALOG_NAME);
@@ -175,7 +179,7 @@ public class TestCatalogs extends MetaStoreClientTest {
       Assert.assertFalse(dir.exists());
     }
 
-    catalogs = client.getCatalogs();
+    catalogs = client.getCatalogs(null);
     Assert.assertEquals(1, catalogs.size());
     Assert.assertTrue(catalogs.get(0).equalsIgnoreCase(Warehouse.DEFAULT_CATALOG_NAME));
   }
