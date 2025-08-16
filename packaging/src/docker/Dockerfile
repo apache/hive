@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ARG BUILD_ENV
+ARG BUILD_ENV=local
 
-FROM ubuntu as unarchive
+FROM ubuntu AS local
 ONBUILD COPY hadoop-*.tar.gz /opt
 ONBUILD COPY apache-hive-*-bin.tar.gz /opt
 ONBUILD COPY apache-tez-*-bin.tar.gz /opt
 
-FROM ubuntu as archive
+FROM ubuntu AS release
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
@@ -33,7 +33,7 @@ ONBUILD RUN mv /apache-tez-$TEZ_VERSION-bin.tar.gz /opt && \
  mv hadoop-$HADOOP_VERSION.tar.gz /opt && \
  mv apache-hive-$HIVE_VERSION-bin.tar.gz /opt
 
-FROM ubuntu as buildarchive
+FROM ubuntu AS hybrid
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
@@ -44,7 +44,7 @@ ONBUILD COPY ./apache-hive-$HIVE_VERSION-bin.tar.gz /opt
 ONBUILD RUN mv /apache-tez-$TEZ_VERSION-bin.tar.gz /opt && \
  mv hadoop-$HADOOP_VERSION.tar.gz /opt
 
-FROM ${BUILD_ENV} as env
+FROM ${BUILD_ENV} AS env
 RUN echo ${BUILD_ENV}
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
