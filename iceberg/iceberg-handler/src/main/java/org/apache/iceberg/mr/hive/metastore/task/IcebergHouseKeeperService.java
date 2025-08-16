@@ -20,7 +20,6 @@ package org.apache.iceberg.mr.hive.metastore.task;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
@@ -78,9 +77,8 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   private void expireTables(String catalogName, String dbPattern, String tablePattern) {
     try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-      List<org.apache.hadoop.hive.metastore.api.Table> tables =
+      Iterable<org.apache.hadoop.hive.metastore.api.Table> tables =
           IcebergTableUtil.getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables(maxBatchSize);
-      LOG.debug("{} candidate tables found", tables.size());
       for (org.apache.hadoop.hive.metastore.api.Table table : tables) {
         expireSnapshotsForTable(getIcebergTable(table));
       }

@@ -18,6 +18,10 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Collections;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableIterable;
@@ -110,24 +114,29 @@ public class TableFetcher {
     return candidates;
   }
 
-  public List<Table> getTables(int maxBatchSize) throws Exception {
-    List<Table> candidates = new ArrayList<>();
-
+  public Iterable<Table> getTables(int maxBatchSize) throws Exception {
     // if tableTypes is empty, then a list with single empty string has to specified to scan no tables.
     if (tableTypes.isEmpty()) {
       LOG.info("Table fetcher returns empty list as no table types specified");
-      return candidates;
+      return Collections.emptyList();
     }
 
     List<String> databases = client.getDatabases(catalogName, dbPattern);
 
-    for (String db : databases) {
-      List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
-      for (Table table : new TableIterable(client, db, tablesNames, maxBatchSize)) {
-        candidates.add(table);
+    return () -> databases.stream().flatMap(db -> {
+      try {
+        List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
+        return StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(
+                new TableIterable(client, db, tablesNames, maxBatchSize).iterator(),
+                Spliterator.ORDERED
+            ),
+            false
+        );
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
-    }
-    return candidates;
+    }).iterator();
   }
 
   private List<String> getTableNamesForDatabase(String catalogName, String dbName) throws Exception {
