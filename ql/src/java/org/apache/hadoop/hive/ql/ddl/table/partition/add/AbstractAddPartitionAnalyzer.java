@@ -93,7 +93,7 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
           currentLocation = null;
         }
         currentPart = getValidatedPartSpec(table, child, conf, true);
-        PartitionUtils.validatePartitions(conf, currentPart); // validate reserved values
+        PartitionUtils.validatePartitions(conf, currentPart, table.getParameters()); // validate reserved values
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition

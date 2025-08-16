@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheKey;
@@ -1569,8 +1570,8 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         List<Partition> result = new ArrayList<>();
         for (Pair<Integer, byte[]> pair : partExprs) {
           byte[] expr = pair.getRight();
-          String filter = generateJDOFilter(table, expr,
-              conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
+          String filter = generateJDOFilter(table, expr, PartitionUtils.getDefaultPartitionName(table.getParameters(),
+              conf));
           List<Partition> partitions = tt.listPartitionsByFilter(filter);
           for (Partition p : partitions) {
             Partition droppedPartition = tt.dropPartition(p.getValues());

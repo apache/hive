@@ -81,6 +81,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreChecker.getDefaultPartitionName;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -563,8 +564,7 @@ public class CachedStore implements RawStore, Configurable {
                   // Remove default partition from partition names and get aggregate
                   // stats again
                   List<FieldSchema> partKeys = table.getPartitionKeys();
-                  String defaultPartitionValue =
-                      MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+                  String defaultPartitionValue = getDefaultPartitionName(table.getParameters(), rawStore.getConf());
                   List<String> partCols = new ArrayList<>();
                   List<String> partVals = new ArrayList<>();
                   for (FieldSchema fs : partKeys) {
@@ -1004,7 +1004,7 @@ public class CachedStore implements RawStore, Configurable {
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
           List<FieldSchema> partKeys = table.getPartitionKeys();
-          String defaultPartitionValue = MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+          String defaultPartitionValue = getDefaultPartitionName(table.getParameters(), rawStore.getConf());
           List<String> partCols = new ArrayList<String>();
           List<String> partVals = new ArrayList<String>();
           for (FieldSchema fs : partKeys) {
@@ -1726,7 +1726,7 @@ public class CachedStore implements RawStore, Configurable {
       result.add(Warehouse.makePartName(table.getPartitionKeys(), part.getValues()));
     }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
-      defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+      defaultPartName = getDefaultPartitionName(table.getParameters(), getConf());
     }
     return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr, defaultPartName, result);
   }
@@ -1785,13 +1785,13 @@ public class CachedStore implements RawStore, Configurable {
     if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
     }
-    String defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
     List<String> partNames = new LinkedList<>();
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null) {
       // The table is not yet loaded in cache
       return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
     }
+    String defaultPartName = getDefaultPartitionName(table.getParameters(), getConf());
     getPartitionNamesPrunedByExprNoTxn(table, expr, defaultPartName, Short.MAX_VALUE, partNames, sharedCache);
     return partNames.size();
   }
@@ -2434,7 +2434,7 @@ public class CachedStore implements RawStore, Configurable {
       }
       type = StatsType.ALL;
     } else if (partNames.size() == (allPartNames.size() - 1)) {
-      String defaultPartitionName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+      String defaultPartitionName = getDefaultPartitionName(table.getParameters(), getConf());
       if (!partNames.contains(defaultPartitionName)) {
         colStats = sharedCache.getAggrStatsFromCache(catName, dbName, tblName, colNames, StatsType.ALLBUTDEFAULT);
         if (colStats != null) {
