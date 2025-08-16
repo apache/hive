@@ -101,7 +101,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
                 .tableCondition(
                     hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "discover__partitions like \"true\" ")
                 .build()
-                .getTableNames();
+                .getTables();
 
         if (candidates.isEmpty()) {
           LOG.info("Got empty table list in catalog: {}, dbPattern: {}", catalogName, dbPattern);
