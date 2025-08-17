@@ -3072,22 +3072,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                       this, isReplicated),
                   envContext);
         }
-        success = ms.commitTransaction();
-      }
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      } else if (tableDataShouldBeDeleted) {
-        try {
+        if (tableDataShouldBeDeleted) {
           // Data needs deletion. Check if trash may be skipped.
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
           // Delete the data in the table
           deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
-        } catch (Exception e) {
-          ms.rollbackTransaction();
-          throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
         }
+        success = ms.commitTransaction();
+      }
+    } catch (Exception e) {
+      ms.rollbackTransaction();
+      LOG.error("Failed to drop table " + name + ", rolling back transaction", e);
+      if (e instanceof MetaException) {
+        throw (MetaException) e;
+      } else {
+        throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      }
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
       }
 
       if (!listeners.isEmpty()) {
