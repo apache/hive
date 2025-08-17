@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class TestIcebergTimeObjectInspector {
 
@@ -34,33 +34,34 @@ public class TestIcebergTimeObjectInspector {
 
     IcebergTimeObjectInspector oi = IcebergTimeObjectInspector.get();
 
-    Assert.assertEquals(ObjectInspector.Category.PRIMITIVE, oi.getCategory());
-    Assert.assertEquals(PrimitiveObjectInspector.PrimitiveCategory.STRING, oi.getPrimitiveCategory());
+    Assertions.assertEquals(ObjectInspector.Category.PRIMITIVE, oi.getCategory());
+    Assertions.assertEquals(PrimitiveObjectInspector.PrimitiveCategory.STRING,
+        oi.getPrimitiveCategory());
 
-    Assert.assertEquals(TypeInfoFactory.stringTypeInfo, oi.getTypeInfo());
-    Assert.assertEquals(TypeInfoFactory.stringTypeInfo.getTypeName(), oi.getTypeName());
+    Assertions.assertEquals(TypeInfoFactory.stringTypeInfo, oi.getTypeInfo());
+    Assertions.assertEquals(TypeInfoFactory.stringTypeInfo.getTypeName(), oi.getTypeName());
 
-    Assert.assertEquals(String.class, oi.getJavaPrimitiveClass());
-    Assert.assertEquals(Text.class, oi.getPrimitiveWritableClass());
+    Assertions.assertEquals(String.class, oi.getJavaPrimitiveClass());
+    Assertions.assertEquals(Text.class, oi.getPrimitiveWritableClass());
 
-    Assert.assertNull(oi.copyObject(null));
-    Assert.assertNull(oi.getPrimitiveJavaObject(null));
-    Assert.assertNull(oi.getPrimitiveWritableObject(null));
-    Assert.assertNull(oi.convert(null));
+    Assertions.assertNull(oi.copyObject(null));
+    Assertions.assertNull(oi.getPrimitiveJavaObject(null));
+    Assertions.assertNull(oi.getPrimitiveWritableObject(null));
+    Assertions.assertNull(oi.convert(null));
 
     LocalTime localTime = LocalTime.now();
     String time = localTime.toString();
     Text text = new Text(time);
 
-    Assert.assertEquals(time, oi.getPrimitiveJavaObject(text));
-    Assert.assertEquals(text, oi.getPrimitiveWritableObject(time));
-    Assert.assertEquals(localTime, oi.convert(time));
+    Assertions.assertEquals(time, oi.getPrimitiveJavaObject(text));
+    Assertions.assertEquals(text, oi.getPrimitiveWritableObject(time));
+    Assertions.assertEquals(localTime, oi.convert(time));
 
     Text copy = (Text) oi.copyObject(text);
 
-    Assert.assertEquals(text, copy);
-    Assert.assertNotSame(text, copy);
+    Assertions.assertEquals(text, copy);
+    Assertions.assertNotSame(text, copy);
 
-    Assert.assertFalse(oi.preferWritable());
+    Assertions.assertFalse(oi.preferWritable());
   }
 }

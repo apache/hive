@@ -35,10 +35,10 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class TestIcebergHouseKeeperService {
   private static final HiveConf conf = new HiveConf(TestIcebergHouseKeeperService.class);
   private static Hive db;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws Exception {
     conf.set("hive.security.authorization.enabled", "false");
     conf.set("hive.security.authorization.manager",
@@ -58,7 +58,7 @@ public class TestIcebergHouseKeeperService {
     db = Hive.get(conf);
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterClass() {
     db.close(true);
   }
@@ -71,9 +71,9 @@ public class TestIcebergHouseKeeperService {
 
     int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     List<org.apache.hadoop.hive.metastore.api.Table> tables = tableFetcher.getTables(maxBatchSize);
-    Assert.assertEquals("hive", tables.get(0).getCatName());
-    Assert.assertEquals("default", tables.get(0).getDbName());
-    Assert.assertEquals("iceberg_table", tables.get(0).getTableName());
+    Assertions.assertEquals("hive", tables.get(0).getCatName());
+    Assertions.assertEquals("default", tables.get(0).getDbName());
+    Assertions.assertEquals("iceberg_table", tables.get(0).getTableName());
   }
 
   @Test
@@ -139,7 +139,7 @@ public class TestIcebergHouseKeeperService {
     File[] matchingFiles = new File(metadataDirectory).listFiles((dir, name) -> name.startsWith("snap-"));
     List<File> files = Optional.ofNullable(matchingFiles).map(Arrays::asList).orElse(Collections.emptyList());
     LOG.debug("Snapshot files found in directory({}): {}", metadataDirectory, files);
-    Assert.assertEquals(String.format("Unexpected no. of snapshot files in metadata directory: %s",
-        metadataDirectory), numberForSnapshotFiles, files.size());
+    Assertions.assertEquals(numberForSnapshotFiles, files.size(),
+        String.format("Unexpected no. of snapshot files in metadata directory: %s",metadataDirectory));
   }
 }
