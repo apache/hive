@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
@@ -207,31 +208,32 @@ public class BucketMapJoinContext implements Serializable {
 
   // returns fileId for SMBJoin, which consists part of result file name
   // needed to avoid file name conflict when big table is partitioned
-  public String createFileId(String inputPath) {
+  public String createFileId(String inputPath, Configuration conf) {
     String bucketNum = String.valueOf(bucketFileNameMapping.get(inputPath));
     if (bigTablePartSpecToFileMapping != null) {
       // partSpecToFileMapping is null if big table is partitioned
-      return prependPartSpec(inputPath, bucketNum);
+      return prependPartSpec(inputPath, bucketNum, conf);
     }
     return bucketNum;
   }
 
   // returns name of hashfile made by HASHTABLESINK which is read by MAPJOIN
-  public String createFileName(String inputPath, String fileName) {
+  public String createFileName(String inputPath, String fileName, Configuration conf) {
     if (bigTablePartSpecToFileMapping != null) {
       // partSpecToFileMapping is null if big table is partitioned
-      return prependPartSpec(inputPath, fileName);
+      return prependPartSpec(inputPath, fileName, conf);
     }
     return fileName;
   }
 
   // prepends partition spec of input path to candidate file name
-  private String prependPartSpec(String inputPath, String fileName) {
+  private String prependPartSpec(String inputPath, String fileName, Configuration conf) {
     Map<String, String> mapping = inputToPartSpecMapping == null ?
         inputToPartSpecMapping = revert(bigTablePartSpecToFileMapping) : inputToPartSpecMapping;
     String partSpec = mapping.get(URI.create(inputPath).getPath());
+    // if partSpec is not null or not empty, tableParams and conf can be null
     return partSpec == null || partSpec.isEmpty() ? fileName :
-      "(" + FileUtils.escapePathName(partSpec) + ")" + fileName;
+      "(" + FileUtils.escapePathName(partSpec, null, conf) + ")" + fileName;
   }
 
   // revert partSpecToFileMapping to inputToPartSpecMapping

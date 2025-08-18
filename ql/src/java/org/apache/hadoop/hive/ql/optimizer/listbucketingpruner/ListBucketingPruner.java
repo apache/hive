@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -238,7 +239,7 @@ public class ListBucketingPruner extends Transform {
           selectedPaths, indexCollection, uniqSkewValues);
 
       // Decide default directory selection.
-      decideDefaultDirSelection(part, selectedPaths, nonSkewedValueMatchResult);
+      decideDefaultDirSelection(part, selectedPaths, nonSkewedValueMatchResult, ctx.getConf());
 
       // Finalize paths.
       finalPaths = generateFinalPath(part, selectedPaths);
@@ -328,7 +329,7 @@ public class ListBucketingPruner extends Transform {
    * @param nonSkewedValueMatchResult
    */
   private static void decideDefaultDirSelection(Partition part, List<Path> selectedPaths,
-      List<Boolean> nonSkewedValueMatchResult) {
+      List<Boolean> nonSkewedValueMatchResult, Configuration conf) {
     boolean skipDefDir = true;
     for (Boolean v : nonSkewedValueMatchResult) {
       if ((v == null) || v) {
@@ -343,7 +344,9 @@ public class ListBucketingPruner extends Transform {
       builder
           .append((FileUtils.makeDefaultListBucketingDirName(
               part.getSkewedColNames(),
-              ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME)));
+              ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME,
+              part.getTable().getParameters(),
+              conf)));
       selectedPaths.add(new Path(builder.toString()));
     }
   }

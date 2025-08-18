@@ -968,7 +968,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                                queryPlan.getQueryStr(),
                                conf);
 
-    HiveLockObject lock = new HiveLockObject(baseTable, lockData);
+    HiveLockObject lock = new HiveLockObject(baseTable, lockData, conf);
 
     for (HiveLockObj hiveLockObj : lockObjects) {
       if (Arrays.equals(hiveLockObj.getObj().getPaths(), lock.getPaths())) {

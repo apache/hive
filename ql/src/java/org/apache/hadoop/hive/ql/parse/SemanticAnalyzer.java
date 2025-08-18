@@ -8589,7 +8589,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     /* Set List Bucketing context. */
     if (lbCtx != null) {
       lbCtx.processRowSkewedIndex(fsRS);
-      lbCtx.calculateSkewedValueSubDirList();
+      lbCtx.calculateSkewedValueSubDirList(dest_tab.getParameters(), conf);
     }
     fileSinkDesc.setLbCtx(lbCtx);
 
@@ -12279,8 +12279,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // db_name.table_name + partitionSec
     // as the prefix for easy of read during explain and debugging.
     // Currently, partition spec can only be static partition.
-    String k = FileUtils.escapePathName(tblName).toLowerCase() + Path.SEPARATOR;
-    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName()).toLowerCase() + "." + k);
+    String k = FileUtils.escapePathName(tblName, tab.getParameters(), conf).toLowerCase() + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName(), tab.getParameters(),
+        conf).toLowerCase() + "." + k);
 
     // set up WriteEntity for replication and txn stats
     WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);

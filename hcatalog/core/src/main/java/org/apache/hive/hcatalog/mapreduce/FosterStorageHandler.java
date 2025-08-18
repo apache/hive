@@ -184,7 +184,9 @@ public class FosterStorageHandler extends DefaultStorageHandler {
           cols.add(name);
           values.add(value);
         }
-        outputLocation = FileUtils.makePartName(cols, values);
+        outputLocation = FileUtils.makePartName(cols, values, (jobInfo.getTableInfo() != null &&
+            jobInfo.getTableInfo().getTable() != null) ? jobInfo.getTableInfo().getTable().getParameters() : null,
+            conf);
       }
 
       if (outputLocation!= null && !outputLocation.isEmpty()){

@@ -309,7 +309,7 @@ public class TestFileUtils {
     StringBuilder sb = new StringBuilder();
     FileUtils.charToEscape.stream().forEach(integer -> sb.append((char) integer));
     String path = sb.toString();
-    assertEquals(path, FileUtils.unescapePathName(FileUtils.escapePathName(path)));
+    assertEquals(path, FileUtils.unescapePathName(FileUtils.escapePathName(path, null, new HiveConf())));
   }
 
   @Test

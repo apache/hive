@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -198,13 +199,15 @@ public class HiveLockObject {
     this.data = lockData;
   }
 
-  public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
-    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName()).toLowerCase()}, lockData);
+  public HiveLockObject(Table tbl, HiveLockObjectData lockData, Configuration conf) {
+    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName(), tbl.getParameters(),
+        conf).toLowerCase()}, lockData);
   }
 
-  public HiveLockObject(Partition par, HiveLockObjectData lockData) {
+  public HiveLockObject(Partition par, HiveLockObjectData lockData, Configuration conf) {
     this(new String[] {par.getTable().getDbName(),
-        FileUtils.escapePathName(par.getTable().getTableName()).toLowerCase(), par.getName()}, lockData);
+        FileUtils.escapePathName(par.getTable().getTableName(), par.getTable().getParameters(), conf).toLowerCase(),
+        par.getName()}, lockData);
   }
 
   public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {
@@ -230,7 +233,7 @@ public class HiveLockObject {
     HiveLockObject obj = null;
 
     if  (partSpec == null) {
-      obj = new HiveLockObject(tbl, null);
+      obj = new HiveLockObject(tbl, null, hiveDB.getConf());
     }
     else {
       Partition par = hiveDB.getPartition(tbl, partSpec, false);
@@ -238,7 +241,7 @@ public class HiveLockObject {
         throw new HiveException("Partition " + partSpec + " for table " +
             tableName + " does not exist");
       }
-      obj = new HiveLockObject(par, null);
+      obj = new HiveLockObject(par, null, hiveDB.getConf());
     }
     return obj;
   }

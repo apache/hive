@@ -295,7 +295,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       }
       // get current input file name
       String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
-      String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
+      String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName, hconf);
       // get the tmp URI path; it will be a hdfs path if not local mode
       // TODO [MM gap?]: this doesn't work, however this is MR only.
       //      The path for writer and reader mismatch:

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -175,7 +176,8 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
         keyList.add(partKey);
         valList.add(partVal);
       }
-      String partName = FileUtils.makePartName(keyList, valList);
+      String partName = FileUtils.makePartName(keyList, valList, Hive.get(context.getConf()).getTable(
+          request.getDbname(), request.getTablename()).getParameters(), context.getConf());
       request.setPartname(partName);
     }
 

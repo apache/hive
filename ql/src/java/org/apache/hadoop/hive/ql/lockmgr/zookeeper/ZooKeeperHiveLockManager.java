@@ -780,7 +780,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       if (names.length == 2) {
-        return new HiveLockObject(tab, data);
+        return new HiveLockObject(tab, data, conf);
       }
 
       Map<String, String> partSpec = new HashMap<String, String>();
@@ -800,7 +800,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         return new HiveLockObject(new DummyPartition(tab, path, partSpec), data);
       }
 
-      return new HiveLockObject(partn, data);
+      return new HiveLockObject(partn, data, conf);
     } catch (Exception e) {
       LOG.error("Failed to create ZooKeeper object: " + e);
       throw new LockException(e);

@@ -400,7 +400,7 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
     }
 
     if (t != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(t, lockData), mode));
+      locks.add(new HiveLockObj(new HiveLockObject(t, lockData, conf), mode));
       mode = HiveLockMode.SHARED;
       locks.add(new HiveLockObj(new HiveLockObject(t.getDbName(), lockData), mode));
       return locks;
@@ -408,7 +408,7 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
 
     if (p != null) {
       if (!(p instanceof DummyPartition)) {
-        locks.add(new HiveLockObj(new HiveLockObject(p, lockData), mode));
+        locks.add(new HiveLockObj(new HiveLockObject(p, lockData, conf), mode));
       }
 
       // All the parents are locked in shared mode
@@ -433,14 +433,14 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
         partialSpec.put(nameValue[0], nameValue[1]);
         DummyPartition par = new DummyPartition(p.getTable(), 
           p.getTable().getDbName() 
-            + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase() 
-            + "/" + partialName,
+            + "/" + FileUtils.escapePathName(p.getTable().getTableName(), p.getTable().getParameters(),
+            conf).toLowerCase() + "/" + partialName,
           partialSpec);
         locks.add(new HiveLockObj(new HiveLockObject(par, lockData), mode));
         partialName.append("/");
       }
 
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));
+      locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData, conf), mode));
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
     }
     return locks;
