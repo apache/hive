@@ -84,6 +84,8 @@ public class MetaStoreUtils {
 
   private static final DateTimeFormatter TIMESTAMP_FORMATTER = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
 
+  public static final String DEFAULT_PARTITION_NAME = "DEFAULT_PARTITION_NAME";
+
   private static DateTimeFormatter createDateTimeFormatter(String format) {
     return DateTimeFormatter.ofPattern(format).withZone(TimeZone.getTimeZone("UTC").toZoneId())
         .withResolverStyle(ResolverStyle.STRICT);
@@ -1339,5 +1341,13 @@ public class MetaStoreUtils {
 
   public static boolean isDatabaseRemote(Database db) {
     return db != null && db.getType() == DatabaseType.REMOTE;
+  }
+
+  public static String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
+    if (tableParams != null && tableParams.containsKey(DEFAULT_PARTITION_NAME)) {
+      return tableParams.get(DEFAULT_PARTITION_NAME);
+    } else {
+      return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME);
+    }
   }
 }

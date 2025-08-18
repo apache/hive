@@ -4136,8 +4136,8 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private String getDefaultPartitionName(String inputDefaultPartName, Map<String, String> tableParams) {
     String computedDefaultPartitionName;
-    if (tableParams != null && tableParams.containsKey(HiveAlterHandler.DEFAULT_PARTITION_NAME)) {
-      computedDefaultPartitionName =  tableParams.get(HiveAlterHandler.DEFAULT_PARTITION_NAME);
+    if (tableParams != null && tableParams.containsKey(MetaStoreUtils.DEFAULT_PARTITION_NAME)) {
+      computedDefaultPartitionName =  tableParams.get(MetaStoreUtils.DEFAULT_PARTITION_NAME);
     } else {
       computedDefaultPartitionName =  MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
     }

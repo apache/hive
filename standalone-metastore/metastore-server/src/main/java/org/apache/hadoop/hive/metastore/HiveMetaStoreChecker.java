@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSp
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -267,7 +268,7 @@ public class HiveMetaStoreChecker {
       if (filterExp != null) {
         List<Partition> results = new ArrayList<>();
         getPartitionListByFilterExp(getMsc(), table, filterExp,
-            getDefaultPartitionName(table.getParameters(), conf), results);
+            MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf), results);
         parts = new PartitionIterable(results);
       } else {
         GetProjectionsSpec projectionsSpec = new GetPartitionProjectionsSpecBuilder()
@@ -288,15 +289,6 @@ public class HiveMetaStoreChecker {
 
     checkTable(table, parts, filterExp, result);
   }
-
-  public static String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
-    if (tableParams != null && tableParams.containsKey(HiveAlterHandler.DEFAULT_PARTITION_NAME)) {
-      return tableParams.get(HiveAlterHandler.DEFAULT_PARTITION_NAME);
-    } else {
-      return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME);
-    }
-  }
-
   /**
    * Check the metastore for inconsistencies, data missing in either the
    * metastore or on the dfs.
@@ -346,7 +338,7 @@ public class HiveMetaStoreChecker {
 
       // Remove all partition paths which does not matches the filter expression.
       expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
-              getDefaultPartitionName(table.getParameters(), conf), partitions);
+              MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf), partitions);
 
       // now the partition list will contain all the paths that matches the filter expression.
       // add them back to partDirs.
