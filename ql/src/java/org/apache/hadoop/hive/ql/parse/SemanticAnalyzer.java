@@ -7810,7 +7810,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // but the underlying storage format knows about it.
         DummyPartition dummyPartition;
         try {
-          String partName = Warehouse.makePartName(partSpec, false);
+          String partName = Warehouse.makePartName(partSpec, false, destinationTable.getParameters(), conf);
           dummyPartition = new DummyPartition(destinationTable, partName, partSpec);
         } catch (MetaException e) {
           throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
@@ -8612,7 +8612,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (dest_part != null) {
       try {
-        String staticSpec = Warehouse.makePartPath(dest_part.getSpec());
+        String staticSpec = Warehouse.makePartPath(dest_part.getSpec(), dest_tab.getParameters(), conf);
         fileSinkDesc.setStaticSpec(staticSpec);
       } catch (MetaException e) {
         throw new SemanticException(e);
@@ -8792,8 +8792,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (dpCtx == null) {
       dest_tab.validatePartColumnNames(partSpec, false);
       dpCtx = new DynamicPartitionCtx(partSpec,
-          PartitionUtils.getDefaultPartitionName(dest_tab.getParameters(), conf),
-          conf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
+          conf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE), dest_tab.getParameters(), conf);
       qbm.setDPCtx(dest, dpCtx);
     }
 

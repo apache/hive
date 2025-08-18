@@ -175,7 +175,8 @@ public class TestPartitionStat extends MetaStoreClientTest {
   }
 
   private ColumnStatistics createPartColStats(List<String> partValue, ColumnStatisticsData partitionStats) {
-    String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), partValue);
+    String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), partValue, null,
+        metaStore.getConf());
     ColumnStatistics colStats = new ColumnStatistics();
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(false, DB_NAME, TABLE_NAME);
     statsDesc.setPartName(pName);
@@ -201,7 +202,8 @@ public class TestPartitionStat extends MetaStoreClientTest {
     List<String> pNameList = new ArrayList<>();
     for (Map.Entry<List<String>, ColumnStatisticsData> entry : partitionStats.entrySet()) {
       ColumnStatistics colStats = createPartColStats(entry.getKey(), entry.getValue());
-      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), entry.getKey());
+      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), entry.getKey(), null,
+          metaStore.getConf());
       rqst.addToColStats(colStats);
       pNameList.add(pName);
     }
@@ -214,7 +216,8 @@ public class TestPartitionStat extends MetaStoreClientTest {
     Map<String, List<ColumnStatisticsObj>> statistics = client.getPartitionColumnStatistics(DB_NAME, TABLE_NAME,
             pNameList, Collections.singletonList(PART_COL_NAME), HIVE_ENGINE);
     for (Map.Entry<List<String>, ColumnStatisticsData> entry : partitionStats.entrySet()) {
-      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), entry.getKey());
+      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), entry.getKey(), null,
+          metaStore.getConf());
       ColumnStatisticsObj statisticsObjs = statistics.get(pName).get(0);
       ColumnStatisticsData data = entry.getValue();
       assertLongStatsEquals(statisticsObjs.getStatsData().getLongStats(), data.getLongStats());

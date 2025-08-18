@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -45,7 +47,7 @@ public interface ParameterizedBatchCommand<T> {
   /**
    * A {@link List} instance containing the required parameters for the query string.
    */
-  List<T> getQueryParameters();
+  List<T> getQueryParameters(Configuration conf);
 
   /**
    * Implementations must return a {@link ParameterizedPreparedStatementSetter} instance which will be 
