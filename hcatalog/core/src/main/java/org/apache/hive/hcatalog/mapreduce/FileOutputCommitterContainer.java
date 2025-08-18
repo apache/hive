@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -406,7 +407,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
     // Set the location in the StorageDescriptor
     if (dynamicPartitioningUsed) {
-      String dynamicPartitionDestination = getFinalDynamicPartitionDestination(table, partKVs, jobInfo);
+      String dynamicPartitionDestination = getFinalDynamicPartitionDestination(table, partKVs, jobInfo, conf);
       if (harProcessor.isEnabled()) {
         harProcessor.exec(context, partition, partPath);
         partition.getSd().setLocation(
@@ -421,7 +422,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
   }
 
   private String getFinalDynamicPartitionDestination(Table table, Map<String, String> partKVs,
-      OutputJobInfo jobInfo) {
+      OutputJobInfo jobInfo, Configuration conf) {
     Path partPath = new Path(table.getTTable().getSd().getLocation());
     if (!customDynamicLocationUsed) {
       // file:///tmp/hcat_junit_warehouse/employee/_DYN0.7770480401313761/emp_country=IN/emp_state=KA  ->
@@ -437,7 +438,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           && jobInfo.getCustomDynamicRoot().length() > 0) {
         partPath = new Path(partPath, jobInfo.getCustomDynamicRoot());
       }
-      return new Path(partPath, HCatFileUtil.resolveCustomPath(jobInfo, partKVs, false)).toString();
+      return new Path(partPath, HCatFileUtil.resolveCustomPath(jobInfo, partKVs, false,
+          table.getParameters(), conf)).toString();
     }
   }
 
@@ -712,7 +714,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
       // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
       String dynPathSpec = loadPath.toUri().getPath();
-      dynPathSpec = dynPathSpec.replace("__HIVE_DEFAULT_PARTITION__", "*");
+      dynPathSpec = dynPathSpec.replace(PartitionUtils.getDefaultPartitionName(
+          jobInfo.getTableInfo().getTable().getParameters(), HCatUtil.getHiveConf(context.getConfiguration())), "*");
 
       //      LOG.info("Searching for "+dynPathSpec);
       Path pathPattern = new Path(dynPathSpec);
@@ -990,7 +993,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     // final destination of each partition and move its output.
     for (Entry<String, Map<String, String>> entry : partitionsDiscoveredByPath.entrySet()) {
       Path src = new Path(entry.getKey());
-      Path destPath = new Path(getFinalDynamicPartitionDestination(table, entry.getValue(), jobInfo));
+      Path destPath = new Path(getFinalDynamicPartitionDestination(table, entry.getValue(), jobInfo, conf));
       moveTaskOutputs(conf, src, src, destPath, true);
     }
     // delete the parent temp directory of all custom dynamic partitions

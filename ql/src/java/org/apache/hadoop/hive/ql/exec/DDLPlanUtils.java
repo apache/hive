@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Comparator;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -46,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableOperation;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint.CheckConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
@@ -126,7 +128,6 @@ public class DDLPlanUtils {
   private static final String ENABLE = "ENABLE";
   private static final String RELY = "RELY";
   private static final String VALIDATE = "VALIDATE";
-  private static final String HIVE_DEFAULT_PARTITION = "__HIVE_DEFAULT_PARTITION__";
   private static final String BASE_64_VALUE = "BASE_64";
   private static final String numNulls = "'numNulls'='";
   private static final String numDVs = "'numDVs'='";
@@ -303,8 +304,8 @@ public class DDLPlanUtils {
     return resultMap;
   }
 
-  public boolean checkIfDefaultPartition(String pt) {
-    if (pt.contains(HIVE_DEFAULT_PARTITION)) {
+  private boolean checkIfDefaultPartition(String pt, Map<String, String> tableParams, Configuration conf) {
+    if (pt.contains(PartitionUtils.getDefaultPartitionName(tableParams, conf))) {
       return true;
     } else {
       return false;
@@ -318,13 +319,13 @@ public class DDLPlanUtils {
    * @return
    */
   //TODO: Adding/Updating Stats to Default Partition Not Allowed. Need to Fix Later
-  public String getAlterTableAddPartition(Partition pt) {
+  private String getAlterTableAddPartition(Partition pt, Configuration conf) {
     Table tb = pt.getTable();
     ST command = new ST(ALTER_TABLE_CREATE_PARTITION);
     command.add(DATABASE_NAME, unparseIdentifier(tb.getDbName()));
     command.add(TABLE_NAME, unparseIdentifier(tb.getTableName()));
     command.add(PARTITION, getPartitionActualName(pt));
-    if (checkIfDefaultPartition(pt.getName())) {
+    if (checkIfDefaultPartition(pt.getName(), tb.getParameters(), conf)) {
       command.add(COMMENT_SQL, "--");
     }
     return command.render();
@@ -561,15 +562,15 @@ public class DDLPlanUtils {
    * @param dbName
    * @return
    */
-  public String getAlterTableStmtPartitionColStat(ColumnStatisticsData columnStatisticsData, String colName,
-                                                  String tblName, String ptName, String dbName) {
+  private String getAlterTableStmtPartitionColStat(ColumnStatisticsData columnStatisticsData, String colName,
+      String tblName, String ptName, String dbName, Map<String, String> tableParams, Configuration conf) {
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_COLUMN);
     command.add(DATABASE_NAME, unparseIdentifier(dbName));
     command.add(TABLE_NAME, unparseIdentifier(tblName));
     command.add(COLUMN_NAME, unparseIdentifier(colName));
     command.add(PARTITION_NAME, ptName);
     command.add(TBLPROPERTIES, addAllColStats(columnStatisticsData));
-    if (checkIfDefaultPartition(ptName)) {
+    if (checkIfDefaultPartition(ptName, tableParams, conf)) {
       command.add(COMMENT_SQL, "--");
     }
     return command.render();
@@ -584,15 +585,17 @@ public class DDLPlanUtils {
    * @param ptName
    * @param dbName
    */
-  public List<String> getAlterTableStmtPartitionStatsColsAll(List<ColumnStatisticsObj> columnStatisticsObjList,
+  private List<String> getAlterTableStmtPartitionStatsColsAll(List<ColumnStatisticsObj> columnStatisticsObjList,
                                                              String tblName,
                                                              String ptName,
-                                                             String dbName) {
+                                                             String dbName,
+                                                             Map<String, String> tableParams,
+                                                             Configuration conf) {
     List<String> alterTableStmt = new ArrayList<>();
     final Comparator<ColumnStatisticsObj> colNameComparator = Comparator.comparing(ColumnStatisticsObj::getColName);
     columnStatisticsObjList.stream().sorted(colNameComparator).forEach(statisticsObj -> {
       alterTableStmt.add(getAlterTableStmtPartitionColStat(
-          statisticsObj.getStatsData(), statisticsObj.getColName(), tblName, ptName, dbName));
+          statisticsObj.getStatsData(), statisticsObj.getColName(), tblName, ptName, dbName, tableParams, conf));
       String base64BitVectors = checkBitVectors(statisticsObj.getStatsData());
       if (base64BitVectors != null) {
         ST command = new ST(EXIST_BIT_VECTORS_PARTITIONED);
@@ -635,27 +638,27 @@ public class DDLPlanUtils {
    * @param pt
    * @return Returns the alter table .... update statistics for partition.
    */
-  public String getAlterTableStmtPartitionStatsBasic(Partition pt) {
+  private String getAlterTableStmtPartitionStatsBasic(Partition pt, Configuration conf) {
     Map<String, String> parameters = pt.getParameters();
     ST command = new ST(ALTER_TABLE_UPDATE_STATISTICS_PARTITION_BASIC);
     command.add(DATABASE_NAME, unparseIdentifier(pt.getTable().getDbName()));
     command.add(TABLE_NAME, unparseIdentifier(pt.getTable().getTableName()));
     command.add(PARTITION_NAME, getPartitionActualName(pt));
     command.add(TBLPROPERTIES, paramToValues(parameters));
-    if (checkIfDefaultPartition(pt.getName())) {
+    if (checkIfDefaultPartition(pt.getName(), pt.getTable().getParameters(), conf)) {
       command.add(COMMENT_SQL, "--");
     }
     return command.render();
   }
 
   public List<String> getDDLPlanForPartitionWithStats(Table table,
-                                                      Map<String, List<Partition>> tableToPartitionList
+      Map<String, List<Partition>> tableToPartitionList, Configuration conf
   ) throws HiveException {
     List<String> alterTableStmt = new ArrayList<String>();
     String tableName = table.getTableName();
     for (Partition pt : tableToPartitionList.get(tableName)) {
-      alterTableStmt.add(getAlterTableAddPartition(pt));
-      alterTableStmt.add(getAlterTableStmtPartitionStatsBasic(pt));
+      alterTableStmt.add(getAlterTableAddPartition(pt, conf));
+      alterTableStmt.add(getAlterTableStmtPartitionStatsBasic(pt, conf));
     }
     String databaseName = table.getDbName();
     List<String> partNames = new ArrayList<String>();
@@ -671,7 +674,7 @@ public class DDLPlanUtils {
     partitionColStats.keySet().stream().sorted().forEach(partitionName ->
       alterTableStmt.addAll(getAlterTableStmtPartitionStatsColsAll(partitionColStats.get(partitionName),
         tableName, partitionToActualName.get(partitionName),
-        databaseName))
+        databaseName, table.getParameters(), conf))
     );
     return alterTableStmt;
   }
