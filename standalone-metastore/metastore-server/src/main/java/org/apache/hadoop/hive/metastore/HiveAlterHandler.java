@@ -87,7 +87,6 @@ public class HiveAlterHandler implements AlterHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAlterHandler.class
       .getName());
   private static final String SET_DEFAULT_PARTITION = "SETDEFAULTPARTITION";
-  public static final String DEFAULT_PARTITION_NAME = "DEFAULT_PARTITION_NAME";
 
   // hiveConf, getConf and setConf are in this class because AlterHandler extends Configurable.
   // Always use the configuration from HMS Handler.  Making AlterHandler not extend Configurable
@@ -549,8 +548,8 @@ public class HiveAlterHandler implements AlterHandler {
       NoSuchObjectException, TException {
     String clusterLevelDefaultPartitionName = environmentContext.getProperties()
             .get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getHiveName());
-    String oldDefaultPartitionValue = oldt.getParameters().get(DEFAULT_PARTITION_NAME);
-    String newDefaultPartitionValue = newt.getParameters().get(DEFAULT_PARTITION_NAME);
+    String oldDefaultPartitionValue = oldt.getParameters().get(MetaStoreUtils.DEFAULT_PARTITION_NAME);
+    String newDefaultPartitionValue = newt.getParameters().get(MetaStoreUtils.DEFAULT_PARTITION_NAME);
 
     PartitionsRequest partitionReq = new PartitionsRequest(dbname, name);
     partitionReq.setCatName(catName);

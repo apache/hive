@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -196,8 +197,8 @@ public final class PartitionUtils {
 
   public static String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
     // Check if the table has an override for the default partition name
-    if (tableParams != null && tableParams.containsKey(HiveStringUtils.DEFAULT_PARTITION_NAME)) {
-      return tableParams.get(HiveStringUtils.DEFAULT_PARTITION_NAME);
+    if (tableParams != null && tableParams.containsKey(MetaStoreUtils.DEFAULT_PARTITION_NAME)) {
+      return tableParams.get(MetaStoreUtils.DEFAULT_PARTITION_NAME);
     } else {
       return conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname);
     }
