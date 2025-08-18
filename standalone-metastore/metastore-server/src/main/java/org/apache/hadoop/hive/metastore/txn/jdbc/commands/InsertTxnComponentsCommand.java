@@ -19,16 +19,16 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.commands;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.LockComponent;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.entities.OperationType;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.thrift.TException;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.sql.Types;
@@ -67,8 +67,8 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
   }
 
   @Override
-  public List<Object[]> getQueryParameters() {
-    return dynamicPartitions == null ? getQueryParametersByLockRequest() : getQueryParametersByDynamicPartitions();
+  public List<Object[]> getQueryParameters(Configuration conf) {
+    return dynamicPartitions == null ? getQueryParametersByLockRequest(conf) : getQueryParametersByDynamicPartitions();
   }
 
   @Override
@@ -88,10 +88,17 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
     return ParameterizedCommand.EXACTLY_ONE_ROW;
   }
   
-  private List<Object[]> getQueryParametersByLockRequest() {
+  private List<Object[]> getQueryParametersByLockRequest(Configuration conf) {
     assert lockRequest != null;
     List<Object[]> params = new ArrayList<>(lockRequest.getComponentSize());
     Set<Pair<String, String>> alreadyAddedTables = new HashSet<>();
+
+    HiveMetaStoreClient hmsc;
+    try {
+      hmsc = new HiveMetaStoreClient(conf);
+    } catch (MetaException e) {
+      throw new RuntimeException(e);
+    }
 
     for (LockComponent lc : lockRequest.getComponent()) {
       if (lc.isSetIsTransactional() && !lc.isIsTransactional()) {
@@ -107,7 +114,12 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
 
       String dbName = StringUtils.lowerCase(lc.getDbname());
       String tblName = StringUtils.lowerCase(lc.getTablename());
-      String partName = TxnUtils.normalizePartitionCase(lc.getPartitionname());
+      String partName = null;
+      try {
+          partName = TxnUtils.normalizePartitionCase(lc.getPartitionname(), hmsc.getTable(lc.getDbname(), lc.getTablename()).getParameters(), conf);
+      } catch (TException e) {
+          throw new RuntimeException(e);
+      }
       OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
       Pair<String, String> writeIdKey = getWriteIdKey.apply(lc);
 

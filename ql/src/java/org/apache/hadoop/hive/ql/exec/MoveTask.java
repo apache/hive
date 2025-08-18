@@ -686,7 +686,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       dynamicPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(), tbd.getMoveTaskId(),
           work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
     }
-    Map<Path, Utilities.PartitionDetails> dps = Utilities.getFullDPSpecs(conf, dpCtx, dynamicPartitionSpecs);
+    Map<Path, Utilities.PartitionDetails> dps = Utilities.getFullDPSpecs(conf, dpCtx, dynamicPartitionSpecs,
+        table.getParameters());
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = Time.monotonicNow();

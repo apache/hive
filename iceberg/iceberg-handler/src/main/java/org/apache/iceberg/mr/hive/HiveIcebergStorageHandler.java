@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
-import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -894,8 +893,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
-        PartitionUtils.getDefaultPartitionName(hmsTable.getParameters(), hiveConf),
-        hiveConf.getIntVar(ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
+        hiveConf.getIntVar(ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE), hmsTable.getParameters(), hiveConf);
 
     if (table.spec().isPartitioned() &&
           hiveConf.getIntVar(ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD) >= 0) {
@@ -2014,7 +2012,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
     validatePartSpec(table, partitionSpec, policy);
     try {
-      String partName = Warehouse.makePartName(partitionSpec, false);
+      String partName = Warehouse.makePartName(partitionSpec, false, table.getParameters(), conf);
       return new DummyPartition(table, partName, partitionSpec);
     } catch (MetaException e) {
       throw new SemanticException("Unable to construct name for dummy partition due to: ", e);

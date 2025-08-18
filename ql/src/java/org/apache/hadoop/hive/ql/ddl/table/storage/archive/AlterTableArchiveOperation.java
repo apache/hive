@@ -132,12 +132,12 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
     } else if (partitionSpecInfo.values.size() != table.getPartCols().size()) {
       // for partial specifications we need partitions to follow the scheme
       for (Partition partition : partitions) {
-        if (AlterTableArchiveUtils.partitionInCustomLocation(table, partition)) {
+        if (AlterTableArchiveUtils.partitionInCustomLocation(table, partition, context.getConf())) {
           throw new HiveException(String.format("ARCHIVE cannot run for partition groups with custom locations like %s",
               partition.getLocation()));
         }
       }
-      return partitionSpecInfo.createPath(table);
+      return partitionSpecInfo.createPath(table, context.getConf());
     } else {
       Partition p = partitions.get(0);
       // partition can be archived if during recovery
@@ -155,7 +155,8 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
     for (Partition partition : partitions) {
       if (ArchiveUtils.isArchived(partition)) {
         if (ArchiveUtils.getArchivingLevel(partition) != partitionSpecInfo.values.size()) {
-          String name = ArchiveUtils.getPartialName(partition, ArchiveUtils.getArchivingLevel(partition));
+          String name = ArchiveUtils.getPartialName(partition, ArchiveUtils.getArchivingLevel(partition),
+              context.getConf());
           throw new HiveException(String.format("Conflict with existing archive %s", name));
         } else {
           throw new HiveException("Partition(s) already archived");
@@ -183,7 +184,8 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
     context.getConsole().printInfo("Please wait... (this may take a while)");
     try {
       int maxJobNameLength = context.getConf().getIntVar(HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
-      String jobName = String.format("Archiving %s@%s", table.getTableName(), partitionSpecInfo.getName());
+      String jobName = String.format("Archiving %s@%s", table.getTableName(), partitionSpecInfo.getName(
+          table.getParameters(), context.getConf()));
       jobName = Utilities.abbreviate(jobName, maxJobNameLength - 6);
       context.getConf().set(MRJobConfig.JOB_NAME, jobName);
 

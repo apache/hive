@@ -138,7 +138,8 @@ public class HCatPartition {
     if (sd.getLocation() == null) {
       LOG.warn("Partition location is not set! Attempting to construct default partition location.");
       try {
-        String partName = Warehouse.makePartName(HCatSchemaUtils.getFieldSchemas(hcatTable.getPartCols()), values);
+        String partName = Warehouse.makePartName(HCatSchemaUtils.getFieldSchemas(hcatTable.getPartCols()), values,
+            hcatTable.getTblProps(), hcatTable.getConf());
         sd.setLocation(new Path(hcatTable.getSd().getLocation(), partName).toString());
       }
       catch(MetaException exception) {

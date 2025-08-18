@@ -3417,11 +3417,12 @@ public class AcidUtils {
     }
   }
 
-  public static String getPartitionName(Map<String, String> partitionSpec) throws SemanticException {
+  public static String getPartitionName(Map<String, String> partitionSpec, Map<String, String> tableParams,
+      Configuration conf) throws SemanticException {
     String partitionName = null;
     if (partitionSpec != null) {
       try {
-        partitionName = Warehouse.makePartName(partitionSpec, false);
+        partitionName = Warehouse.makePartName(partitionSpec, false, tableParams, conf);
       } catch (MetaException e) {
         throw new SemanticException("partition " + partitionSpec.toString() + " not found");
       }

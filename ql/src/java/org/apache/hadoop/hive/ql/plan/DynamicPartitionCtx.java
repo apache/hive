@@ -27,9 +27,11 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -101,14 +103,14 @@ public class DynamicPartitionCtx implements Serializable {
     this.customSortNullOrder = new LinkedList<>();
   }
 
-  public DynamicPartitionCtx(Map<String, String> partSpec, String defaultPartName,
-      int maxParts) throws SemanticException {
+  public DynamicPartitionCtx(Map<String, String> partSpec,
+      int maxParts, Map<String, String> tableParams, Configuration conf) throws SemanticException {
     this.partSpec = partSpec;
     this.spNames = new ArrayList<>();
     this.dpNames = new ArrayList<>();
     this.numBuckets = 0;
     this.maxPartsPerNode = maxParts;
-    this.defaultPartName = defaultPartName;
+    this.defaultPartName = PartitionUtils.getDefaultPartitionName(tableParams, conf);
 
     for (Map.Entry<String, String> me: partSpec.entrySet()) {
       if (me.getValue() == null) {
@@ -120,7 +122,7 @@ public class DynamicPartitionCtx implements Serializable {
     this.numDPCols = dpNames.size();
     this.numSPCols = spNames.size();
     if (this.numSPCols > 0) {
-      this.spPath = Warehouse.makeDynamicPartName(partSpec);
+      this.spPath = Warehouse.makeDynamicPartName(partSpec, tableParams, conf);
     } else {
       this.spPath = null;
     }

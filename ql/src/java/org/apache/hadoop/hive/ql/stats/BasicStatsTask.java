@@ -541,7 +541,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
     // prefix = work.getAggKey();
     if (partition != null) {
-      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
+      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec(), table.getParameters(), conf));
     }
     return prefix;
   }

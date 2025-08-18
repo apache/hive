@@ -353,7 +353,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       }
       int currentIxInBatch = nextIxInBatch++;
       Partition part = currentBatch.get(currentIxInBatch);
-      String partName = Warehouse.makePartName(t.getPartitionKeys(), part.getValues());
+      String partName = Warehouse.makePartName(t.getPartitionKeys(), part.getValues(), t.getParameters(), conf);
       LOG.debug("Processing partition ({} in batch), {}", currentIxInBatch, partName);
 
       // Skip the partitions in progress, and the ones for which stats update is disabled.
@@ -438,7 +438,8 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     // Current match may be out of order w.r.t. the global name list, so add specific parts.
     for (int i = 0; i < currentIxInBatch; ++i) {
-      String name = Warehouse.makePartName(t.getPartitionKeys(), currentBatch.get(i).getValues());
+      String name = Warehouse.makePartName(t.getPartitionKeys(), currentBatch.get(i).getValues(), t.getParameters(),
+          conf);
       LOG.trace("Adding previous {}, {}", name, cols);
       partsToAnalyze.put(name, cols);
     }

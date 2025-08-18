@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -137,7 +138,8 @@ public class FSTableEvent implements TableEvent {
     List<String> partitions = new ArrayList<>();
     try {
       for (Partition partition : metadata.getPartitions()) {
-        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues());
+        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(), tblDesc.getTblProps(),
+            hiveConf);
         partitions.add(partName);
       }
     } catch (MetaException e) {
@@ -158,7 +160,9 @@ public class FSTableEvent implements TableEvent {
          * this is required for file listing of all files in a partition for managed table as described in
          * {@link org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator}
          */
-        location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString();
+        location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(),
+            Hive.get(hiveConf).getTable(tblDesc.getDatabaseName(), tblDesc.getTableName()).getParameters(), hiveConf)).
+            toString();
       }
 
       ColumnStatistics columnStatistics = null;

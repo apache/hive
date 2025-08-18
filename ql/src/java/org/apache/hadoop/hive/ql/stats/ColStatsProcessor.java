@@ -166,7 +166,7 @@ public class ColStatsProcessor implements IStatsProcessor {
                 PartitionUtils.getDefaultPartitionName(tbl.getParameters(), this.conf) : partVal.toString());
             }
           }
-          partName = Warehouse.makePartName(partColSchema, partVals);
+          partName = Warehouse.makePartName(partColSchema, partVals, tbl.getParameters(), conf);
         }
 
         ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);

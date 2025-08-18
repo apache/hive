@@ -550,7 +550,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       Map<String, String> partSpec = Warehouse.makeSpecFromValues(
           table.getPartitionKeys(), partitionValues);
       try {
-        destLocation = new Path(table.getDataLocation(), Warehouse.makePartPath(partSpec));
+        destLocation = new Path(table.getDataLocation(), Warehouse.makePartPath(partSpec, table.getParameters(), conf));
       } catch (MetaException e) {
         throw new StreamingException("Unable to retrieve the delta file location"
             + " for values: " + partitionValues

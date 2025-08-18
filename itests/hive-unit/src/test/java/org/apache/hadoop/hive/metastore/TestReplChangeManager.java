@@ -197,15 +197,15 @@ public class TestReplChangeManager {
     Partition part3 = createPartition(dbName, tblName, columns, values, serdeInfo);
     client.add_partition(part3);
 
-    Path part1Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160101")), "part");
+    Path part1Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160101"), hiveConf), "part");
     createFile(part1Path, "p1");
     String path1Chksum = ReplChangeManager.checksumFor(part1Path, fs);
 
-    Path part2Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160102")), "part");
+    Path part2Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160102"), hiveConf), "part");
     createFile(part2Path, "p2");
     String path2Chksum = ReplChangeManager.checksumFor(part2Path, fs);
 
-    Path part3Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160103")), "part");
+    Path part3Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160103"), hiveConf), "part");
     createFile(part3Path, "p3");
     String path3Chksum = ReplChangeManager.checksumFor(part3Path, fs);
 

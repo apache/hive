@@ -97,7 +97,12 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
       request.setState(compactionStateStr2Enum(desc.getCompactionStatus()).getSqlConst());
     }
     if (isNotEmpty(desc.getPartSpec())) {
-      request.setPartName(AcidUtils.getPartitionName(desc.getPartSpec()));
+        try {
+            request.setPartName(AcidUtils.getPartitionName(desc.getPartSpec(), context.getDb().getTable(
+                request.getDbName(), request.getTbName()).getParameters(), context.getConf()));
+        } catch (HiveException e) {
+            throw new RuntimeException(e);
+        }
     }
     if(desc.getCompactionId()>0){
      request.setId(desc.getCompactionId());

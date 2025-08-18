@@ -126,7 +126,7 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
               List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
               List<String> partVals = p.getValues();
-              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
+              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals, table.getParameters(), conf));
               rqst.putToProperties("location", p.getSd().getLocation());
 
               txnHandler.submitForCleanup(rqst, writeId, currentTxn);
@@ -163,8 +163,8 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
     Partition oldPart = partitionEvent.getOldPartition();
     Partition newPart = partitionEvent.getNewPartition();
     Table t = partitionEvent.getTable();
-    String oldPartName = Warehouse.makePartName(t.getPartitionKeys(), oldPart.getValues());
-    String newPartName = Warehouse.makePartName(t.getPartitionKeys(), newPart.getValues());
+    String oldPartName = Warehouse.makePartName(t.getPartitionKeys(), oldPart.getValues(), t.getParameters(), conf);
+    String newPartName = Warehouse.makePartName(t.getPartitionKeys(), newPart.getValues(), t.getParameters(), conf);
     if (!oldPartName.equals(newPartName)) {
       txnHandler = getTxnHandler();
       txnHandler.onRename(t.getCatName(), t.getDbName(), t.getTableName(), oldPartName,

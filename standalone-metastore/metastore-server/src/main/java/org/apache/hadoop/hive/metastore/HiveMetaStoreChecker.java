@@ -361,7 +361,7 @@ public class HiveMetaStoreChecker {
       fs = partPath.getFileSystem(conf);
 
       CheckResult.PartitionResult prFromMetastore = new CheckResult.PartitionResult();
-      prFromMetastore.setPartitionName(getPartitionName(table, partition));
+      prFromMetastore.setPartitionName(getPartitionName(table, partition, conf));
       prFromMetastore.setTableName(partition.getTableName());
       if (allPartDirs.remove(partPath)) {
         result.getCorrectPartitions().add(prFromMetastore);
@@ -389,7 +389,7 @@ public class HiveMetaStoreChecker {
         long partitionAgeSeconds = currentEpochSecs - createdTime;
         if (partitionAgeSeconds > partitionExpirySeconds) {
           CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
-          pr.setPartitionName(getPartitionName(table, partition));
+          pr.setPartitionName(getPartitionName(table, partition, conf));
           pr.setTableName(partition.getTableName());
           result.getExpiredPartitions().add(pr);
           if (LOG.isDebugEnabled()) {

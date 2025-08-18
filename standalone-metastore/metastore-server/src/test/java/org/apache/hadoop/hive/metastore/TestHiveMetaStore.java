@@ -307,10 +307,10 @@ public abstract class TestHiveMetaStore {
       }
       assertTrue(foundPart);
 
-      String partName = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12") + "/hr=14";
-      String part2Name = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12") + "/hr=15";
-      String part3Name = "ds=" + FileUtils.escapePathName("2008-07-02 14:13:12") + "/hr=15";
-      String part4Name = "ds=" + FileUtils.escapePathName("2008-07-03 14:13:12") + "/hr=151";
+      String partName = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12", tbl.getParameters(), conf) + "/hr=14";
+      String part2Name = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12", tbl.getParameters(), conf) + "/hr=15";
+      String part3Name = "ds=" + FileUtils.escapePathName("2008-07-02 14:13:12", tbl.getParameters(), conf) + "/hr=15";
+      String part4Name = "ds=" + FileUtils.escapePathName("2008-07-03 14:13:12", tbl.getParameters(), conf) + "/hr=151";
 
       part_get = client.getPartition(dbName, tblName, partName);
       assertTrue("Partitions are not the same", part.equals(part_get));

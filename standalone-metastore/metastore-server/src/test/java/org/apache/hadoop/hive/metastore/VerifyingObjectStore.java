@@ -135,7 +135,7 @@ public class VerifyingObjectStore extends ObjectStore {
       List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
-        partNames.add(Warehouse.makePartName(partCols, partVal));
+        partNames.add(Warehouse.makePartName(partCols, partVal, table.getParameters(), conf));
       }
       List<Partition> oldParts = getPartitionsByNames(catName, dbName, tblName, partNames);
       if (oldParts.size() != partNames.size()) {

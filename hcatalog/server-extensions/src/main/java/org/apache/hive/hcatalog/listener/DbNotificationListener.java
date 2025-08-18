@@ -410,7 +410,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           fileIterator = Collections.emptyIterator();
         }
         PartitionFiles partitionFiles =
-            new PartitionFiles(Warehouse.makePartName(t.getPartitionKeys(), p.getValues()), fileIterator);
+            new PartitionFiles(Warehouse.makePartName(t.getPartitionKeys(), p.getValues(), t.getParameters(), conf),
+                fileIterator);
         return partitionFiles;
       } catch (MetaException e) {
         throw new RuntimeException(e);

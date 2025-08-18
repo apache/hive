@@ -191,14 +191,15 @@ public class TestStatsReplicationScenarios {
       return;
     }
 
-    List<FieldSchema> partKeys = primary.getTable(primaryDbName, tableName).getPartitionKeys();
+    Table table = primary.getTable(primaryDbName, tableName);
+    List<FieldSchema> partKeys = table.getPartitionKeys();
     for (Partition pPart : pParts) {
       Partition rPart = replica.getPartition(replicatedDbName, tableName,
               pPart.getValues());
 
       Map<String, String> rParams = collectStatsParams(rPart.getParameters());
       Map<String, String> pParams = collectStatsParams(pPart.getParameters());
-      String partName = Warehouse.makePartName(partKeys, pPart.getValues());
+      String partName = Warehouse.makePartName(partKeys, pPart.getValues(), table.getParameters(), conf);
       Assert.assertEquals("Mismatch in stats parameters for partition " + partName + " of table " + tableName,
                           pParams, rParams);
 

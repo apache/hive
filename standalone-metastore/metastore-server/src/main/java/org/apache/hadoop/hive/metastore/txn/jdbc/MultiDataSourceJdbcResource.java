@@ -204,7 +204,7 @@ public class MultiDataSourceJdbcResource {
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
       return getJdbcTemplate().getJdbcTemplate().batchUpdate(
           command.getParameterizedQueryString(databaseProduct),
-          command.getQueryParameters(),
+          command.getQueryParameters(conf),
           maxBatchSize,
           command.getPreparedStatementSetter()
       );      
