@@ -102,7 +102,7 @@ public class AlterTableAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer
         loadTableWork.setInheritTableSpecs(true);
         try {
           partitionDesc.setLocation(new Path(table.getDataLocation(),
-              Warehouse.makePartPath(partitionDesc.getPartSpec())).toString());
+              Warehouse.makePartPath(partitionDesc.getPartSpec(), table.getParameters(), conf)).toString());
         } catch (MetaException ex) {
           throw new SemanticException("Could not determine partition path due to: " + ex.getMessage(), ex);
         }

@@ -1560,9 +1560,9 @@ public class MetaStoreServerUtils {
     }
   }
 
-  public static String getPartitionName(Table table, Partition partition) {
+  public static String getPartitionName(Table table, Partition partition, Configuration conf) {
     try {
-      return Warehouse.makePartName(getPartCols(table), partition.getValues());
+      return Warehouse.makePartName(getPartCols(table), partition.getValues(), table.getParameters(), conf);
     } catch (MetaException e) {
       throw new RuntimeException("Invalid partition found, location: " +
           getDataLocation(table, partition), e);

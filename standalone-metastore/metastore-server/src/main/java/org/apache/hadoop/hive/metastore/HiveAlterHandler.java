@@ -775,7 +775,7 @@ public class HiveAlterHandler implements AlterHandler {
 
           // if tbl location is available use it
           // else derive the tbl location from database location
-          destPath = wh.getPartitionPath(db, tbl, new_part.getValues());
+          destPath = wh.getPartitionPath(db, tbl, new_part.getValues(), conf);
           destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
         } catch (NoSuchObjectException e) {
           LOG.debug("Didn't find object in metastore ", e);
@@ -851,7 +851,8 @@ public class HiveAlterHandler implements AlterHandler {
             new_part, tbl, wh, false, true, environmentContext, false);
       }
 
-      String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues());
+      String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues(), tbl.getParameters(),
+          conf);
       List<ColumnStatistics> multiColumnStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name, oldPart.getValues(),
           oldPart.getSd().getCols(), tbl, new_part, null, null);
       msdb.alterPartition(catName, dbname, name, part_vals, new_part, validWriteIds);
@@ -916,7 +917,7 @@ public class HiveAlterHandler implements AlterHandler {
     // Get list of partition values
     List<String> partValues = new LinkedList<>();
     for (Partition tmpPart : new_parts) {
-      partValues.add(Warehouse.makePartName(tbl.getPartitionKeys(), tmpPart.getValues()));
+      partValues.add(Warehouse.makePartName(tbl.getPartitionKeys(), tmpPart.getValues(), tbl.getParameters(), conf));
     }
 
     // Get existing partitions from store
@@ -1231,8 +1232,10 @@ public class HiveAlterHandler implements AlterHandler {
       if (newCols == null) {
         newCols = part.getSd() == null ? new ArrayList<>() : part.getSd().getCols();
       }
-      String oldPartName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
-      String newPartName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      String oldPartName = Warehouse.makePartName(table.getPartitionKeys(), partVals, table.getParameters(),
+          msdb.getConf());
+      String newPartName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(), table.getParameters(),
+          msdb.getConf());
       boolean rename = !part.getDbName().equals(dbname) || !part.getTableName().equals(tblname)
           || !oldPartName.equals(newPartName);
 

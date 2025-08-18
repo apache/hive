@@ -108,7 +108,8 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     try {
       if (conn.isPartitionedTable() && !conn.isDynamicPartitioning()) {
         List<FieldSchema> partKeys = conn.getTable().getPartitionKeys();
-        partNameForLock = Warehouse.makePartName(partKeys, conn.getStaticPartitionValues());
+        partNameForLock = Warehouse.makePartName(partKeys, conn.getStaticPartitionValues(),
+            conn.getTable().getParameters(), conn.getConf());
       }
       this.conn = conn;
       this.username = conn.getUsername();

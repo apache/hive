@@ -2762,7 +2762,7 @@ public class Hive implements AutoCloseable {
       Path newPartPath = null;
 
       if (inheritLocation) {
-        newPartPath = genPartPathFromTable(tbl, partSpec, tblDataLocationPath);
+        newPartPath = genPartPathFromTable(tbl, partSpec, tblDataLocationPath, conf);
 
         if(oldPart != null) {
           /*
@@ -2780,7 +2780,7 @@ public class Hive implements AutoCloseable {
         }
       } else {
         newPartPath = oldPartPath == null
-          ? genPartPathFromTable(tbl, partSpec, tblDataLocationPath) : oldPartPath;
+          ? genPartPathFromTable(tbl, partSpec, tblDataLocationPath, conf) : oldPartPath;
       }
 
       perfLogger.perfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
@@ -3003,8 +3003,9 @@ public class Hive implements AutoCloseable {
 
 
   private static Path genPartPathFromTable(Table tbl, Map<String, String> partSpec,
-      Path tblDataLocationPath) throws MetaException {
-    Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec));
+      Path tblDataLocationPath, HiveConf hiveConf) throws MetaException {
+    Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec, tbl.getParameters(),
+        hiveConf));
     return new Path(tblDataLocationPath.toUri().getScheme(),
         tblDataLocationPath.toUri().getAuthority(), partPath.toUri().getPath());
   }
@@ -3272,7 +3273,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<String> partitionNames = new LinkedList<>();
       for(PartitionDetails details : partitionDetailsMap.values()) {
         if (details.fullSpec != null && !details.fullSpec.isEmpty()) {
-          partitionNames.add(Warehouse.makeDynamicPartNameNoTrailingSeperator(details.fullSpec));
+          partitionNames.add(Warehouse.makeDynamicPartNameNoTrailingSeperator(details.fullSpec, tbl.getParameters(),
+              conf));
         }
       }
       List<Partition> partitions = Hive.get().getPartitionsByNames(tbl, partitionNames);
@@ -4688,7 +4690,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             if (tbl.getDataLocation() != null) {
               Path partPath = new Path(tbl.getDataLocation(),
                   Warehouse.makePartName(tbl.getPartCols(),
-                      partitionWithoutSD.getValues()));
+                      partitionWithoutSD.getValues(), tbl.getParameters(), SessionState.getSessionConf()));
               partitionLocation = partPath.toString();
             }
           } else {
