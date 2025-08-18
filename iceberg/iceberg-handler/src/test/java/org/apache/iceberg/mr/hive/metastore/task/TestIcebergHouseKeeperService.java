@@ -140,6 +140,6 @@ public class TestIcebergHouseKeeperService {
     List<File> files = Optional.ofNullable(matchingFiles).map(Arrays::asList).orElse(Collections.emptyList());
     LOG.debug("Snapshot files found in directory({}): {}", metadataDirectory, files);
     Assertions.assertEquals(numberForSnapshotFiles, files.size(),
-        String.format("Unexpected no. of snapshot files in metadata directory: %s",metadataDirectory));
+        String.format("Unexpected no. of snapshot files in metadata directory: %s", metadataDirectory));
   }
 }
