@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -141,7 +142,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
     }
 
-    public Object process(StatsAggregator statsAggregator) throws HiveException, MetaException {
+    public Object process(StatsAggregator statsAggregator, Configuration conf) throws HiveException, MetaException {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
       if (work.isTargetRewritten()) {
@@ -186,7 +187,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even
         // though we are marking stats as not being accurate.
         if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
-          String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
+          String prefix = getAggregationPrefix(p.getTable(), p.getPartition(), conf);
           updateStats(statsAggregator, parameters, prefix);
         }
       }
@@ -249,7 +250,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       if (partish.isTransactionalTable()) {
-        String prefix = getAggregationPrefix(partish.getTable(), partish.getPartition());
+        String prefix = getAggregationPrefix(partish.getTable(), partish.getPartition(), db.getConf());
         long insertCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
         long updateCount = toLong(statsAggregator.aggregateStats(prefix, UPDATE_COUNT));
         long deleteCount = toLong(statsAggregator.aggregateStats(prefix, DELETE_COUNT));
@@ -299,7 +300,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
         BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p, work, followedColStats);
         basicStatsProcessor.collectFileStatus(wh, conf);
-        Table res = (Table) basicStatsProcessor.process(statsAggregator);
+        Table res = (Table) basicStatsProcessor.process(statsAggregator, conf);
         if (res == null) {
           return 0;
         }
@@ -368,7 +369,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         }
 
         for (BasicStatsProcessor basicStatsProcessor : processors) {
-          Object res = basicStatsProcessor.process(statsAggregator);
+          Object res = basicStatsProcessor.process(statsAggregator, conf);
           if (res == null) {
             LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [0]");
             continue;
@@ -527,16 +528,16 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     this.dpPartSpecs = dpPartSpecs;
   }
 
-  public static String getAggregationPrefix(Table table, Partition partition) throws MetaException {
-    String prefix = getAggregationPrefix0(table, partition);
+  public static String getAggregationPrefix(Table table, Partition partition, Configuration conf) throws MetaException {
+    String prefix = getAggregationPrefix0(table, partition, conf);
     return prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
   }
 
-  private static String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
+  private static String getAggregationPrefix0(Table table, Partition partition, Configuration conf) throws MetaException {
 
     // prefix is of the form dbName.tblName
-    String prefix = FileUtils.escapePathName(table.getDbName()).toLowerCase() + "." +
-        FileUtils.escapePathName(table.getTableName()).toLowerCase();
+    String prefix = FileUtils.escapePathName(table.getDbName(), table.getParameters(), conf).toLowerCase() + "." +
+        FileUtils.escapePathName(table.getTableName(), table.getParameters(), conf).toLowerCase();
     // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
     // prefix = work.getAggKey();
     if (partition != null) {

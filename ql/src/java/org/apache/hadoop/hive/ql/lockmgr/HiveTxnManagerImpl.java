@@ -105,7 +105,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
             conf);
 
     if (partSpec == null) {
-      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);
+      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData, conf), mode, true);
       if (lck == null) {
         return 1;
       }
@@ -117,7 +117,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
       throw new HiveException("Partition " + partSpec + " for table " +
           tabName + " does not exist");
     }
-    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData), mode, true);
+    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData, conf), mode, true);
     if (lck == null) {
       return 1;
     }

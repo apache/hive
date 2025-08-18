@@ -1801,7 +1801,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     rqst.setTablename(tblName);
     if (partSpec != null) {
       String partName = FileUtils.makePartName(
-          new ArrayList<>(partSpec.keySet()), new ArrayList<>(partSpec.values()));
+          new ArrayList<>(partSpec.keySet()), new ArrayList<>(partSpec.values()), null, conf);
       rqst.setPartname(partName);
     }
     ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks(rqst);
