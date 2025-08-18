@@ -80,7 +80,8 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[
       String lockType = LockTypeUtil.getEncodingAsStr(lc.getType());
           try {
               params.add(new Object[] {tempExtLockId, ++intLockId, lockRequest.getTxnid(), StringUtils.lowerCase(lc.getDbname()),
-                  StringUtils.lowerCase(lc.getTablename()), TxnUtils.normalizePartitionCase(lc.getPartitionname(), hmsc.getTable(lc.getDbname(), lc.getTablename()).getParameters(), conf),
+                  StringUtils.lowerCase(lc.getTablename()), TxnUtils.normalizePartitionCase(lc.getPartitionname(),
+                  lc.getTablename() != null ? hmsc.getTable(lc.getDbname(), lc.getTablename()).getParameters() : null, conf),
                   Character.toString(LOCK_WAITING), lockType, lockRequest.getUser(), lockRequest.getHostname(), lockRequest.getAgentInfo()});
           } catch (TException e) {
               throw new RuntimeException(e);
