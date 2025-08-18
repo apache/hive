@@ -244,7 +244,7 @@ public class EmbeddedLockManager implements HiveLockManager {
         return null;
       }
       if (names.length == 2) {
-        return new HiveLockObject(tab, data);
+        return new HiveLockObject(tab, data, conf);
       }
       Map<String, String> partSpec = new HashMap<String, String>();
       for (int indx = 2; indx < names.length; indx++) {
@@ -263,7 +263,7 @@ public class EmbeddedLockManager implements HiveLockManager {
         return new HiveLockObject(new DummyPartition(tab, null, partSpec), data);
       }
 
-      return new HiveLockObject(partn, data);
+      return new HiveLockObject(partn, data, conf);
     } catch (Exception e) {
       throw new LockException(e);
     }

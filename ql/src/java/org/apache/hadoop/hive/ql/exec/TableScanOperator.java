@@ -79,6 +79,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private String defaultPartitionName;
 
+  private Configuration configuration;
+
   /**
    * These values are saved during MapWork, FetchWork, etc preparation and later added to the the
    * JobConf of each task.
@@ -258,7 +260,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
           // to the special partition, __HIVE_DEFAULT_PARTITION__.
           values.add(o == null ? defaultPartitionName : o.toString());
         }
-        partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values);
+        partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values, conf.getTableMetadata() != null ?
+            conf.getTableMetadata().getParameters() : null, configuration);
         LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
       }
       // find which column contains the raw data size (both partitioned and non partitioned
@@ -321,6 +324,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       jc = new JobConf(hconf);
     }
 
+    configuration = hconf;
     if (conf.getTableMetadata() != null) {
       defaultPartitionName = PartitionUtils.getDefaultPartitionName(conf.getTableMetadata().getParameters(), hconf);
     } else {

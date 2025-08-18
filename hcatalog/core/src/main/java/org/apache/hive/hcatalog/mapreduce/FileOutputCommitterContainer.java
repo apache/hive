@@ -396,7 +396,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           HdfsUtils.setFullFileStatus(conf, status, status.getFileStatus().getGroup(), fs,
               partPath, false);
         }
-        partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
+        partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs, table.getParameters(),
+            conf);
       }
     }
 
@@ -428,7 +429,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       // file:///tmp/hcat_junit_warehouse/employee/_DYN0.7770480401313761/emp_country=IN/emp_state=KA  ->
       // file:///tmp/hcat_junit_warehouse/employee/emp_country=IN/emp_state=KA
       for (FieldSchema partKey : table.getPartitionKeys()) {
-        partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
+        partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs, table.getParameters(),
+            conf);
       }
 
       return partPath.toString();
@@ -455,11 +457,12 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     return params;
   }
 
-  private Path constructPartialPartPath(Path partialPath, String partKey, Map<String, String> partKVs) {
+  private Path constructPartialPartPath(Path partialPath, String partKey, Map<String, String> partKVs,
+      Map<String, String> tableParams, Configuration conf) {
 
-    StringBuilder sb = new StringBuilder(FileUtils.escapePathName(partKey));
+    StringBuilder sb = new StringBuilder(FileUtils.escapePathName(partKey, tableParams, conf));
     sb.append("=");
-    sb.append(FileUtils.escapePathName(partKVs.get(partKey)));
+    sb.append(FileUtils.escapePathName(partKVs.get(partKey), tableParams, conf));
     return new Path(partialPath, sb.toString());
   }
 
