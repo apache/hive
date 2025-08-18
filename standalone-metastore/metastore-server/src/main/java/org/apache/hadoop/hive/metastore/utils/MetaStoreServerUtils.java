@@ -71,7 +71,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -1653,7 +1652,7 @@ public class MetaStoreServerUtils {
     if (type == null) {
       return partitionValue;
     }
-    if (Objects.equals(partitionValue, HiveMetaStoreChecker.getDefaultPartitionName(tableParams, conf))) {
+    if (Objects.equals(partitionValue, MetaStoreUtils.getDefaultPartitionName(tableParams, conf))) {
       // This is the special partition name for NULL values. It should never be parsed.
       return partitionValue;
     }

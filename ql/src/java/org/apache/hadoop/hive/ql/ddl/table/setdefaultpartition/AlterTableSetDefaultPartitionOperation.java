@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.setdefaultpartition;
 
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  * Operation process of set default column at table level.
@@ -39,7 +39,7 @@ public class AlterTableSetDefaultPartitionOperation extends AbstractAlterTableOp
   protected void doAlteration(Table table, Partition partition) throws HiveException {
     if (table.isPartitioned()) {
       // put the tableLevelDefaultPartitionName in the table property
-      table.getParameters().put(HiveStringUtils.DEFAULT_PARTITION_NAME, desc.getTableLevelDefaultPartitionName());
+      table.getParameters().put(MetaStoreUtils.DEFAULT_PARTITION_NAME, desc.getTableLevelDefaultPartitionName());
     } else {
       throw new HiveException(ErrorMsg.NON_PARTITIONED_TABLE, table.getTableName());
     }
