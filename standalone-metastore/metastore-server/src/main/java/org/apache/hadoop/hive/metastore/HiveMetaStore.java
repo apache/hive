@@ -675,10 +675,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     isMetaStoreRemote = true;
     if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
-      String kerberosName = SecurityUtil.getServerPrincipal(
-          MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL), "0.0.0.0");
-      String keyTabFile = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
-      SecurityUtils.setZookeeperClientKerberosJaasConfig(kerberosName, keyTabFile);
+      String principal = MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
+      String keyTab = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
+      SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keyTab);
     }
     String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
     boolean isHttpTransport = transportMode.equalsIgnoreCase("http");

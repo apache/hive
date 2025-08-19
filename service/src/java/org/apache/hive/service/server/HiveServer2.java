@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
@@ -97,7 +98,6 @@ import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -689,8 +689,9 @@ public class HiveServer2 extends CompositeService {
           StringUtils.isNotEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM)) &&
           HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS)) {
         // Install the JAAS Configuration for the runtime
-        Utils.setZookeeperClientKerberosJaasConfig(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
-            hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB));
+        String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
+        String keyTab = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+        SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keyTab);
       }
     } catch (Exception e) {
       throw new RuntimeException("Failed to configure the jaas for ZooKeeper", e);

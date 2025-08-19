@@ -263,7 +263,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       } else if (serviceDiscoveryMode.equalsIgnoreCase("zookeeper")) {
         if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
             MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
-          SecurityUtils.setZookeeperClientKerberosJaasConfig();
+          SecurityUtils.setZookeeperClientKerberosJaasConfig(null, null);
         }
         metastoreUrisString = new ArrayList<String>();
         // Add scheme to the bare URI we get.

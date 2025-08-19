@@ -76,13 +76,14 @@ public class SecurityUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
 
   private static Method getKeytab = null;
+
   static {
     Class<?> clz = UserGroupInformation.class;
 
     try {
       getKeytab = clz.getDeclaredMethod("getKeytab");
       getKeytab.setAccessible(true);
-    } catch(NoSuchMethodException nme) {
+    } catch (NoSuchMethodException nme) {
       LOG.warn("Cannot find private method \"getKeytab\" in class:" +
           UserGroupInformation.class.getCanonicalName(), nme);
       getKeytab = null;
@@ -104,36 +105,40 @@ public class SecurityUtils {
   }
 
   /**
-   * This is used for Metastore client to authenticate with zk, where we don't know the exact principal.
-   * @throws Exception
-   */
-  public static void setZookeeperClientKerberosJaasConfig() throws Exception {
-    String principal = null, keyTabFile = null;
-    UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
-    if (getKeytab != null && UserGroupInformation.isSecurityEnabled() &&
-        UserGroupInformation.isLoginKeytabBased()) {
-      principal = loginUser.getUserName();
-      keyTabFile = (String) getKeytab.invoke(loginUser);
-    } else if (System.getProperty("java.security.auth.login.config") != null) {
-      // The client provides the jaas configuration, use it
-      return;
-    }
-    setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
-  }
-
-  /**
    * Dynamically sets up the JAAS configuration that uses kerberos
    * @param principal
    * @param keyTabFile
    * @throws IOException
    */
-  public static void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile) throws IOException {
+  public static void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile,
+      String... loginContext) throws IOException {
     // ZooKeeper property name to pick the correct JAAS conf section
-    final String SASL_LOGIN_CONTEXT_NAME = "HiveZooKeeperClient";
+    String loginContextName = "HiveZooKeeperClient";
+    if (loginContext != null && loginContext.length > 0) {
+      loginContextName = loginContext[0];
+    }
+    final String SASL_LOGIN_CONTEXT_NAME = loginContextName;
     if (System.getProperties().containsKey(SASL_LOGIN_CONTEXT_NAME)) {
       LOG.info("ZooKeeper JAAS context: {} has been set, ignore...", SASL_LOGIN_CONTEXT_NAME);
       return;
     }
+    // For client to authenticate with zk, where we don't know the exact principal.
+    if (StringUtils.isEmpty(principal) || StringUtils.isEmpty(keyTabFile)) {
+      UserGroupInformation loginUser = UserGroupInformation.getLoginUser();
+      try {
+        if (getKeytab != null && UserGroupInformation.isSecurityEnabled() &&
+            UserGroupInformation.isLoginKeytabBased()) {
+          principal = loginUser.getUserName();
+          keyTabFile = (String) getKeytab.invoke(loginUser);
+        } else if (System.getProperty("java.security.auth.login.config") != null) {
+          // The client provides the jaas configuration, use it
+          return;
+        }
+      } catch (Exception e) {
+        throw new IOException("Failed to get the principal or keyTab from UGI", e);
+      }
+    }
+
     System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY, SASL_LOGIN_CONTEXT_NAME);
 
     principal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");

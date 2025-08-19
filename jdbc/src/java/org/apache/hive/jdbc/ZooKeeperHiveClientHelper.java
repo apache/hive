@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
@@ -85,6 +86,12 @@ class ZooKeeperHiveClientHelper {
         JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode);
   }
 
+  static boolean isZkEnforceSASLClient(Map<String, String> sessionVars) {
+    HiveConf.ConfVars confVars = HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS;
+    return sessionVars.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL) &&
+        Boolean.parseBoolean(sessionVars.getOrDefault(confVars.varname, confVars.getDefaultValue()));
+  }
+
   /**
    * Parse and set up the SSL communication related Zookeeper params in connParams from sessionVars.
    * @param connParams
@@ -127,11 +134,9 @@ class ZooKeeperHiveClientHelper {
                 connParams.getZookeeperTrustStorePassword(), connParams.getZookeeperTrustStoreType()))
             .build();
 
-    Map<String, String> sessionVars = connParams.getSessionVars();
     // If the client is requesting the Kerberos, then the ZooKeeper is mostly Kerberos-secured
-    if (sessionVars.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL) &&
-        Boolean.parseBoolean(sessionVars.getOrDefault(HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS.varname, "true"))) {
-      org.apache.hadoop.hive.shims.Utils.setZookeeperClientKerberosJaasConfig();
+    if (isZkEnforceSASLClient(connParams.getSessionVars())) {
+      SecurityUtils.setZookeeperClientKerberosJaasConfig(null, null);
     }
     zooKeeperClient.start();
     return zooKeeperClient;
@@ -223,10 +228,8 @@ class ZooKeeperHiveClientHelper {
       registryConf.set(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, connParams.getZooKeeperEnsemble());
       registryConf.set(HiveConf.ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE.varname,
         getZooKeeperNamespace(connParams));
-      Map<String, String> sessionVars = connParams.getSessionVars();
       registryConf.setBoolean(HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS.varname,
-          sessionVars.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL) &&
-          Boolean.parseBoolean(sessionVars.getOrDefault(HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS.varname, "true")));
+          isZkEnforceSASLClient(connParams.getSessionVars()));
       HS2ActivePassiveHARegistry haRegistryClient = HS2ActivePassiveHARegistryClient.getClient(registryConf);
       boolean foundLeader = false;
       String maxRetriesConf = connParams.getSessionVars().get(JdbcConnectionParams.RETRIES);
