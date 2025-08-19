@@ -117,7 +117,8 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
       String partName = null;
       try {
           partName = TxnUtils.normalizePartitionCase(lc.getPartitionname(), lc.getTablename() != null ?
-              hmsc.getTable(lc.getDbname(), lc.getTablename()).getParameters() : null, conf);
+              hmsc.tableExists(lc.getDbname(), lc.getTablename()) ? hmsc.getTable(lc.getDbname(),
+                      lc.getTablename()).getParameters() : null : null, conf);
       } catch (TException e) {
           throw new RuntimeException(e);
       }
