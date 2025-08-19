@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
@@ -55,15 +57,26 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Utils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 
 /**
  * Operator factory for the rule processors for lineage.
@@ -677,6 +690,249 @@ public class OpProcFactory {
   }
 
   /**
+   * PTF processor
+   */
+  public static class PTFLineage implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+      // LineageCTx
+      LineageCtx lCtx = (LineageCtx) procCtx;
+
+      // The operators
+      @SuppressWarnings("unchecked")
+      PTFOperator op = (PTFOperator)nd;
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
+      lCtx.getIndex().copyPredicates(inpOp, op);
+
+      Dependency dep = new Dependency();
+      DependencyType new_type = DependencyType.EXPRESSION;
+      dep.setType(new_type);
+
+      Set<String> columns = new HashSet<>();
+      PartitionedTableFunctionDef funcDef = op.getConf().getFuncDef();
+      StringBuilder sb = new StringBuilder();
+      WindowFrameDef windowFrameDef = null;
+
+      if (!(funcDef.getTFunction() instanceof Noop)) {
+
+        if (funcDef instanceof WindowTableFunctionDef) {
+          // function name
+          WindowFunctionDef windowFunctionDef = ((WindowTableFunctionDef) funcDef).getWindowFunctions().getFirst();
+          sb.append(windowFunctionDef.getName()).append("(");
+
+          addArgs(sb, columns, lCtx, inpOp, op.getSchema(), windowFunctionDef.getArgs());
+
+        } else /* PartitionedTableFunctionDef */ {
+          // function name
+          sb.append(funcDef.getName()).append("(");
+          addArgs(sb, columns, lCtx, inpOp, funcDef.getRawInputShape().getRr().getRowSchema(), funcDef.getArgs());
+        }
+
+        if (funcDef instanceof WindowTableFunctionDef) {
+          WindowFunctionDef windowFunctionDef = ((WindowTableFunctionDef) funcDef).getWindowFunctions().getFirst();
+          windowFrameDef = windowFunctionDef.getWindowFrame();
+
+          if (sb.charAt(sb.length() - 2) == ',') {
+            sb.delete(sb.length() - 2, sb.length());
+          }
+          sb.append(")");
+          sb.append(" over (");
+        } else {
+          // matchpath has argument pattern like matchpath(<input expression>, <argument methods: arg1(), arg2()...>)
+          if (funcDef.getInput() != null) {
+            sb.append("on ").append(funcDef.getInput().getAlias()).append(" ");
+
+            int counter = 1;
+            for (PTFExpressionDef arg : funcDef.getArgs()) {
+              ExprNodeDesc exprNode = arg.getExprNode();
+
+              addIfNotNull(columns, exprNode.getCols());
+
+              sb.append("arg").append(counter++).append("(");
+              sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), arg.getExprNode(), lCtx, inpOp, null));
+              sb.append("), ");
+            }
+
+            sb.delete(sb.length() - 2, sb.length());
+          }
+
+        }
+      }
+
+      /*
+        Collect partition by and distribute by information.
+        Please note, at the expression node level, there is no difference between those.
+        That means distribute by gets a string partition by in the expression string.
+       */
+      if (funcDef.getPartition() != null ) {
+        List<PTFExpressionDef> partitionExpressions = funcDef.getPartition().getExpressions();
+
+        boolean isPartitionByAdded = false;
+        for (PTFExpressionDef partitionExpr : partitionExpressions) {
+          ExprNodeDesc partitionExprNode = partitionExpr.getExprNode();
+
+          if (partitionExprNode.getCols() != null && !partitionExprNode.getCols().isEmpty()) {
+            if (!isPartitionByAdded) {
+              sb.append("partition by ");
+              isPartitionByAdded = true;
+            }
+
+            addIfNotNull(columns, partitionExprNode.getCols());
+
+            if (partitionExprNode instanceof ExprNodeColumnDesc) {
+              sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), partitionExprNode, lCtx, inpOp, null));
+              sb.append(", ");
+            }
+
+            sb.delete(sb.length() - 2, sb.length());
+          }
+        }
+
+      }
+
+      /*
+        Collects the order by and sort by information.
+        Please note, at the expression node level, there is no difference between those.
+        That means sort by gets a string partition by in the expression string.
+       */
+      if (funcDef.getOrder() != null) {
+        /*
+        Order by is sometimes added by the compiler to make the PTF call deterministic.
+        At this point of the code execution, we don't know if it is added by the compiler or
+        it was originally part of the query string.
+        */
+        List<OrderExpressionDef> orderExpressions = funcDef.getOrder().getExpressions();
+
+        if (!sb.isEmpty() && sb.charAt(sb.length() - 1) != '(') {
+          sb.append(" ");
+        }
+        sb.append("order by ");
+
+        for (OrderExpressionDef orderExpr : orderExpressions) {
+          ExprNodeDesc orderExprNode = orderExpr.getExprNode();
+          addIfNotNull(columns, orderExprNode.getCols());
+
+          sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), orderExprNode, lCtx, inpOp, null));
+          if (PTFInvocationSpec.Order.DESC.equals(orderExpr.getOrder())) {
+            sb.append(" desc");
+          }
+          sb.append(", ");
+        }
+
+        sb.delete(sb.length() - 2, sb.length());
+      }
+
+      /*
+      Window frame is sometimes added by the compiler to make the PTF call deterministic.
+      At this point of the code execution, we don't know if it is added by the compiler or
+      it was originally part of the query string.
+      */
+      if (windowFrameDef != null) {
+        sb.append(" ").append(windowFrameDef.getWindowType()).append(" between ");
+
+        if (windowFrameDef.getStart().isCurrentRow()) {
+          sb.append("current_row");
+        } else {
+          sb.append(windowFrameDef.getStart().isUnbounded() ? "unbounded" : windowFrameDef.getStart().getAmt() + " preceding");
+        }
+
+        sb.append(" and ");
+
+        if (windowFrameDef.getStart().isCurrentRow()) {
+          sb.append("current_row");
+        } else {
+          sb.append(windowFrameDef.getStart().isUnbounded() ? "unbounded" : windowFrameDef.getStart().getAmt() + " following");
+        }
+      }
+
+      sb.append(")");
+      dep.setExpr(sb.toString());
+
+      LinkedHashSet<BaseColumnInfo> col_set = new LinkedHashSet<>();
+      for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
+        Dependency d = lCtx.getIndex().getDependency(inpOp, ci);
+        if (d != null) {
+          new_type = LineageCtx.getNewDependencyType(d.getType(), new_type);
+          if (!ci.isHiddenVirtualCol() && columns.contains(ci.getInternalName())) {
+            col_set.addAll(d.getBaseCols());
+          }
+        }
+      }
+
+      dep.setType(new_type);
+      dep.setBaseCols(col_set);
+
+      // This dependency is then set for all the colinfos of the script operator
+      for(ColumnInfo ci : op.getSchema().getSignature()) {
+        Dependency d = dep;
+          Dependency dep_ci = lCtx.getIndex().getDependency(inpOp, ci);
+          if (dep_ci != null) {
+            d = dep_ci;
+          }
+        lCtx.getIndex().putDependency(op, ci, d);
+      }
+
+      return null;
+    }
+
+    /*
+      Adds the PTF arguments for the lineage column list and also the expression string.
+    */
+    private void addArgs(
+            StringBuilder sb,
+            Set<String> columns,
+            LineageCtx lCtx,
+            Operator<? extends OperatorDesc> inpOp,
+            RowSchema rowSchema,
+            List<PTFExpressionDef> args)
+    {
+      if (args == null || args.isEmpty()) {
+        return;
+      }
+
+      for (PTFExpressionDef arg : args) {
+        ExprNodeDesc argNode = arg.getExprNode();
+
+        if (argNode.getCols() != null && !argNode.getCols().isEmpty()) {
+          addIfNotNull(columns, argNode.getCols());
+        }
+
+        if (argNode instanceof ExprNodeConstantDesc) {
+          boolean isString = "string".equals(argNode.getTypeInfo().getTypeName());
+
+          if (isString) {
+            sb.append("'");
+          }
+          sb.append(((ExprNodeConstantDesc) argNode).getValue());
+          if (isString) {
+            sb.append("'");
+          }
+          sb.append(", ");
+        } else if (argNode instanceof ExprNodeColumnDesc || argNode instanceof ExprNodeGenericFuncDesc) {
+          ExprNodeDesc exprNode = arg.getExprNode();
+
+          addIfNotNull(columns, exprNode.getCols());
+          sb.append(ExprProcFactory.getExprString(rowSchema, exprNode, lCtx, inpOp, null));
+          sb.append(", ");
+        }
+      }
+    }
+
+    private void addIfNotNull(Set<String> set, List<String> items) {
+      if (items == null || items.isEmpty()) {
+        return;
+      }
+
+      for (String item : items) {
+        if (item != null) {
+          set.add(item);
+        }
+      }
+    }
+  }
+
+  /**
    * Default processor. This basically passes the input dependencies as such
    * to the output dependencies.
    */
@@ -748,4 +1004,6 @@ public class OpProcFactory {
   public static SemanticNodeProcessor getFilterProc() {
     return new FilterLineage();
   }
+
+  public static SemanticNodeProcessor getPTFProc() { return new PTFLineage(); }
 }

@@ -49,12 +49,11 @@ public class LineageInfo implements Serializable {
    * Enum to track dependency. This enum has the following values:
    * 1. SIMPLE - Indicates that the column is derived from another table column
    *             with no transformations e.g. T2.c1 = T1.c1.
-   * 2. EXPRESSION - Indicates that the column is derived from a UDF, UDAF, UDTF or
+   * 2. EXPRESSION - Indicates that the column is derived from a UDF, UDAF, UDTF, PTF or
    *                 set operations like union on columns on other tables
    *                 e.g. T2.c1 = T1.c1 + T3.c1.
    * 4. SCRIPT - Indicates that the column is derived from the output
-   *             of a user script through a TRANSFORM, MAP or REDUCE syntax
-   *             or from the output of a PTF chain execution.
+   *             of a user script through a TRANSFORM, MAP or REDUCE syntax.
    */
   public static enum DependencyType {
     SIMPLE, EXPRESSION, SCRIPT
