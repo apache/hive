@@ -35,9 +35,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.ipc.RemoteException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +71,32 @@ public class FileUtils {
     }
   };
 
+  public static boolean deleteDir(FileSystem fs, Path f, boolean ifPurge, Configuration conf)
+      throws IOException {
+    if (!fs.exists(f)) {
+      LOG.warn("The path to delete does not exist: " + f);
+      return true;
+    }
+    if (!ifPurge && moveToTrash(fs, f, conf)) {
+      return true;
+    }
+    try {
+      // for whatever failure reason including that trash has lower encryption zone
+      // retry with force delete
+      fs.delete(f, true);
+    } catch (RemoteException | SnapshotException se) {
+      // If this is snapshot exception or the cause is snapshot replication from HDFS, could be the case where the
+      // snapshots were created by replication, so in that case attempt to delete the replication related snapshots,
+      // if the exists and then re attempt delete.
+      if (se instanceof SnapshotException || se.getCause() instanceof SnapshotException || se.getMessage()
+          .contains("Snapshot"))
+        deleteReplRelatedSnapshots(fs, f);
+      // retry delete after attempting to delete replication related snapshots
+      fs.delete(f, true);
+    }
+    return true;
+  }
+
   /**
    * Move a particular file or directory to the trash.
    * @param fs FileSystem to use
@@ -87,6 +116,29 @@ public class FileUtils {
       LOG.warn("Failed to move path to trash: " + f, ioe);
     }
     return false;
+  }
+
+  /**
+   * Attempts to delete the replication related snapshots
+   * @param fs the filesystem
+   * @param path path where the snapshots are supposed to exists.
+   */
+  private static void deleteReplRelatedSnapshots(FileSystem fs, Path path) {
+    try {
+      DistributedFileSystem dfs = (DistributedFileSystem) fs;
+      // List the snapshot directory.
+      FileStatus[] listing = fs.listStatus(new Path(path, ".snapshot"));
+      for (FileStatus elem : listing) {
+        // if the snapshot name has replication related suffix, then delete that snapshot.
+        if (elem.getPath().getName().endsWith("replOld") || elem.getPath().getName().endsWith("replNew")) {
+          dfs.deleteSnapshot(path, elem.getPath().getName());
+        }
+      }
+    } catch (Exception ioe) {
+      // Ignore since this method is used as part of purge which actually ignores all exception, if the directory can
+      // not be deleted, so preserve the same behaviour.
+      LOG.warn("Couldn't clean up replication related snapshots", ioe);
+    }
   }
 
   /**

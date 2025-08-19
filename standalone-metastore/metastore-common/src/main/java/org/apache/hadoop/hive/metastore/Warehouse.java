@@ -83,7 +83,6 @@ public class Warehouse {
 
   public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
 
-  private MetaStoreFS fsHandler = null;
   private boolean storageAuthCheck = false;
   private ReplChangeManager cm = null;
 
@@ -95,26 +94,10 @@ public class Warehouse {
           + " is not set in the config or blank");
     }
     whRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
-    fsHandler = getMetaStoreFsHandler(conf);
     cm = ReplChangeManager.getInstance(conf);
     storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
     isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
   }
-
-  private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
-      throws MetaException {
-    String handlerClassStr = MetastoreConf.getVar(conf, ConfVars.FS_HANDLER_CLS);
-    try {
-      Class<? extends MetaStoreFS> handlerClass = (Class<? extends MetaStoreFS>) Class
-          .forName(handlerClassStr, true, JavaUtils.getClassLoader());
-      MetaStoreFS handler = ReflectionUtils.newInstance(handlerClass, conf);
-      return handler;
-    } catch (ClassNotFoundException e) {
-      throw new MetaException("Error in loading MetaStoreFS handler."
-          + e.getMessage());
-    }
-  }
-
 
   /**
    * Helper functions to convert IOException to MetaException
@@ -472,7 +455,13 @@ public class Warehouse {
       LOG.warn("Har path {} is not supported to delete, skipping it.", f);
       return true;
     }
-    return fsHandler.deleteDir(fs, f, ifPurge, conf);
+    boolean delete = false;
+    try {
+      delete = FileUtils.deleteDir(fs, f, ifPurge, conf);
+    } catch (IOException e) {
+      MetaStoreUtils.throwMetaException(e);
+    }
+    return delete;
   }
 
   public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
