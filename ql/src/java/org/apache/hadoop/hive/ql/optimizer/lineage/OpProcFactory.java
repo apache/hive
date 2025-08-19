@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
@@ -58,12 +60,17 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 
 /**
  * Operator factory for the rule processors for lineage.
@@ -677,6 +684,92 @@ public class OpProcFactory {
   }
 
   /**
+   * PTF processor
+   */
+  public static class PTFLineage implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+      // LineageCTx
+      LineageCtx lCtx = (LineageCtx) procCtx;
+
+      // The operators
+      @SuppressWarnings("unchecked")
+      PTFOperator op = (PTFOperator)nd;
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
+      lCtx.getIndex().copyPredicates(inpOp, op);
+
+      Dependency dep = new Dependency();
+      DependencyType new_type = DependencyType.EXPRESSION;
+      dep.setType(new_type);
+      // TODO: Fix this to a non-null value. This comment comes from the default implementation (TransformLineage)
+      dep.setExpr(null);
+
+      Set<String> columns = new HashSet<>();
+      PartitionedTableFunctionDef funcDef = op.getConf().getFuncDef();
+
+      if (funcDef.getPartition() != null) {
+        addIfNotNull(columns, funcDef.getPartition().getExpressions().getFirst().getExprNode().getCols());
+      }
+      if (funcDef.getOrder() != null) {
+        addIfNotNull(columns, funcDef.getOrder().getExpressions().getFirst().getExprNode().getCols());
+      }
+
+      if (!(funcDef.getTFunction() instanceof Noop)) {
+
+          if (funcDef instanceof WindowTableFunctionDef
+                  && ((WindowTableFunctionDef) funcDef).getWindowFunctions().getFirst().getArgs() != null) {
+
+              for (PTFExpressionDef arg : ((WindowTableFunctionDef) funcDef).getWindowFunctions().getFirst().getArgs()) {
+
+                  if (!(arg.getExprNode() instanceof ExprNodeConstantDesc)) {
+                      addIfNotNull(columns, arg.getExprNode().getCols());
+                  }
+              }
+          }
+      }
+
+      LinkedHashSet<BaseColumnInfo> col_set = new LinkedHashSet<>();
+      for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
+        Dependency d = lCtx.getIndex().getDependency(inpOp, ci);
+        if (d != null) {
+          new_type = LineageCtx.getNewDependencyType(d.getType(), new_type);
+          if (!ci.isHiddenVirtualCol() && columns.contains(ci.getInternalName())) {
+            col_set.addAll(d.getBaseCols());
+          }
+        }
+      }
+
+      dep.setType(new_type);
+      dep.setBaseCols(col_set);
+
+      // This dependency is then set for all the colinfos of the script operator
+      for(ColumnInfo ci : op.getSchema().getSignature()) {
+        Dependency d = dep;
+          Dependency dep_ci = lCtx.getIndex().getDependency(inpOp, ci);
+          if (dep_ci != null) {
+            d = dep_ci;
+          }
+        lCtx.getIndex().putDependency(op, ci, d);
+      }
+
+      return null;
+    }
+
+    private void addIfNotNull(Set<String> set, List<String> items) {
+      if (items == null || items.isEmpty()) {
+        return;
+      }
+
+      for (String item : items) {
+        if (item != null) {
+          set.add(item);
+        }
+      }
+    }
+  }
+
+  /**
    * Default processor. This basically passes the input dependencies as such
    * to the output dependencies.
    */
@@ -748,4 +841,6 @@ public class OpProcFactory {
   public static SemanticNodeProcessor getFilterProc() {
     return new FilterLineage();
   }
+
+  public static SemanticNodeProcessor getPTFProc() { return new PTFLineage(); }
 }
