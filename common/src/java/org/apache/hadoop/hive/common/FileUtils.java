@@ -965,41 +965,6 @@ public final class FileUtils {
     return copied;
   }
 
-  /**
-   * Move a particular file or directory to the trash.
-   * @param fs FileSystem to use
-   * @param f path of file or directory to move to trash.
-   * @param conf
-   * @return true if move successful
-   * @throws IOException
-   */
-  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean purge)
-      throws IOException {
-    LOG.debug("deleting  " + f);
-    boolean result = false;
-    try {
-      if(purge) {
-        LOG.debug("purge is set to true. Not moving to Trash " + f);
-      } else {
-        result = Trash.moveToAppropriateTrash(fs, f, conf);
-        if (result) {
-          LOG.trace("Moved to trash: " + f);
-          return true;
-        }
-      }
-    } catch (IOException ioe) {
-      // for whatever failure reason including that trash has lower encryption zone
-      // retry with force delete
-      LOG.warn(ioe.getMessage() + "; Force to delete it.");
-    }
-
-    result = fs.delete(f, true);
-    if (!result) {
-      LOG.error("Failed to delete " + f);
-    }
-    return result;
-  }
-
   public static boolean rename(FileSystem fs, Path sourcePath,
                                Path destPath, Configuration conf) throws IOException {
     LOG.info("Renaming " + sourcePath + " to " + destPath);

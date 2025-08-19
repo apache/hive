@@ -1738,11 +1738,6 @@ public class HiveConf extends Configuration {
     CLI_PROMPT("hive.cli.prompt", "hive",
         "Command line prompt configuration value. Other hiveconf can be used in this configuration value. \n" +
         "Variable substitution will only be invoked at the Hive CLI startup."),
-    /**
-     * @deprecated Use MetastoreConf.FS_HANDLER_CLS
-     */
-    @Deprecated
-    HIVE_METASTORE_FS_HANDLER_CLS("hive.metastore.fs.handler.class", "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl", ""),
 
     // Things we log in the jobconf
 
