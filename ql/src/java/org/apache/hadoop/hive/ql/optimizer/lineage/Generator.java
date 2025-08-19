@@ -163,7 +163,7 @@ public class Generator extends Transform {
     opRules.put(new RuleRegExp("R9", LateralViewJoinOperator.getOperatorName() + "%"),
       OpProcFactory.getLateralViewJoinProc());
     opRules.put(new RuleRegExp("R10", PTFOperator.getOperatorName() + "%"),
-      OpProcFactory.getTransformProc());
+      OpProcFactory.getPTFProc());
     opRules.put(new RuleRegExp("R11", FilterOperator.getOperatorName() + "%"),
       OpProcFactory.getFilterProc());
 
