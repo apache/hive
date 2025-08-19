@@ -355,7 +355,7 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x4
 POSTHOOK: Lineage: x4.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: x4.rr SCRIPT [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: x4.rr EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: x4.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted x4
 PREHOOK: type: DESCTABLE
@@ -598,7 +598,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x5
 POSTHOOK: Lineage: x5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: x5.lead1 SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: x5.lead1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: x5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted x5
 PREHOOK: type: DESCTABLE
