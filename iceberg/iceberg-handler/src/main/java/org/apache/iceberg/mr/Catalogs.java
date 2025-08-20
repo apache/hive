@@ -19,12 +19,13 @@
 
 package org.apache.iceberg.mr;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -36,6 +37,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -272,26 +274,33 @@ public final class Catalogs {
   private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName) {
     Map<String, String> catalogProperties = Maps.newHashMap();
 
-    String keyPrefix;
-    if (ICEBERG_DEFAULT_CATALOG_NAME.equals(catalogName)) {
-      keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
-    } else {
-      keyPrefix = String.format(InputFormatConfig.CUSTOM_CATALOG_CONFIG_PREFIX, catalogName);
-      catalogProperties.put(CatalogUtil.ICEBERG_CATALOG_TYPE,
-          conf.get(MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getVarname()));
-    }
+    List<String> keyPrefixes = List.of(
+        InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName,
+        String.format(CatalogUtils.CUSTOM_CATALOG_CONFIG_PREFIX, catalogName));
 
     conf.forEach(config -> {
-      if (config.getKey().startsWith(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX)) {
+      if (config.getKey().startsWith(CatalogUtils.CATALOG_DEFAULT_CONFIG_PREFIX)) {
         catalogProperties.putIfAbsent(
-                config.getKey().substring(InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
+                config.getKey().substring(CatalogUtils.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
                 config.getValue());
-      } else if (config.getKey().startsWith(keyPrefix)) {
-        catalogProperties.put(
+      } else {
+        keyPrefixes.forEach(keyPrefix -> {
+          if (config.getKey().startsWith(keyPrefix)) {
+            catalogProperties.put(
                 config.getKey().substring(keyPrefix.length() + 1),
                 config.getValue());
+          }
+        });
       }
     });
+
+    String catType = conf.get(CatalogUtils.CATALOG_CONFIG_TYPE);
+
+    if (StringUtils.isEmpty(catalogProperties.get(CatalogUtil.ICEBERG_CATALOG_TYPE)) &&
+        !StringUtils.isEmpty(catType) && !ICEBERG_DEFAULT_CATALOG_NAME.equals(catalogName)) {
+      catalogProperties.put(CatalogUtil.ICEBERG_CATALOG_TYPE, catType);
+    }
+
     return catalogProperties;
   }
 
@@ -314,8 +323,7 @@ public final class Catalogs {
         return catalogType;
       }
     } else {
-      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey(
-          "", CatalogUtil.ICEBERG_CATALOG_TYPE));
+      String catalogType = conf.get(CatalogUtil.ICEBERG_CATALOG_TYPE);
       if (catalogType != null && catalogType.equals(LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {

@@ -45,8 +45,8 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -87,11 +87,11 @@ public class TestHiveRESTCatalogClientIT {
   @BeforeAll
   public void setup() throws Exception {
     // Starting msClient with Iceberg REST Catalog client underneath
-    String restCatalogType = CatalogUtil.ICEBERG_CATALOG_TYPE_REST;
-    String restCatalogPrefix = String.format(InputFormatConfig.CUSTOM_CATALOG_CONFIG_PREFIX, restCatalogType);
+    String restCatalogPrefix = String.format(CatalogUtils.CUSTOM_CATALOG_CONFIG_PREFIX,
+        CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
 
     conf = REST_CATALOG_EXTENSION.getConf();
-    conf.set(MetastoreConf.ConfVars.HIVE_ICEBERG_CATALOG_TYPE.getVarname(), restCatalogType);
+    conf.set(CatalogUtils.CATALOG_CONFIG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
     conf.set(MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL.getVarname(),
         "org.apache.iceberg.hive.client.HiveRESTCatalogClient");
     conf.set(restCatalogPrefix + ".uri", REST_CATALOG_EXTENSION.getRestEndpoint());
@@ -123,6 +123,7 @@ public class TestHiveRESTCatalogClientIT {
 
     // --- Create Database ---
     Database db = new Database();
+    db.setCatalogName(CATALOG_NAME);
     db.setName(DB_NAME);
     db.setOwnerType(PrincipalType.USER);
     db.setOwnerName(System.getProperty("user.name"));
@@ -161,7 +162,9 @@ public class TestHiveRESTCatalogClientIT {
     Assertions.assertEquals(TABLE_NAME, table.getTableName());
     Assertions.assertEquals(HIVE_ICEBERG_STORAGE_HANDLER, table.getParameters().get("storage_handler"));
     Assertions.assertNotNull(table.getParameters().get(TableProperties.DEFAULT_PARTITION_SPEC));
-
+    Assertions.assertEquals(1, table.getPartitionKeys().size());
+    Assertions.assertEquals("city", table.getPartitionKeys().getFirst().getName());
+    
     // --- Get Tables ---
     List<String> tables = msClient.getTables(CATALOG_NAME, DB_NAME, "ice_*");
     Assertions.assertEquals(1, tables.size());

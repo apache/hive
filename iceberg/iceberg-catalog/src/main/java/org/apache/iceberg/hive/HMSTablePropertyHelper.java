@@ -55,6 +55,7 @@ import static org.apache.iceberg.TableProperties.GC_ENABLED;
 public class HMSTablePropertyHelper {
   private static final Logger LOG = LoggerFactory.getLogger(HMSTablePropertyHelper.class);
   public static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  public static final String PARTITION_SPEC = "iceberg.mr.table.partition.spec";
 
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION = ImmutableBiMap.of(
       // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things
@@ -221,7 +222,8 @@ public class HMSTablePropertyHelper {
   }
 
   public static PartitionSpec getPartitionSpec(Map<String, String> props, Schema schema) {
-    return Optional.ofNullable(props.get(TableProperties.DEFAULT_PARTITION_SPEC))
+    return Optional.ofNullable(props.get(PARTITION_SPEC))
+        .or(() -> Optional.ofNullable(props.get(TableProperties.DEFAULT_PARTITION_SPEC)))
         .map(spec -> PartitionSpecParser.fromJson(schema, spec))
         .orElse(PartitionSpec.unpartitioned());
   }

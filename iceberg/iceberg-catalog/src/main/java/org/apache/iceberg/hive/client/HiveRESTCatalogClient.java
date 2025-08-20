@@ -81,9 +81,9 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   @Override
   public void reconnect()  {
     close();
+    String catName = MetaStoreUtils.getDefaultCatalog(conf);
     Map<String, String> properties = getCatalogProperties(conf);
-    String catalogName = MetaStoreUtils.getDefaultCatalog(conf);
-    restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catalogName, properties, null);
+    restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catName, properties, null);
   }
 
   @Override
@@ -112,16 +112,16 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
 
   @Override
-  public List<String> getDatabases(String catName, String databasePattern) {
+  public List<String> getDatabases(String catName, String dbPattern) {
     validateCurrentCatalog(catName);
     // Convert the Hive glob pattern (e.g., "db*") to a valid Java regex ("db.*").
-    String regex = databasePattern.replace("*", ".*");
+    String regex = dbPattern.replace("*", ".*");
     Pattern pattern = Pattern.compile(regex);
 
     return restCatalog.listNamespaces(Namespace.empty()).stream()
         .map(Namespace::toString)
         .filter(pattern.asPredicate())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
@@ -141,7 +141,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     return restCatalog.listTables(Namespace.of(dbName)).stream()
         .map(TableIdentifier::name)
         .filter(pattern.asPredicate())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
@@ -168,14 +168,15 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public Database getDatabase(String catalogName, String databaseName) {
-    validateCurrentCatalog(catalogName);
+  public Database getDatabase(String catName, String dbName) {
+    validateCurrentCatalog(catName);
+
     return restCatalog.listNamespaces(Namespace.empty()).stream()
-        .filter(namespace -> namespace.levels()[0].equals(databaseName))
+        .filter(namespace -> namespace.levels()[0].equals(dbName))
         .map(namespace -> {
           Database database = new Database();
           database.setName(String.join(NAMESPACE_SEPARATOR, namespace.levels()));
-          Map<String, String> namespaceMetadata = restCatalog.loadNamespaceMetadata(Namespace.of(databaseName));
+          Map<String, String> namespaceMetadata = restCatalog.loadNamespaceMetadata(Namespace.of(dbName));
           database.setLocationUri(namespaceMetadata.get(CatalogUtils.LOCATION));
           database.setCatalogName(restCatalog.name());
           database.setOwnerName(namespaceMetadata.get(DB_OWNER));
@@ -189,15 +190,16 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public Table getTable(GetTableRequest getTableRequest) throws TException {
+  public Table getTable(GetTableRequest tableRequest) throws TException {
+    validateCurrentCatalog(tableRequest.getCatName());
     org.apache.iceberg.Table icebergTable;
     try {
-      icebergTable = restCatalog.loadTable(TableIdentifier.of(getTableRequest.getDbName(),
-          getTableRequest.getTblName()));
+      icebergTable = restCatalog.loadTable(TableIdentifier.of(tableRequest.getDbName(),
+          tableRequest.getTblName()));
     } catch (NoSuchTableException exception) {
       throw new NoSuchObjectException();
     }
-    return MetastoreUtil.convertIcebergTableToHiveTable(icebergTable, conf);
+    return MetastoreUtil.toHiveTable(icebergTable, conf);
   }
 
   @Override
@@ -228,6 +230,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
   @Override
   public void createDatabase(Database db) {
+    validateCurrentCatalog(db.getCatalogName());
     Map<String, String> props = ImmutableMap.of(
         CatalogUtils.LOCATION, db.getLocationUri(),
         DB_OWNER, db.getOwnerName(),
@@ -239,6 +242,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
 
   @Override
   public void dropDatabase(DropDatabaseRequest req) {
+    validateCurrentCatalog(req.getCatalogName());
     restCatalog.dropNamespace(Namespace.of(req.getName()));
   }
 }

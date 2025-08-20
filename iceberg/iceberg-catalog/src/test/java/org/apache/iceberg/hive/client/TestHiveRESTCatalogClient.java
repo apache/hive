@@ -126,6 +126,7 @@ public class TestHiveRESTCatalogClient {
     Mockito.doReturn(new BaseTable(ops, "tableName")).when(mockRestCatalog).loadTable(any());
     Namespace namespace = Namespace.of("default");
     Mockito.doReturn(Collections.singletonList(namespace)).when(mockRestCatalog).listNamespaces(any());
+    Mockito.doReturn("hive").when(mockRestCatalog).name();
     Mockito.doReturn(new BaseTable(ops, "tableName")).when(mockRestCatalog).createTable(any(), any(), any(),
         any());
   }

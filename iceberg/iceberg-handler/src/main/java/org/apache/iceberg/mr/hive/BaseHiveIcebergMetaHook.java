@@ -242,11 +242,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     // do nothing
   }
 
-  @Override public boolean createHMSTableInHook() {
+  @Override
+  public boolean createHMSTableInHook() {
     return createHMSTableInHook;
   }
 
-  private void assertFileFormat(String format) {
+  private static void assertFileFormat(String format) {
     if (format == null) {
       return;
     }
@@ -255,7 +256,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         String.format("Unsupported fileformat %s", format));
   }
 
-  void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  protected void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     // If the table is not managed by Hive or Hadoop catalog, then the location should be set
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
       String location = (hmsTable.getSd() != null) ? hmsTable.getSd().getLocation() : null;
@@ -280,7 +281,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     setWriteModeDefaults(null, hmsParams, null);
   }
 
-  Schema schema(Properties properties, org.apache.hadoop.hive.metastore.api.Table hmsTable,
+  protected Schema schema(Properties properties, org.apache.hadoop.hive.metastore.api.Table hmsTable,
                         Set<String> identifierFields) {
     boolean autoConversion = conf.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
 
@@ -311,12 +312,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
     List<Types.NestedField> cols = schema.columns().stream()
             .map(column -> identifierFieldIds.contains(column.fieldId()) ? column.asRequired() : column)
-            .collect(Collectors.toList());
+            .toList();
 
     return new Schema(cols, identifierFieldIds);
   }
 
-  static PartitionSpec spec(Configuration configuration, Schema schema,
+  protected static PartitionSpec spec(Configuration configuration, Schema schema,
       org.apache.hadoop.hive.metastore.api.Table hmsTable) {
 
     Preconditions.checkArgument(!hmsTable.isSetPartitionKeys() || hmsTable.getPartitionKeys().isEmpty(),
@@ -334,7 +335,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     return HMSTablePropertyHelper.getPartitionSpec(hmsTable.getParameters(), schema);
   }
 
-  void setOrcOnlyFilesParam(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  protected void setOrcOnlyFilesParam(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (isOrcOnlyFiles(hmsTable)) {
       hmsTable.getParameters().put(ORC_FILES_ONLY, "true");
     } else {
@@ -342,7 +343,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
-  boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  protected boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) &&
         (hmsTable.getSd().getInputFormat() != null &&
             hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name()) ||
@@ -353,7 +354,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
                 .equalsIgnoreCase(hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT)));
   }
 
-  void setWriteModeDefaults(Table icebergTbl, Map<String, String> newProps, EnvironmentContext context) {
+  protected void setWriteModeDefaults(Table icebergTbl, Map<String, String> newProps, EnvironmentContext context) {
     if ((icebergTbl == null || ((BaseTable) icebergTbl).operations().current().formatVersion() == 1) &&
         IcebergTableUtil.isV2TableOrAbove(newProps)) {
       List<String> writeModeList = ImmutableList.of(

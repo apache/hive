@@ -28,14 +28,18 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 
 public class CatalogUtils {
-  public static final String ICEBERG_CATALOG_TYPE = "iceberg.catalog.default_iceberg.type";
   public static final String NAME = "name";
   public static final String LOCATION = "location";
-  public static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet
+  public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
+  public static final String CUSTOM_CATALOG_CONFIG_PREFIX = "iceberg.%s-catalog";
+  public static final String CATALOG_CONFIG_TYPE = CATALOG_CONFIG_PREFIX + "type";
+  public static final String CATALOG_WAREHOUSE_TEMPLATE = CUSTOM_CATALOG_CONFIG_PREFIX + ".warehouse";
+  public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
+  public static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet.of(
       // We don't want to push down the metadata location props to Iceberg from HMS,
       // since the snapshot pointer in HMS would always be one step ahead
-      .of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
-          BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
+      BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
+      BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
 
   private CatalogUtils() {
 

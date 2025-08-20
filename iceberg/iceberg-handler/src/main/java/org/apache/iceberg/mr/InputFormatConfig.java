@@ -77,9 +77,6 @@ public class InputFormatConfig {
   public static final String HIVE_CATALOG = "hive.catalog";
 
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
-  public static final String CUSTOM_CATALOG_CONFIG_PREFIX = "iceberg.%s-catalog";
-  public static final String CATALOG_WAREHOUSE_TEMPLATE = CUSTOM_CATALOG_CONFIG_PREFIX + ".warehouse";
-  public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
 
   public enum InMemoryDataModel {
     HIVE,
