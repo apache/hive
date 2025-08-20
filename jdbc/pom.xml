@@ -241,7 +241,7 @@
                         <include>org/apache/hadoop/security/token/**</include>
                         <include>org/apache/hadoop/util/*</include>
                         <include>org/apache/hadoop/net/*</include>
-                        <include>org/apache/hadoop/io/*</include>
+                        <include>org/apache/hadoop/io/**</include>
                         <include>org/apache/hadoop/HadoopIllegalArgumentException.class</include>
                       </includes>
                     </filter>
