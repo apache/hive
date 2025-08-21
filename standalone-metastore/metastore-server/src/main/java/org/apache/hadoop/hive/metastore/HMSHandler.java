@@ -3051,6 +3051,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
 
+      if (tableDataShouldBeDeleted && tbl.getSd().getLocation() != null) {
+        tblPath = new Path(tbl.getSd().getLocation());
+      }
+
       // Drop the partitions and get a list of locations which need to be deleted
       // In case of drop database cascade we need not to drop the partitions, they are already dropped.
       if (dropPartitions) {
