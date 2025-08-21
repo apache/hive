@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.secrets;
 
-import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,14 +31,14 @@ import java.net.URI;
 /**
  * Implementation of SecretSource which loads secrets from AWS Secrets Manager.
  * The format of the uri is "aws-sm:///{key-name-or-arn}"
- * It uses aws secrets cache sdk to fetch and refresh the secret, the environment must be setup so that the default
+ * It uses the AWS Java SDK v2 SecretsManagerClient to fetch and refresh the secret, the environment must be setup so that the default
  * client can load the secret else it will fail.
  * It expects the secret fetched to be a json string with "password" as the key for password, this is default for
  * redshift, rds or external database configs. It does not make use of any other fields.
  */
 public class AWSSecretsManagerSecretSource implements SecretSource {
-  // Do not create SecretCache here, it fails to initialize in non-aws aware environments.
-  private volatile SecretCache cache = null;
+
+  private volatile SecretsManagerClient client = null;
   private final ObjectMapper mapper = new ObjectMapper();
 
   /**
@@ -57,13 +58,16 @@ public class AWSSecretsManagerSecretSource implements SecretSource {
   @Override
   public String getSecret(URI uri) throws IOException {
     Preconditions.checkArgument(getURIScheme().equals(uri.getScheme()));
-    initCache();
+    initClient();
     String key = uri.getPath();
     key = key.substring(1); // remove the leading slash.
 
     String secretsString;
     try {
-      secretsString = cache.getSecretString(key);
+      GetSecretValueResponse response = client.getSecretValue(
+              GetSecretValueRequest.builder().secretId(key).build()
+      );
+      secretsString = response.secretString();
     } catch (Exception e) {
       // Wrap any exception from the above service call to IOException.
       throw new IOException("Error trying to get secret", e);
@@ -83,20 +87,19 @@ public class AWSSecretsManagerSecretSource implements SecretSource {
     }
   }
 
-  private void initCache() {
-    // DCL based SecretCache setup, to ensure thread safety.
-    if (cache == null) {
+  private void initClient() {
+    if (client == null) {
       synchronized (this) {
-        if (cache == null) {
-          cache = new SecretCache();
+        if (client == null) {
+          client = SecretsManagerClient.create();
         }
       }
     }
   }
-
-  @VisibleForTesting
-  void setCache(SecretCache cache) {
-    this.cache = cache;
+  
+  // For testing: inject a mock client
+  void setClient(SecretsManagerClient client) {
+    this.client = client;
   }
 
   /**
@@ -104,6 +107,8 @@ public class AWSSecretsManagerSecretSource implements SecretSource {
    */
   @Override
   public void close() {
-    cache.close();
+    if (client != null) {
+      client.close();
+    }
   }
 }

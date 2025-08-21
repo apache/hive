@@ -268,13 +268,13 @@
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
       <dependency>
-        <groupId>com.amazonaws.secretsmanager</groupId>
-        <artifactId>aws-secretsmanager-caching-java</artifactId>
-        <version>${aws-secretsmanager-caching.version}</version>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>bundle</artifactId>
+        <version>2.20.128</version>
         <exclusions>
           <exclusion>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-secretsmanager</artifactId>
+            <groupId>*</groupId>
+            <artifactId>*</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
