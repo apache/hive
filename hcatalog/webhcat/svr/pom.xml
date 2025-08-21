@@ -69,6 +69,10 @@
         <exclusion>
           <groupId>org.mortbay.jetty</groupId>
 	  <artifactId>jsp-api-2.1</artifactId>
+  	</exclusion>
+  	<exclusion>
+          <groupId>org.apache.hive</groupId>
+	  <artifactId>hive-spark-client</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

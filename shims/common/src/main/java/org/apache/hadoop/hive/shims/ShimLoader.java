@@ -36,7 +36,6 @@ public abstract class ShimLoader {
   private static volatile HadoopShims hadoopShims;
   private static JettyShims jettyShims;
   private static AppenderSkeleton eventCounter;
-  private static SchedulerShim schedulerShim;
 
   /**
    * The names of the classes for shimming Hadoop for each major version.
@@ -99,13 +98,6 @@ public abstract class ShimLoader {
       eventCounter = loadShims(EVENT_COUNTER_SHIM_CLASSES, AppenderSkeleton.class);
     }
     return eventCounter;
-  }
-
-  public static synchronized SchedulerShim getSchedulerShims() {
-    if (schedulerShim == null) {
-      schedulerShim = createShim(SCHEDULER_SHIM_CLASSE, SchedulerShim.class);
-    }
-    return schedulerShim;
   }
 
   private static <T> T loadShims(Map<String, String> classMap, Class<T> xface) {

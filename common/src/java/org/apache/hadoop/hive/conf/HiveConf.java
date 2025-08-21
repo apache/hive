@@ -3350,12 +3350,6 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
-    HIVE_SERVER2_MAP_FAIR_SCHEDULER_QUEUE("hive.server2.map.fair.scheduler.queue", true,
-        "If the YARN fair scheduler is configured and HiveServer2 is running in non-impersonation mode,\n" +
-        "this setting determines the user for fair scheduler queue mapping.\n" +
-        "If set to true (default), the logged-in user determines the fair scheduler queue\n" +
-        "for submitted jobs, so that map reduce resource usage can be tracked by user.\n" +
-        "If set to false, all Hive jobs go to the 'hive' user's queue."),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +
