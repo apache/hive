@@ -18,13 +18,9 @@
 
 package org.apache.iceberg.mr.hive.metastore.task;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -46,12 +42,6 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   private TxnStore txnHandler;
   private boolean shouldUseMutex;
   private ExecutorService deleteExecutorService = null;
-
-  // table cache to avoid making repeated requests for the same Iceberg tables more than once per day
-  private final Cache<TableName, Table> tableCache = Caffeine.newBuilder()
-      .maximumSize(1000)
-      .expireAfterWrite(1, TimeUnit.DAYS)
-      .build();
 
   @Override
   public long runFrequency(TimeUnit unit) {
@@ -78,20 +68,16 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   private void expireTables(String catalogName, String dbPattern, String tablePattern) {
     try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-      List<org.apache.hadoop.hive.metastore.api.Table> tables =
+      Iterable<org.apache.hadoop.hive.metastore.api.Table> tables =
           IcebergTableUtil.getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables(maxBatchSize);
-      LOG.debug("{} candidate tables found", tables.size());
+      // TODO : HIVE-29163 - Create client with cache in metastore package and then use it in TableFetcher
+      //  and HiveTableOperations to reduce the number of msc calls and fetch it from cache
       for (org.apache.hadoop.hive.metastore.api.Table table : tables) {
-        expireSnapshotsForTable(getIcebergTable(table));
+        expireSnapshotsForTable(IcebergTableUtil.getTable(conf, table));
       }
     } catch (Exception e) {
       throw new RuntimeException("Error while getting tables from metastore", e);
     }
-  }
-
-  private Table getIcebergTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    TableName tableName = TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName());
-    return tableCache.get(tableName, key -> IcebergTableUtil.getTable(conf, table));
   }
 
   /**

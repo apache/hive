@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.metastore.task;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -70,10 +71,11 @@ public class TestIcebergHouseKeeperService {
     TableFetcher tableFetcher = IcebergTableUtil.getTableFetcher(db.getMSC(), null, "default", "*");
 
     int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-    List<org.apache.hadoop.hive.metastore.api.Table> tables = tableFetcher.getTables(maxBatchSize);
-    Assertions.assertEquals("hive", tables.get(0).getCatName());
-    Assertions.assertEquals("default", tables.get(0).getDbName());
-    Assertions.assertEquals("iceberg_table", tables.get(0).getTableName());
+    Iterator<org.apache.hadoop.hive.metastore.api.Table> tables = tableFetcher.getTables(maxBatchSize).iterator();
+    org.apache.hadoop.hive.metastore.api.Table table = tables.next();
+    Assertions.assertEquals("hive", table.getCatName());
+    Assertions.assertEquals("default", table.getDbName());
+    Assertions.assertEquals("iceberg_table", table.getTableName());
   }
 
   @Test
