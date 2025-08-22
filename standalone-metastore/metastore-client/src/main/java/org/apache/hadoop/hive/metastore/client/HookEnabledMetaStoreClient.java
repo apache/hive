@@ -313,21 +313,6 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
-      throws TException {
-    Table table = delegate.getTable(catName, dbName, tblName);
-    HiveMetaHook hook = getHook(table);
-    if (hook != null) {
-      if (context == null) {
-        context = new EnvironmentContext();
-      }
-      hook.preDropPartitions(table, context, partExprs);
-    }
-    return delegate.dropPartitions(catName, dbName, tblName, partExprs, options, context);
-  }
-
-  @Override
   public List<Partition> dropPartitions(TableName tableName,
       RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws TException {

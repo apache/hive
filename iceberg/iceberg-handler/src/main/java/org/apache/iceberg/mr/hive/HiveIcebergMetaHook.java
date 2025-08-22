@@ -1225,7 +1225,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     } catch (IOException e) {
       throw new MetaException(String.format("Error while fetching the partitions due to: %s", e));
     }
-    context.putToProperties(BaseMetaStoreClient.SKIP_DROP_PARTITION, "true");
   }
 
   @Override
@@ -1242,8 +1241,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       preDropPartitions(hmsTable, context, partExprs);
     } else if (partsSpec.isSetNames()) {
       preTruncateTable(hmsTable, context, partsSpec.getNames());
-      context.putToProperties(BaseMetaStoreClient.SKIP_DROP_PARTITION, "true");
     }
+    context.putToProperties(BaseMetaStoreClient.SKIP_DROP_PARTITION, "true");
   }
 
   private static void validatePartitionSpec(SearchArgument sarg, PartitionSpec partitionSpec) {
