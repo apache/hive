@@ -26,8 +26,8 @@ import org.apache.iceberg.data.RandomGenericData;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.types.Types;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 
@@ -45,20 +45,22 @@ public class TestIcebergRecordObjectInspector {
     Record innerRecord = record.get(1, Record.class);
 
     StructObjectInspector soi = (StructObjectInspector) IcebergObjectInspector.create(schema);
-    Assert.assertEquals(ImmutableList.of(record.get(0), record.get(1)), soi.getStructFieldsDataAsList(record));
+    Assertions.assertEquals(ImmutableList.of(record.get(0), record.get(1)),
+        soi.getStructFieldsDataAsList(record));
 
     StructField integerField = soi.getStructFieldRef("integer_field");
-    Assert.assertEquals(record.get(0), soi.getStructFieldData(record, integerField));
+    Assertions.assertEquals(record.get(0), soi.getStructFieldData(record, integerField));
 
     StructField structField = soi.getStructFieldRef("struct_field");
     Object innerData = soi.getStructFieldData(record, structField);
-    Assert.assertEquals(innerRecord, innerData);
+    Assertions.assertEquals(innerRecord, innerData);
 
     StructObjectInspector innerSoi = (StructObjectInspector) structField.getFieldObjectInspector();
     StructField stringField = innerSoi.getStructFieldRef("string_field");
 
-    Assert.assertEquals(ImmutableList.of(innerRecord.get(0)), innerSoi.getStructFieldsDataAsList(innerRecord));
-    Assert.assertEquals(innerRecord.get(0), innerSoi.getStructFieldData(innerData, stringField));
+    Assertions.assertEquals(ImmutableList.of(innerRecord.get(0)),
+        innerSoi.getStructFieldsDataAsList(innerRecord));
+    Assertions.assertEquals(innerRecord.get(0), innerSoi.getStructFieldData(innerData, stringField));
   }
 
   @Test
@@ -67,8 +69,8 @@ public class TestIcebergRecordObjectInspector {
         required(2, "struct_field", Types.StructType.of(Types.NestedField.required(3, "string_field",
             Types.StringType.get()))));
     StructObjectInspector soi = (StructObjectInspector) IcebergObjectInspector.create(schema);
-    Assert.assertNull(soi.getStructFieldsDataAsList(null));
+    Assertions.assertNull(soi.getStructFieldsDataAsList(null));
     StructField integerField = soi.getStructFieldRef("integer_field");
-    Assert.assertNull(soi.getStructFieldData(null, integerField));
+    Assertions.assertNull(soi.getStructFieldData(null, integerField));
   }
 }
