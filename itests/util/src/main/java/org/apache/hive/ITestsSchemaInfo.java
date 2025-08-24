@@ -24,10 +24,10 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 
 import java.io.File;
 
-public class HiveIcebergITSchemaInfo extends MetaStoreSchemaInfo {
+public class ITestsSchemaInfo extends MetaStoreSchemaInfo {
   private static final String BASE_DIR = System.getProperty("basedir");
 
-  public HiveIcebergITSchemaInfo(String metastoreHome, String dbType) throws HiveMetaException {
+  public ITestsSchemaInfo(String metastoreHome, String dbType) throws HiveMetaException {
     super(metastoreHome, dbType);
   }
 

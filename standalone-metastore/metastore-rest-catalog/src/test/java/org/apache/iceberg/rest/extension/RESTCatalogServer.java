@@ -49,7 +49,7 @@ public class RESTCatalogServer {
     this.schemaInfoClass = schemaInfoClass;
   }
 
-  void start(Configuration conf) throws Exception {
+  public void start(Configuration conf) throws Exception {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     // Avoid reusing the JVM-level caching across Hive Metastore servers
@@ -84,15 +84,15 @@ public class RESTCatalogServer {
     LOG.info("Starting HMS(port={}) with Iceberg REST Catalog(port={})", hmsPort, restPort);
   }
 
-  void stop() {
+  public void stop() {
     MetaStoreTestUtils.close(hmsPort);
   }
 
-  Path getWarehouseDir() {
+  public Path getWarehouseDir() {
     return warehouseDir;
   }
 
-  String getRestEndpoint() {
+  public String getRestEndpoint() {
     return String.format("http://localhost:%d/iceberg", restPort);
   }
 }

@@ -81,7 +81,7 @@ public class TestHiveRESTCatalogClientIT {
   @RegisterExtension
   private static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION =
       HiveRESTCatalogServerExtension.builder(ServletSecurity.AuthType.NONE)
-          .addMetaStoreSchemaClassName(HiveIcebergITSchemaInfo.class)
+          .addMetaStoreSchemaClassName(ITestsSchemaInfo.class)
           .build();
 
   @BeforeAll
