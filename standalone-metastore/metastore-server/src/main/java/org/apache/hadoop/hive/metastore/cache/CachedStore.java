@@ -684,7 +684,7 @@ public class CachedStore implements RawStore, Configurable {
   private static Collection<String> catalogsToCache(RawStore rs) throws MetaException {
     Collection<String> confValue = MetastoreConf.getStringCollection(rs.getConf(), ConfVars.CATALOGS_TO_CACHE);
     if (confValue == null || confValue.isEmpty() || (confValue.size() == 1 && confValue.contains(""))) {
-      return rs.getCatalogs();
+      return rs.getCatalogs(null);
     } else {
       return confValue;
     }
@@ -1105,10 +1105,10 @@ public class CachedStore implements RawStore, Configurable {
     return cat;
   }
 
-  @Override public List<String> getCatalogs() {
+  @Override public List<String> getCatalogs(String catalogPattern) {
     // in case of event based cache update, cache will not be updated for catalog.
     if (!sharedCache.isCatalogCachePrewarmed() || canUseEvents) {
-      return rawStore.getCatalogs();
+      return rawStore.getCatalogs(catalogPattern);
     }
     return sharedCache.listCachedCatalogs();
   }

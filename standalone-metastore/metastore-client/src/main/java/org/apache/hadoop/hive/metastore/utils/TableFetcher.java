@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableIterable;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -40,8 +39,8 @@ public class TableFetcher {
 
   // mandatory client passed to this fetcher, has to be closed from caller
   private final IMetaStoreClient client;
-  // mandatory catalogName
-  private final String catalogName;
+  // mandatory catalogPattern: use "*" to fetch all, empty to fetch none
+  private final String catalogPattern;
   // mandatory dbPattern: use "*" to fetch all, empty to fetch none
   private final String dbPattern;
   // optional tableTypes: comma separated table types to fetch, fetcher result is empty list if this is empty
@@ -54,10 +53,7 @@ public class TableFetcher {
 
   private TableFetcher(Builder builder) {
     this.client = builder.client;
-    if ("*".equalsIgnoreCase(builder.catalogName)) {
-      LOG.warn("Invalid wildcard '*' parameter for catalogName, exact catalog name is expected instead of regexp");
-    }
-    this.catalogName = Optional.ofNullable(builder.catalogName).orElse(Warehouse.DEFAULT_CATALOG_NAME);
+    this.catalogPattern = Optional.ofNullable(builder.catalogPattern).orElse("");
     this.dbPattern = Optional.ofNullable(builder.dbPattern).orElse("");
     String tablePattern = Optional.ofNullable(builder.tablePattern).orElse("");
     String stringTableTypes = Optional.ofNullable(builder.tableTypes).orElse("");
@@ -101,11 +97,15 @@ public class TableFetcher {
       return candidates;
     }
 
-    List<String> databases = client.getDatabases(catalogName, dbPattern);
+    List<String> catalogs = client.getCatalogs(catalogPattern);
 
-    for (String db : databases) {
-      List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
-      tablesNames.forEach(tablesName -> candidates.add(TableName.fromString(tablesName, catalogName, db)));
+    for (String catalogName: catalogs) {
+      List<String> databases = client.getDatabases(catalogName, dbPattern);
+
+      for (String db : databases) {
+        List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
+        tablesNames.forEach(tablesName -> candidates.add(TableName.fromString(tablesName, catalogName, db)));
+      }
     }
     return candidates;
   }
@@ -119,12 +119,16 @@ public class TableFetcher {
       return candidates;
     }
 
-    List<String> databases = client.getDatabases(catalogName, dbPattern);
+    List<String> catalogs = client.getCatalogs(catalogPattern);
 
-    for (String db : databases) {
-      List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
-      for (Table table : new TableIterable(client, db, tablesNames, maxBatchSize)) {
-        candidates.add(table);
+    for(String catalogName: catalogs) {
+      List<String> databases = client.getDatabases(catalogName, dbPattern);
+
+      for (String db : databases) {
+        List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
+        for (Table table : new TableIterable(client, db, tablesNames, maxBatchSize)) {
+          candidates.add(table);
+        }
       }
     }
     return candidates;
@@ -147,15 +151,15 @@ public class TableFetcher {
 
   public static class Builder {
     private final IMetaStoreClient client;
-    private final String catalogName;
+    private final String catalogPattern;
     private final String dbPattern;
     private final String tablePattern;
     private final List<String> tableConditions = new ArrayList<>();
     private String tableTypes;
 
-    public Builder(IMetaStoreClient client, String catalogName, String dbPattern, String tablePattern) {
+    public Builder(IMetaStoreClient client, String catalogPattern, String dbPattern, String tablePattern) {
       this.client = client;
-      this.catalogName = catalogName;
+      this.catalogPattern = catalogPattern;
       this.dbPattern = dbPattern;
       this.tablePattern = tablePattern;
     }

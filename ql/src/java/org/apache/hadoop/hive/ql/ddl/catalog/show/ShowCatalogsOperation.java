@@ -42,7 +42,7 @@ public class ShowCatalogsOperation extends DDLOperation<ShowCatalogsDesc> {
   }
 
   @Override public int execute() throws Exception {
-    List<String> catalogs = context.getDb().getMSC().getCatalogs();
+    List<String> catalogs = context.getDb().getMSC().getCatalogs(null);
     if (desc.getPattern() != null) {
       LOG.debug("pattern: {}", desc.getPattern());
       Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
