@@ -446,6 +446,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
         .setDbName(conn.getDatabase())
         .setTableName(conn.getTable().getTableName())
+        .setTableParams(conn.getTable().getParameters())
         .setSharedRead()
         .setOperationType(DataOperationType.INSERT);
 
