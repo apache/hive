@@ -290,6 +290,7 @@ public abstract class CompactorTest {
             .setOperationType(DataOperationType.INSERT)
             .setDbName(t.getDbName())
             .setTableName(t.getTableName())
+            .setTableParams(t.getParameters())
             .setIsTransactional(true);
     if (p != null) {
       lockCompBuilder.setPartitionName(t.getPartitionKeys().get(0).getName() + "=" + p.getValues().get(0));
