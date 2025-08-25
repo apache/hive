@@ -56,7 +56,7 @@ import java.util.TreeMap;
 /**
  * Helper utilities used by DirectSQL code in HiveMetastore.
  */
-class MetastoreDirectSqlUtils {
+public class MetastoreDirectSqlUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreDirectSqlUtils.class);
   private MetastoreDirectSqlUtils() {
 
@@ -88,14 +88,14 @@ class MetastoreDirectSqlUtils {
   }
 
   @SuppressWarnings("unchecked")
-  static List<Object[]> ensureList(Object result) throws MetaException {
+  public static List<Object[]> ensureList(Object result) throws MetaException {
     if (!(result instanceof List<?>)) {
       throw new MetaException("Wrong result type " + result.getClass());
     }
     return (List<Object[]>)result;
   }
 
-  static Long extractSqlLong(Object obj) throws MetaException {
+  public static Long extractSqlLong(Object obj) throws MetaException {
     if (obj == null) return null;
     if (!(obj instanceof Number)) {
       throw new MetaException("Expected numeric type but got " + obj.getClass().getName());
@@ -231,7 +231,7 @@ class MetastoreDirectSqlUtils {
       }});
   }
 
-  static String extractSqlClob(Object value) {
+  public static String extractSqlClob(Object value) {
     if (value == null) return null;
     try {
       if (value instanceof Clob) {
