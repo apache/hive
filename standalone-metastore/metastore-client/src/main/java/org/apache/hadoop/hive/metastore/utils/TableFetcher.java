@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterators;
+import java.util.Collections;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableIterable;
@@ -110,24 +112,33 @@ public class TableFetcher {
     return candidates;
   }
 
-  public List<Table> getTables(int maxBatchSize) throws Exception {
-    List<Table> candidates = new ArrayList<>();
-
+  public Iterable<Table> getTables(Set<String> skipDBs, Set<String> skipTables, int maxBatchSize) throws Exception {
     // if tableTypes is empty, then a list with single empty string has to specified to scan no tables.
     if (tableTypes.isEmpty()) {
       LOG.info("Table fetcher returns empty list as no table types specified");
-      return candidates;
+      return Collections.emptyList();
     }
 
-    List<String> databases = client.getDatabases(catalogName, dbPattern);
+    List<String> databases = client.getDatabases(catalogName, dbPattern).stream()
+        .filter(dbName -> skipDBs == null || !skipDBs.contains(dbName))
+        .toList();
 
-    for (String db : databases) {
-      List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
-      for (Table table : new TableIterable(client, db, tablesNames, maxBatchSize)) {
-        candidates.add(table);
-      }
-    }
-    return candidates;
+    return () -> Iterators.concat(
+        Iterators.transform(databases.iterator(), db -> {
+          try {
+            List<String> tableNames = getTableNamesForDatabase(catalogName, db).stream()
+                .filter(tableName -> skipTables == null || !skipTables.contains(TableName.getDbTable(db, tableName)))
+                .toList();
+            return new TableIterable(client, db, tableNames, maxBatchSize).iterator();
+          } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch tables for db: " + db, e);
+          }
+        })
+    );
+  }
+
+  public Iterable<Table> getTables(int maxBatchSize) throws Exception {
+    return getTables(null, null, maxBatchSize);
   }
 
   private List<String> getTableNamesForDatabase(String catalogName, String dbName) throws Exception {

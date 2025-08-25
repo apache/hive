@@ -30,21 +30,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
 import org.apache.hadoop.hive.ql.txn.compactor.TableOptimizer;
-import org.apache.hive.iceberg.org.apache.orc.storage.common.TableName;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataOperations;
 import org.apache.iceberg.Snapshot;
@@ -85,62 +83,47 @@ public class IcebergTableOptimizer extends TableOptimizer {
    */
   @Override
   public Set<CompactionInfo> findPotentialCompactions(long lastChecked, ShowCompactResponse currentCompactions,
-      Set<String> skipDBs, Set<String> skipTables) {
+                                                      Set<String> skipDBs, Set<String> skipTables) {
     Set<CompactionInfo> compactionTargets = Sets.newHashSet();
 
-    getTableNames().stream()
-        .filter(table -> !skipDBs.contains(table.getDb()))
-        .filter(table -> !skipTables.contains(table.getNotEmptyDbTable()))
-        .map(table -> {
-          org.apache.hadoop.hive.ql.metadata.Table hiveTable = getHiveTable(table.getDb(), table.getTable());
-          org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, hiveTable.getTTable());
-          return Pair.of(hiveTable, icebergTable);
-        })
-        .filter(t -> hasNewCommits(t.getRight(),
-            snapshotTimeMilCache.get(t.getLeft().getFullyQualifiedName())))
-        .forEach(t -> {
-          String qualifiedTableName = t.getLeft().getFullyQualifiedName();
-          org.apache.hadoop.hive.ql.metadata.Table hiveTable = t.getLeft();
-          org.apache.iceberg.Table icebergTable = t.getRight();
+    Iterable<Table> tables = getTables(skipDBs, skipTables);
 
-          if (icebergTable.spec().isPartitioned()) {
-            List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = findModifiedPartitions(hiveTable,
-                icebergTable, snapshotTimeMilCache.get(qualifiedTableName), true);
+    for (Table table : tables) {
+      org.apache.hadoop.hive.ql.metadata.Table hiveTable = new org.apache.hadoop.hive.ql.metadata.Table(table);
+      org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, table);
+      String qualifiedTableName = hiveTable.getFullyQualifiedName();
 
-            partitions.forEach(partition -> addCompactionTargetIfEligible(hiveTable.getTTable(), icebergTable,
-                partition.getName(), compactionTargets, currentCompactions, skipDBs, skipTables));
+      if (hasNewCommits(icebergTable, snapshotTimeMilCache.get(qualifiedTableName))) {
+        if (icebergTable.spec().isPartitioned()) {
+          List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = findModifiedPartitions(hiveTable,
+              icebergTable, snapshotTimeMilCache.get(qualifiedTableName), true);
 
-            if (IcebergTableUtil.hasUndergonePartitionEvolution(icebergTable) && !findModifiedPartitions(hiveTable,
-                icebergTable, snapshotTimeMilCache.get(qualifiedTableName), false).isEmpty()) {
-              addCompactionTargetIfEligible(hiveTable.getTTable(), icebergTable,
-                  null, compactionTargets, currentCompactions, skipDBs, skipTables);
-            }
-          } else {
-            addCompactionTargetIfEligible(hiveTable.getTTable(), icebergTable, null, compactionTargets,
-                currentCompactions, skipDBs, skipTables);
+          partitions.forEach(partition -> addCompactionTargetIfEligible(table, icebergTable,
+              partition.getName(), compactionTargets, currentCompactions, skipDBs, skipTables));
+
+          if (IcebergTableUtil.hasUndergonePartitionEvolution(icebergTable) && !findModifiedPartitions(hiveTable,
+              icebergTable, snapshotTimeMilCache.get(qualifiedTableName), false).isEmpty()) {
+            addCompactionTargetIfEligible(table, icebergTable,
+                null, compactionTargets, currentCompactions, skipDBs, skipTables);
           }
+        } else {
+          addCompactionTargetIfEligible(table, icebergTable, null, compactionTargets,
+              currentCompactions, skipDBs, skipTables);
+        }
 
-          snapshotTimeMilCache.put(qualifiedTableName, icebergTable.currentSnapshot().timestampMillis());
-        });
+        snapshotTimeMilCache.put(qualifiedTableName, icebergTable.currentSnapshot().timestampMillis());
+      }
+    }
 
     return compactionTargets;
   }
 
-  private List<org.apache.hadoop.hive.common.TableName> getTableNames() {
+  private Iterable<Table> getTables(Set<String> skipDBs, Set<String> skipTables) {
     try {
-      return IcebergTableUtil.getTableFetcher(client, null, "*", null).getTableNames();
+      int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+      return IcebergTableUtil.getTableFetcher(client, null, "*", null).getTables(skipDBs, skipTables, maxBatchSize);
     } catch (Exception e) {
-      throw new RuntimeMetaException(e, "Error getting table names");
-    }
-  }
-
-  private org.apache.hadoop.hive.ql.metadata.Table getHiveTable(String dbName, String tableName) {
-    try {
-      Table metastoreTable = metadataCache.computeIfAbsent(TableName.getDbTable(dbName, tableName), () ->
-          CompactorUtil.resolveTable(conf, dbName, tableName));
-      return new org.apache.hadoop.hive.ql.metadata.Table(metastoreTable);
-    } catch (Exception e) {
-      throw new RuntimeMetaException(e, "Error getting Hive table for %s.%s", dbName, tableName);
+      throw new RuntimeMetaException(e, "Error getting tables");
     }
   }
 
