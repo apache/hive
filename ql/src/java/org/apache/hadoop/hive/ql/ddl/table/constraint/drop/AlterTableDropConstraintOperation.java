@@ -44,7 +44,7 @@ public class AlterTableDropConstraintOperation extends DDLOperation<AlterTableDr
 
     try {
       context.getDb().dropConstraint(desc.getTableName().getDb(), desc.getTableName().getTable(),
-          desc.getConstraintName());
+          desc.getConstraintName(), desc.IfExists());
     } catch (NoSuchObjectException e) {
       throw new HiveException(e);
     }
