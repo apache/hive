@@ -35,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.SSLZookeeperFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
@@ -70,8 +71,7 @@ class ZooKeeperHiveClientHelper {
    */
   public static boolean isZkHADynamicDiscoveryMode(Map<String, String> sessionConf) {
     final String discoveryMode = sessionConf.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE);
-    return (discoveryMode != null) &&
-      JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode);
+    return JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode);
   }
 
   /**
@@ -82,9 +82,14 @@ class ZooKeeperHiveClientHelper {
    */
   public static boolean isZkDynamicDiscoveryMode(Map<String, String> sessionConf) {
     final String discoveryMode = sessionConf.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE);
-    return (discoveryMode != null)
-      && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(discoveryMode) ||
-      JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode));
+    return JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(discoveryMode) ||
+        JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode);
+  }
+
+  static boolean isZkEnforceSASLClient(Map<String, String> sessionVars) {
+    HiveConf.ConfVars confVars = HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS;
+    return sessionVars.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL) &&
+        Boolean.parseBoolean(sessionVars.getOrDefault(confVars.varname, confVars.getDefaultValue()));
   }
 
   /**
@@ -128,6 +133,11 @@ class ZooKeeperHiveClientHelper {
                 connParams.getZookeeperTrustStoreLocation(),
                 connParams.getZookeeperTrustStorePassword(), connParams.getZookeeperTrustStoreType()))
             .build();
+
+    // If the client is requesting the Kerberos, then the ZooKeeper is mostly Kerberos-secured
+    if (isZkEnforceSASLClient(connParams.getSessionVars())) {
+      SecurityUtils.setZookeeperClientKerberosJaasConfig(null, null);
+    }
     zooKeeperClient.start();
     return zooKeeperClient;
   }
@@ -195,38 +205,31 @@ class ZooKeeperHiveClientHelper {
     if (isZkHADynamicDiscoveryMode(connParams.getSessionVars())) {
       configureConnParamsHA(connParams);
     } else {
-      CuratorFramework zooKeeperClient = null;
-      try {
-        zooKeeperClient = getZkClient(connParams);
-
+      try (CuratorFramework zooKeeperClient = getZkClient(connParams)) {
         final List<String> serverHosts = getServerHosts(connParams, zooKeeperClient);
-
         if (serverHosts.isEmpty()) {
           throw new ZooKeeperHiveClientException("No more HiveServer2 URIs from ZooKeeper to attempt");
         }
-
         // Pick a server node randomly
         final String serverNode = serverHosts.get(ThreadLocalRandom.current().nextInt(serverHosts.size()));
-
         updateParamsWithZKServerNode(connParams, zooKeeperClient, serverNode);
       } catch (ZooKeeperHiveClientException zkhce) {
         throw zkhce;
       } catch (Exception e) {
         throw new ZooKeeperHiveClientException("Unable to read HiveServer2 configs from ZooKeeper", e);
-      } finally {
-        if (zooKeeperClient != null) {
-          zooKeeperClient.close();
-        }
       }
     }
   }
 
   private static void configureConnParamsHA(JdbcConnectionParams connParams) throws ZooKeeperHiveClientException {
     try {
+
       Configuration registryConf = new Configuration();
       registryConf.set(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, connParams.getZooKeeperEnsemble());
       registryConf.set(HiveConf.ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE.varname,
         getZooKeeperNamespace(connParams));
+      registryConf.setBoolean(HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS.varname,
+          isZkEnforceSASLClient(connParams.getSessionVars()));
       HS2ActivePassiveHARegistry haRegistryClient = HS2ActivePassiveHARegistryClient.getClient(registryConf);
       boolean foundLeader = false;
       String maxRetriesConf = connParams.getSessionVars().get(JdbcConnectionParams.RETRIES);
