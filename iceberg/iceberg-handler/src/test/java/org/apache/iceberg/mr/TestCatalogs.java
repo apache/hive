@@ -35,6 +35,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.types.Types;
 import org.assertj.core.api.Assertions;
@@ -269,7 +270,7 @@ public class TestCatalogs {
   public void testDefaultCatalogProperties() {
     String catalogProperty = "io.manifest.cache-enabled";
     // Set global property
-    final String defaultCatalogProperty = InputFormatConfig.CATALOG_DEFAULT_CONFIG_PREFIX + catalogProperty;
+    final String defaultCatalogProperty = CatalogUtils.CATALOG_DEFAULT_CONFIG_PREFIX + catalogProperty;
     conf.setBoolean(defaultCatalogProperty, true);
     HiveCatalog defaultCatalog = (HiveCatalog) Catalogs.loadCatalog(conf, null).get();
     Assert.assertEquals("true", defaultCatalog.properties().get(catalogProperty));

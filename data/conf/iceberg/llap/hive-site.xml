@@ -397,4 +397,14 @@
         <name>hive.lock.sleep.between.retries</name>
         <value>2</value>
     </property>
+    
+    <!-- Iceberg REST catalog specific properties
+    <property>
+        <name>iceberg.catalog.type</name>
+        <value>rest</value>
+    </property>
+    <property>
+        <name>iceberg.rest-catalog.uri</name>
+        <value>{restServerUrl}</value>
+    </property> -->
 </configuration>
