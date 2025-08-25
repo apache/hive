@@ -829,7 +829,16 @@ public class TestCachedStoreUpdateUsingEvents {
   private void validateTablePara(String dbName, String tblName) throws Throwable {
     Table tblRead = rawStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
     Table tblRead1 = sharedCache.getTableFromCache(DEFAULT_CATALOG_NAME, dbName, tblName);
-    Assert.assertEquals(tblRead.getParameters(), tblRead1.getParameters());
+    // Prepare both the expected and actual table parameters
+    Map<String, String> expected = new HashMap<>(tblRead.getParameters());
+    Map<String, String> actual = new HashMap<>(tblRead1.getParameters());
+
+    // Remove the COLUMN_STATS_ACCURATE entry from both maps, because it is now completely removed
+    expected.remove("COLUMN_STATS_ACCURATE");
+    actual.remove("COLUMN_STATS_ACCURATE");
+
+    // Now assert equality without the COLUMN_STATS_ACCURATE key
+    Assert.assertEquals(expected, actual);
   }
 
   private void validatePartPara(String dbName, String tblName, String partName) throws Throwable {
