@@ -56,14 +56,14 @@ FROM window_int_test;
 -- Test FIRST_VALUE and LAST_VALUE for int column with PARTITION BY clause
 set hive.vectorized.execution.enabled=false;
 SELECT id, int_col,
-  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_int,
-  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_int
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, int_col) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, int_col) AS last_int
 FROM window_int_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, int_col,
-  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_int,
-  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_int
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, int_col) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, int_col) AS last_int
 FROM window_int_test;
 
 -- Test FIRST_VALUE and LAST_VALUE for int column without IGNORE NULLS
@@ -82,14 +82,14 @@ FROM window_int_test;
 -- Test FIRST_VALUE and LAST_VALUE for int column with PARTITION BY clause and without IGNORE NULLS
 set hive.vectorized.execution.enabled=false;
 SELECT id, int_col,
-  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS first_int,
-  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS last_int
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id, int_col) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id, int_col) AS last_int
 FROM window_int_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, int_col,
-  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS first_int,
-  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS last_int
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id, int_col) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id, int_col) AS last_int
 FROM window_int_test;
 
 
@@ -125,14 +125,14 @@ FROM window_int_test;
 -- Test FIRST_VALUE and LAST_VALUE for int column with PARTITION BY clause
 set hive.vectorized.execution.enabled=false;
 SELECT id, int_col,
-  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
-  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS last_int
 FROM window_int_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, int_col,
-  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
-  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS last_int
 FROM window_int_test;
 
 -- Test FIRST_VALUE and LAST_VALUE for int column without IGNORE NULLS
@@ -151,14 +151,14 @@ FROM window_int_test;
 -- Test FIRST_VALUE and LAST_VALUE for int column with PARTITION BY clause and without IGNORE NULLS
 set hive.vectorized.execution.enabled=false;
 SELECT id, int_col,
-  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
-  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS last_int
 FROM window_int_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, int_col,
-  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
-  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS last_int
 FROM window_int_test;
 
 --========================================================================================
@@ -188,13 +188,13 @@ SELECT id, int_col,
 FROM window_int_test;
 
 SELECT id, int_col,
-  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_int,
-  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_int
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, int_col) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, int_col) AS last_int
 FROM window_int_test;
 
 SELECT id, int_col,
-  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
-  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+  FIRST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS last_int
 FROM window_int_test;
 
 SELECT id, int_col,
@@ -208,11 +208,11 @@ SELECT id, int_col,
 FROM window_int_test;
 
 SELECT id, int_col,
-  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS first_int,
-  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id) AS last_int
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id, int_col) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id, int_col) AS last_int
 FROM window_int_test;
 
 SELECT id, int_col,
-  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_int,
-  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_int
+  FIRST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS first_int,
+  LAST_VALUE(int_col) OVER(PARTITION BY id ORDER BY id ASC, int_col ASC NULLS FIRST) AS last_int
 FROM window_int_test;
