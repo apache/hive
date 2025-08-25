@@ -154,7 +154,8 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
           paramSources.add(new MapSqlParameterSource()
               .addValue("dbName", table.getDbName().toLowerCase())
               .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
-              .addValue("partName", Warehouse.makePartName(partCols, partVals), Types.VARCHAR)
+              .addValue("partName", Warehouse.makePartName(partCols, partVals, table.getParameters(),
+                  jdbcResource.getConf()), Types.VARCHAR)
               .addValue("txnId", null, Types.BIGINT));
         }
       }

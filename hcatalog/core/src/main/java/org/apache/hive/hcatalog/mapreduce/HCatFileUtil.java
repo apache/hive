@@ -25,7 +25,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 
 public class HCatFileUtil {
 
@@ -36,7 +38,7 @@ public class HCatFileUtil {
   // This method parses the custom dynamic path and replaces each occurrence
   // of column name within regex pattern with its corresponding value, if provided
   public static String resolveCustomPath(OutputJobInfo jobInfo,
-      Map<String, String> dynPartKVs, boolean createRegexPath) {
+      Map<String, String> dynPartKVs, boolean createRegexPath, Map<String, String> tableParams, Configuration conf) {
     // get custom path string
     String customPath = jobInfo.getCustomDynamicPath();
     // create matcher for custom path
@@ -68,7 +70,7 @@ public class HCatFileUtil {
       if (columnValue != null) {
         sb.append(columnValue);
       } else {
-        sb.append("__HIVE_DEFAULT_PARTITION__");
+        sb.append(PartitionUtils.getDefaultPartitionName(tableParams, conf));
       }
 
       if (createRegexPath) {

@@ -17,7 +17,7 @@ create table test_part(a int) partitioned by (b string);
 
 alter table test_part add partition(b='one');
 
-set hive.exec.default.partition.name=random;
+alter table test_part set default partition to 'random';
 
 alter table test_part add partition(b='random_access_memory');
 

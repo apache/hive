@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils;
 import org.apache.hadoop.hive.ql.metadata.client.MetaStoreClientCacheUtils.CacheKey;
@@ -392,7 +393,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
         List<Partition> parts =
-            tt.listPartitionsByPartitionValsWithAuthInfo(partialPvals, userName, groupNames);
+            tt.listPartitionsByPartitionValsWithAuthInfo(partialPvals, userName, groupNames, conf);
         return getPartitionsForMaxParts(parts, maxParts);
       }
     }
@@ -499,7 +500,8 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         List<String> result = new ArrayList<>();
         int lastIndex = (maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts;
         for (int i = 0; i < lastIndex; i++) {
-          result.add(makePartName(tmpTable.getPartitionKeys(), partitions.get(i).getValues()));
+          result.add(makePartName(tmpTable.getPartitionKeys(), partitions.get(i).getValues(), tmpTable.getParameters(),
+              conf));
         }
         Collections.sort(result);
         return result;
@@ -531,13 +533,14 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       Table tmpTable = getTempTable(req.getDbName(), req.getTblName());
       if (tmpTable != null) {
         TempTable tt = getPartitionedTempTable(tmpTable);
-        List<Partition> partitions = tt.getPartitionsByPartitionVals(req.getPartValues());
+        List<Partition> partitions = tt.getPartitionsByPartitionVals(req.getPartValues(), conf);
         short maxParts = req.getMaxParts();
         int lastIndex = (maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts;
 
         List<String> result = new ArrayList<>();
         for (int i = 0; i < lastIndex; i++) {
-          result.add(makePartName(tmpTable.getPartitionKeys(), partitions.get(i).getValues()));
+          result.add(makePartName(tmpTable.getPartitionKeys(), partitions.get(i).getValues(),tmpTable.getParameters(),
+              conf));
         }
         Collections.sort(result);
         GetPartitionNamesPsResponse response = new GetPartitionNamesPsResponse();
@@ -1402,11 +1405,12 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         }
 
         List<String> results = new ArrayList<>();
-        Collections.sort(partitionList, new PartitionNamesComparator(table, req));
+        Collections.sort(partitionList, new PartitionNamesComparator(table, req, conf));
         short maxParts = req.getMaxParts();
         int numPartitions = maxParts < 0 || maxParts > partitionList.size() ? partitionList.size() : maxParts;
         for(int i = 0; i < numPartitions; i++) {
-          results.add(Warehouse.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues()));
+          results.add(Warehouse.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues(),
+              table.getParameters(), conf));
         }
         return results;
       }
@@ -1417,9 +1421,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   private static final class PartitionNamesComparator implements java.util.Comparator<Partition> {
     private Table table;
     private PartitionsByExprRequest req;
-    PartitionNamesComparator(Table table, PartitionsByExprRequest req) {
+    private Configuration  conf;
+    PartitionNamesComparator(Table table, PartitionsByExprRequest req, Configuration conf) {
       this.table = table;
       this.req = req;
+      this.conf = conf;
     }
     @Override
     public int compare(Partition o1, Partition o2) {
@@ -1445,8 +1451,8 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       }
 
       try {
-        return Warehouse.makePartName(table.getPartitionKeys(), o1.getValues()).compareTo(
-            Warehouse.makePartName(table.getPartitionKeys(), o2.getValues()));
+        return Warehouse.makePartName(table.getPartitionKeys(), o1.getValues(), table.getParameters(), conf).compareTo(
+            Warehouse.makePartName(table.getPartitionKeys(), o2.getValues(), table.getParameters(), conf));
       } catch (MetaException e) {
         throw new RuntimeException(e);
       }
@@ -1473,7 +1479,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       Table table = getTempTable(dbName, tblName);
       if (table != null) {
         TempTable tt = getPartitionedTempTable(table);
-        return getPartitionsForMaxParts(tt.getPartitionsByPartitionVals(partVals), maxParts);
+        return getPartitionsForMaxParts(tt.getPartitionsByPartitionVals(partVals, conf), maxParts);
       }
     }
     return delegate.listPartitions(catName, dbName, tblName, partVals, maxParts);
@@ -1569,8 +1575,8 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         List<Partition> result = new ArrayList<>();
         for (Pair<Integer, byte[]> pair : partExprs) {
           byte[] expr = pair.getRight();
-          String filter = generateJDOFilter(table, expr,
-              conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
+          String filter = generateJDOFilter(table, expr, PartitionUtils.getDefaultPartitionName(table.getParameters(),
+              conf));
           List<Partition> partitions = tt.listPartitionsByFilter(filter);
           for (Partition p : partitions) {
             Partition droppedPartition = tt.dropPartition(p.getValues());
@@ -1795,7 +1801,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
             tt.listPartitions();
         List<String> partitionNames = new ArrayList<>();
         for (Partition p : partitions) {
-          partitionNames.add(makePartName(table.getPartitionKeys(), p.getValues()));
+          partitionNames.add(makePartName(table.getPartitionKeys(), p.getValues(), table.getParameters(), conf));
         }
         if (partitionNames.isEmpty() && partitions.isEmpty()) {
           throw new MetaException("Cannot obtain list of partition by filter:\"" + request.getFilter() +
@@ -1871,7 +1877,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     ExpressionTree.FilterBuilder filterBuilder = new ExpressionTree.FilterBuilder(true);
     Map<String, Object> params = new HashMap<>();
     exprTree.accept(new ExpressionTree.JDOFilterGenerator(conf,
-        table.getPartitionKeys(), filterBuilder, params));
+        table.getPartitionKeys(), filterBuilder, params, table.getParameters()));
     StringBuilder stringBuilder = new StringBuilder(filterBuilder.getFilter());
     params.entrySet().stream().forEach(e -> {
       int index = stringBuilder.indexOf(e.getKey());
@@ -1905,7 +1911,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
           Arrays.toString(partitionVals.toArray()));
     }
     List<Partition> partitionsToExchange = sourceTempTable
-        .getPartitionsByPartitionVals(partitionVals);
+        .getPartitionsByPartitionVals(partitionVals, conf);
     if (partitionSpecs == null) {
       throw new MetaException("The partition specs must be not null.");
     }
@@ -1921,7 +1927,8 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     }
     // Check if any of the partitions already exists in the destTable
     for (Partition partition : partitionsToExchange) {
-      String partToExchangeName = makePartName(destTable.getPartitionKeys(), partition.getValues());
+      String partToExchangeName = makePartName(destTable.getPartitionKeys(), partition.getValues(),
+          destTable.getParameters(), conf);
       if (destTempTable.getPartition(partToExchangeName) != null) {
         throw new MetaException(
             "The partition " + partToExchangeName + " already exists in the table " + destTable.getTableName());
@@ -2074,7 +2081,8 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       // a physical table partition (not a view)
       if (table.getSd().getLocation() != null) {
         partLocation =
-            new Path(table.getSd().getLocation(), makePartName(table.getPartitionKeys(), partition.getValues()));
+            new Path(table.getSd().getLocation(), makePartName(table.getPartitionKeys(), partition.getValues(),
+                table.getParameters(), conf));
       }
     } else {
       if (table.getSd().getLocation() == null) {

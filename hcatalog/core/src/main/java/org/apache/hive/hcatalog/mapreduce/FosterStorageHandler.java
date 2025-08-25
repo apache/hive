@@ -161,7 +161,9 @@ public class FosterStorageHandler extends DefaultStorageHandler {
           && jobInfo.getCustomDynamicPath().length() > 0) {
         // dynamic partitioning with custom path; resolve the custom path
         // using partition column values
-        outputLocation = HCatFileUtil.resolveCustomPath(jobInfo, null, true);
+        outputLocation = HCatFileUtil.resolveCustomPath(jobInfo, null, true,
+            (jobInfo.getTableInfo() != null && jobInfo.getTableInfo().getTable() != null) ?
+                jobInfo.getTableInfo().getTable().getParameters() : null, conf);
       } else if ((dynHash == null)
            && Boolean.parseBoolean((String)tableDesc.getProperties().get("EXTERNAL"))
            && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
@@ -182,7 +184,9 @@ public class FosterStorageHandler extends DefaultStorageHandler {
           cols.add(name);
           values.add(value);
         }
-        outputLocation = FileUtils.makePartName(cols, values);
+        outputLocation = FileUtils.makePartName(cols, values, (jobInfo.getTableInfo() != null &&
+            jobInfo.getTableInfo().getTable() != null) ? jobInfo.getTableInfo().getTable().getParameters() : null,
+            conf);
       }
 
       if (outputLocation!= null && !outputLocation.isEmpty()){

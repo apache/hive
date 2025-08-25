@@ -1371,7 +1371,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       /* The row matches skewed column names. */
       if (allSkewedVals.contains(skewedValsCandidate)) {
         /* matches skewed values. */
-        lbDirName = FileUtils.makeListBucketingDirName(skewedCols, skewedValsCandidate);
+        lbDirName = FileUtils.makeListBucketingDirName(skewedCols, skewedValsCandidate, conf.getTable() != null ?
+            conf.getTable().getParameters() : null, hconf);
         locationMap.put(skewedValsCandidate, lbDirName);
       } else {
         lbDirName = createDefaultLbDir(skewedCols, locationMap);
@@ -1386,7 +1387,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Map<List<String>, String> locationMap) {
     String lbDirName;
     lbDirName = FileUtils.makeDefaultListBucketingDirName(skewedCols,
-          lbCtx.getDefaultDirName());
+          lbCtx.getDefaultDirName(), conf.getTable() != null ? conf.getTable().getParameters() : null, hconf);
     List<String> defaultKey = Lists.newArrayList(lbCtx.getDefaultKey());
     if (!locationMap.containsKey(defaultKey)) {
       locationMap.put(defaultKey, lbDirName);
@@ -1474,7 +1475,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   // return the relative path corresponding to the row.
   // e.g., ds=2008-04-08/hr=11
   private String getDynPartDirectory(List<String> row, List<String> dpColNames) {
-    return FileUtils.makePartName(dpColNames, row);
+    return FileUtils.makePartName(dpColNames, row, conf.getTable() != null ?
+        conf.getTable().getParameters() : null, hconf);
   }
 
   @Override
