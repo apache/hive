@@ -64,6 +64,19 @@ class LockComponent
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        9 => array(
+            'var' => 'tableParams',
+            'isRequired' => false,
+            'type' => TType::MAP,
+            'ktype' => TType::STRING,
+            'vtype' => TType::STRING,
+            'key' => array(
+                'type' => TType::STRING,
+            ),
+            'val' => array(
+                'type' => TType::STRING,
+                ),
+        ),
     );
 
     /**
@@ -98,6 +111,10 @@ class LockComponent
      * @var bool
      */
     public $isDynamicPartitionWrite = false;
+    /**
+     * @var array
+     */
+    public $tableParams = null;
 
     public function __construct($vals = null)
     {
@@ -125,6 +142,9 @@ class LockComponent
             }
             if (isset($vals['isDynamicPartitionWrite'])) {
                 $this->isDynamicPartitionWrite = $vals['isDynamicPartitionWrite'];
+            }
+            if (isset($vals['tableParams'])) {
+                $this->tableParams = $vals['tableParams'];
             }
         }
     }
@@ -204,6 +224,25 @@ class LockComponent
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::MAP) {
+                        $this->tableParams = array();
+                        $_size786 = 0;
+                        $_ktype787 = 0;
+                        $_vtype788 = 0;
+                        $xfer += $input->readMapBegin($_ktype787, $_vtype788, $_size786);
+                        for ($_i790 = 0; $_i790 < $_size786; ++$_i790) {
+                            $key791 = '';
+                            $val792 = '';
+                            $xfer += $input->readString($key791);
+                            $xfer += $input->readString($val792);
+                            $this->tableParams[$key791] = $val792;
+                        }
+                        $xfer += $input->readMapEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -256,6 +295,19 @@ class LockComponent
         if ($this->isDynamicPartitionWrite !== null) {
             $xfer += $output->writeFieldBegin('isDynamicPartitionWrite', TType::BOOL, 8);
             $xfer += $output->writeBool($this->isDynamicPartitionWrite);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->tableParams !== null) {
+            if (!is_array($this->tableParams)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('tableParams', TType::MAP, 9);
+            $output->writeMapBegin(TType::STRING, TType::STRING, count($this->tableParams));
+            foreach ($this->tableParams as $kiter793 => $viter794) {
+                $xfer += $output->writeString($kiter793);
+                $xfer += $output->writeString($viter794);
+            }
+            $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

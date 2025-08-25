@@ -20,9 +20,6 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.commands;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -31,12 +28,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
-import org.apache.thrift.TException;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
@@ -70,22 +65,11 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[
   public List<Object[]> getQueryParameters(Configuration conf) {
     List<Object[]> params = new ArrayList<>(lockRequest.getComponentSize());
     long intLockId = 0;
-    HiveMetaStoreClient hmsc;
-      try {
-          hmsc = new HiveMetaStoreClient(conf);
-      } catch (MetaException e) {
-          throw new RuntimeException(e);
-      }
       for (LockComponent lc : lockRequest.getComponent()) {
       String lockType = LockTypeUtil.getEncodingAsStr(lc.getType());
-          try {
               params.add(new Object[] {tempExtLockId, ++intLockId, lockRequest.getTxnid(), StringUtils.lowerCase(lc.getDbname()),
-                  StringUtils.lowerCase(lc.getTablename()), TxnUtils.normalizePartitionCase(lc.getPartitionname(),
-                  lc.getTablename() != null ? hmsc.tableExists(lc.getDbname(), lc.getTablename()) ? hmsc.getTable(lc.getDbname(), lc.getTablename()).getParameters() : null : null, conf),
+                  StringUtils.lowerCase(lc.getTablename()), TxnUtils.normalizePartitionCase(lc.getPartitionname(), lc.isSetTableParams() ? lc.getTableParams() : null, conf),
                   Character.toString(LOCK_WAITING), lockType, lockRequest.getUser(), lockRequest.getHostname(), lockRequest.getAgentInfo()});
-          } catch (TException e) {
-              throw new RuntimeException(e);
-          }
       }
     return params;
   }

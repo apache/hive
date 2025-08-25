@@ -2934,6 +2934,7 @@ public class AcidUtils {
           }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
+          compBuilder.setTableParams(t.getParameters());
           break;
 
         case PARTITION:
@@ -2945,6 +2946,7 @@ public class AcidUtils {
           }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
+          compBuilder.setTableParams(t.getParameters());
           break;
 
         default:
@@ -2993,6 +2995,7 @@ public class AcidUtils {
         t = output.getTable();
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
+        compBuilder.setTableParams(t.getParameters());
         break;
 
       case PARTITION:
@@ -3000,6 +3003,7 @@ public class AcidUtils {
         t = output.getPartition().getTable();
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
+        compBuilder.setTableParams(t.getParameters());
         break;
 
       default:
