@@ -35,20 +35,30 @@ import java.io.IOException;
 public class LenientProtobufMessageInputFormat<K, V extends MessageLite>
     extends ProtobufMessageInputFormat<K, V> {
 
-  private static final String PROTO_CLASS = "proto.class";
-
   @Override
   public RecordReader<K, ProtoMessageWritable<V>> getRecordReader(InputSplit split, JobConf job, Reporter reporter)
       throws IOException {
     final RecordReader<K, ProtoMessageWritable<V>> reader = super.getRecordReader(split, job, reporter);
-    return new SafeRecordReader<>(reader);
+    return new IgnoreEOFProtoMessageRecordReader<>(reader);
   }
 
-  private class SafeRecordReader<K, V extends MessageLite> implements RecordReader<K, ProtoMessageWritable<V>> {
+  /**
+   * A RecordReader wrapper that tolerates EOF conditions while reading
+   * protobuf messages from a SequenceFile.
+   *
+   * <p>Unlike the parent {@link ProtobufMessageInputFormat}, which only ignores
+   * {@link EOFException} during RecordReader creation,
+   * this reader also handles EOF during read and returns false from the next() method.</p>
+   *
+   * Note: This is a leniency mechanism and may result in silently skipping
+   * records.
+   */
+  private class IgnoreEOFProtoMessageRecordReader<K, V extends MessageLite>
+      implements RecordReader<K, ProtoMessageWritable<V>> {
 
     final RecordReader<K, ProtoMessageWritable<V>> mainReader;
 
-    private SafeRecordReader(RecordReader reader) throws IOException {
+    private IgnoreEOFProtoMessageRecordReader(RecordReader reader) throws IOException {
       mainReader = reader;
     }
 
@@ -84,6 +94,8 @@ public class LenientProtobufMessageInputFormat<K, V extends MessageLite>
       try {
         return mainReader != null ? mainReader.next(arg0, arg1) : false;
       } catch (EOFException e) {
+        LOG.warn("Premature EOF while reading proto record at position {}. Returning false.",
+            mainReader != null ? mainReader.getPos() : -1);
         return false;
       }
     }
