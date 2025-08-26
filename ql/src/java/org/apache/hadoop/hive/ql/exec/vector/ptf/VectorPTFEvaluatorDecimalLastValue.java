@@ -67,7 +67,7 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
         lastValue.set(decimalColVector.vector[0]);
         isGroupResultNull = false;
       } else {
-        isGroupResultNull = true;
+        isGroupResultNull = doesRespectNulls() || !lastValue.isSet();
       }
     } else if (decimalColVector.noNulls) {
       lastValue.set(decimalColVector.vector[size - 1]);
