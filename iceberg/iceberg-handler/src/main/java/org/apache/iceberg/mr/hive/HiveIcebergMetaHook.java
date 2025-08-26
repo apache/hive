@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -1242,7 +1242,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     } else if (partsSpec.isSetNames()) {
       preTruncateTable(hmsTable, context, partsSpec.getNames());
     }
-    context.putToProperties(BaseMetaStoreClient.SKIP_DROP_PARTITION, "true");
+    context.putToProperties(ThriftHiveMetaStoreClient.SKIP_DROP_PARTITION, "true");
   }
 
   private static void validatePartitionSpec(SearchArgument sarg, PartitionSpec partitionSpec) {

@@ -45,7 +45,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGet
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 public abstract class BaseMetaStoreClient implements IMetaStoreClient {
-  public static final String SKIP_DROP_PARTITION = "dropPartitionSkip";
 
   // Keep a copy of HiveConf so if Session conf changes, we may need to get a new HMS client.
   protected final Configuration conf;
@@ -565,15 +564,6 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException {
-    if (context == null) {
-      context = new EnvironmentContext();
-    }
-
-    if (context.getProperties() != null &&
-        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
-      return Lists.newArrayList();
-    }
-
     RequestPartsSpec rps = new RequestPartsSpec();
     List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
 

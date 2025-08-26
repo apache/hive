@@ -112,6 +112,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
       Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
   public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
+  public static final String SKIP_DROP_PARTITION = "dropPartitionSkip";
   public static final String SNAPSHOT_REF = "snapshot_ref";
 
   // Name of the HiveMetaStore class. It is used to initialize embedded metastore
