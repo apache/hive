@@ -315,7 +315,8 @@ public class LoadPartitions {
       boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
-        new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec())),
+        new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec(),
+            table.getParameters(), context.hiveConf)),
         replicaWarehousePartitionLocation,
         context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
         this.metricCollector
@@ -337,7 +338,7 @@ public class LoadPartitions {
 
   private Path locationOnReplicaWarehouse(Table table, AlterTableAddPartitionDesc.PartitionDesc partSpec)
       throws MetaException, HiveException {
-    String child = Warehouse.makePartPath(partSpec.getPartSpec());
+    String child = Warehouse.makePartPath(partSpec.getPartSpec(), table.getParameters(), context.hiveConf);
     if (tableDesc.isExternal()) {
       String externalLocation =
           ReplExternalTables.externalTableLocation(context.hiveConf, partSpec.getLocation());

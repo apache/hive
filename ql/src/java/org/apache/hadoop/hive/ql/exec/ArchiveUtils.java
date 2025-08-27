@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -97,10 +98,10 @@ public final class ArchiveUtils {
      * @param tbl table in which partition is
      * @return expected location of partitions matching prefix in filesystem
      */
-    public Path createPath(Table tbl) throws HiveException {
+    public Path createPath(Table tbl, Configuration conf) throws HiveException {
       String prefixSubdir;
       try {
-        prefixSubdir = Warehouse.makePartName(fields, values);
+        prefixSubdir = Warehouse.makePartName(fields, values, tbl.getParameters(), conf);
       } catch (MetaException e) {
         throw new HiveException("Unable to get partitions directories prefix", e);
       }
@@ -113,9 +114,9 @@ public final class ArchiveUtils {
     /**
      * Generates name for prefix partial partition specification.
      */
-    public String getName() throws HiveException {
+    public String getName(Map<String, String> tableParams, Configuration conf) throws HiveException {
       try {
-        return Warehouse.makePartName(fields, values);
+        return Warehouse.makePartName(fields, values, tableParams, conf);
       } catch (MetaException e) {
         throw new HiveException("Unable to create partial name", e);
       }
@@ -221,11 +222,11 @@ public final class ArchiveUtils {
    * @return prefix of partition's string representation
    * @throws HiveException
    */
-  public static String getPartialName(Partition p, int level) throws HiveException {
+  public static String getPartialName(Partition p, int level, Configuration conf) throws HiveException {
     List<FieldSchema> fields = p.getTable().getPartCols().subList(0, level);
     List<String> values = p.getValues().subList(0, level);
     try {
-      return Warehouse.makePartName(fields, values);
+      return Warehouse.makePartName(fields, values, p.getTable().getParameters(), conf);
     } catch (MetaException e) {
       throw new HiveException("Wasn't able to generate name" +
                                 " for partial specification");
@@ -297,7 +298,7 @@ public final class ArchiveUtils {
           // it is not, which means no archiving at this or upper level
           return null;
         }
-        return getPartialName(p, getArchivingLevel(p));
+        return getPartialName(p, getArchivingLevel(p), db.getConf());
       }
       spec.remove(rk);
     }

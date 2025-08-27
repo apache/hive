@@ -85,6 +85,7 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameBranch
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
+    | alterStatementSuffixSetDefaultPartition
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -229,6 +230,13 @@ alterStatementSuffixDropCol
 @after { gParent.popMsg(state); }
     : KW_DROP KW_COLUMN ifExists? columnName restrictOrCascade?
     -> ^(TOK_ALTERTABLE_DROPCOL ifExists? columnName restrictOrCascade?)
+    ;
+
+alterStatementSuffixSetDefaultPartition
+@init { gParent.pushMsg("set default partition statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_SET KW_DEFAULT KW_PARTITION KW_TO StringLiteral
+      -> ^(TOK_ALTERTABLE_SETDEFAULTPARTITION StringLiteral)
     ;
 
 alterStatementSuffixAddConstraint

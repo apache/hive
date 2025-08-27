@@ -224,7 +224,8 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
 
   private String getPartitionName(Table table, Partition partition) throws HiveException {
     try {
-      return Warehouse.makePartName(table.getPartitionKeys(), partition.getValues());
+      return Warehouse.makePartName(table.getPartitionKeys(), partition.getValues(), table.getParameters(),
+          context.getConf());
     } catch (MetaException e) {
       throw new HiveException(e);
     }

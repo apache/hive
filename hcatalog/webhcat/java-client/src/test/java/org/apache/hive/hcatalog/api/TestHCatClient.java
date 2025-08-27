@@ -156,7 +156,12 @@ public class TestHCatClient {
   }
 
   public static String makePartLocation(HCatTable table, Map<String, String> partitionSpec) throws MetaException {
-    return (new Path(table.getSd().getLocation(), Warehouse.makePartPath(partitionSpec))).toUri().toString();
+      try {
+          return (new Path(table.getSd().getLocation(), Warehouse.makePartPath(partitionSpec,
+              table.toHiveTable().getParameters(), getConf()))).toUri().toString();
+      } catch (HCatException e) {
+          throw new RuntimeException(e);
+      }
   }
 
   @Test

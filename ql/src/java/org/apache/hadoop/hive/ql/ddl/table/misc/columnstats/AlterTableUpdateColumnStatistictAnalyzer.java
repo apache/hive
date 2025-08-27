@@ -51,7 +51,7 @@ public class AlterTableUpdateColumnStatistictAnalyzer extends AbstractAlterTable
     String columnName = getUnescapedName((ASTNode) command.getChild(0));
     Map<String, String> properties = getProps((ASTNode) (command.getChild(1)).getChild(0));
 
-    String partitionName = AcidUtils.getPartitionName(partitionSpec);
+    String partitionName = AcidUtils.getPartitionName(partitionSpec, table.getParameters(), conf);
     String columnType = getColumnType(table, columnName);
 
     ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(partitionName, properties, table.getDbName(),

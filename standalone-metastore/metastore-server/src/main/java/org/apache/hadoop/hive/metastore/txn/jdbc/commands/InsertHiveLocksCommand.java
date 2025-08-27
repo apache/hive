@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn.jdbc.commands;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -61,15 +62,15 @@ public class InsertHiveLocksCommand implements ParameterizedBatchCommand<Object[
   }
 
   @Override
-  public List<Object[]> getQueryParameters() {
+  public List<Object[]> getQueryParameters(Configuration conf) {
     List<Object[]> params = new ArrayList<>(lockRequest.getComponentSize());
     long intLockId = 0;
-    for (LockComponent lc : lockRequest.getComponent()) {
+      for (LockComponent lc : lockRequest.getComponent()) {
       String lockType = LockTypeUtil.getEncodingAsStr(lc.getType());
-      params.add(new Object[] {tempExtLockId, ++intLockId, lockRequest.getTxnid(), StringUtils.lowerCase(lc.getDbname()),
-          StringUtils.lowerCase(lc.getTablename()), TxnUtils.normalizePartitionCase(lc.getPartitionname()),
-          Character.toString(LOCK_WAITING), lockType, lockRequest.getUser(), lockRequest.getHostname(), lockRequest.getAgentInfo()});
-    }
+              params.add(new Object[] {tempExtLockId, ++intLockId, lockRequest.getTxnid(), StringUtils.lowerCase(lc.getDbname()),
+                  StringUtils.lowerCase(lc.getTablename()), TxnUtils.normalizePartitionCase(lc.getPartitionname(), lc.isSetTableParams() ? lc.getTableParams() : null, conf),
+                  Character.toString(LOCK_WAITING), lockType, lockRequest.getUser(), lockRequest.getHostname(), lockRequest.getAgentInfo()});
+      }
     return params;
   }
 
