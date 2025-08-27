@@ -163,7 +163,7 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         // using partition column values
         outputLocation = HCatFileUtil.resolveCustomPath(jobInfo, null, true,
             (jobInfo.getTableInfo() != null && jobInfo.getTableInfo().getTable() != null) ?
-                jobInfo.getTableInfo().getTable().getParameters() : null, conf);
+                jobInfo.getTableInfo().getTable().getParameters() : null, HCatUtil.getHiveConf(conf));
       } else if ((dynHash == null)
            && Boolean.parseBoolean((String)tableDesc.getProperties().get("EXTERNAL"))
            && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
