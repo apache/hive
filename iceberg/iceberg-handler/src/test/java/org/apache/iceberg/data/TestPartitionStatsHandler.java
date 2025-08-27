@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,9 +60,8 @@ import org.apache.iceberg.types.Comparators;
 import org.apache.iceberg.types.Types;
 import org.assertj.core.api.Assumptions;
 import org.assertj.core.groups.Tuple;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.apache.iceberg.data.PartitionStatsHandler.DATA_FILE_COUNT;
 import static org.apache.iceberg.data.PartitionStatsHandler.DATA_RECORD_COUNT;
@@ -89,8 +89,8 @@ public class TestPartitionStatsHandler {
   protected static final PartitionSpec SPEC =
       PartitionSpec.builderFor(SCHEMA).identity("c2").identity("c3").build();
 
-  @Rule
-  public TemporaryFolder temp = new TemporaryFolder();
+  @TempDir
+  public Path temp;
 
   private static final Random RANDOM = ThreadLocalRandom.current();
 
@@ -577,7 +577,7 @@ public class TestPartitionStatsHandler {
   }
 
   private File tempDir(String folderName) throws IOException {
-    return java.nio.file.Files.createTempDirectory(temp.getRoot().toPath(), folderName).toFile();
+    return java.nio.file.Files.createTempDirectory(temp.toAbsolutePath(), folderName).toFile();
   }
 
   @SuppressWarnings("checkstyle:CyclomaticComplexity")

@@ -56,14 +56,14 @@ FROM window_decimal_test;
 -- Test FIRST_VALUE and LAST_VALUE for decimal column with PARTITION BY clause
 set hive.vectorized.execution.enabled=false;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
-  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, decimal_col) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, decimal_col) AS last_decimal
 FROM window_decimal_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
-  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, decimal_col) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, decimal_col) AS last_decimal
 FROM window_decimal_test;
 
 -- Test FIRST_VALUE and LAST_VALUE for decimal column without IGNORE NULLS
@@ -82,14 +82,14 @@ FROM window_decimal_test;
 -- Test FIRST_VALUE and LAST_VALUE for decimal column with PARTITION BY clause and without IGNORE NULLS
 set hive.vectorized.execution.enabled=false;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
-  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id, decimal_col) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id, decimal_col) AS last_decimal
 FROM window_decimal_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
-  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id, decimal_col) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id, decimal_col) AS last_decimal
 FROM window_decimal_test;
 
 
@@ -125,14 +125,14 @@ FROM window_decimal_test;
 -- Test FIRST_VALUE and LAST_VALUE for decimal column with PARTITION BY clause
 set hive.vectorized.execution.enabled=false;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
-  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS last_decimal
 FROM window_decimal_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
-  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS last_decimal
 FROM window_decimal_test;
 
 -- Test FIRST_VALUE and LAST_VALUE for decimal column without IGNORE NULLS
@@ -151,14 +151,14 @@ FROM window_decimal_test;
 -- Test FIRST_VALUE and LAST_VALUE for decimal column with PARTITION BY clause and without IGNORE NULLS
 set hive.vectorized.execution.enabled=false;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
-  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS last_decimal
 FROM window_decimal_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
-  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS last_decimal
 FROM window_decimal_test;
 
 
@@ -189,13 +189,13 @@ SELECT id, decimal_col,
 FROM window_decimal_test;
 
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
-  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, decimal_col) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, decimal_col) AS last_decimal
 FROM window_decimal_test;
 
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
-  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+  FIRST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS last_decimal
 FROM window_decimal_test;
 
 SELECT id, decimal_col,
@@ -209,11 +209,11 @@ SELECT id, decimal_col,
 FROM window_decimal_test;
 
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS first_decimal,
-  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id) AS last_decimal
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id, decimal_col) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id, decimal_col) AS last_decimal
 FROM window_decimal_test;
 
 SELECT id, decimal_col,
-  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_decimal,
-  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_decimal
+  FIRST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS first_decimal,
+  LAST_VALUE(decimal_col) OVER(PARTITION BY id ORDER BY id ASC, decimal_col ASC NULLS FIRST) AS last_decimal
 FROM window_decimal_test;

@@ -65,7 +65,7 @@ public class VectorPTFEvaluatorLongLastValue extends VectorPTFEvaluatorBase {
         lastValue = longColVector.vector[0];
         isGroupResultNull = false;
       } else {
-        isGroupResultNull = true;
+        isGroupResultNull = doesRespectNulls() || lastValue == null;
       }
     } else if (longColVector.noNulls) {
       lastValue = longColVector.vector[size - 1];

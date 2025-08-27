@@ -64,7 +64,7 @@ public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
         lastValue = doubleColVector.vector[0];
         isGroupResultNull = false;
       } else {
-        isGroupResultNull = true;
+        isGroupResultNull = doesRespectNulls() || lastValue == null;
       }
     } else if (doubleColVector.noNulls) {
       lastValue = doubleColVector.vector[size - 1];

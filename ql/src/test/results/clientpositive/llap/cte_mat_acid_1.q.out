@@ -1,0 +1,36 @@
+PREHOOK: query: create table t1 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: with cte as (
+  select a, count(*) as c1 from t1
+  group by a)
+select cte1.a, cte1.c1
+ from cte cte1,
+      cte cte2
+where cte1.a = cte2.a
+  and cte1.a > 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte
+#### A masked pattern was here ####
+POSTHOOK: query: with cte as (
+  select a, count(*) as c1 from t1
+  group by a)
+select cte1.a, cte1.c1
+ from cte cte1,
+      cte cte2
+where cte1.a = cte2.a
+  and cte1.a > 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte
+#### A masked pattern was here ####

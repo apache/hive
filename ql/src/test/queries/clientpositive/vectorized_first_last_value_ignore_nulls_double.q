@@ -56,14 +56,14 @@ FROM window_double_test;
 -- Test FIRST_VALUE and LAST_VALUE for double column with PARTITION BY clause
 set hive.vectorized.execution.enabled=false;
 SELECT id, double_col,
-  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_double,
-  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_double
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, double_col) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, double_col) AS last_double
 FROM window_double_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, double_col,
-  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_double,
-  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_double
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, double_col) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, double_col) AS last_double
 FROM window_double_test;
 
 -- Test FIRST_VALUE and LAST_VALUE for double column without IGNORE NULLS
@@ -82,14 +82,14 @@ FROM window_double_test;
 -- Test FIRST_VALUE and LAST_VALUE for double column with PARTITION BY clause and without IGNORE NULLS
 set hive.vectorized.execution.enabled=false;
 SELECT id, double_col,
-  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS first_double,
-  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS last_double
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id, double_col) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id, double_col) AS last_double
 FROM window_double_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, double_col,
-  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS first_double,
-  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS last_double
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id, double_col) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id, double_col) AS last_double
 FROM window_double_test;
 
 
@@ -125,14 +125,14 @@ FROM window_double_test;
 -- Test FIRST_VALUE and LAST_VALUE for double column with PARTITION BY clause
 set hive.vectorized.execution.enabled=false;
 SELECT id, double_col,
-  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
-  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS last_double
 FROM window_double_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, double_col,
-  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
-  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS last_double
 FROM window_double_test;
 
 -- Test FIRST_VALUE and LAST_VALUE for double column without IGNORE NULLS
@@ -151,14 +151,14 @@ FROM window_double_test;
 -- Test FIRST_VALUE and LAST_VALUE for double column with PARTITION BY clause and without IGNORE NULLS
 set hive.vectorized.execution.enabled=false;
 SELECT id, double_col,
-  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
-  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS last_double
 FROM window_double_test;
 
 set hive.vectorized.execution.enabled=true;
 SELECT id, double_col,
-  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
-  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS last_double
 FROM window_double_test;
 
 
@@ -189,13 +189,13 @@ SELECT id, double_col,
 FROM window_double_test;
 
 SELECT id, double_col,
-  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS first_double,
-  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id) AS last_double
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, double_col) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id, double_col) AS last_double
 FROM window_double_test;
 
 SELECT id, double_col,
-  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
-  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+  FIRST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col IGNORE NULLS) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS last_double
 FROM window_double_test;
 
 SELECT id, double_col,
@@ -209,11 +209,11 @@ SELECT id, double_col,
 FROM window_double_test;
 
 SELECT id, double_col,
-  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS first_double,
-  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id) AS last_double
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id, double_col) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id, double_col) AS last_double
 FROM window_double_test;
 
 SELECT id, double_col,
-  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS first_double,
-  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC NULLS FIRST) AS last_double
+  FIRST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS first_double,
+  LAST_VALUE(double_col) OVER(PARTITION BY id ORDER BY id ASC, double_col ASC NULLS FIRST) AS last_double
 FROM window_double_test;
