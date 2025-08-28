@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableIterable;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -42,8 +41,8 @@ public class TableFetcher {
 
   // mandatory client passed to this fetcher, has to be closed from caller
   private final IMetaStoreClient client;
-  // mandatory catalogName
-  private final String catalogName;
+  // mandatory catalogPattern: use "*" to fetch all, empty to fetch none
+  private final String catalogPattern;
   // mandatory dbPattern: use "*" to fetch all, empty to fetch none
   private final String dbPattern;
   // optional tableTypes: comma separated table types to fetch, fetcher result is empty list if this is empty
@@ -56,10 +55,7 @@ public class TableFetcher {
 
   private TableFetcher(Builder builder) {
     this.client = builder.client;
-    if ("*".equalsIgnoreCase(builder.catalogName)) {
-      LOG.warn("Invalid wildcard '*' parameter for catalogName, exact catalog name is expected instead of regexp");
-    }
-    this.catalogName = Optional.ofNullable(builder.catalogName).orElse(Warehouse.DEFAULT_CATALOG_NAME);
+    this.catalogPattern = Optional.ofNullable(builder.catalogPattern).orElse("");
     this.dbPattern = Optional.ofNullable(builder.dbPattern).orElse("");
     String tablePattern = Optional.ofNullable(builder.tablePattern).orElse("");
     String stringTableTypes = Optional.ofNullable(builder.tableTypes).orElse("");
@@ -103,42 +99,57 @@ public class TableFetcher {
       return candidates;
     }
 
-    List<String> databases = client.getDatabases(catalogName, dbPattern);
+    List<String> catalogs = client.getCatalogs(catalogPattern);
 
-    for (String db : databases) {
-      List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
-      tablesNames.forEach(tablesName -> candidates.add(TableName.fromString(tablesName, catalogName, db)));
+    for (String catalogName : catalogs) {
+      List<String> databases = client.getDatabases(catalogName, dbPattern);
+      for (String db : databases) {
+        List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
+        tablesNames.forEach(tablesName -> candidates.add(TableName.fromString(tablesName, catalogName, db)));
+      }
     }
     return candidates;
   }
 
-  public Iterable<Table> getTables(Set<String> skipDBs, Set<String> skipTables, int maxBatchSize) throws Exception {
+  public Iterable<Table> getTables(Set<String> skipCatalogs, Set<String> skipDBs, Set<String> skipTables, int maxBatchSize) throws Exception {
     // if tableTypes is empty, then a list with single empty string has to specified to scan no tables.
     if (tableTypes.isEmpty()) {
       LOG.info("Table fetcher returns empty list as no table types specified");
       return Collections.emptyList();
     }
 
-    List<String> databases = client.getDatabases(catalogName, dbPattern).stream()
-        .filter(dbName -> skipDBs == null || !skipDBs.contains(dbName))
+    List<String> catalogs = client.getCatalogs(catalogPattern).stream()
+        .filter(catalogName -> skipCatalogs == null || !skipCatalogs.contains(catalogName))
         .toList();
 
     return () -> Iterators.concat(
-        Iterators.transform(databases.iterator(), db -> {
+        Iterators.transform(catalogs.iterator(), catalogName -> {
           try {
-            List<String> tableNames = getTableNamesForDatabase(catalogName, db).stream()
-                .filter(tableName -> skipTables == null || !skipTables.contains(TableName.getDbTable(db, tableName)))
+            List<String> databases = client.getDatabases(catalogName, dbPattern).stream()
+                .filter(dbName -> skipDBs == null || !skipDBs.contains(dbName))
                 .toList();
-            return new TableIterable(client, db, tableNames, maxBatchSize).iterator();
+            return Iterators.concat(
+                Iterators.transform(databases.iterator(), dbName -> {
+                  try {
+                    List<String> tableNames = getTableNamesForDatabase(catalogName, dbName).stream()
+                        .filter(tableName -> skipTables == null ||
+                            !skipTables.contains(TableName.getDbTable(dbName, tableName)))
+                        .toList();
+                    return new TableIterable(client, dbName, tableNames, maxBatchSize).iterator();
+                  } catch (Exception e) {
+                    throw new RuntimeException("Failed to fetch tables for db: " + dbName, e);
+                  }
+                })
+            );
           } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch tables for db: " + db, e);
+            throw new RuntimeException("Failed to fetch database for catalog: " + catalogName, e);
           }
         })
     );
   }
 
   public Iterable<Table> getTables(int maxBatchSize) throws Exception {
-    return getTables(null, null, maxBatchSize);
+    return getTables(null, null, null, maxBatchSize);
   }
 
   private List<String> getTableNamesForDatabase(String catalogName, String dbName) throws Exception {
@@ -158,15 +169,15 @@ public class TableFetcher {
 
   public static class Builder {
     private final IMetaStoreClient client;
-    private final String catalogName;
+    private final String catalogPattern;
     private final String dbPattern;
     private final String tablePattern;
     private final List<String> tableConditions = new ArrayList<>();
     private String tableTypes;
 
-    public Builder(IMetaStoreClient client, String catalogName, String dbPattern, String tablePattern) {
+    public Builder(IMetaStoreClient client, String catalogPattern, String dbPattern, String tablePattern) {
       this.client = client;
-      this.catalogName = catalogName;
+      this.catalogPattern = catalogPattern;
       this.dbPattern = dbPattern;
       this.tablePattern = tablePattern;
     }

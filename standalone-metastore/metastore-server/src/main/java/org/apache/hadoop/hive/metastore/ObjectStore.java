@@ -724,19 +724,27 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getCatalogs() {
-    LOG.debug("Fetching all catalog names");
+  public List<String> getCatalogs(String catalogPattern) {
+    if (catalogPattern == null) {
+      catalogPattern = "*";
+      LOG.debug("Fetching all catalog names");
+    } else {
+      LOG.debug("Fetching catalog names with pattern " + catalogPattern);
+    }
     boolean commited = false;
     List<String> catalogs = null;
 
-    String queryStr = "select name from org.apache.hadoop.hive.metastore.model.MCatalog";
     Query query = null;
 
     openTransaction();
     try {
-      query = pm.newQuery(queryStr);
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> parameterVals = new ArrayList<>();
+      appendPatternCondition(filterBuilder, "name", catalogPattern, parameterVals);
+      query = pm.newQuery(MCatalog.class, filterBuilder.toString());
       query.setResult("name");
-      catalogs = new ArrayList<>((Collection<String>) query.execute());
+      query.setOrdering("name ascending");
+      catalogs = new ArrayList<>((Collection<String>) query.executeWithArray(parameterVals.toArray(new String[0])));
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);

@@ -633,9 +633,9 @@ public class IcebergTableUtil {
     return partitions;
   }
 
-  public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern,
+  public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogPattern, String dbPattern,
       String tablePattern) {
-    return new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(
+    return new TableFetcher.Builder(msc, catalogPattern, dbPattern, tablePattern).tableTypes(
             "EXTERNAL_TABLE")
         .tableCondition(
             hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "table_type like \"ICEBERG\" ")
