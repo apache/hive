@@ -27,9 +27,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
-import java.nio.charset.Charset;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -52,9 +50,6 @@ import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnion;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.adapter.jdbc.JdbcTable;
-import org.apache.calcite.config.CalciteConnectionConfig;
-import org.apache.calcite.config.CalciteConnectionConfigImpl;
-import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
@@ -76,6 +71,8 @@ import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
+import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -168,14 +165,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggester;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggesterFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTableFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelPlanParser;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
@@ -187,7 +181,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTran
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
@@ -197,8 +190,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
@@ -265,7 +256,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteToDataSketchesRules;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortLimitRemoveRule;
@@ -359,18 +349,15 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
@@ -421,8 +408,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Pattern.compile("VARCHAR\\(2147483647\\)");
   private static final Pattern PATTERN_TIMESTAMP =
       Pattern.compile("TIMESTAMP\\(9\\)");
-
-  private static final int PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT = 1_000_000;
 
   /**
    * This is the list of operators that are specifically used in Hive.
@@ -522,34 +507,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, EmptyStatsSource.INSTANCE, false);
-  }
-
-  private static RelOptPlanner createPlanner(
-      HiveConf conf, StatsSource statsSource, boolean isExplainPlan) {
-    final Double maxSplitSize = (double) HiveConf.getLongVar(
-            conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE);
-    final Double maxMemory = (double) HiveConf.getLongVar(
-            conf, HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
-    HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
-    HiveRulesRegistry registry = new HiveRulesRegistry();
-    Properties calciteConfigProperties = new Properties();
-    calciteConfigProperties.setProperty(
-        CalciteConnectionProperty.TIME_ZONE.camelName(),
-        conf.getLocalTimeZone().getId());
-    calciteConfigProperties.setProperty(
-        CalciteConnectionProperty.MATERIALIZATIONS_ENABLED.camelName(),
-        Boolean.FALSE.toString());
-    CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
-    boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS);
-    boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
-        HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
-    HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, isExplainPlan),
-        statsSource);
-    RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
-    planner.addListener(new RuleEventLogger());
-    return planner;
+    return HiveRelOptUtil.createPlanner(conf, EmptyStatsSource.INSTANCE, false);
   }
 
   @Override
@@ -1576,7 +1534,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   /**
    * Code responsible for Calcite plan generation and optimization.
    */
-  public class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode>, RelOptHiveTableFactory {
+  public class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode> {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
     private FunctionHelper                                functionHelper;
@@ -1622,7 +1580,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = createPlanner(conf, statsSource, ctx.isExplainPlan());
+      RelOptPlanner planner = HiveRelOptUtil.createPlanner(conf, statsSource, ctx.isExplainPlan());
       final RexBuilder rexBuilder = new RexBuilder(new HiveTypeFactory());
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
@@ -1777,44 +1735,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           HiveSearchRules.PROJECT_SEARCH_EXPAND,
           HiveSearchRules.JOIN_SEARCH_EXPAND));
       return executeProgram(basePlan, searchProgram.build(), mdProvider, executor);
-    }
-
-    private Optional<String> serializePlan(RelNode plan) {
-      if (!isSerializable(plan)) {
-        return Optional.empty();
-      }
-
-      String jsonPlan = HiveRelOptUtil.serializeToJSON(plan);
-      if (stringSizeGreaterThan(jsonPlan, PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT)) {
-        return Optional.empty();
-      }
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Plan to serialize: \n{}", RelOptUtil.toString(plan));
-        LOG.debug("JSON plan: \n{}", jsonPlan);
-      }
-
-      return Optional.of(jsonPlan);
-    }
-
-    private RelNode deserializePlan(RelOptCluster cluster, String jsonPlan) throws IOException {
-      RelPlanParser parser = new RelPlanParser(cluster, this, partitionCache);
-      RelNode deserializedPlan = parser.parse(jsonPlan);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Deserialized plan: \n{}", RelOptUtil.toString(deserializedPlan));
-      }
-      
-      return deserializedPlan;
-    }
-
-    private boolean isSerializable(RelNode plan) {
-      return !stringSizeGreaterThan(ctx.getCmd(), PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT) &&
-          HiveRelNode.stream(plan)
-            .noneMatch(node -> node.getConvention().getName().toLowerCase().contains("jdbc"));
-    }
-
-    private boolean stringSizeGreaterThan(String str, int length) {
-      return str.getBytes(Charset.defaultCharset()).length > length;
     }
 
     /**
@@ -3368,86 +3288,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       relToHiveRR.put(filterRel, relToHiveRR.get(srcRel));
 
       return filterRel;
-    }
-
-    @Override
-    public RelOptHiveTable createRelOptHiveTable(
-        String tableAlias,
-        TableName tableName,
-        RelDataType rowType,
-        List<ColumnInfo> nonPartitionColumns,
-        List<ColumnInfo> partitionColumns,
-        List<VirtualColumn> virtualColumns) {
-
-      Table tbl = getTable(tableAlias, tableName);
-
-      return new RelOptHiveTable(
-          relOptSchema,
-          cluster.getTypeFactory(),
-          asList(tableName.getDb(), tableName.getTable()),
-          rowType,
-          tbl,
-          nonPartitionColumns,
-          partitionColumns,
-          virtualColumns,
-          conf,
-          db,
-          tabNameToTabObject,
-          partitionCache,
-          colStatsCache,
-          noColsMissingStats
-      );
-    }
-
-    // TODO: Probably could simplify this method. Maybe we don't need to look in QB.
-    private Table getTable(String alias, TableName tableName) {
-      String fullTableName = tableName.getNotEmptyDbTable();
-      // Look in QB
-      Table result = verifyTableName(getQB().getTableForAlias(alias), fullTableName);
-
-      // Look in ctx if it's a materialized table
-      if (result == null/* && jsonRel.containsKey("materializedTable") && jsonRel.get("materializedTable")*/) {
-        // TODO: Is it possible that materializedTable is false or missing but Context returns it via getMaterializedTable ?
-        result = verifyTableName(
-            getTableUsing(ctx::getMaterializedTable, alias, tableName.getTable(), fullTableName),
-            fullTableName
-        );
-      }
-
-      // Look in tabNameToTabObject
-      if (result == null) {
-        result = verifyTableName(
-            getTableUsing(tabNameToTabObject::getParsedTable, fullTableName),
-            fullTableName
-        );
-      }
-
-      // Finally try HMS
-      if (result == null) {
-        try {
-          result = db.getTable(
-              tableName.getDb(), tableName.getTable(), tableName.getTableMetaRef(),
-              true, true, false
-          );
-        } catch (HiveException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      return result;
-    }
-
-    private Table verifyTableName(Table table, String fullName) {
-      if (table == null) {
-        return null;
-      }
-      String tableName = TableName.getDbTable(table.getDbName(), table.getTableName());
-
-      return fullName.equals(tableName) ? table : null;
-    }
-
-    private Table getTableUsing(Function<String, Table> function, String... names) {
-      return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     /**

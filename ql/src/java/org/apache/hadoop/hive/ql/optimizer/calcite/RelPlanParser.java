@@ -51,11 +51,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -69,8 +67,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 /**
  * Class responsible for parsing a given plan from a json file.
  */
@@ -81,17 +77,13 @@ public class RelPlanParser {
 
   private final RelOptCluster cluster;
   private final RelOptHiveTableFactory relOptHiveTableFactory;
-  private final Map<String, PrunedPartitionList> partitionCache;
   private final HiveRelJson relJson = new HiveRelJson(null);
   private final Map<String, RelNode> relMap = new LinkedHashMap<>();
   private RelNode lastRel;
 
-  public RelPlanParser(RelOptCluster cluster,
-                       RelOptHiveTableFactory relOptHiveTableFactory,
-                       Map<String, PrunedPartitionList> partitionCache) {
+  public RelPlanParser(RelOptCluster cluster, RelOptHiveTableFactory relOptHiveTableFactory) {
     this.cluster = cluster;
     this.relOptHiveTableFactory = relOptHiveTableFactory;
-    this.partitionCache = partitionCache;
   }
 
   public RelNode parse(String json) throws IOException {
@@ -122,13 +114,13 @@ public class RelPlanParser {
     return lastRel;
   }
 
-  private void readRels(List<Map<String, Object>> jsonRels) {
+  private void readRels(List<Map<String, Object>> jsonRels) throws IOException {
     for (Map<String, Object> jsonRel : jsonRels) {
       readRel(jsonRel);
     }
   }
 
-  private void readRel(final Map<String, Object> jsonRel) {
+  private void readRel(final Map<String, Object> jsonRel) throws IOException {
     String id = (String) jsonRel.get("id");
     String type = (String) jsonRel.get("relOp");
     Constructor constructor = relJson.getConstructor(type);
@@ -137,14 +129,8 @@ public class RelPlanParser {
       final HiveRelNode rel = (HiveRelNode) constructor.newInstance(input);
       relMap.put(id, rel);
       lastRel = rel;
-    } catch (InstantiationException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    } catch (InvocationTargetException e) {
-      final Throwable e2 = e.getCause();
-      if (e2 instanceof RuntimeException) {
-        throw (RuntimeException) e2;
-      }
-      throw new RuntimeException(e2);
+    } catch (Exception e) {
+      throw new IOException(e);
     }
   }
 
@@ -217,16 +203,8 @@ public class RelPlanParser {
       TableName tableName = new TableName(
           null, qualifiedName.get(0), qualifiedName.get(1), (String) jsonRel.get("snapshotRef"));
 
-      RelOptHiveTable relOptHiveTable = relOptHiveTableFactory.createRelOptHiveTable(
+      return relOptHiveTableFactory.createRelOptHiveTable(
           tableAlias, tableName, rowType, nonPartitionColumns, partitionColumns, virtualColumns);
-
-      // set partition list
-      String plKey = (String) jsonRel.get("plKey");
-      if (isNotBlank(plKey) && partitionCache.containsKey(plKey)) {
-        relOptHiveTable.partitionList = partitionCache.get(plKey);
-      }
-
-      return relOptHiveTable;
     }
 
     private List<VirtualColumn> getVirtualColumns() {
