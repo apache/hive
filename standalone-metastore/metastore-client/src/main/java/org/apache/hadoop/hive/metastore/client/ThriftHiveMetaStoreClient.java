@@ -69,7 +69,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -750,8 +749,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
             try {
               UserGroupInformation ugi = SecurityUtils.getUGI();
               client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
-            } catch (LoginException e) {
-              LOG.warn("Failed to do login. set_ugi() is not successful, Continuing without it.", e);
             } catch (IOException e) {
               LOG.warn("Failed to find ugi of client set_ugi() is not successful, Continuing without it.", e);
             } catch (TException e) {
