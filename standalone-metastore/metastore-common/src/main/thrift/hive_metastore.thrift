@@ -2619,7 +2619,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void create_catalog(1: CreateCatalogRequest catalog) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3: MetaException o3)
   void alter_catalog(1: AlterCatalogRequest rqst) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   GetCatalogResponse get_catalog(1: GetCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
-  GetCatalogsResponse get_catalogs() throws (1:MetaException o1)
+  GetCatalogsResponse get_catalogs(1: GetCatalogRequest pattern) throws (1:MetaException o1)
   void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
 
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)

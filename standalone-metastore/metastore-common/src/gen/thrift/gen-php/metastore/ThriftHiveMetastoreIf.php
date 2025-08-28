@@ -60,10 +60,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_catalog(\metastore\GetCatalogRequest $catName);
     /**
+     * @param \metastore\GetCatalogRequest $pattern
      * @return \metastore\GetCatalogsResponse
      * @throws \metastore\MetaException
      */
-    public function get_catalogs();
+    public function get_catalogs(\metastore\GetCatalogRequest $pattern);
     /**
      * @param \metastore\DropCatalogRequest $catName
      * @throws \metastore\NoSuchObjectException

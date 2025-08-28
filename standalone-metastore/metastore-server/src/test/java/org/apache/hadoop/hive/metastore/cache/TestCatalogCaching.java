@@ -75,7 +75,7 @@ public class TestCatalogCaching {
 
   @After
   public void clearCatalogCache() throws MetaException, NoSuchObjectException {
-    List<String> catalogs = objectStore.getCatalogs();
+    List<String> catalogs = objectStore.getCatalogs(null);
     for (String catalog : catalogs) objectStore.dropCatalog(catalog);
   }
 
@@ -90,7 +90,7 @@ public class TestCatalogCaching {
     CachedStore.prewarm(objectStore);
 
     // Only the hive catalog should be cached
-    List<String> cachedCatalogs = cachedStore.getCatalogs();
+    List<String> cachedCatalogs = cachedStore.getCatalogs(null);
     Assert.assertEquals(1, cachedCatalogs.size());
     Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, cachedCatalogs.get(0));
   }
@@ -110,7 +110,7 @@ public class TestCatalogCaching {
     CachedStore.prewarm(objectStore);
 
     // All the catalogs should be cached
-    List<String> cachedCatalogs = cachedStore.getCatalogs();
+    List<String> cachedCatalogs = cachedStore.getCatalogs(null);
     Assert.assertEquals(3, cachedCatalogs.size());
     cachedCatalogs.sort(Comparator.naturalOrder());
     Assert.assertEquals(CAT1_NAME, cachedCatalogs.get(0));
@@ -133,7 +133,7 @@ public class TestCatalogCaching {
     CachedStore.prewarm(objectStore);
 
     // All the catalogs should be cached
-    List<String> cachedCatalogs = cachedStore.getCatalogs();
+    List<String> cachedCatalogs = cachedStore.getCatalogs(null);
     Assert.assertEquals(2, cachedCatalogs.size());
     cachedCatalogs.sort(Comparator.naturalOrder());
     Assert.assertEquals(CAT1_NAME, cachedCatalogs.get(0));

@@ -1038,13 +1038,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public GetCatalogsResponse get_catalogs() throws MetaException {
+  public GetCatalogsResponse get_catalogs(GetCatalogRequest rqst) throws MetaException {
+    String catalogPattern = rqst.getName();
     startFunction("get_catalogs");
 
     List<String> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getCatalogs();
+      ret = getMS().getCatalogs(catalogPattern);
     } catch (Exception e) {
       ex = e;
       throw e;

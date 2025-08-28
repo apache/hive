@@ -117,7 +117,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     ObjectStore objectStore = new ObjectStore();
     objectStore.setConf(conf);
-    for (String clg : objectStore.getCatalogs()) {
+    for (String clg : objectStore.getCatalogs(null)) {
       for (String db : objectStore.getAllDatabases(clg)) {
         for (String tbl : objectStore.getAllTables(clg, db)) {
           List<String> pts = objectStore.listPartitionNames(clg, db, tbl, Short.MAX_VALUE);

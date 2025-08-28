@@ -50,7 +50,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_catalog\n");
   }
 
-  void get_catalogs(GetCatalogsResponse& _return) {
+  void get_catalogs(GetCatalogsResponse& _return, const GetCatalogRequest& pattern) {
     // Your implementation goes here
     printf("get_catalogs\n");
   }

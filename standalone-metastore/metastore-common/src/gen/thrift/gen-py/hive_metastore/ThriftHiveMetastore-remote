@@ -30,7 +30,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void create_catalog(CreateCatalogRequest catalog)')
     print('  void alter_catalog(AlterCatalogRequest rqst)')
     print('  GetCatalogResponse get_catalog(GetCatalogRequest catName)')
-    print('  GetCatalogsResponse get_catalogs()')
+    print('  GetCatalogsResponse get_catalogs(GetCatalogRequest pattern)')
     print('  void drop_catalog(DropCatalogRequest catName)')
     print('  void create_database(Database database)')
     print('  void create_database_req(CreateDatabaseRequest createDatabaseRequest)')
@@ -437,10 +437,10 @@ elif cmd == 'get_catalog':
     pp.pprint(client.get_catalog(eval(args[0]),))
 
 elif cmd == 'get_catalogs':
-    if len(args) != 0:
-        print('get_catalogs requires 0 args')
+    if len(args) != 1:
+        print('get_catalogs requires 1 args')
         sys.exit(1)
-    pp.pprint(client.get_catalogs())
+    pp.pprint(client.get_catalogs(eval(args[0]),))
 
 elif cmd == 'drop_catalog':
     if len(args) != 1:

@@ -211,7 +211,7 @@ public class TestObjectStore {
       objectStore.createCatalog(cat);
     }
 
-    List<String> fetchedNames = objectStore.getCatalogs();
+    List<String> fetchedNames = objectStore.getCatalogs(null);
     Assert.assertEquals(3, fetchedNames.size());
     for (int i = 0; i < names.length - 1; i++) {
       Assert.assertEquals(names[i], fetchedNames.get(i));
@@ -226,7 +226,7 @@ public class TestObjectStore {
     // Location will vary by system.
 
     for (int i = 0; i < names.length; i++) objectStore.dropCatalog(names[i]);
-    fetchedNames = objectStore.getCatalogs();
+    fetchedNames = objectStore.getCatalogs(null);
     Assert.assertEquals(1, fetchedNames.size());
   }
 
@@ -1247,7 +1247,7 @@ public class TestObjectStore {
       for (Function func : functions) {
         store.dropFunction(DEFAULT_CATALOG_NAME, func.getDbName(), func.getFunctionName());
       }
-      for (String catName : store.getCatalogs()) {
+      for (String catName : store.getCatalogs(null)) {
         List<String> dbs = store.getAllDatabases(catName);
         for (String db : dbs) {
           List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);

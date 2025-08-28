@@ -966,8 +966,8 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<String> getCatalogs() throws TException {
-    GetCatalogsResponse rsp = client.get_catalogs();
+  public List<String> getCatalogs(String catalogPattern) throws TException {
+    GetCatalogsResponse rsp = client.get_catalogs(new GetCatalogRequest(catalogPattern));
     if (rsp == null || rsp.getNames() == null) {
       return null;
     } else {
