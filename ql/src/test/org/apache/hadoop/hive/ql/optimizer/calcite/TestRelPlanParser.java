@@ -35,10 +35,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -210,10 +211,14 @@ public class TestRelPlanParser extends TestRuleBase {
   }
 
   private void serializeDeserializeAndAssertEquals(RelNode plan) throws IOException {
-    String planJson = HiveRelOptUtil.serializeToJSON(plan);
-    RelPlanParser parser = new RelPlanParser(relOptCluster, relOptHiveTableFactory, new HashMap<>());
-    RelNode parsedPlan = parser.parse(planJson);
+    Optional<String> planJson = HiveRelOptUtil.serializeToJSON(plan);
+    if (planJson.isPresent()) {
+      RelPlanParser parser = new RelPlanParser(relOptCluster, relOptHiveTableFactory);
+      RelNode parsedPlan = parser.parse(planJson.get());
 
-    assertEquals(RelOptUtil.toString(plan), RelOptUtil.toString(parsedPlan));
+      assertEquals(RelOptUtil.toString(plan), RelOptUtil.toString(parsedPlan));
+    } else {
+      fail("failed to serialize plan");
+    }
   }
 }

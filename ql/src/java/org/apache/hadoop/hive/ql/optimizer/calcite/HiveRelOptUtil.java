@@ -19,12 +19,15 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 
 import com.google.common.collect.ImmutableList;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,11 +39,23 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.calcite.config.CalciteConnectionConfig;
+import org.apache.calcite.config.CalciteConnectionConfigImpl;
+import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.hep.HepMatchOrder;
+import org.apache.calcite.plan.hep.HepPlanner;
+import org.apache.calcite.plan.hep.HepProgram;
+import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelFieldCollation;
@@ -56,12 +71,16 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
+import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCallBinding;
+import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
@@ -76,9 +95,22 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.QueryTables;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -87,10 +119,13 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.Arrays.asList;
+
 
 public class HiveRelOptUtil extends RelOptUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveRelOptUtil.class);
+  private static final int PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT = 1_000_000;
 
 
   /**
@@ -1092,11 +1127,133 @@ public class HiveRelOptUtil extends RelOptUtil {
     return planWriter.asString();
   }
 
-  public static String serializeToJSON(final RelNode rel) {
-    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
-    outJSONObject.put("CBOPlan", serializeWithPlanWriter(rel, new HiveRelJsonImpl()));
+  public static Optional<String> serializeToJSON(RelNode plan) {
+    if (!isSerializable(plan)) {
+      return Optional.empty();
+    }
 
-    return outJSONObject.toString();
+    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
+    outJSONObject.put("CBOPlan", serializeWithPlanWriter(plan, new HiveRelJsonImpl()));
+    String jsonPlan = outJSONObject.toString();
+    
+    if (stringSizeGreaterThan(jsonPlan, PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT)) {
+      return Optional.empty();
+    }
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan to serialize: \n{}", RelOptUtil.toString(plan));
+      LOG.debug("JSON plan: \n{}", jsonPlan);
+    }
+
+    return Optional.of(jsonPlan);
+  }
+
+  private static boolean isSerializable(RelNode plan) {
+    return HiveRelNode.stream(plan)
+            .noneMatch(node -> 
+                Objects.requireNonNull(node.getConvention()).getName().toLowerCase().contains("jdbc")
+            );
+  }
+
+  private static boolean stringSizeGreaterThan(String str, int length) {
+    return str.getBytes(Charset.defaultCharset()).length > length;
+  }
+
+  public static RelNode deserializePlan(HiveConf conf, String jsonPlan) throws IOException {
+    RelOptPlanner planner = HiveRelOptUtil.createPlanner(conf, StatsSources.getStatsSource(conf), false);
+    RexBuilder rexBuilder = new RexBuilder(new HiveTypeFactory());
+    RelOptCluster cluster = RelOptCluster.create(planner, rexBuilder);
+
+    RelOptHiveTableFactory tableFactory =
+        (tableAlias, tableName, rowType, nonPartitionColumns,
+         partitionColumns, virtualColumns) -> {
+          try {
+            Table tbl = Hive.get()
+                .getTable(tableName.getDb(), tableName.getTable(), tableName.getTableMetaRef(),
+                    true, true, false);
+
+            return new RelOptHiveTable(
+                null,
+                cluster.getTypeFactory(),
+                asList(tableName.getDb(), tableName.getTable()),
+                rowType,
+                tbl,
+                nonPartitionColumns,
+                partitionColumns,
+                virtualColumns,
+                conf,
+                new QueryTables(true),
+                new HashMap<>(),
+                new HashMap<>(),
+                new AtomicInteger()
+            );
+          } catch (HiveException e) {
+            throw new RuntimeException(e);
+          }
+        };
+    
+    RelPlanParser parser = new RelPlanParser(cluster, tableFactory);
+    RelNode deserializedPlan = parser.parse(jsonPlan);
+    // Apply partition pruning to compute partition list in HiveTableScan
+    deserializedPlan = applyPartitionPruning(conf, deserializedPlan, cluster, planner);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Deserialized plan: \n{}", RelOptUtil.toString(deserializedPlan));
+    }
+
+    return deserializedPlan;
+  }
+  
+  private static RelNode applyPartitionPruning(HiveConf conf, RelNode plan,
+                                               RelOptCluster cluster, RelOptPlanner planner) {
+    HepProgramBuilder programBuilder = new HepProgramBuilder();
+    programBuilder.addMatchOrder(HepMatchOrder.DEPTH_FIRST);
+    programBuilder.addRuleInstance(new HivePartitionPruneRule(conf));
+    HepProgram program = programBuilder.build();
+
+    RelMetadataProvider mdProvider = 
+        new HiveDefaultRelMetadataProvider(conf, CalcitePlanner.HIVE_REL_NODE_CLASSES).getMetadataProvider();
+    RexExecutor executorProvider = new HiveRexExecutorImpl();
+
+    HepPlanner hepPlanner = new HepPlanner(program, planner.getContext());
+    List<RelMetadataProvider> list = Lists.newArrayList();
+    list.add(mdProvider);
+    hepPlanner.registerMetadataProviders(list);
+    RelMetadataProvider chainedProvider =
+        ChainedRelMetadataProvider.of(list);
+    cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+    planner.setExecutor(executorProvider);
+    hepPlanner.setExecutor(executorProvider);
+
+    hepPlanner.setRoot(plan);
+
+    return hepPlanner.findBestExp();
+  }
+
+  public static RelOptPlanner createPlanner(
+      HiveConf conf, StatsSource statsSource, boolean isExplainPlan) {
+    final Double maxSplitSize = (double) HiveConf.getLongVar(
+        conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE);
+    final Double maxMemory = (double) HiveConf.getLongVar(
+        conf, HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
+    HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
+    HiveRulesRegistry registry = new HiveRulesRegistry();
+    Properties calciteConfigProperties = new Properties();
+    calciteConfigProperties.setProperty(
+        CalciteConnectionProperty.TIME_ZONE.camelName(),
+        conf.getLocalTimeZone().getId());
+    calciteConfigProperties.setProperty(
+        CalciteConnectionProperty.MATERIALIZATIONS_ENABLED.camelName(),
+        Boolean.FALSE.toString());
+    CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
+    boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS);
+    boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
+        HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
+    HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
+        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, isExplainPlan),
+        statsSource);
+    RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
+    planner.addListener(new RuleEventLogger());
+    return planner;
   }
 
   /**
