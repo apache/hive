@@ -1980,6 +1980,8 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Drop partitions based on an expression.
+   * @deprecated since 4.1.0, will be removed in 5.0.0
+   * use {@link #dropPartitions(TableName, RequestPartsSpec, PartitionDropOptions, EnvironmentContext)} instead.
    * @param dbName database name.
    * @param tblName table name.
    * @param partExprs I don't understand this fully, so can't completely explain it.  The second
@@ -1994,12 +1996,15 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException Thrift transport error.
    */
+  @Deprecated
   List<Partition> dropPartitions(String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
                                  boolean ifExists) throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Drop partitions based on an expression.
+   * @deprecated since 4.1.0, will be removed in 5.0.0
+   * use {@link #dropPartitions(TableName, RequestPartsSpec, PartitionDropOptions, EnvironmentContext)} instead.
    * @param catName catalog name.
    * @param dbName database name.
    * @param tblName table name.
@@ -2015,6 +2020,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException Thrift transport error.
    */
+  @Deprecated
   default List<Partition> dropPartitions(String catName, String dbName, String tblName,
                                          List<Pair<Integer, byte[]>> partExprs,
                                          boolean deleteData, boolean ifExists)
@@ -2027,6 +2033,8 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Drop partitions based on an expression.
+   * @deprecated since 4.1.0, will be removed in 5.0.0
+   * use {@link #dropPartitions(TableName, RequestPartsSpec, PartitionDropOptions, EnvironmentContext)} instead.
    * @param catName catalog name.
    * @param dbName database name.
    * @param tblName table name.
@@ -2044,6 +2052,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException Thrift transport error.
    */
+  @Deprecated
   default List<Partition> dropPartitions(String catName, String dbName, String tblName,
                                          List<Pair<Integer, byte[]>> partExprs, boolean deleteData,
                                          boolean ifExists, boolean needResults)
@@ -2057,6 +2066,8 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Generalization of dropPartitions(),
+   * @deprecated since 4.1.0, will be removed in 5.0.0
+   * use {@link #dropPartitions(TableName, RequestPartsSpec, PartitionDropOptions, EnvironmentContext)} instead.
    * @param dbName Name of the database
    * @param tblName Name of the table
    * @param partExprs Partition-specification
@@ -2066,6 +2077,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException On failure
    */
+  @Deprecated
   List<Partition> dropPartitions(String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
@@ -2073,6 +2085,8 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Generalization of dropPartitions(),
+   * @deprecated since 4.1.0, will be removed in 5.0.0
+   * use {@link #dropPartitions(TableName, RequestPartsSpec, PartitionDropOptions, EnvironmentContext)} instead.
    * @param catName catalog name
    * @param dbName Name of the database
    * @param tblName Name of the table
@@ -2083,14 +2097,33 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException error access the RDBMS or storage.
    * @throws TException On failure
    */
+  @Deprecated
   List<Partition> dropPartitions(String catName, String dbName, String tblName,
                                  List<Pair<Integer, byte[]>> partExprs,
                                  PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException;
 
+  /**
+   * @deprecated since 4.1.0, will be removed in 5.0.0
+   * use {@link #dropPartitions(TableName, RequestPartsSpec, PartitionDropOptions, EnvironmentContext)} instead.
+   */
+  @Deprecated
   List<Partition> dropPartitions(String catName, String dbName, String tblName,
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Drop partitions based on the request partitions specification.
+   * @param tableName Name of the table.
+   * @param partsSpec Specification of the partitions to drop.
+   * @param options Options for dropping partitions.
+   * @param context Environment context for the operation.
+   * @return List of Partitions dropped.
+   * @throws TException thrift transport error.
+   */
+  List<Partition> dropPartitions(TableName tableName,
+      RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
+      throws TException;
 
   /**
    * Drop a partition.

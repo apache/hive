@@ -24,6 +24,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import com.google.common.collect.ImmutableList;
 
@@ -217,13 +218,28 @@ public interface HiveMetaHook {
 
   /**
    * Called before dropping the partitions from the table in the metastore during ALTER TABLE DROP PARTITION.
+   * @deprecated since 4.1.0, will be removed in 5.0.0
+   * use {@link #preDropPartitions(Table, EnvironmentContext, RequestPartsSpec)} instead.
    * @param table table whose partition needs to be dropped
    * @param context context of the  operation
    * @param partExprs List of partition expressions
    * @throws MetaException
    */
+  @Deprecated
   default void preDropPartitions(Table table,
       EnvironmentContext context, List<Pair<Integer, byte[]>> partExprs) throws MetaException {
+    // Do nothing
+  }
+
+ /**
+   * Called before dropping the partitions from the table in the metastore during ALTER TABLE DROP PARTITION.
+   * @param table table whose partition needs to be dropped
+   * @param context context of the  operation
+   * @param partsSpec request partition specification
+   * @throws MetaException
+   */
+  default void preDropPartitions(Table table,
+      EnvironmentContext context, RequestPartsSpec partsSpec) throws MetaException {
     // Do nothing
   }
 }

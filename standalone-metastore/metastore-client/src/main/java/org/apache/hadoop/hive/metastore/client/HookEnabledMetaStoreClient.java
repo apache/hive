@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -311,18 +313,18 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+  public List<Partition> dropPartitions(TableName tableName,
+      RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws TException {
-    Table table = delegate.getTable(catName, dbName, tblName);
+    Table table = delegate.getTable(tableName.getCat(), tableName.getDb(), tableName.getTable());
     HiveMetaHook hook = getHook(table);
     if (hook != null) {
       if (context == null) {
         context = new EnvironmentContext();
       }
-      hook.preDropPartitions(table, context, partExprs);
+      hook.preDropPartitions(table, context, partsSpec);
     }
-    return delegate.dropPartitions(catName, dbName, tblName, partExprs, options, context);
+    return delegate.dropPartitions(tableName, partsSpec, options, context);
   }
 
   @Override
