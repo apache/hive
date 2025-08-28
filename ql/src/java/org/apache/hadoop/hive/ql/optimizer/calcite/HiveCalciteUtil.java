@@ -1249,7 +1249,7 @@ public class HiveCalciteUtil {
 
     for (RexNode node : expressions) {
       ImmutableBitSet inputBits = RelOptUtil.InputFinder.bits(node);
-      if (rightBitmap.contains(inputBits)) {
+      if (!inputBits.isEmpty() && rightBitmap.contains(inputBits)) {
         return true;
       }
     }

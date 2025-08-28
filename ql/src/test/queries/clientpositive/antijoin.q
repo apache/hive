@@ -25,6 +25,9 @@ explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key wh
 explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null;
 select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null;
 
+explain cbo select a.key, a.value, 123 from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null;
+select a.key, a.value, 123 from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null;
+
 explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value;
 explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value;
 select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value;

@@ -369,6 +369,40 @@ POSTHOOK: Input: default@t2_n33
 5	val_5
 5	val_5
 9	val_9
+PREHOOK: query: explain cbo select a.key, a.value, 123 from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select a.key, a.value, 123 from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0], value=[$1], _o__c2=[123])
+  HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
+    HiveProject(key=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, t2_n33]], table:alias=[b])
+
+PREHOOK: query: select a.key, a.value, 123 from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n55
+PREHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
+POSTHOOK: query: select a.key, a.value, 123 from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n55
+POSTHOOK: Input: default@t2_n33
+#### A masked pattern was here ####
+2	val_2	123
+5	val_5	123
+5	val_5	123
+5	val_5	123
+9	val_9	123
 PREHOOK: query: explain select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n55
