@@ -59,7 +59,6 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManagerFactory;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -74,7 +73,7 @@ import java.util.Map;
 public class SecurityUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
 
-  public static UserGroupInformation getUGI() throws LoginException, IOException {
+  public static UserGroupInformation getUGI() throws IOException {
     String doAs = System.getenv("HADOOP_USER_NAME");
     if (doAs != null && doAs.length() > 0) {
      /*
@@ -212,12 +211,8 @@ public class SecurityUtils {
    * @throws IOException if underlying Hadoop call throws LoginException
    */
   public static String getUser() throws IOException {
-    try {
-      UserGroupInformation ugi = getUGI();
-      return ugi.getUserName();
-    } catch (LoginException le) {
-      throw new IOException(le);
-    }
+    UserGroupInformation ugi = getUGI();
+    return ugi.getUserName();
   }
 
   public static TServerSocket getServerSocket(String hiveHost, int portNum) throws TTransportException {
