@@ -132,6 +132,15 @@ public interface IMetaStoreClient extends AutoCloseable {
   List<String> getCatalogs() throws MetaException, TException;
 
   /**
+   * Get a list of all catalogs known to the system.
+   * @param catalogPattern pattern for the catalog name to match
+   * @return list of catalog names
+   * @throws MetaException something went wrong, usually in the database.
+   * @throws TException general thrift exception.
+   */
+  List<String> getCatalogs(String catalogPattern) throws MetaException, TException;
+
+  /**
    * Drop a catalog.  Catalogs must be empty to be dropped, there is no cascade for dropping a
    * catalog.
    * @param catName name of the catalog to drop

@@ -121,7 +121,8 @@ public class IcebergTableOptimizer extends TableOptimizer {
   private Iterable<Table> getTables(Set<String> skipDBs, Set<String> skipTables) {
     try {
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-      return IcebergTableUtil.getTableFetcher(client, null, "*", null).getTables(skipDBs, skipTables, maxBatchSize);
+      return IcebergTableUtil.getTableFetcher(client, null, "*", null)
+          .getTables(null, skipDBs, skipTables, maxBatchSize);
     } catch (Exception e) {
       throw new RuntimeMetaException(e, "Error getting tables");
     }
