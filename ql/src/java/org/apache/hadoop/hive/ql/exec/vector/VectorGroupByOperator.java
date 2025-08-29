@@ -37,7 +37,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.IConfigureJobConf;
@@ -156,8 +155,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private transient long maxMemory;
 
   private float hashTableMemoryPercentage;
-
-  private boolean isLlap = false;
 
   // tracks overall access count in map agg buffer any given time.
   private long totalAccessCount;
@@ -450,7 +447,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
                 + "minReductionHashAggr:{} ", maxHtEntries, groupingSets.length,
             numRowsCompareHashAggr, minReductionHashAggr);
       }
-      computeMemoryLimits();
+      computeMemoryLimits(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez"));
       LOG.debug("using hash aggregation processing mode");
 
       if (keyWrappersBatch.getVectorHashKeyWrappers()[0] instanceof VectorHashKeyWrapperGeneral) {
@@ -616,7 +613,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     /**
      * Computes the memory limits for hash table flush (spill).
      */
-    private void computeMemoryLimits() {
+    private void computeMemoryLimits(boolean isTez) {
       JavaDataModel model = JavaDataModel.get();
 
       fixedHashEntrySize =
@@ -625,7 +622,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           aggregationBatchInfo.getAggregatorsFixedSize();
 
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-      maxMemory = isLlap ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
+      maxMemory = isTez ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
       hashTableMemoryPercentage = conf.getGroupByMemoryUsage();
       // Tests may leave this unitialized, so better set it to 1
       if (hashTableMemoryPercentage == 0.0f) {
@@ -634,9 +631,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       maxHashTblMemory = (int)(maxMemory * hashTableMemoryPercentage);
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("GBY memory limits - isLlap: {} maxMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
-          isLlap,
+      if (LOG.isInfoEnabled()) {
+        LOG.info("GBY memory limits - isTez: {} maxHashTblMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
+          isTez,
           LlapUtil.humanReadableByteCount(maxHashTblMemory),
           LlapUtil.humanReadableByteCount(maxMemory),
           hashTableMemoryPercentage,
@@ -1127,7 +1124,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    isLlap = LlapProxy.isDaemon();
     VectorExpression.doTransientInit(keyExpressions, hconf);
 
     List<ObjectInspector> objectInspectors = new ArrayList<>();
