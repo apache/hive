@@ -19,22 +19,24 @@ package org.apache.hadoop.hive.ql.secrets;
 
 import static org.junit.Assert.assertEquals;
 
-import com.amazonaws.secretsmanager.caching.SecretCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 
 import java.io.IOException;
 import java.net.URI;
 
 public class AWSSecretsManagerSecretSourceTest {
   private AWSSecretsManagerSecretSource source = new AWSSecretsManagerSecretSource();
-  private SecretCache cache;
+  private SecretsManagerClient mockClient;
 
   @Before
   public void setupTest() {
-    cache = Mockito.mock(SecretCache.class);
-    source.setCache(cache);
+    mockClient = Mockito.mock(SecretsManagerClient.class);
+    source.setClient(mockClient);
   }
 
   @Test
@@ -49,26 +51,33 @@ public class AWSSecretsManagerSecretSourceTest {
 
   @Test
   public void testAWSSecretsManagerSuccess() throws Exception {
-    // Test good case.
-    Mockito.when(cache.getSecretString("test")).thenReturn("{\"password\":\"super-secret\"}");
+    Mockito.when(mockClient.getSecretValue(GetSecretValueRequest.builder().secretId("test").build()))
+            .thenReturn(GetSecretValueResponse.builder().secretString("{\"password\":\"super-secret\"}").build());
+
     assertEquals("super-secret", source.getSecret(new URI("aws-sm:///test")));
   }
 
   @Test(expected = IOException.class)
   public void testAWSSecretsManagerServiceException() throws Exception {
-    Mockito.when(cache.getSecretString("bad")).thenThrow(RuntimeException.class);
+    Mockito.when(mockClient.getSecretValue(GetSecretValueRequest.builder().secretId("bad").build()))
+            .thenThrow(RuntimeException.class);
+
     source.getSecret(new URI("aws-sm:///bad"));
   }
 
   @Test(expected = IOException.class)
   public void testAWSSecretsManagerInvalidJson() throws Exception {
-    Mockito.when(cache.getSecretString("test")).thenReturn("{\"password\":\"super-secret\"");
+    Mockito.when(mockClient.getSecretValue(GetSecretValueRequest.builder().secretId("test").build()))
+            .thenReturn(GetSecretValueResponse.builder().secretString("{\"password\":\"super-secret\"").build());
+
     source.getSecret(new URI("aws-sm:///test"));
   }
 
   @Test(expected = IOException.class)
   public void testAWSSecretsManagerArrayJson() throws Exception {
-    Mockito.when(cache.getSecretString("test")).thenReturn("[]");
+    Mockito.when(mockClient.getSecretValue(GetSecretValueRequest.builder().secretId("test").build()))
+            .thenReturn(GetSecretValueResponse.builder().secretString("[]").build());
+
     source.getSecret(new URI("aws-sm:///test"));
   }
 }
