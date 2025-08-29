@@ -19,6 +19,12 @@ package org.apache.hadoop.hive.common.type;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -43,6 +49,8 @@ public class CalendarUtils {
   private static final Logger LOG = LoggerFactory.getLogger(CalendarUtils.class);
   public static final long SWITCHOVER_MILLIS;
   public static final long SWITCHOVER_DAYS;
+  public static final long SWITCHOVER_MICROS;
+  public static final long SWITCHOVER_DAYS_MICROS;
 
   private static SimpleDateFormat createFormatter(String fmt, boolean proleptic) {
     SimpleDateFormat result = new SimpleDateFormat(fmt);
@@ -56,22 +64,40 @@ public class CalendarUtils {
 
   private static final String DATE = "yyyy-MM-dd";
   private static final String TIME = DATE + " HH:mm:ss.SSS";
+  // Microsecond-precision pattern (6 digits)
+  private static final String TIME_MICROS = DATE + " HH:mm:ss.SSSSSS";
   private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
   private static final ThreadLocal<SimpleDateFormat> HYBRID_DATE_FORMAT =
       ThreadLocal.withInitial(() -> createFormatter(DATE, false));
+  private static final DateTimeFormatter HYBRID_DATE_FORMAT_MICROS =
+          DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
   private static final ThreadLocal<SimpleDateFormat> HYBRID_TIME_FORMAT =
       ThreadLocal.withInitial(() -> createFormatter(TIME, false));
+  private static final DateTimeFormatter HYBRID_TIME_FORMAT_MICROS =
+          DateTimeFormatter.ofPattern(TIME_MICROS).withZone(ZoneOffset.UTC);
 
   private static final ThreadLocal<SimpleDateFormat> PROLEPTIC_DATE_FORMAT =
       ThreadLocal.withInitial(() -> createFormatter(DATE, true));
+  private static final DateTimeFormatter PROLEPTIC_DATE_FORMAT_MICROS =
+          DateTimeFormatter.ofPattern(DATE).withZone(ZoneOffset.UTC);
   private static final ThreadLocal<SimpleDateFormat> PROLEPTIC_TIME_FORMAT =
       ThreadLocal.withInitial(() -> createFormatter(TIME, true));
+  private static final DateTimeFormatter PROLEPTIC_TIME_FORMAT_MICROS =
+          DateTimeFormatter.ofPattern(TIME_MICROS).withZone(ZoneOffset.UTC);
 
   static {
     // Get the last day where the two calendars agree with each other.
     try {
       SWITCHOVER_MILLIS = HYBRID_DATE_FORMAT.get().parse("1582-10-15").getTime();
       SWITCHOVER_DAYS = TimeUnit.MILLISECONDS.toDays(SWITCHOVER_MILLIS);
+
+      // For cases with microseconds precision
+      Instant switchoverInstant = LocalDate.parse("1582-10-15", HYBRID_DATE_FORMAT_MICROS)
+          .atStartOfDay(ZoneOffset.UTC)
+          .toInstant();
+      SWITCHOVER_MICROS = switchoverInstant.getEpochSecond() * 1_000_000L +
+          switchoverInstant.getNano() / 1000L;
+      SWITCHOVER_DAYS_MICROS = TimeUnit.MICROSECONDS.toDays(SWITCHOVER_MICROS);
     } catch (ParseException e) {
       throw new IllegalArgumentException("Can't parse switch over date", e);
     }
@@ -162,6 +188,39 @@ public class CalendarUtils {
   }
 
   /**
+   * Convert epoch microseconds from the hybrid Julian/Gregorian calendar to the
+   * proleptic Gregorian.
+   * @param hybridMicros Microseconds of epoch in the hybrid Julian/Gregorian
+   * @return Microseconds of epoch in the proleptic Gregorian
+   */
+  public static long convertTimeToProlepticMicros(long hybridMicros) {
+    long prolepticMicros = hybridMicros;
+    if (hybridMicros < SWITCHOVER_MICROS) {
+      // Convert microseconds to Instant
+      Instant instant = Instant.ofEpochSecond(
+              hybridMicros / 1_000_000L,
+              (hybridMicros % 1_000_000L) * 1_000L
+      );
+
+      // Format using hybrid formatter
+      String dateStr = HYBRID_TIME_FORMAT_MICROS.format(instant.atZone(ZoneOffset.UTC));
+
+      // Parse using proleptic formatter
+      try {
+        Instant prolepticInstant = LocalDateTime.parse(dateStr, PROLEPTIC_TIME_FORMAT_MICROS)
+                .atZone(ZoneOffset.UTC)
+                .toInstant();
+
+        prolepticMicros = prolepticInstant.getEpochSecond() * 1_000_000L +
+                prolepticInstant.getNano() / 1000L;
+      } catch (DateTimeParseException e) {
+        throw new IllegalArgumentException("Can't parse " + dateStr, e);
+      }
+    }
+    return prolepticMicros;
+  }
+
+  /**
    * Convert epoch millis from the proleptic Gregorian calendar to the hybrid
    * Julian/Gregorian.
    * @param proleptic millis of epoch in the proleptic Gregorian
@@ -178,6 +237,39 @@ public class CalendarUtils {
       }
     }
     return hybrid;
+  }
+
+  /**
+   * Convert epoch microseconds from the proleptic Gregorian calendar to the
+   * hybrid Julian/Gregorian.
+   * @param prolepticMicros Microseconds of epoch in the proleptic Gregorian
+   * @return Microseconds of epoch in the hybrid Julian/Gregorian
+   */
+  public static long convertTimeToHybridMicros(long prolepticMicros) {
+    long hybridMicros = prolepticMicros;
+    if (prolepticMicros < SWITCHOVER_MICROS) {
+      // Convert microseconds to Instant
+      Instant instant = Instant.ofEpochSecond(
+              prolepticMicros / 1_000_000L,
+              (prolepticMicros % 1_000_000L) * 1_000L
+      );
+
+      // Format using proleptic formatter
+      String dateStr = PROLEPTIC_TIME_FORMAT_MICROS.format(instant.atZone(ZoneOffset.UTC));
+
+      // Parse using hybrid formatter
+      try {
+        Instant hybridInstant = LocalDateTime.parse(dateStr, HYBRID_TIME_FORMAT_MICROS)
+                .atZone(ZoneOffset.UTC)
+                .toInstant();
+
+        hybridMicros = hybridInstant.getEpochSecond() * 1_000_000L +
+                hybridInstant.getNano() / 1000L;
+      } catch (DateTimeParseException e) {
+        throw new IllegalArgumentException("Can't parse " + dateStr, e);
+      }
+    }
+    return hybridMicros;
   }
 
   /**
