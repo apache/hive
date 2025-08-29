@@ -33,4 +33,4 @@ For the latest information about HCatalog, please visit our website at:
 
 and our wiki, at:
 
-   https://cwiki.apache.org/confluence/display/HCATALOG
+   https://hive.apache.org/docs/latest/hcatalog/hcatalog-base
