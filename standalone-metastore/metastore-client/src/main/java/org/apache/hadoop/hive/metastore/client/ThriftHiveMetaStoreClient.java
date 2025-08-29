@@ -762,6 +762,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
           LOG.error(errMsg, e);
         }
         if (isConnected) {
+          overlayMetaConfig();
           break;
         }
       }
@@ -789,6 +790,21 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     }
 
     snapshotActiveConf();
+  }
+
+  private void overlayMetaConfig() {
+    String overlayConfig = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METACONF_OVERLAY);
+    for (String entry : overlayConfig.split(",")) {
+      String confVal = conf.get(entry.trim());
+      if (!org.apache.commons.lang3.StringUtils.isBlank(confVal)) {
+        try {
+          setMetaConf(entry.trim(), confVal);
+        } catch (TException e) {
+          LOG.error(
+              "Failed to set metastore config for {} with value {}", entry.trim(), confVal, e);
+        }
+      }
+    }
   }
 
   // wraps the underlyingTransport in the appropriate transport based on mode of authentication

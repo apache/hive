@@ -272,9 +272,24 @@ public class SetProcessor implements CommandProcessor {
     }
     if (register) {
       ss.getOverriddenConfigurations().put(key, value);
+
+      if (metaConfOverlayList.contains(key)) {
+        try (Hive hive = Hive.get(ss.getConf())) {
+          // Resources will be closed automatically
+          hive.close(true);
+        } catch (Exception e) {
+          LOG.error("Error closing metastore connection", e);
+          throw new RuntimeException(e);
+        }
+      }
+
     }
     return result;
   }
+
+  // This is just temporary idea list. Will make this configurable later.
+  private static final Set<String> metaConfOverlayList =
+      Set.of("fs.s3a.endpoint", "fs.s3a.security.credential.provider.path");
 
   private SortedMap<String,String> propertiesToSortedMap(Properties p){
     SortedMap<String,String> sortedPropMap = new TreeMap<String,String>();
