@@ -116,9 +116,9 @@ POSTHOOK: Input: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 CBO PLAN:
-HiveProject(row__id=[$2], a=[CAST(30):INTEGER], b=[350], e=[$1])
-  HiveSemiJoin(condition=[true], joinType=[semi])
-    HiveProject(a=[CAST(30):INTEGER], e=[$2], ROW__ID=[$5])
+HiveProject(row__id=[$1], a=[CAST(30):INTEGER], b=[350], e=[$0])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(e=[$2], ROW__ID=[$5])
       HiveFilter(condition=[=($0, 30)])
         HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
     HiveProject($f0=[$0])
@@ -170,7 +170,7 @@ POSTHOOK: Input: default@othertlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 CBO PLAN:
-HiveProject(row__id=[$2], a=[$0], b=[450], e=[$1])
+HiveProject(ROW__ID=[$2], a=[$0], $f2=[450], e=[$1])
   HiveSemiJoin(condition=[=($0, $3)], joinType=[semi])
     HiveProject(a=[$0], e=[$2], ROW__ID=[$5])
       HiveFilter(condition=[<($0, 65)])
@@ -228,7 +228,7 @@ POSTHOOK: Input: default@othertlb
 POSTHOOK: Output: default@acidtlb
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0]])
-  HiveProject(row__id=[$1])
+  HiveProject(ROW__ID=[$1])
     HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
       HiveProject(a=[$0], ROW__ID=[$5])
         HiveFilter(condition=[IS NOT NULL($0)])
