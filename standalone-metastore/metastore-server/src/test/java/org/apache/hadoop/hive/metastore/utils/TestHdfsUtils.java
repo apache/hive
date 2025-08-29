@@ -33,6 +33,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -174,6 +175,13 @@ public class TestHdfsUtils {
     HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
   }
 
+  @Test (expected = FileNotFoundException.class)
+  public void nonExistentFile() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
+    Path p = new Path("/tmp/nosuchfile");
+    UserGroupInformation ugi = SecurityUtils.getUGI();
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
+  }
 
   @Test(expected = AccessControlException.class)
   public void accessPerssionFromCustomFilesystem() throws IOException {

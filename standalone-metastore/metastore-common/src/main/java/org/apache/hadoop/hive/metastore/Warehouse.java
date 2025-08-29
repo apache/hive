@@ -512,7 +512,8 @@ public class Warehouse {
       return false;
     }
     try {
-      HdfsUtils.checkFileAccess(path, conf, FsAction.WRITE);
+      FileSystem fs = getFs(path);
+      HdfsUtils.checkFileAccess(fs, path, FsAction.WRITE);
       return true;
     } catch (FileNotFoundException fnfe){
       // File named by path doesn't exist; nothing to validate.
