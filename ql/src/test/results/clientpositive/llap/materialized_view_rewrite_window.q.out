@@ -128,7 +128,7 @@ POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
 POSTHOOK: Output: database:arc_view
-POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: explain cbo
 select
@@ -438,7 +438,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
-POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: explain cbo
 select
@@ -749,7 +749,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 POSTHOOK: Output: arc_view@mv_tv_view_data_av1
-POSTHOOK: Lineage: mv_tv_view_data_av1.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av1.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av1.total EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: explain cbo
 select
@@ -859,7 +859,7 @@ POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: Output: database:arc_view
 POSTHOOK: Lineage: mv_tv_view_data_av2.program SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), ]
-POSTHOOK: Lineage: mv_tv_view_data_av2.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av2.total_views SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: insert into tv_view_data values ('scream3', 40000000)
 PREHOOK: type: QUERY
@@ -1044,7 +1044,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Output: arc_view@mv_tv_view_data_av2
 POSTHOOK: Lineage: mv_tv_view_data_av2.program SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), ]
-POSTHOOK: Lineage: mv_tv_view_data_av2.quartile SCRIPT [(tv_view_data)tv_view_data.FieldSchema(name:program, type:string, comment:null), (tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv_tv_view_data_av2.quartile EXPRESSION [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 POSTHOOK: Lineage: mv_tv_view_data_av2.total_views SIMPLE [(tv_view_data)tv_view_data.FieldSchema(name:total_views, type:bigint, comment:null), ]
 PREHOOK: query: select
   total_views `total_views`,
