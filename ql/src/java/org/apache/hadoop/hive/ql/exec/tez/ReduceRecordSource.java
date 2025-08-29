@@ -533,7 +533,7 @@ public class ReduceRecordSource implements RecordSource {
             + e.getMessage(), e);
       }
     }
-    return abort;
+    return !abort;
   }
 
   public ObjectInspector getObjectInspector() {

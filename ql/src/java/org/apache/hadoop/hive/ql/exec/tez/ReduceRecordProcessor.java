@@ -305,6 +305,19 @@ public class ReduceRecordProcessor extends RecordProcessor {
     } else {
       LOG.info("reducer not setup yet. abort not being forwarded");
     }
+    if (mergeWorkList != null) {
+      for (BaseWork redWork : mergeWorkList) {
+        ((ReduceWork) redWork).getReducer().abort();
+      }
+    }
+    if (reduceWork != null) {
+      List<HashTableDummyOperator> dummyOps = reduceWork.getDummyOps();
+      if (dummyOps != null) {
+        for (Operator<?> dummyOp : dummyOps) {
+          dummyOp.abort();
+        }
+      }
+    }
   }
 
   /**
@@ -343,16 +356,13 @@ public class ReduceRecordProcessor extends RecordProcessor {
     }
 
     try {
-      if (isAborted()) {
-        for (ReduceRecordSource rs : sources) {
-          if (!rs.close()) {
-            setAborted(false); // Preserving the old logic. Hmm...
-            break;
-          }
-        }
-      }
-
       boolean abort = isAborted();
+      for (ReduceRecordSource rs : sources) {
+        abort |= !rs.close();
+      }
+      if (abort) {
+        setAborted(true);
+      }
       reducer.close(abort);
       if (mergeWorkList != null) {
         for (BaseWork redWork : mergeWorkList) {
