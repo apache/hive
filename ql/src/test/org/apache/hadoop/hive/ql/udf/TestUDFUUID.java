@@ -33,12 +33,12 @@ public class TestUDFUUID {
   @Test
   public void testUUID() throws Exception {
     UDFUUID udf = new UDFUUID();
-    
+
     String id1 = udf.evaluate().toString();
     String id2 = udf.evaluate().toString();
-    
+
     assertFalse(id1.equals(id2));
-    
+
     assertEquals(id1.length(), 36);
     assertEquals(id2.length(), 36);
 
