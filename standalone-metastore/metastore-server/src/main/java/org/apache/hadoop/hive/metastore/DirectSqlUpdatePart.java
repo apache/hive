@@ -1367,7 +1367,7 @@ class DirectSqlUpdatePart {
 
     @Override
     public int hashCode() {
-      return (int)partitionId;
+      return Objects.hash(partitionId, colName, engine);
     }
 
     @Override
