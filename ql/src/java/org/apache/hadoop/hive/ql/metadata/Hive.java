@@ -6181,7 +6181,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<ColumnStatisticsObj> retv = null;
     try {
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
-        return tbl.getStorageHandler().getColStatistics(tbl);
+        return tbl.getStorageHandler().getColStatistics(tbl, colNames);
       }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
