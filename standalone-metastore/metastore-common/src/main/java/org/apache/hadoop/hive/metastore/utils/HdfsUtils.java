@@ -63,14 +63,13 @@ public class HdfsUtils {
 
   /**
    * Check the permissions on a file.
+   * @param fs Filesystem the file is contained in
    * @param path the file path
-   * @param conf the {@link Configuration} used when checking permissions
    * @param action action to be performed
    * @throws IOException If thrown by Hadoop
    */
-  public static void checkFileAccess(Path path, Configuration conf, FsAction action)
+  public static void checkFileAccess(FileSystem fs, Path path, FsAction action)
       throws IOException {
-    FileSystem fs = path.getFileSystem(conf);
     checkFileAccess(fs, path, action, SecurityUtils.getUGI());
   }
 
