@@ -24,76 +24,34 @@ SELECT * FROM tbl JOIN tbl tbl2 ON tbl.id = tbl2.id AND tbl.part = tbl2.part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+Plan optimized by CBO.
 
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Map 2 (CUSTOM_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: tbl
-                  filterExpr: (id is not null and part is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (id is not null and part is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: foid (type: string), part (type: string), id (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col1 (type: string), _col2 (type: string)
-                          1 _col1 (type: string), _col2 (type: string)
-                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                        input vertices:
-                          1 Map 2
-                        Statistics: Num rows: 2 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: tbl2
-                  filterExpr: (id is not null and part is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (id is not null and part is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: foid (type: string), part (type: string), id (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string), _col2 (type: string)
-                        null sort order: zz
-                        sort order: ++
-                        Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                        Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string)
-            Execution mode: vectorized
+Vertex dependency in root stage
+Map 1 <- Map 2 (CUSTOM_EDGE)
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 vectorized
+      File Output Operator [FS_53]
+        Map Join Operator [MAPJOIN_52] (rows=2 width=530)
+          BucketMapJoin:true,Conds:SEL_51._col1, _col2=RS_49._col1, _col2(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+        <-Map 2 [CUSTOM_EDGE] vectorized
+          MULTICAST [RS_49]
+            PartitionCols:_col2, _col1
+            Select Operator [SEL_48] (rows=2 width=265)
+              Output:["_col0","_col1","_col2"]
+              Filter Operator [FIL_47] (rows=2 width=265)
+                predicate:(id is not null and part is not null)
+                TableScan [TS_3] (rows=2 width=265)
+                  default@tbl,tbl2,Tbl:COMPLETE,Col:COMPLETE,Output:["foid","part","id"]
+        <-Select Operator [SEL_51] (rows=2 width=265)
+            Output:["_col0","_col1","_col2"]
+            Filter Operator [FIL_50] (rows=2 width=265)
+              predicate:(id is not null and part is not null)
+              TableScan [TS_0] (rows=2 width=265)
+                default@tbl,tbl,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:100,Grouping Partition Columns:["id","part"],Output:["foid","part","id"]
 
 PREHOOK: query: SELECT * FROM tbl JOIN tbl tbl2 ON tbl.id = tbl2.id AND tbl.part = tbl2.part
 PREHOOK: type: QUERY
