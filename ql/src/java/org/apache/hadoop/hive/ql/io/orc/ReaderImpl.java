@@ -35,6 +35,10 @@ public class ReaderImpl extends org.apache.orc.impl.ReaderImpl
 
   private final ObjectInspector inspector;
 
+  boolean isUTC() {
+    return useUTCTimestamp;
+  }
+  
   @Override
   public ObjectInspector getObjectInspector() {
     return inspector;

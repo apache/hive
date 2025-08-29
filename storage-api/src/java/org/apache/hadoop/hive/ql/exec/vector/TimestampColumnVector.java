@@ -40,6 +40,15 @@ import org.apache.hive.common.util.SuppressFBWarnings;
  * using the scratch timestamp, and then perhaps update the column vector row with a result.
  */
 public class TimestampColumnVector extends ColumnVector {
+  private static final ThreadLocal<Boolean> useUTC = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  public static void setUseUTC(Boolean isUTC) {
+    if (isUTC != null) {
+      useUTC.set(isUTC);
+    } else {
+      useUTC.remove();
+    }
+  }
 
   /*
    * The storage arrays for this column vector corresponds to the storage of a Timestamp:
@@ -85,7 +94,7 @@ public class TimestampColumnVector extends ColumnVector {
 
     scratchWritable = null;     // Allocated by caller.
 
-    isUTC = false;
+    isUTC = useUTC.get();
   }
 
   /**
