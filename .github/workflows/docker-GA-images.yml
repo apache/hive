@@ -85,7 +85,7 @@ jobs:
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             TEZ_VERSION=${{ env.TEZ_VERSION }}
-            BUILD_ENV=archive
+            BUILD_ENV=release
 
       - name: Build and push Standalone Metastore Image to docker hub
         uses: docker/build-push-action@v4
@@ -99,7 +99,7 @@ jobs:
             |
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
-            BUILD_ENV=archive      
+            BUILD_ENV=release      
 
   buildFromSource:
     if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
@@ -159,7 +159,7 @@ jobs:
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             TEZ_VERSION=${{ env.TEZ_VERSION }}
-            BUILD_ENV=buildarchive
+            BUILD_ENV=hybrid
 
       - name: Check for hive-standalone-metastore tar.gz
         run: ls ./standalone-metastore/packaging/target/
@@ -183,4 +183,4 @@ jobs:
             |
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
-            BUILD_ENV=buildarchive
+            BUILD_ENV=hybrid
