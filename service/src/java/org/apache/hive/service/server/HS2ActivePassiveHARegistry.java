@@ -83,7 +83,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
     String zkNameSpacePrefix = zkNameSpace + "-";
     return new HS2ActivePassiveHARegistry(null, zkNameSpacePrefix, LEADER_LATCH_PATH, principal, keytab,
-      isClient ? null : SASL_LOGIN_CONTEXT_NAME, conf, isClient);
+      isClient ? SASL_LOGIN_CONTEXT_NAME : null, conf, isClient);
   }
 
   private HS2ActivePassiveHARegistry(final String instanceName, final String zkNamespacePrefix,
