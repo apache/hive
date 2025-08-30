@@ -172,6 +172,7 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreUtil;
@@ -258,7 +259,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public HiveMetaHook getMetaHook() {
     // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
     // operation.
-    return StringUtils.isEmpty(MetastoreUtil.getCatalogType(conf)) ?
+    return StringUtils.isEmpty(CatalogUtils.getCatalogType(conf)) ?
         new HiveIcebergMetaHook(conf) : new BaseHiveIcebergMetaHook(conf);
   }
 

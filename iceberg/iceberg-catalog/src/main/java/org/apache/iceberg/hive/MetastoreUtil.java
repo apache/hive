@@ -21,10 +21,7 @@ package org.apache.iceberg.hive;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -36,7 +33,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseTable;
@@ -141,7 +137,7 @@ public class MetastoreUtil {
         HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
     HMSTablePropertyHelper.updateHmsTableForIcebergTable(metadata.metadataFileLocation(), result, metadata,
         null, true, maxHiveTablePropertySize, null);
-    result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, MetastoreUtil.getCatalogType(conf));
+    result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtils.getCatalogType(conf));
     result.setSd(getHiveStorageDescriptor(table));
     return result;
   }
@@ -164,36 +160,5 @@ public class MetastoreUtil {
     var result = new SerDeInfo("icebergSerde", DEFAULT_SERDE_CLASS, Maps.newHashMap());
     result.getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1"); // Default serialization format.
     return result;
-  }
-
-  public static String getCatalogName(Configuration conf) {
-    return Optional.ofNullable(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT)).orElse("");
-  }
-
-  public static String getCatalogType(Configuration conf) {
-    return getCatalogType(conf, getCatalogName(conf));
-  }
-
-  public static String getCatalogType(Configuration conf, Properties catalogProperties) {
-    return Optional.ofNullable(catalogProperties.getProperty(CatalogUtils.CATALOG_NAME))
-        .or(() -> Optional.ofNullable(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT)))
-        .map(catName -> getCatalogType(conf, catName))
-        .orElse("");
-  }
-
-  public static String getCatalogType(Configuration conf, String catName) {
-    return Optional.ofNullable(catName)
-        .filter(StringUtils::isNotEmpty)
-        .map(name -> String.format(CatalogUtils.CATALOG_TYPE_TEMPLATE, name))
-        .map(conf::get)
-        .orElse("");
-  }
-
-  public static String getCatalogImpl(Configuration conf, String catName) {
-    return Optional.ofNullable(catName)
-        .filter(StringUtils::isNotEmpty)
-        .map(name -> String.format(CatalogUtils.CATALOG_IMPL_TEMPLATE, name))
-        .map(conf::get)
-        .orElse("");
   }
 }

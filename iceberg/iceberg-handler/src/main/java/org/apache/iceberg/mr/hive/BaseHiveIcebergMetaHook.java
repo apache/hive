@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -57,7 +58,6 @@ import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -209,8 +209,8 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (!StringUtils.isEmpty(catalogName) && !Catalogs.ICEBERG_HADOOP_TABLE_NAME.equals(catalogName) &&
         !Catalogs.ICEBERG_DEFAULT_CATALOG_NAME.equals(catalogName)) {
 
-      boolean configsExist = !StringUtils.isEmpty(MetastoreUtil.getCatalogType(conf, catalogName)) ||
-          !StringUtils.isEmpty(MetastoreUtil.getCatalogImpl(conf, catalogName));
+      boolean configsExist = !StringUtils.isEmpty(CatalogUtils.getCatalogType(conf, catalogName)) ||
+          !StringUtils.isEmpty(CatalogUtils.getCatalogImpl(conf, catalogName));
 
       Preconditions.checkArgument(configsExist, "Catalog type or impl must be set for catalog: %s", catalogName);
     }
@@ -281,19 +281,17 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // If the table is not managed by Hive or Hadoop catalog, then the location should be set
-    if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
+    // If the table is not managed by Hive, Hadoop or REST catalog, then the location should be set
+    if (!Catalogs.hiveCatalog(conf, catalogProperties) &&
+        !CatalogUtil.ICEBERG_CATALOG_TYPE_REST.equals(CatalogUtils.getCatalogType(conf, catalogProperties))) {
       String location = (hmsTable.getSd() != null) ? hmsTable.getSd().getLocation() : null;
-      if (location == null) {
-        if (Catalogs.hadoopCatalog(conf, catalogProperties)) {
-          location = IcebergTableUtil.defaultWarehouseLocation(
-              TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()),
-              conf, catalogProperties);
-          hmsTable.getSd().setLocation(location);
-        } else if (StringUtils.isEmpty(MetastoreUtil.getCatalogType(conf, catalogProperties))) {
-          Preconditions.checkArgument(location != null, "Table location not set");
-        }
+      if (location == null && Catalogs.hadoopCatalog(conf, catalogProperties)) {
+        location = IcebergTableUtil.defaultWarehouseLocation(
+            TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()),
+            conf, catalogProperties);
+        hmsTable.getSd().setLocation(location);
       }
+      Preconditions.checkArgument(location != null, "Table location not set");
     }
 
     Map<String, String> hmsParams = hmsTable.getParameters();

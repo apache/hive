@@ -20,10 +20,13 @@
 package org.apache.iceberg.hive;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -119,5 +122,36 @@ public class CatalogUtils {
     });
 
     return catalogProperties;
+  }
+
+  public static String getCatalogName(Configuration conf) {
+    return Optional.ofNullable(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT)).orElse("");
+  }
+
+  public static String getCatalogType(Configuration conf) {
+    return getCatalogType(conf, CatalogUtils.getCatalogName(conf));
+  }
+
+  public static String getCatalogType(Configuration conf, Properties catalogProperties) {
+    return Optional.ofNullable(catalogProperties.getProperty(CatalogUtils.CATALOG_NAME))
+        .or(() -> Optional.ofNullable(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT)))
+        .map(catName -> getCatalogType(conf, catName))
+        .orElse("");
+  }
+
+  public static String getCatalogType(Configuration conf, String catName) {
+    return Optional.ofNullable(catName)
+        .filter(StringUtils::isNotEmpty)
+        .map(name -> String.format(CatalogUtils.CATALOG_TYPE_TEMPLATE, name))
+        .map(conf::get)
+        .orElse("");
+  }
+
+  public static String getCatalogImpl(Configuration conf, String catName) {
+    return Optional.ofNullable(catName)
+        .filter(StringUtils::isNotEmpty)
+        .map(name -> String.format(CatalogUtils.CATALOG_IMPL_TEMPLATE, name))
+        .map(conf::get)
+        .orElse("");
   }
 }

@@ -80,7 +80,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   public void reconnect()  {
     close();
     String catName = MetaStoreUtils.getDefaultCatalog(conf);
-    Map<String, String> properties = CatalogUtils.getCatalogProperties(conf, MetastoreUtil.getCatalogName(conf));
+    Map<String, String> properties = CatalogUtils.getCatalogProperties(conf, CatalogUtils.getCatalogName(conf));
     restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catName, properties, null);
   }
 
