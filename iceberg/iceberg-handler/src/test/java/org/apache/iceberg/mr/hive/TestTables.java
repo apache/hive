@@ -456,7 +456,7 @@ public abstract class TestTables {
       throws IOException {
     String identifier = identifier("default." + tableName);
     TestHelper helper = new TestHelper(new Configuration(configuration), tables(), identifier, schema,
-        partSpec, fileFormat, additionalTableProps, temp);
+        partSpec, fileFormat, additionalTableProps, temp.getRoot().toPath());
     helper.setOrder(order);
     Table table = helper.createTable();
 
@@ -479,7 +479,7 @@ public abstract class TestTables {
   public void appendIcebergTable(Configuration configuration, Table table, FileFormat format, StructLike partition,
       List<Record> records) throws IOException {
     TestHelper helper = new TestHelper(
-        configuration, null, null, null, null, format, temp);
+        configuration, null, null, null, null, format, temp.getRoot().toPath());
 
     helper.setTable(table);
     if (!records.isEmpty()) {

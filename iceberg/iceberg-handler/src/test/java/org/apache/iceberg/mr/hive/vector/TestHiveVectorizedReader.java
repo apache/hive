@@ -43,16 +43,15 @@ import org.apache.iceberg.types.Types;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.io.InputFile;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import static org.apache.iceberg.mr.hive.vector.TestHiveIcebergVectorization.prepareMockJob;
 import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
@@ -63,24 +62,24 @@ public class TestHiveVectorizedReader {
       required(2, "id", Types.LongType.get()),
       required(3, "date", Types.StringType.get()));
 
-  @Rule
-  public TemporaryFolder temp = new TemporaryFolder();
+  @TempDir
+  public java.nio.file.Path tempDir;
 
   private TestHelper helper;
   private InputFormatConfig.ConfigBuilder builder;
 
   private final FileFormat fileFormat = FileFormat.PARQUET;
 
-  @Before
+  @BeforeEach
   public void before() throws IOException, HiveException {
-    File location = temp.newFolder(fileFormat.name());
-    Assert.assertTrue(location.delete());
+    File location = tempDir.resolve(fileFormat.name()).toFile();
+    assertThat(location.mkdirs()).isTrue();
 
     Configuration conf = prepareMockJob(SCHEMA, new Path(location.toString()));
     conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     HadoopTables tables = new HadoopTables(conf);
 
-    helper = new TestHelper(conf, tables, location.toString(), SCHEMA, null, fileFormat, temp);
+    helper = new TestHelper(conf, tables, location.toString(), SCHEMA, null, fileFormat, tempDir);
     builder = new InputFormatConfig.ConfigBuilder(conf).readFrom(location.toString())
       .useHiveRows();
   }

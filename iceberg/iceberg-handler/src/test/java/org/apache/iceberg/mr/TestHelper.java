@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,19 +54,19 @@ public class TestHelper {
   private final Schema schema;
   private final PartitionSpec spec;
   private final FileFormat fileFormat;
-  private final TemporaryFolder tmp;
+  private final Path tmp;
   private final Map<String, String> tblProps;
   private SortOrder order;
 
   private Table table;
 
   public TestHelper(Configuration conf, Tables tables, String tableIdentifier, Schema schema, PartitionSpec spec,
-                    FileFormat fileFormat, TemporaryFolder tmp) {
-    this(conf, tables, tableIdentifier, schema, spec, fileFormat, ImmutableMap.of(), tmp);
+                    FileFormat fileFormat, Path temp) {
+    this(conf, tables, tableIdentifier, schema, spec, fileFormat, ImmutableMap.of(), temp);
   }
 
   public TestHelper(Configuration conf, Tables tables, String tableIdentifier, Schema schema, PartitionSpec spec,
-      FileFormat fileFormat, Map<String, String> tblProps, TemporaryFolder tmp) {
+      FileFormat fileFormat, Map<String, String> tblProps, Path temp) {
     this.conf = conf;
     this.tables = tables;
     this.tableIdentifier = tableIdentifier;
@@ -73,7 +74,7 @@ public class TestHelper {
     this.spec = spec;
     this.fileFormat = fileFormat;
     this.tblProps = tblProps;
-    this.tmp = tmp;
+    this.tmp = temp;
   }
 
   public void setTable(Table table) {

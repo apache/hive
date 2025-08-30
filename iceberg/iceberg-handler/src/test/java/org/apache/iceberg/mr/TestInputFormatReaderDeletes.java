@@ -36,12 +36,14 @@ import org.apache.iceberg.data.DeleteReadTests;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.util.StructLikeSet;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+import static org.assertj.core.api.Assertions.assertThat;
+
+@ParameterizedClass(name = "fileFormat = {0}, formatVersion = {1}, inputFormat={2}")
+@MethodSource("parameters")
 public class TestInputFormatReaderDeletes extends DeleteReadTests {
   private final Configuration conf = new Configuration();
   private final HadoopTables tables = new HadoopTables(conf);
@@ -51,7 +53,6 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
   private final String inputFormat;
   private final FileFormat fileFormat;
 
-  @Parameterized.Parameters(name = "fileFormat = {0}, formatVersion = {1}, inputFormat={2}")
   public static Object[][] parameters() {
     return new Object[][] {
         { FileFormat.PARQUET, 2, "IcebergInputFormat" },
@@ -65,7 +66,7 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
     };
   }
 
-  @Before
+  @BeforeEach
   @Override
   public void writeTestDataFile() throws IOException {
     conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
@@ -82,8 +83,8 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
   protected Table createTable(String name, Schema schema, PartitionSpec spec) throws IOException {
     Table table;
 
-    File location = temp.newFolder(inputFormat, fileFormat.name());
-    Assert.assertTrue(location.delete());
+    File location = temp.resolve(inputFormat).resolve(fileFormat.name()).toFile();
+    assertThat(location.mkdirs()).isTrue();
     helper = new TestHelper(conf, tables, location.toString(), schema, spec, fileFormat, temp);
     table = helper.createTable();
 
