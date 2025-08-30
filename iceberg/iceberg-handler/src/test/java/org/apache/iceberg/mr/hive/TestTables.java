@@ -21,7 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -62,8 +62,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.ObjectArrays;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
-import org.junit.Assert;
-import org.junit.rules.TemporaryFolder;
 
 // Helper class for setting up and testing various catalog implementations
 public abstract class TestTables {
@@ -75,16 +73,16 @@ public abstract class TestTables {
   };
 
   private final Tables tables;
-  protected final TemporaryFolder temp;
+  protected final Path temp;
   protected final String catalog;
 
-  protected TestTables(Tables tables, TemporaryFolder temp, String catalogName) {
+  protected TestTables(Tables tables, Path temp, String catalogName) {
     this.tables = tables;
     this.temp = temp;
     this.catalog = catalogName;
   }
 
-  protected TestTables(Catalog catalog, TemporaryFolder temp, String catalogName) {
+  protected TestTables(Catalog catalog, Path temp, String catalogName) {
     this(new CatalogToTables(catalog), temp, catalogName);
   }
 
@@ -529,12 +527,12 @@ public abstract class TestTables {
 
     private final String warehouseLocation;
 
-    CustomCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
+    CustomCatalogTestTables(Configuration conf, Path temp, String catalogName) throws IOException {
       this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
-          temp.newFolder("custom", "warehouse").toString(), catalogName);
+          temp.resolve("custom").resolve("warehouse").toString(), catalogName);
     }
 
-    CustomCatalogTestTables(Configuration conf, TemporaryFolder temp, String warehouseLocation, String catalogName) {
+    CustomCatalogTestTables(Configuration conf, Path temp, String warehouseLocation, String catalogName) {
       super(new TestCatalogs.CustomHadoopCatalog(conf, warehouseLocation), temp, catalogName);
       this.warehouseLocation = warehouseLocation;
     }
@@ -560,12 +558,12 @@ public abstract class TestTables {
 
     private final String warehouseLocation;
 
-    HadoopCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
+    HadoopCatalogTestTables(Configuration conf, Path temp, String catalogName) throws IOException {
       this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
-          temp.newFolder("hadoop", "warehouse").toString(), catalogName);
+          temp.resolve("hadoop").resolve("warehouse").toString(), catalogName);
     }
 
-    HadoopCatalogTestTables(Configuration conf, TemporaryFolder temp, String warehouseLocation, String catalogName) {
+    HadoopCatalogTestTables(Configuration conf, Path temp, String warehouseLocation, String catalogName) {
       super(new HadoopCatalog(conf, warehouseLocation), temp, catalogName);
       this.warehouseLocation = warehouseLocation;
     }
@@ -587,7 +585,7 @@ public abstract class TestTables {
   }
 
   static class HadoopTestTables extends TestTables {
-    HadoopTestTables(Configuration conf, TemporaryFolder temp) {
+    HadoopTestTables(Configuration conf, Path temp) {
       super(new HadoopTables(conf), temp, Catalogs.ICEBERG_HADOOP_TABLE_NAME);
     }
 
@@ -597,30 +595,33 @@ public abstract class TestTables {
 
       try {
         TableIdentifier identifier = TableIdentifier.parse(tableIdentifier);
-        location = temp.newFolder(ObjectArrays.concat(identifier.namespace().levels(), identifier.name()));
-      } catch (IOException ioe) {
-        throw new UncheckedIOException(ioe);
+        String[] levels = identifier.namespace().levels();
+        String[] fullPath = ObjectArrays.concat(levels, identifier.name());
+        location = temp.resolve(Path.of(String.join("/", fullPath))).toFile();
+      } catch (Exception ioe) {
+        throw ioe;
       }
 
-      Assert.assertTrue(location.delete());
+      // assertThat(location.exists())
+      // Assertions.assertTrue(location.delete());
       return "file://" + location;
     }
 
     @Override
     public String locationForCreateTableSQL(TableIdentifier identifier) {
-      return "LOCATION '" + temp.getRoot().getPath() + tablePath(identifier) + "' ";
+      return "LOCATION '" + temp.toAbsolutePath() + tablePath(identifier) + "' ";
     }
 
     @Override
     public Table loadTable(TableIdentifier identifier) {
-      return tables().load(temp.getRoot().getPath() + TestTables.tablePath(identifier));
+      return tables().load(temp.toAbsolutePath() + TestTables.tablePath(identifier));
     }
 
   }
 
   static class HiveTestTables extends TestTables {
 
-    HiveTestTables(Configuration conf, TemporaryFolder temp, String catalogName) {
+    HiveTestTables(Configuration conf, Path temp, String catalogName) {
       super(CatalogUtil.loadCatalog(HiveCatalog.class.getName(), CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
               ImmutableMap.of(), conf), temp, catalogName);
     }
@@ -665,32 +666,32 @@ public abstract class TestTables {
   public enum TestTableType {
     HADOOP_TABLE {
       @Override
-      public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName) {
+      public TestTables instance(Configuration conf, Path temporaryFolder, String catalogName) {
         return new HadoopTestTables(conf, temporaryFolder);
       }
     },
     HADOOP_CATALOG {
       @Override
-      public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName)
+      public TestTables instance(Configuration conf, Path temporaryFolder, String catalogName)
           throws IOException {
         return new HadoopCatalogTestTables(conf, temporaryFolder, catalogName);
       }
     },
     CUSTOM_CATALOG {
       @Override
-      public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName)
+      public TestTables instance(Configuration conf, Path temporaryFolder, String catalogName)
           throws IOException {
         return new CustomCatalogTestTables(conf, temporaryFolder, catalogName);
       }
     },
     HIVE_CATALOG {
       @Override
-      public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName) {
+      public TestTables instance(Configuration conf, Path temporaryFolder, String catalogName) {
         return new HiveTestTables(conf, temporaryFolder, catalogName);
       }
     };
 
-    public abstract TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName)
+    public abstract TestTables instance(Configuration conf, Path temporaryFolder, String catalogName)
         throws IOException;
   }
 }

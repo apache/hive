@@ -26,10 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.iceberg.MetadataColumns;
-import org.apache.iceberg.PartitionKey;
-import org.apache.iceberg.RowDelta;
-import org.apache.iceberg.Table;
+import org.apache.iceberg.*;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
@@ -38,16 +35,21 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.util.CharSequenceSet;
 import org.apache.iceberg.util.StructLikeSet;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+@ParameterizedClass(name = "fileFormat={0}, partitioned={1}, skipRowData={2}")
+@MethodSource("parameters")
 public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
   private static final Set<Integer> DELETED_IDS = Sets.newHashSet(29, 61, 89, 100, 122);
 
-  @Test
+  public TestHiveIcebergDeleteWriter(FileFormat pFileFormat, boolean pPartitioned, boolean pSkipRowData) {
+    super(pFileFormat, pPartitioned, pSkipRowData);
+  }
+
+    @Test
   public void testDelete() throws IOException {
     HiveIcebergWriter testWriter = deleteWriter();
 
@@ -71,13 +73,13 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     Collection<CharSequence> actualDataFiles = testWriter.files().referencedDataFiles();
     rowDelta.commit();
 
-    Assert.assertTrue("Actual :" + actualDataFiles + " Expected: " + expectedDataFiles,
-        actualDataFiles.containsAll(expectedDataFiles));
+    Assertions.assertTrue(
+       actualDataFiles.containsAll(expectedDataFiles), "Actual :" + actualDataFiles + " Expected: " + expectedDataFiles);
 
     StructLikeSet expected = rowSetWithoutIds(RECORDS, DELETED_IDS);
     StructLikeSet actual = actualRowSet(table);
 
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
+    Assertions.assertEquals(expected, actual, "Table should contain expected rows");
   }
 
   private static List<GenericRecord> deleteRecords(Table table, Set<Integer> idsToRemove)
