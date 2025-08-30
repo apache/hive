@@ -20,13 +20,23 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>hive-it-iceberg</artifactId>
+  <artifactId>hive-it-iceberg-qfile</artifactId>
   <packaging>jar</packaging>
   <name>Hive Integration - QFile Iceberg Tests</name>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+      <version>${dropwizard.version}</version>
+    </dependency>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- test intra-project -->
     <dependency>
@@ -450,6 +460,19 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>${mockito-core.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
+      <classifier>tests</classifier>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -49,6 +49,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.Catalogs;
@@ -542,10 +543,10 @@ public abstract class TestTables {
     @Override
     public Map<String, String> properties() {
       return ImmutableMap.of(
-              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.CATALOG_IMPL),
-              TestCatalogs.CustomHadoopCatalog.class.getName(),
-              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
-              warehouseLocation
+          CatalogUtils.catalogPropertyConfigKey(catalog, CatalogProperties.CATALOG_IMPL),
+          TestCatalogs.CustomHadoopCatalog.class.getName(),
+          CatalogUtils.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
+          warehouseLocation
       );
     }
 
@@ -573,10 +574,10 @@ public abstract class TestTables {
     @Override
     public Map<String, String> properties() {
       return ImmutableMap.of(
-              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
-              CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP,
-              InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
-              warehouseLocation
+          CatalogUtils.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
+          CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP,
+          CatalogUtils.catalogPropertyConfigKey(catalog, CatalogProperties.WAREHOUSE_LOCATION),
+          warehouseLocation
       );
     }
 
@@ -627,7 +628,7 @@ public abstract class TestTables {
 
     @Override
     public Map<String, String> properties() {
-      return ImmutableMap.of(InputFormatConfig.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
+      return ImmutableMap.of(CatalogUtils.catalogPropertyConfigKey(catalog, CatalogUtil.ICEBERG_CATALOG_TYPE),
               CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE);
     }
 
