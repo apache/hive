@@ -123,7 +123,7 @@ public class HiveIcebergStorageHandlerTestUtils {
 
   static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp,
                                String catalogName) throws IOException {
-    return testTableType.instance(shell.metastore().hiveConf(), temp.getRoot().toPath(), catalogName);
+    return testTableType.instance(shell.metastore().hiveConf(), temp, catalogName);
   }
 
   static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp) {
