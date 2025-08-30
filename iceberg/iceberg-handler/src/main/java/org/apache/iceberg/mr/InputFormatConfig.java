@@ -205,18 +205,6 @@ public class InputFormatConfig {
     return conf.getBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS, false);
   }
 
-  /**
-   * Get Hadoop config key of a catalog property based on catalog name
-   * @param catalogName catalog name
-   * @param catalogProperty catalog property, can be any custom property,
-   *                        a commonly used list of properties can be found
-   *                        at {@link org.apache.iceberg.CatalogProperties}
-   * @return Hadoop config key of a catalog property for the catalog name
-   */
-  public static String catalogPropertyConfigKey(String catalogName, String catalogProperty) {
-    return String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
-  }
-
   private static Schema schema(Configuration conf, String key) {
     String json = conf.get(key);
     return json == null ? null : SchemaParser.fromJson(json);

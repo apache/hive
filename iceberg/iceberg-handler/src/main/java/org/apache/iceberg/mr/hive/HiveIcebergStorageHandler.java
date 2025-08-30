@@ -131,6 +131,7 @@ import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataOperations;
 import org.apache.iceberg.ExpireSnapshots;
@@ -259,7 +260,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public HiveMetaHook getMetaHook() {
     // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
     // operation.
-    return StringUtils.isEmpty(CatalogUtils.getCatalogType(conf)) ?
+    String catalogType = CatalogUtils.getCatalogType(conf);
+    return StringUtils.isEmpty(catalogType) || CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equals(catalogType) ?
         new HiveIcebergMetaHook(conf) : new BaseHiveIcebergMetaHook(conf);
   }
 

@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -38,9 +39,10 @@ public class CatalogUtils {
   public static final String CATALOG_NAME = "iceberg.catalog";
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
   public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
-  public static final String CATALOG_TYPE_TEMPLATE = "iceberg.catalog.%s.type";
   public static final String CATALOG_IMPL_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
   public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
+  public static final String ICEBERG_HADOOP_TABLE_NAME = "location_based_table";
+  public static final String NO_CATALOG_TYPE = "no catalog";
   public static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet.of(
       // We don't want to push down the metadata location props to Iceberg from HMS,
       // since the snapshot pointer in HMS would always be one step ahead
@@ -125,7 +127,7 @@ public class CatalogUtils {
   }
 
   public static String getCatalogName(Configuration conf) {
-    return Optional.ofNullable(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT)).orElse("");
+    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
   }
 
   public static String getCatalogType(Configuration conf) {
@@ -136,15 +138,47 @@ public class CatalogUtils {
     return Optional.ofNullable(catalogProperties.getProperty(CatalogUtils.CATALOG_NAME))
         .or(() -> Optional.ofNullable(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT)))
         .map(catName -> getCatalogType(conf, catName))
-        .orElse("");
+        .orElse(null);
   }
 
-  public static String getCatalogType(Configuration conf, String catName) {
-    return Optional.ofNullable(catName)
-        .filter(StringUtils::isNotEmpty)
-        .map(name -> String.format(CatalogUtils.CATALOG_TYPE_TEMPLATE, name))
-        .map(conf::get)
-        .orElse("");
+  /**
+   * Get Hadoop config key of a catalog property based on catalog name
+   * @param catalogName catalog name
+   * @param catalogProperty catalog property, can be any custom property,
+   *                        a commonly used list of properties can be found
+   *                        at {@link org.apache.iceberg.CatalogProperties}
+   * @return Hadoop config key of a catalog property for the catalog name
+   */
+  public static String catalogPropertyConfigKey(String catalogName, String catalogProperty) {
+    return String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
+  }
+
+  /**
+   * Return the catalog type based on the catalog name.
+   * <p>
+   * See Catalogs documentation for catalog type resolution strategy.
+   *
+   * @param conf global hive configuration
+   * @param catalogName name of the catalog
+   * @return type of the catalog, can be null
+   */
+  public static String getCatalogType(Configuration conf, String catalogName) {
+    if (catalogName != null) {
+      String catalogType = conf.get(catalogPropertyConfigKey(
+          catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE));
+      if (catalogName.equals(ICEBERG_HADOOP_TABLE_NAME)) {
+        return NO_CATALOG_TYPE;
+      } else {
+        return catalogType;
+      }
+    } else {
+      String catalogType = conf.get(CatalogUtil.ICEBERG_CATALOG_TYPE);
+      if (catalogType != null && catalogType.equals(LOCATION)) {
+        return NO_CATALOG_TYPE;
+      } else {
+        return catalogType;
+      }
+    }
   }
 
   public static String getCatalogImpl(Configuration conf, String catName) {

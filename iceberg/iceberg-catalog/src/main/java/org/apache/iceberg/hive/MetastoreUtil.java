@@ -22,6 +22,7 @@ package org.apache.iceberg.hive;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -137,7 +138,10 @@ public class MetastoreUtil {
         HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
     HMSTablePropertyHelper.updateHmsTableForIcebergTable(metadata.metadataFileLocation(), result, metadata,
         null, true, maxHiveTablePropertySize, null);
-    result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtils.getCatalogType(conf));
+    String catalogType = CatalogUtils.getCatalogType(conf);
+    if (!StringUtils.isEmpty(catalogType) && !CatalogUtils.NO_CATALOG_TYPE.equals(catalogType)) {
+      result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtils.getCatalogType(conf));
+    }
     result.setSd(getHiveStorageDescriptor(table));
     return result;
   }

@@ -189,11 +189,11 @@ public final class Catalogs {
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    String catalogType = getCatalogType(conf, catalogName);
+    String catalogType = CatalogUtils.getCatalogType(conf, catalogName);
     if (catalogType != null) {
       return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
     }
-    catalogType = getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
+    catalogType = CatalogUtils.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
     if (catalogType != null) {
       return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
     }
@@ -202,11 +202,11 @@ public final class Catalogs {
 
   public static boolean hadoopCatalog(Configuration conf, Properties props) {
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    String catalogType = getCatalogType(conf, catalogName);
+    String catalogType = CatalogUtils.getCatalogType(conf, catalogName);
     if (catalogType != null) {
       return CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP.equalsIgnoreCase(catalogType);
     }
-    catalogType = getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
+    catalogType = CatalogUtils.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
     if (catalogType != null) {
       return CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP.equalsIgnoreCase(catalogType);
     }
@@ -253,41 +253,13 @@ public final class Catalogs {
   }
 
   static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
-    String catalogType = getCatalogType(conf, catalogName);
+    String catalogType = CatalogUtils.getCatalogType(conf, catalogName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {
       return Optional.empty();
     } else {
       String name = catalogName == null ? ICEBERG_DEFAULT_CATALOG_NAME : catalogName;
       return Optional.of(CatalogUtil.buildIcebergCatalog(name,
           CatalogUtils.getCatalogProperties(conf, name), conf));
-    }
-  }
-
-  /**
-   * Return the catalog type based on the catalog name.
-   * <p>
-   * See {@link Catalogs} documentation for catalog type resolution strategy.
-   *
-   * @param conf global hive configuration
-   * @param catalogName name of the catalog
-   * @return type of the catalog, can be null
-   */
-  private static String getCatalogType(Configuration conf, String catalogName) {
-    if (catalogName != null) {
-      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey(
-          catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE));
-      if (catalogName.equals(ICEBERG_HADOOP_TABLE_NAME)) {
-        return NO_CATALOG_TYPE;
-      } else {
-        return catalogType;
-      }
-    } else {
-      String catalogType = conf.get(CatalogUtil.ICEBERG_CATALOG_TYPE);
-      if (catalogType != null && catalogType.equals(LOCATION)) {
-        return NO_CATALOG_TYPE;
-      } else {
-        return catalogType;
-      }
     }
   }
 

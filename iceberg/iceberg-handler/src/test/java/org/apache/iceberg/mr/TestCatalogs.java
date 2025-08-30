@@ -210,7 +210,7 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogHive() {
     String catalogName = "barCatalog";
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
         CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE);
     Optional<Catalog> hiveCatalog = Catalogs.loadCatalog(conf, catalogName);
     Assert.assertTrue(hiveCatalog.isPresent());
@@ -223,9 +223,9 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogHadoop() {
     String catalogName = "barCatalog";
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
         CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP);
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
         "/tmp/mylocation");
     Optional<Catalog> hadoopCatalog = Catalogs.loadCatalog(conf, catalogName);
     Assert.assertTrue(hadoopCatalog.isPresent());
@@ -239,9 +239,9 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogCustom() {
     String catalogName = "barCatalog";
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
         CustomHadoopCatalog.class.getName());
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
         "/tmp/mylocation");
     Optional<Catalog> customHadoopCatalog = Catalogs.loadCatalog(conf, catalogName);
     Assert.assertTrue(customHadoopCatalog.isPresent());
@@ -259,7 +259,7 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogUnknown() {
     String catalogName = "barCatalog";
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE), "fooType");
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE), "fooType");
 
     Assertions.assertThatThrownBy(() -> Catalogs.loadCatalog(conf, catalogName))
         .isInstanceOf(UnsupportedOperationException.class)
@@ -302,9 +302,9 @@ public class TestCatalogs {
   }
 
   private void setCustomCatalogProperties(String catalogName, String warehouseLocation) {
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
         warehouseLocation);
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
+    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
         CustomHadoopCatalog.class.getName());
     conf.set(InputFormatConfig.CATALOG_NAME, catalogName);
   }
