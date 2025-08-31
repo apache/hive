@@ -5643,7 +5643,8 @@ public class HiveConf extends Configuration {
             "hive.zookeeper.ssl.truststore.type," +
             "hive.iceberg.allow.datafiles.in.table.location.only," +
             "hive.hook.proto.base-directory," +
-            "hive.rewrite.data.policy",
+            "hive.rewrite.data.policy," +
+            "hive.query.history.enabled", // Query History service is initialized on HS2 startup (HIVE-29170)
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
