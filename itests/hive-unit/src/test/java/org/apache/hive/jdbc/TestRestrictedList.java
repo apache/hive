@@ -112,6 +112,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.iceberg.allow.datafiles.in.table.location.only");
     addToExpectedRestrictedMap("hive.hook.proto.base-directory");
     addToExpectedRestrictedMap("hive.rewrite.data.policy");
+    addToExpectedRestrictedMap("hive.query.history.enabled");
 
     checkRestrictedListMatch();
   }
