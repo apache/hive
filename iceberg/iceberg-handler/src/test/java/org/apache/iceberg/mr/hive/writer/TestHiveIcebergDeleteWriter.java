@@ -26,7 +26,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.iceberg.*;
+import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.MetadataColumns;
+import org.apache.iceberg.PartitionKey;
+import org.apache.iceberg.RowDelta;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
@@ -49,7 +53,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     super(pFileFormat, pPartitioned, pSkipRowData);
   }
 
-    @Test
+  @Test
   public void testDelete() throws IOException {
     HiveIcebergWriter testWriter = deleteWriter();
 
@@ -73,8 +77,8 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     Collection<CharSequence> actualDataFiles = testWriter.files().referencedDataFiles();
     rowDelta.commit();
 
-    Assertions.assertTrue(
-       actualDataFiles.containsAll(expectedDataFiles), "Actual :" + actualDataFiles + " Expected: " + expectedDataFiles);
+    Assertions.assertTrue(actualDataFiles.containsAll(expectedDataFiles),
+        "Actual :" + actualDataFiles + " Expected: " + expectedDataFiles);
 
     StructLikeSet expected = rowSetWithoutIds(RECORDS, DELETED_IDS);
     StructLikeSet actual = actualRowSet(table);

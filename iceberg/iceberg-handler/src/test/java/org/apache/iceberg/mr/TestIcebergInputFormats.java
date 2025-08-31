@@ -405,14 +405,14 @@ public class TestIcebergInputFormats {
     mapWork.setVectorMode(true);
     mapWork.deriveLlap(job, false);
 
-    assertTrue(
-       mapWork.getCacheAffinity(), "Cache affinity should be set for HiveIcebergInputFormat when LLAP and vectorization is enabled");
+    assertTrue(mapWork.getCacheAffinity(),
+        "Cache affinity should be set for HiveIcebergInputFormat when LLAP and vectorization is enabled");
 
     mapWork.setVectorMode(false);
     mapWork.deriveLlap(job, false);
 
-    assertFalse(
-       mapWork.getCacheAffinity(), "Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not");
+    assertFalse(mapWork.getCacheAffinity(),
+        "Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not");
   }
 
   @Test

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
