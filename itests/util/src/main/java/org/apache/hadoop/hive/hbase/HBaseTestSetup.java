@@ -108,6 +108,8 @@ public class HBaseTestSetup extends QTestSetup {
     Configuration hbaseConf = HBaseConfiguration.create(conf);
     // A workaround for HBASE-28908. Should be removed once HBase 2.7.0 is released & HIVE-28740 is fixed.
     hbaseConf.set("hbase.wal.provider", "filesystem");
+    hbaseConf.set("hbase.master.info.port", "-1");
+    hbaseConf.set("hbase.regionserver.info.port", "-1");
     util = new HBaseTestingUtility(hbaseConf);
 
     util.startMiniDFSCluster(1);

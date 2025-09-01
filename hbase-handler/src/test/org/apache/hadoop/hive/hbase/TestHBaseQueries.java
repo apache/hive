@@ -62,6 +62,8 @@ public class TestHBaseQueries {
     zooKeeperCluster = new MiniZooKeeperCluster();
     int zkPort = zooKeeperCluster.startup(tmpDir);
     baseConf.setInt("hbase.zookeeper.property.clientPort", zkPort);
+    baseConf.setInt("hbase.master.info.port", -1);
+    baseConf.setInt("hbase.regionserver.info.port", -1);
 
     // set up HBase
     baseConf.setBoolean("hbase.netty.nativetransport", false);
