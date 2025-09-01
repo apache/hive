@@ -97,7 +97,7 @@ public class HiveMetaStoreUtils {
       deserializer.initialize(conf, properties, null);
     } catch (SerDeException e) {
       if (!skipConfError) {
-        LOG.error("error in initSerDe: " + e.getClass().getName() + " " + e.getMessage(), e);
+        LOG.error("error in initSerDe: {} {}", e.getClass().getName(), e.getMessage(), e);
         throw new MetaException(e.getClass().getName() + " " + e.getMessage());
       }
     }
@@ -141,8 +141,7 @@ public class HiveMetaStoreUtils {
     } catch (RuntimeException e) {
       throw e;
     } catch (Throwable e) {
-      LOG.error("error in initSerDe: " + e.getClass().getName() + " "
-          + e.getMessage(), e);
+      LOG.error("error in initSerDe: {} {}", e.getClass().getName(), e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
     }
   }

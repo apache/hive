@@ -383,7 +383,7 @@ class EncodedReaderImpl implements EncodedReader {
     // 1.1. Figure out which columns have a present stream
     boolean[] hasNull = findPresentStreamsByColumn(streamList, types);
     if (isTracingEnabled) {
-      LOG.trace("The following columns have PRESENT streams: " + arrayToString(hasNull));
+      LOG.trace("The following columns have PRESENT streams: {}", arrayToString(hasNull));
     }
 
     // We assume stream list is sorted by column and that non-data
@@ -397,7 +397,7 @@ class EncodedReaderImpl implements EncodedReader {
       ColumnEncoding enc = encodings.get(i);
       colCtxs[i] = new ColumnReadContext(i, enc, indexes[i], ++colRgIx);
       if (isTracingEnabled) {
-        LOG.trace("Creating context: " + colCtxs[i].toString());
+        LOG.trace("Creating context: {}", colCtxs[i].toString());
       }
       trace.logColumnRead(i, colRgIx, enc.getKind());
     }
@@ -414,8 +414,7 @@ class EncodedReaderImpl implements EncodedReader {
       hasIndexOnlyCols = hasIndexOnlyCols || (isIndexCol && physicalFileIncludes[colIx]);
       if (!physicalFileIncludes[colIx] || isIndexCol) {
         if (isTracingEnabled) {
-          LOG.trace("Skipping stream for column " + colIx + ": "
-              + streamKind + " at " + offset + ", " + length);
+          LOG.trace("Skipping stream for column {}: {} at {}, {}", colIx, streamKind, offset, length);
         }
         trace.logSkipStream(colIx, streamKind, offset, length);
         offset += length;
@@ -427,14 +426,14 @@ class EncodedReaderImpl implements EncodedReader {
           fileSchema.findSubtype(colIx).getCategory(), streamKind, isCompressed, hasNull[colIx]);
       ctx.addStream(offset, stream, indexIx);
       if (isTracingEnabled) {
-        LOG.trace("Adding stream for column " + colIx + ": " + streamKind + " at " + offset
-            + ", " + length + ", index position " + indexIx);
+        LOG.trace("Adding stream for column {}: {} at {}, {}, index position {}",
+                colIx, streamKind, offset, length, indexIx);
       }
       if (rgs == null || RecordReaderUtils.isDictionary(streamKind, encodings.get(colIx))) {
         trace.logAddStream(colIx, streamKind, offset, length, indexIx, true);
         addEntireStreamToRanges(offset, length, listToRead, true);
         if (isTracingEnabled) {
-          LOG.trace("Will read whole stream " + streamKind + "; added to " + listToRead.getTail());
+          LOG.trace("Will read whole stream {}; added to {}", streamKind, listToRead.getTail());
         }
       } else {
         trace.logAddStream(colIx, streamKind, offset, length, indexIx, false);
@@ -538,8 +537,8 @@ class EncodedReaderImpl implements EncodedReader {
                   // This stream is for entire stripe and needed for every RG; uncompress once and reuse.
                   if (sctx.stripeLevelStream == null) {
                     if (isTracingEnabled) {
-                      LOG.trace("Getting stripe-level stream [" + sctx.kind + ", " + ctx.encoding + "] for"
-                          + " column " + ctx.colIx + " RG " + rgIx + " at " + sctx.offset + ", " + sctx.length);
+                      LOG.trace("Getting stripe-level stream [{}, {}] for column {} RG {} at {}, {}",
+                          sctx.kind, ctx.encoding, ctx.colIx, rgIx, sctx.offset, sctx.length);
                     }
                     trace.logStartStripeStream(sctx.kind);
                     sctx.stripeLevelStream = POOLS.csdPool.take();
@@ -615,8 +614,7 @@ class EncodedReaderImpl implements EncodedReader {
       }
 
       if (isTracingEnabled) {
-        LOG.trace("Disk ranges after preparing all the data "
-            + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+        LOG.trace("Disk ranges after preparing all the data {}", RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
       trace.logRanges(fileKey, stripeOffset, toRead.next, RangesSrc.PREREAD);
       hasError = false;

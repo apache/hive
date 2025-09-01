@@ -195,7 +195,7 @@ public class KillQueryImpl implements KillQuery {
       if (!onlyLocal && killQueryZookeeperManager != null &&
           conf.getBoolVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_KILLQUERY_ENABLE)) {
         try {
-          LOG.debug("Killing query with zookeeper coordination: " + queryIdOrTag);
+          LOG.debug("Killing query with zookeeper coordination: {}", queryIdOrTag);
           killQueryZookeeperManager
               .killQuery(queryIdOrTag, SessionState.get().getAuthenticator().getUserName(), isAdmin());
         } catch (IOException e) {

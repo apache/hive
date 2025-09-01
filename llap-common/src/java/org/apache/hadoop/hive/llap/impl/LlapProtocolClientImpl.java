@@ -148,7 +148,7 @@ public class LlapProtocolClientImpl implements LlapProtocolBlockingPB {
 
   public LlapProtocolBlockingPB createProxy() throws IOException {
     RPC.setProtocolEngine(conf, LlapProtocolBlockingPB.class, ProtobufRpcEngine.class);
-    LOG.info("Creating protocol proxy as " + ugi);
+    LOG.info("Creating protocol proxy as {}", ugi);
     if (ugi == null) return createProxyInternal();
     try {
       return ugi.doAs(new PrivilegedExceptionAction<LlapProtocolBlockingPB>() {

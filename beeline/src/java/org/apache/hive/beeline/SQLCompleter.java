@@ -55,7 +55,7 @@ class SQLCompleter extends MatchingStringsCompleter {
     try {
       keywords += "," + beeLine.getDatabaseConnection().getDatabaseMetaData().getSQLKeywords();
     } catch (Exception e) {
-      LOG.debug("fail to get SQL key words from database metadata due to the exception: " + e, e);
+      LOG.debug("fail to get SQL key words from database metadata due to the exception: {}", e);
     }
     try {
       keywords += "," + beeLine.getDatabaseConnection().getDatabaseMetaData().getStringFunctions();

@@ -128,11 +128,9 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
       timestampFormats = Arrays.asList(timestampFormatsArray);
     }
 
-    LOG.debug(serdeName + " initialized with: columnNames="
-        + columnNames + " columnTypes=" + columnTypes
-        + " separator=" + Arrays.asList(separators)
-        + " nullstring=" + nullString + " lastColumnTakesRest="
-        + lastColumnTakesRest + " timestampFormats=" + timestampFormats);
+    LOG.debug("{} initialized with: columnNames={} columnTypes={} separator={} nullstring={}" +
+                    "lastColumnTakesRest={} timestampFormats={}", serdeName, columnNames, columnTypes,
+            Arrays.asList(separators), nullString, lastColumnTakesRest, timestampFormats);
   }
 
   /**

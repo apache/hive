@@ -85,7 +85,7 @@ public interface HiveOperationsBase {
     try {
       return metaClients().run(client -> client.getTable(database(), table()));
     } catch (NoSuchObjectException nte) {
-      LOG.trace("Table not found {}", database() + "." + table(), nte);
+      LOG.trace("Table not found {}.{}", database(), table(), nte);
       return null;
     }
   }

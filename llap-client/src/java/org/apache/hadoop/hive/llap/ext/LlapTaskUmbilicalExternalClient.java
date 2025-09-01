@@ -185,7 +185,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
 
       @Override
       public void setResponse(TerminateFragmentResponseProto response) {
-        LOG.debug("Received terminate response for " + taskAttemptId);
+        LOG.debug("Received terminate response for {}", taskAttemptId);
       }
 
       @Override
@@ -311,7 +311,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
     LlapTaskUmbilicalExternalClient prevVal =
         umbilicalServer.umbilicalProtocol.registeredClients.putIfAbsent(requestInfo.taskAttemptId, this);
     if (prevVal != null) {
-      LOG.warn("Unexpected - fragment " + requestInfo.taskAttemptId + " is already registered!");
+      LOG.warn("Unexpected - fragment {} is already registered!", requestInfo.taskAttemptId);
     }
     umbilicalServer.llapTaskUmbilicalServer.addTokenForJob(tokenIdentifier, sessionToken);
   }
@@ -390,7 +390,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
 
       for (LlapTaskUmbilicalExternalClient timedOutTask : timedOutTasks) {
         String taskAttemptId = timedOutTask.requestInfo.taskAttemptId;
-        LOG.info("Running taskAttemptId " + taskAttemptId + " timed out");
+        LOG.info("Running taskAttemptId {} timed out", taskAttemptId);
         timedOutTask.unregisterClient();
         timedOutTask.responder.heartbeatTimeout(taskAttemptId);
       }
@@ -447,7 +447,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
       LlapTaskUmbilicalExternalClient client = registeredClients.get(taskAttemptIdString);
       if (client == null) {
         // Heartbeat is from a task that we are not currently tracking.
-        LOG.info("Unexpected heartbeat from " + taskAttemptIdString);
+        LOG.info("Unexpected heartbeat from {}", taskAttemptIdString);
         response.setShouldDie(); // Do any of the other fields need to be set?
         return response;
       }
@@ -470,26 +470,25 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
 
       List<TezEvent> inEvents = request.getEvents();
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Heartbeat from " + taskAttemptIdString +
-            " events: " + (inEvents != null ? inEvents.size() : -1));
+        LOG.debug("Heartbeat from {} events: {}", taskAttemptIdString, (inEvents != null ? inEvents.size() : -1));
       }
       for (TezEvent tezEvent : ListUtils.emptyIfNull(inEvents)) {
         EventType eventType = tezEvent.getEventType();
         switch (eventType) {
           case TASK_ATTEMPT_COMPLETED_EVENT:
-            LOG.debug("Task completed event for " + taskAttemptIdString);
+            LOG.debug("Task completed event for {}", taskAttemptIdString);
             shouldUnregisterClient = true;
             break;
           case TASK_ATTEMPT_FAILED_EVENT:
-            LOG.debug("Task failed event for " + taskAttemptIdString);
+            LOG.debug("Task failed event for {}", taskAttemptIdString);
             shouldUnregisterClient = true;
             break;
           case TASK_STATUS_UPDATE_EVENT:
             // If we want to handle counters
-            LOG.debug("Task update event for " + taskAttemptIdString);
+            LOG.debug("Task update event for {}", taskAttemptIdString);
             break;
           default:
-            LOG.warn("Unhandled event type " + eventType);
+            LOG.warn("Unhandled event type {}", eventType);
             break;
         }
       }
@@ -514,7 +513,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
     public void nodeHeartbeat(Text hostname, Text uniqueId, int port, TezAttemptArray aw,
         BooleanArray guaranteed) throws IOException {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Node heartbeat from " + hostname + ":" + port + ", " + uniqueId);
+        LOG.debug("Node heartbeat from {}:{}, {}", hostname, port, uniqueId);
       }
       // External client currently cannot use guaranteed.
       updateHeartbeatInfo(hostname.toString(), uniqueId.toString(), port, aw);
@@ -532,7 +531,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
           client.retrySubmission();
         } else {
           try {
-            LOG.error("Task killed - " + taskAttemptIdString);
+            LOG.error("Task killed - {}", taskAttemptIdString);
             client.unregisterClient();
             if (client.responder != null) {
               client.responder.taskKilled(taskAttemptId);
@@ -542,7 +541,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
           }
         }
       } else {
-        LOG.info("Received task killed notification for task which is not currently being tracked: " + taskAttemptId);
+        LOG.info("Received task killed notification for task which is not currently being tracked: {}", taskAttemptId);
       }
     }
 
@@ -572,7 +571,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
       }
 
       if (updateCount == 0) {
-        LOG.warn("No tasks found for heartbeat from taskAttemptId " + taskAttemptId);
+        LOG.warn("No tasks found for heartbeat from taskAttemptId {}", taskAttemptId);
       }
     }
 
@@ -598,11 +597,11 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
         }
       }
       if (!error.isEmpty()) {
-        LOG.info("The tasks we expected to be on the node are not there: " + error);
+        LOG.info("The tasks we expected to be on the node are not there: {}", error);
       }
 
       if (updateCount == 0) {
-        LOG.info("No tasks found for heartbeat from hostname " + hostname + ", port " + port);
+        LOG.info("No tasks found for heartbeat from hostname {}, port {}", hostname, port);
       }
     }
 

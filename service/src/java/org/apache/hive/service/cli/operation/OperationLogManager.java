@@ -158,7 +158,7 @@ public class OperationLogManager {
         if (sessionIds.contains(dir.getName())) {
           for (File f : dir.listFiles()) {
             if (!queryIds.contains(f.getName()) ) {
-              LOG.debug("delete file not in hist: " + f.getName());
+              LOG.debug("delete file not in hist: {}", f.getName());
               FileUtils.deleteQuietly(f);
             }
           }
@@ -276,7 +276,7 @@ public class OperationLogManager {
     } else {
       FileUtils.deleteQuietly(originOpLogFile);
     }
-    LOG.debug(queryId + ": closeOperation");
+    LOG.debug("{}: closeOperation", queryId);
   }
 
   public static String getOperationLog(QueryInfo queryInfo) {

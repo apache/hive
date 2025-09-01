@@ -74,8 +74,8 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   public void startThreads() throws IOException {
     String principalUser = LlapUtil.getUserNameFromPrincipal(
         conf.get(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL));
-    LOG.info("Starting ZK threads as user " + UserGroupInformation.getCurrentUser()
-        + "; kerberos principal is configured for user (short user name) " + principalUser);
+    LOG.info("Starting ZK threads as user {}; kerberos principal is configured for user (short user name) {}",
+            UserGroupInformation.getCurrentUser(), principalUser);
     super.startThreads();
     if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_VALIDATE_ACLS)
       || !UserGroupInformation.isSecurityEnabled()) return;
@@ -88,7 +88,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   private void checkForZKDTSMBug() {
     // There's a bug in ZKDelegationTokenSecretManager ctor where seconds are not converted to ms.
     long expectedRenewTimeSec = conf.getLong(DelegationTokenManager.RENEW_INTERVAL, -1);
-    LOG.info("Checking for tokenRenewInterval bug: " + expectedRenewTimeSec);
+    LOG.info("Checking for tokenRenewInterval bug: {}", expectedRenewTimeSec);
     if (expectedRenewTimeSec == -1) return; // The default works, no bug.
     java.lang.reflect.Field f = null;
     try {
@@ -103,7 +103,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     try {
       long realValue = f.getLong(this);
       long expectedValue = expectedRenewTimeSec * 1000;
-      LOG.info("tokenRenewInterval is: " + realValue + " (expected " + expectedValue + ")");
+      LOG.info("tokenRenewInterval is: {} (expected {})", realValue, expectedValue);
       if (realValue == expectedRenewTimeSec) {
         // Bug - the field has to be in ms, not sec. Override only if set precisely to sec.
         f.setLong(this, expectedValue);

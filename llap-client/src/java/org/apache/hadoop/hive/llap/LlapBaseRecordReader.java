@@ -77,7 +77,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
       try {
         din.close();
       } catch (Exception err) {
-        LOG.error("Error closing input stream:" + err.getMessage(), err);
+        LOG.error("Error closing input stream: {}", err.getMessage(), err);
         caughtException = err;
       }
       // Don't close the socket - the stream already does that if needed.
@@ -86,7 +86,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
         try {
           client.close();
         } catch (Exception err) {
-          LOG.error("Error closing client:" + err.getMessage(), err);
+          LOG.error("Error closing client: {}", err.getMessage(), err);
           caughtException = (caughtException == null ? err : caughtException);
         }
       }
@@ -246,7 +246,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
         }
         // Reader is using a blocking socket .. interrupt it.
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Interrupting reader thread due to reader event with error " + event.getMessage());
+          LOG.debug("Interrupting reader thread due to reader event with error {}", event.getMessage());
         }
         readerThread.interrupt();
         try {

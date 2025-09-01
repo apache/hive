@@ -205,7 +205,7 @@ public class HiveAuthUtils {
       List<String> enabledProtocols = new ArrayList<String>();
       for (String protocol : sslServerSocket.getEnabledProtocols()) {
         if (sslVersionBlacklistLocal.contains(protocol.toLowerCase())) {
-          LOG.debug("Disabling SSL Protocol: " + protocol);
+          LOG.debug("Disabling SSL Protocol: {}", protocol);
         } else {
           enabledProtocols.add(protocol);
         }

@@ -87,7 +87,7 @@ public abstract class AbstractService implements Service {
     ensureCurrentState(STATE.NOTINITED);
     setHiveConf(hiveConf);
     changeState(STATE.INITED);
-    LOG.info("Service:" + getName() + " is inited.");
+    LOG.info("Service:{} is inited.", getName());
   }
 
   protected final void setHiveConf(HiveConf hiveConf) {
@@ -106,7 +106,7 @@ public abstract class AbstractService implements Service {
     startTime = System.currentTimeMillis();
     ensureCurrentState(STATE.INITED);
     changeState(STATE.STARTED);
-    LOG.info("Service:" + getName() + " is started.");
+    LOG.info("Service:{} is started.", getName());
   }
 
   /**
@@ -126,7 +126,7 @@ public abstract class AbstractService implements Service {
     }
     ensureCurrentState(STATE.STARTED);
     changeState(STATE.DECOMMISSIONING);
-    LOG.info("Service:" + getName() + " is decommissioning.");
+    LOG.info("Service:{} is decommissioning.", getName());
   }
 
   /**
@@ -150,7 +150,7 @@ public abstract class AbstractService implements Service {
           STATE.DECOMMISSIONING + " or " + STATE.STARTED + " instead of " + state);
     }
     changeState(STATE.STOPPED);
-    LOG.info("Service:" + getName() + " is stopped.");
+    LOG.info("Service:{} is stopped.", getName());
   }
 
   @Override

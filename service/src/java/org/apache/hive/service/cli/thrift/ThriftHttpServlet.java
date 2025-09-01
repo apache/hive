@@ -128,7 +128,7 @@ public class ThriftHttpServlet extends TServlet {
     if (isCookieAuthEnabled) {
       // Generate the signer with secret.
       String secret = Long.toString(RAN.nextLong());
-      LOG.debug("Using the random number as the secret for cookie generation " + secret);
+      LOG.debug("Using the random number as the secret for cookie generation {}", secret);
       this.cookieMaxAge = (int) hiveConf.getTimeVar(
         ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE, TimeUnit.SECONDS);
       this.cookieDomain = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_DOMAIN);
@@ -155,7 +155,7 @@ public class ThriftHttpServlet extends TServlet {
     try {
 
       clientIpAddress = request.getRemoteAddr();
-      LOG.debug("Client IP Address: " + clientIpAddress);
+      LOG.debug("Client IP Address: {}", clientIpAddress);
       // If the cookie based authentication is already enabled, parse the
       // request and validate the request cookies.
       if (isCookieAuthEnabled) {
@@ -240,7 +240,7 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       assert (clientUserName != null);
-      LOG.debug("Client username: " + clientUserName);
+      LOG.debug("Client username: {}", clientUserName);
 
       // Set the thread local username to be used for doAs if true
       SessionManager.setUserName(clientUserName);
@@ -290,7 +290,7 @@ public class ThriftHttpServlet extends TServlet {
           LOG.error("Login attempt is failed for user : " +
               httpAuthService.getUsername(request) + ". Error Message :" + e.getMessage());
         } catch (Exception ex) {
-          // Failed logging an exception message, ignoring exception, but response status is set to 401/unauthorized  
+          // Failed logging an exception message, ignoring exception, but response status is set to 401/unauthorized
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
@@ -344,7 +344,7 @@ public class ThriftHttpServlet extends TServlet {
       HiveSamlUtils.validateSamlResponsePort(request);
       return true;
     } catch (HttpSamlAuthenticationException e) {
-      LOG.debug("Response port could not be validated: " + e.getMessage());
+      LOG.debug("Response port could not be validated: {}", e.getMessage());
     }
     return false;
   }
@@ -633,7 +633,7 @@ public class ThriftHttpServlet extends TServlet {
 
   private static String getDoAsQueryParam(String queryString) {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("URL query string:" + queryString);
+      LOG.debug("URL query string: {}", queryString);
     }
     if (queryString == null) {
       return null;

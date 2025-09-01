@@ -37,7 +37,7 @@ public class LlapTokenSelector implements TokenSelector<LlapTokenIdentifier> {
     LOG.debug("Looking for a token with service {}", service);
     for (Token<? extends TokenIdentifier> token : tokens) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Token = " + token.getKind() + "; service = " + token.getService());
+        LOG.debug("Token = {}; service = {}", token.getKind(), token.getService());
       }
       if (LlapTokenIdentifier.KIND_NAME.equals(token.getKind())
           && service.equals(token.getService())) {

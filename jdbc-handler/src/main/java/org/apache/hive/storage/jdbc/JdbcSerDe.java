@@ -142,8 +142,8 @@ public class JdbcSerDe extends AbstractSerDe {
     }
 
     if (log.isDebugEnabled()) {
-      log.debug("JdbcSerDe initialized with\n" + "\t columns: " + Arrays.toString(hiveColumnNames) + "\n\t types: "
-          + Arrays.toString(hiveColumnTypes));
+      log.debug("JdbcSerDe initialized with\n\t columns: {}\n\t types: {}",
+              Arrays.toString(hiveColumnNames), Arrays.toString(hiveColumnTypes));
     }
   }
   

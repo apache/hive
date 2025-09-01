@@ -959,7 +959,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     public void nodeHeartbeat(Text hostname, Text uniqueId, int port,
         TezAttemptArray aw, BooleanArray guaranteed) throws IOException {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Received heartbeat from [" + hostname + ":" + port +" (" + uniqueId +")]");
+        LOG.debug("Received heartbeat from [{}:{} ({})]", hostname, port, uniqueId);
       }
       nodePinged(hostname.toString(), uniqueId.toString(), port, aw, guaranteed);
     }
@@ -1004,7 +1004,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     void registerTaskAttempt(ContainerId containerId, TezTaskAttemptID taskAttemptId, String host, int port) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Registering " + containerId + ", " + taskAttemptId + " for node: " + host + ":" + port);
+        LOG.debug("Registering {}, {} for node: {}:{}", containerId, taskAttemptId, host, port);
       }
       LlapNodeId llapNodeId = LlapNodeId.getInstance(host, port);
       attemptToNodeMap.putIfAbsent(taskAttemptId, llapNodeId);
@@ -1074,7 +1074,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     void registerContainer(ContainerId containerId, String hostname, int port) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Registering " + containerId + " for node: " + hostname + ":" + port);
+        LOG.debug("Registering {} for node: {}:{}", containerId, hostname, port);
       }
       containerToNodeMap.putIfAbsent(containerId, LlapNodeId.getInstance(hostname, port));
       // nodeMap registration is not required, since there's no taskId association.

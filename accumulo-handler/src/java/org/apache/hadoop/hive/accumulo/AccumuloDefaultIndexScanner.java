@@ -113,12 +113,12 @@ public class AccumuloDefaultIndexScanner implements AccumuloIndexScanner {
     if (col != null) {
 
       try {
-        LOG.debug("Searching tab=" + indexTable + " column=" + column + " range=" + indexRange);
+        LOG.debug("Searching tab={} column={} range={}", indexTable, column, indexRange);
         Connector conn = getConnector();
         scan = conn.createScanner(indexTable, auths);
         scan.setRange(indexRange);
         Text cf = new Text(col);
-        LOG.debug("Using Column Family=" + toString());
+        LOG.debug("Using Column Family={}", toString());
         scan.fetchColumnFamily(cf);
 
         for (Map.Entry<Key, Value> entry : scan) {
@@ -135,7 +135,7 @@ public class AccumuloDefaultIndexScanner implements AccumuloIndexScanner {
         if (rowIds.isEmpty()) {
           LOG.debug("Found 0 index matches");
         } else {
-          LOG.debug("Found " + rowIds.size() + " index matches");
+          LOG.debug("Found {} index matches", rowIds.size());
         }
 
         return rowIds;
@@ -149,7 +149,7 @@ public class AccumuloDefaultIndexScanner implements AccumuloIndexScanner {
     }
 
     // assume the index is bad and do a full scan
-    LOG.debug("Index lookup failed for table " + indexTable);
+    LOG.debug("Index lookup failed for table {}", indexTable);
     return null;
   }
 

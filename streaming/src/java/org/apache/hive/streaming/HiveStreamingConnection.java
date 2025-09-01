@@ -777,8 +777,8 @@ public class HiveStreamingConnection implements StreamingConnection {
       Long currentTxnId = getCurrentTxnId();
       Long currentWriteId = getCurrentWriteId();
       for (WriteDirInfo writeInfo : writePaths.values()) {
-        LOG.debug("TxnId: " + currentTxnId + ", WriteId: " + currentWriteId
-                + " - Logging write event for the files in path " + writeInfo.getWriteDir());
+        LOG.debug("TxnId: {}, WriteId: {} - Logging write event for the files in path {}",
+                currentTxnId, currentWriteId, writeInfo.getWriteDir());
 
         // List the new files added inside the write path (delta directory).
         FileSystem fs = tableObject.getDataLocation().getFileSystem(conf);
@@ -786,8 +786,8 @@ public class HiveStreamingConnection implements StreamingConnection {
 
         // If no files are added by this streaming writes, then no need to log write notification event.
         if (newFiles.isEmpty()) {
-          LOG.debug("TxnId: " + currentTxnId + ", WriteId: " + currentWriteId
-                  + " - Skipping empty path " + writeInfo.getWriteDir());
+          LOG.debug("TxnId: {}, WriteId: {} - Skipping empty path {}",
+                  currentTxnId, currentWriteId, writeInfo.getWriteDir());
           continue;
         }
 

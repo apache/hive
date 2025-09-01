@@ -255,7 +255,7 @@ class HiveHBaseInputFormatUtil {
     scan.setStopRow(stopRow);
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug(Bytes.toStringBinary(startRow) + " ~ " + Bytes.toStringBinary(stopRow));
+      LOG.debug("{} ~ {}", Bytes.toStringBinary(startRow), Bytes.toStringBinary(stopRow));
     }
   }
 

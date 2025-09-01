@@ -78,12 +78,10 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
     try {
       if(LOG.isDebugEnabled()) {
         String byteData = Text.decode(bytes.getData(), start, length);
-        LOG.debug("Data not in the " + dataType
-            + " data type range so converted to null. Given data is :" +
-                    byteData, new Exception("For debugging purposes"));
+        LOG.debug("Data not in the {} data type range so converted to null. Given data is : {}", dataType, byteData);
       }
     } catch (CharacterCodingException e1) {
-      LOG.debug("Data not in the " + dataType + " data type range so converted to null.", e1);
+      LOG.debug("Data not in the {} data type range so converted to null.", dataType, e1);
     }
   }
 

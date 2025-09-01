@@ -139,7 +139,7 @@ import static java.lang.String.format;
     columnNames = Arrays.asList(properties.getProperty(serdeConstants.LIST_COLUMNS).split(","));
 
     String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    LOG.debug(serdeConstants.LIST_COLUMN_TYPES + ": " + columnTypeProperty);
+    LOG.debug("{}: {}", serdeConstants.LIST_COLUMN_TYPES, columnTypeProperty);
     if (columnTypeProperty.length() == 0) {
       columnTypes = new ArrayList<TypeInfo>();
     } else {

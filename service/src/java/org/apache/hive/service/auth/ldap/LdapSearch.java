@@ -198,8 +198,7 @@ public final class LdapSearch implements DirSearch {
           searchResults.add(searchResult);
         }
       } catch (NamingException ex) {
-        LOG.debug("Exception happened for query '" + query.getFilter() +
-            "' with base DN '" + aBaseDn + "'", ex);
+        LOG.debug("Exception happened for query '{}' with base DN '{}'", query.getFilter(), aBaseDn, ex);
       }
     }
     return new SearchResultHandler(searchResults);

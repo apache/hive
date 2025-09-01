@@ -1509,8 +1509,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       // TODO: At this point we don't know the slot number of the requested host, so can't rollover to next available
       if (!availableHostMap.containsKey(firstRequestedHost)) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Requested node [{}] in consistent order does not exist. Falling back to random selection for " +
-            "request {}", firstRequestedHost, request);
+          LOG.debug("Requested node [{}] in consistent order does not exist. " +
+                  "Falling back to random selection for request {}", firstRequestedHost, request);
         }
         return randomSelection(activeNodesWithFreeSlots);
       }
@@ -1629,8 +1629,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (nodeInfo == null || nodeInfo.isDisabled()) {
         if (LOG.isDebugEnabled()) {
           if (nodeInfo != null) {
-            LOG.debug("Node: " + nodeInfo.toShortString() +
-                " already disabled, or invalid. Not doing anything.");
+            LOG.debug("Node: {} already disabled, or invalid. Not doing anything.", nodeInfo.toShortString());
           } else {
             LOG.debug("Ignoring disableNode invocation for null NodeInfo");
           }
@@ -2051,7 +2050,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
     // in LLAP, the containers are used exactly once for exactly one attempt
     // the container ids are entirely arbitrary and have 64 bit space per application
-    // this is why the isGuaranteed (& any other initial information) can be encoded into the 
+    // this is why the isGuaranteed (& any other initial information) can be encoded into the
     // bits indicating container id
     NodeInfo nodeInfo = selectHostResult.nodeInfo;
     Container container =

@@ -230,7 +230,7 @@ public class HiveSessionImpl implements HiveSession {
         try {
           closeOperation(opHandle);
         } catch (HiveSQLException e) {
-          LOG.warn("Failed to close operation for command in .hiverc file.", e);
+        LOG.warn("Failed to close operation for command in .hiverc file.", e);
         }
       }
       return rc;
@@ -262,13 +262,13 @@ public class HiveSessionImpl implements HiveSession {
           hivercFile = new File(hivercFile, SessionManager.HIVERCFILE);
         }
         if (hivercFile.isFile()) {
-          LOG.info("Running global init file: " + hivercFile);
+        LOG.info("Running global init file: {}", hivercFile);
           int rc = processor.processFile(hivercFile.getAbsolutePath());
           if (rc != 0) {
-            LOG.error("Failed on initializing global .hiverc file");
+          LOG.error("Failed on initializing global .hiverc file");
           }
         } else {
-          LOG.debug("Global init file " + hivercFile + " does not exist");
+        LOG.debug("Global init file {} does not exist", hivercFile);
         }
       }
     } catch (IOException e) {
@@ -310,28 +310,28 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public void setOperationLogSessionDir(File operationLogRootDir) {
     if (!operationLogRootDir.exists()) {
-      LOG.warn("The operation log root directory is removed, recreating:" +
+      LOG.warn("The operation log root directory is removed, recreating: {}",
           operationLogRootDir.getAbsolutePath());
       if (!operationLogRootDir.mkdirs()) {
-        LOG.warn("Unable to create operation log root directory: " +
+        LOG.warn("Unable to create operation log root directory: {}",
             operationLogRootDir.getAbsolutePath());
       }
     }
     if (!operationLogRootDir.canWrite()) {
-      LOG.warn("The operation log root directory is not writable: " +
+      LOG.warn("The operation log root directory is not writable: {}",
           operationLogRootDir.getAbsolutePath());
     }
     sessionLogDir = new File(operationLogRootDir, sessionHandle.getHandleIdentifier().toString());
     isOperationLogEnabled = true;
     if (!sessionLogDir.exists()) {
       if (!sessionLogDir.mkdir()) {
-        LOG.warn("Unable to create operation log session directory: " +
+        LOG.warn("Unable to create operation log session directory: {}",
             sessionLogDir.getAbsolutePath());
         isOperationLogEnabled = false;
       }
     }
     if (isOperationLogEnabled) {
-      LOG.info("Operation log session directory is created: " + sessionLogDir.getAbsolutePath());
+      LOG.info("Operation log session directory is created: {}", sessionLogDir.getAbsolutePath());
     }
   }
 
@@ -546,7 +546,7 @@ public class HiveSessionImpl implements HiveSession {
   private OperationHandle executeStatementInternal(String statement,
       Map<String, String> confOverlay, boolean runAsync, long queryTimeout) throws HiveSQLException {
     acquire(true, true);
-    LOG.info("executing " +  statement);
+    LOG.info("executing {}", statement);
 
     ExecuteStatementOperation operation = null;
     OperationHandle opHandle = null;
@@ -811,10 +811,9 @@ public class HiveSessionImpl implements HiveSession {
     if (isOperationLogEnabled && sessionConf.getBoolVar(ConfVars.HIVE_TESTING_REMOVE_LOGS)) {
       try {
         FileUtils.forceDelete(sessionLogDir);
-        LOG.info("Operation log session directory is deleted: "
-            + sessionLogDir.getAbsolutePath());
+        LOG.info("Operation log session directory is deleted: {}", sessionLogDir.getAbsolutePath());
       } catch (Exception e) {
-        LOG.error("Failed to cleanup session log dir: " + sessionHandle, e);
+        LOG.error("Failed to cleanup session log dir: {}", sessionHandle, e);
       }
     }
   }
@@ -869,7 +868,8 @@ public class HiveSessionImpl implements HiveSession {
         try {
           operation.close();
         } catch (Exception e) {
-          LOG.warn("Exception is thrown closing timed-out operation, reported open_operations metrics may be incorrect " + operation.getHandle(), e);
+          LOG.warn("Exception is thrown closing timed-out operation, " +
+                  "reported open_operations metrics may be incorrect {}", operation.getHandle(), e);
         }
       }
     } finally {
@@ -1035,7 +1035,7 @@ public class HiveSessionImpl implements HiveSession {
   public void setApplicationName(String value) {
     String oldName = sessionState.getHiveVariables().put("wmapp", value);
     if (oldName != null && !oldName.equals(value)) {
-      LOG.info("ApplicationName changed from " + oldName + " to " + value);
+      LOG.info("ApplicationName changed from {} to {}", oldName, value);
     }
   }
 

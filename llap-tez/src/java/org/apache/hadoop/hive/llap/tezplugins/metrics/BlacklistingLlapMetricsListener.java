@@ -116,11 +116,7 @@ public class BlacklistingLlapMetricsListener implements LlapMetricsListener {
           metrics.get(LlapDaemonExecutorInfo.ExecutorNumExecutorsAvailableAverage.name());
       long maxExecutors = metrics.get(LlapDaemonExecutorInfo.ExecutorNumExecutors.name());
 
-      LOG.debug("Checking node {} with data: " +
-                    "requestHandled={}, " +
-                    "averageTime={}, " +
-                    "emptyExecutors={}, " +
-                    "maxExecutors={}",
+      LOG.debug("Checking node {} with data: requestHandled={}, averageTime={}, emptyExecutors={}, maxExecutors={}",
           workerIdentity, requestHandled, averageTime, emptyExecutor, maxExecutors);
 
       if (maxExecutors == 0) {
@@ -171,10 +167,10 @@ public class BlacklistingLlapMetricsListener implements LlapMetricsListener {
       if (emptyExecutorsWithoutSlowest > maxAverageTimeMaxExecutors * this.emptyExecutorsThreshold) {
         // Seems like a good candidate, let's try to blacklist
         try {
-          LOG.debug("Trying to blacklist node: " + maxAverageTimeIdentity);
+          LOG.debug("Trying to blacklist node: {}", maxAverageTimeIdentity);
           setCapacity(maxAverageTimeIdentity, 0, 0);
         } catch (Throwable t) {
-          LOG.debug("Can not blacklist node: " + maxAverageTimeIdentity, t);
+          LOG.debug("Can not blacklist node: {}", maxAverageTimeIdentity, t);
         }
       }
     }

@@ -189,7 +189,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     builder.build().writeDelimitedTo(socketStream);
     socketStream.flush();
 
-    LOG.info("Registered id: " + fragmentId);
+    LOG.info("Registered id: {}", fragmentId);
 
     @SuppressWarnings("rawtypes")
     LlapBaseRecordReader recordReader = new LlapBaseRecordReader(socket.getInputStream(),
@@ -339,7 +339,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         try {
           conn.close();
         } catch (Exception err) {
-          LOG.error("Error while closing connection for " + handleId, err);
+          LOG.error("Error while closing connection for {}", handleId, err);
         }
       }
     } else {
@@ -383,7 +383,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
     // This works, assuming the executor is running within YARN.
     String user = System.getenv(ApplicationConstants.Environment.USER.name());
-    LOG.info("Setting user in submitWorkRequest to: " + user);
+    LOG.info("Setting user in submitWorkRequest to: {}", user);
 
     ContainerId containerId =
         ContainerId.newInstance(ApplicationAttemptId.newInstance(appId, attemptNum), taskNum);
@@ -475,7 +475,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
               // If we want to handle counters
               break;
             default:
-              LOG.warn("Unhandled event type " + eventType);
+              LOG.warn("Unhandled event type {}", eventType);
               break;
           }
         } catch (Exception err) {
@@ -518,7 +518,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       // If any events were queued by the responder, give them to the record reader now.
       while (!queuedEvents.isEmpty()) {
         ReaderEvent readerEvent = queuedEvents.poll();
-        LOG.debug("Sending queued event to record reader: " + readerEvent.getEventType());
+        LOG.debug("Sending queued event to record reader: {}", readerEvent.getEventType());
         recordReader.handleEvent(readerEvent);
       }
     }
@@ -535,8 +535,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
         recordReader.handleEvent(readerEvent);
       } else {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("No registered record reader, queueing event " + readerEvent.getEventType()
-              + " with message " + readerEvent.getMessage());
+          LOG.debug("No registered record reader, queueing event {} with message {}",
+                  readerEvent.getEventType(), readerEvent.getMessage());
         }
 
         try {
