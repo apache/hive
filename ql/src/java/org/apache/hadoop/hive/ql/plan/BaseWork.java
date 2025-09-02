@@ -545,4 +545,12 @@ public abstract class BaseWork extends AbstractOperatorDesc {
           String workName, RuntimeValuesInfo runtimeValuesInfo) {
     inputSourceToRuntimeValuesInfo.put(workName, runtimeValuesInfo);
   }
+
+  public void abort() {
+    if (dummyOps != null) {
+      for (Operator<?> dummyOp : dummyOps) {
+        dummyOp.abort();
+      }
+    }
+  }
 }

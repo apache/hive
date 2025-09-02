@@ -520,6 +520,14 @@ public class ReduceRecordSource implements RecordSource {
     }
   }
 
+
+  /**
+   * Closes resources and returns whether the records were successfully processed.
+   * @return boolean indicating the success status:
+   * - true: All data has been processed successfully without exceptions.
+   * - false: Exceptions were encountered during data processing.
+   * @throws Exception unexpected errors occur during closing.
+   */
   boolean close() throws Exception {
     try {
       if (handleGroupKey && groupKey != null) {

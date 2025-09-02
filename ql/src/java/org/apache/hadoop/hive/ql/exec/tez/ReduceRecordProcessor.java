@@ -307,16 +307,11 @@ public class ReduceRecordProcessor extends RecordProcessor {
     }
     if (mergeWorkList != null) {
       for (BaseWork redWork : mergeWorkList) {
-        ((ReduceWork) redWork).getReducer().abort();
+        redWork.abort();
       }
     }
     if (reduceWork != null) {
-      List<HashTableDummyOperator> dummyOps = reduceWork.getDummyOps();
-      if (dummyOps != null) {
-        for (Operator<?> dummyOp : dummyOps) {
-          dummyOp.abort();
-        }
-      }
+      reduceWork.abort();
     }
   }
 
