@@ -1273,6 +1273,28 @@ public class HiveCalciteUtil {
   }
 
   /**
+   * Checks the operands in the join conditions are from right table or only from left table.
+   *
+   * @param joinRel Join node
+   * @return true if the join condition operands are from right and left table, false otherwise.
+   */
+  public static boolean hasJoinConditionOperandFromRightTable(Join joinRel) {
+    RexNode condition = joinRel.getCondition();
+    RelNode leftRel = joinRel.getLeft();
+    int leftFieldCount = leftRel.getRowType().getFieldCount();
+    ImmutableBitSet leftBitmap = ImmutableBitSet.range(leftFieldCount);
+    List<RexNode> conditions = RelOptUtil.conjunctions(condition);
+    for (RexNode cond : conditions) {
+      ImmutableBitSet condBitmap = RelOptUtil.InputFinder.bits(cond);
+      // if condition becomes true if both the operands are from left table
+      if (leftBitmap.contains(condBitmap)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Extracts inputs referenced by aggregate operator.
    */
   public static ImmutableBitSet extractRefs(Aggregate aggregate) {
