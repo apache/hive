@@ -53,8 +53,8 @@ public class MiniHiveKdc {
   public static String AUTHENTICATION_TYPE = "KERBEROS";
   private static final String HIVE_METASTORE_SERVICE_PRINCIPAL = "hive";
 
-  private final MiniKdc miniKdc;
-  private final File workDir;
+  final MiniKdc miniKdc;
+  final File workDir;
   private final Map<String, String> userPrincipals =
       new HashMap<String, String>();
   private final Properties kdcConf = MiniKdc.createConf();

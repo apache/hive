@@ -33,7 +33,6 @@ import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.MetastoreDelegationTokenSupport;
@@ -157,41 +156,6 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
       }
     }
     return zkSession;
-  }
-
-  private void setupJAASConfig(Configuration conf) throws IOException {
-    if (!isKerberosEnabled(conf)) {
-      // The process has not logged in using keytab
-      // this should be a test mode, can't use keytab to authenticate
-      // with zookeeper.
-      LOGGER.warn("Login is not from keytab");
-      return;
-    }
-
-    String principal;
-    String keytab;
-    switch (serverMode) {
-    case METASTORE:
-      principal = getNonEmptyConfVar(conf, "hive.metastore.kerberos.principal");
-      keytab = getNonEmptyConfVar(conf, "hive.metastore.kerberos.keytab.file");
-      break;
-    case HIVESERVER2:
-      principal = getNonEmptyConfVar(conf, "hive.server2.authentication.kerberos.principal");
-      keytab = getNonEmptyConfVar(conf, "hive.server2.authentication.kerberos.keytab");
-      break;
-    default:
-      throw new AssertionError("Unexpected server mode " + serverMode);
-    }
-    SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keytab);
-  }
-
-  private String getNonEmptyConfVar(Configuration conf, String param) throws IOException {
-    String val = conf.get(param);
-    if (val == null || val.trim().isEmpty()) {
-      throw new IOException("Configuration parameter " + param + " should be set, "
-          + WHEN_ZK_DSTORE_MSG);
-    }
-    return val;
   }
 
   /**
@@ -547,13 +511,6 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE,
             MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
 
-    try {
-      // Install the JAAS Configuration for the runtime
-      setupJAASConfig(conf);
-    } catch (IOException e) {
-      throw new TokenStoreException("Error setting up JAAS configuration for zookeeper client "
-          + e.getMessage(), e);
-    }
     initClientAndPaths();
   }
 

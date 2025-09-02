@@ -20,13 +20,9 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.LoginException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -39,10 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.authentication.util.KerberosUtil;
-import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,8 +43,6 @@ public class Utils {
 
   private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
   public static final String RAW_RESERVED_VIRTUAL_PATH = "/.reserved/raw/";
-  private static final boolean IBM_JAVA = System.getProperty("java.vendor")
-      .contains("IBM");
 
   public static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
@@ -73,72 +64,6 @@ public class Utils {
     return UserGroupInformation.getCurrentUser();
   }
 
-  /**
-   * Dynamically sets up the JAAS configuration that uses kerberos
-   * @param principal
-   * @param keyTabFile
-   * @throws IOException
-   */
-  public static void setZookeeperClientKerberosJaasConfig(String principal, String keyTabFile) throws IOException {
-    // ZooKeeper property name to pick the correct JAAS conf section
-    final String SASL_LOGIN_CONTEXT_NAME = "HiveZooKeeperClient";
-    System.setProperty(ZooKeeperSaslClient.LOGIN_CONTEXT_NAME_KEY, SASL_LOGIN_CONTEXT_NAME);
-
-    principal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
-    JaasConfiguration jaasConf = new JaasConfiguration(SASL_LOGIN_CONTEXT_NAME, principal, keyTabFile);
-
-    // Install the Configuration in the runtime.
-    javax.security.auth.login.Configuration.setConfiguration(jaasConf);
-  }
-
-  /**
-   * A JAAS configuration for ZooKeeper clients intended to use for SASL
-   * Kerberos.
-   */
-  private static class JaasConfiguration extends javax.security.auth.login.Configuration {
-    // Current installed Configuration
-    private static final boolean IBM_JAVA = System.getProperty("java.vendor")
-      .contains("IBM");
-    private final javax.security.auth.login.Configuration baseConfig = javax.security.auth.login.Configuration
-        .getConfiguration();
-    private final String loginContextName;
-    private final String principal;
-    private final String keyTabFile;
-
-    public JaasConfiguration(String hiveLoginContextName, String principal, String keyTabFile) {
-      this.loginContextName = hiveLoginContextName;
-      this.principal = principal;
-      this.keyTabFile = keyTabFile;
-    }
-
-    @Override
-    public AppConfigurationEntry[] getAppConfigurationEntry(String appName) {
-      if (loginContextName.equals(appName)) {
-        Map<String, String> krbOptions = new HashMap<String, String>();
-        if (IBM_JAVA) {
-          krbOptions.put("credsType", "both");
-          krbOptions.put("useKeytab", keyTabFile);
-        } else {
-          krbOptions.put("doNotPrompt", "true");
-          krbOptions.put("storeKey", "true");
-          krbOptions.put("useKeyTab", "true");
-          krbOptions.put("keyTab", keyTabFile);
-        }
-  krbOptions.put("principal", principal);
-        krbOptions.put("refreshKrb5Config", "true");
-        AppConfigurationEntry hiveZooKeeperClientEntry = new AppConfigurationEntry(
-            KerberosUtil.getKrb5LoginModuleName(), LoginModuleControlFlag.REQUIRED, krbOptions);
-        return new AppConfigurationEntry[] { hiveZooKeeperClientEntry };
-      }
-      // Try the base config
-      if (baseConfig != null) {
-        return baseConfig.getAppConfigurationEntry(appName);
-      }
-      return null;
-    }
-  }
-
-  
   public static final String XSRF_CUSTOM_HEADER_PARAM = "custom-header";
   public static final String XSRF_CUSTOM_METHODS_TO_IGNORE_PARAM = "methods-to-ignore";
   private static final String XSRF_HEADER_DEFAULT = "X-XSRF-HEADER";

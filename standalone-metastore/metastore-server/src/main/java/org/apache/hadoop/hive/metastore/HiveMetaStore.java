@@ -325,18 +325,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   /**
-   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
-   *
-   * @param port
-   * @param bridge
-   * @throws Throwable
-   */
-  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge)
-      throws Throwable {
-    startMetaStore(port, bridge, MetastoreConf.newMetastoreConf(), false, null);
-  }
-
-  /**
    * Start the metastore store.
    * @param port
    * @param bridge
@@ -685,6 +673,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
     isMetaStoreRemote = true;
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
+      String principal = MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
+      String keyTab = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
+      SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keyTab);
+    }
     String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
     boolean isHttpTransport = transportMode.equalsIgnoreCase("http");
     if (isHttpTransport) {
