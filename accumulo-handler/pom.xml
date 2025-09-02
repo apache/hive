@@ -32,6 +32,10 @@
       <artifactId>accumulo-core</artifactId>
       <exclusions>
         <exclusion>
+          <groupId>jline</groupId>
+          <artifactId>jline</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils-core</artifactId>
         </exclusion>

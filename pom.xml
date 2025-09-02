@@ -1732,6 +1732,13 @@
                   <searchTransitive>true</searchTransitive>
                   <message>Banned log4j:log4j dependency/transitive dependency was found!</message>
                 </bannedDependencies>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>jline:jline</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>A banned jline2.x dependency/transitive dependency was found!</message>
+                </bannedDependencies>
               </rules>
               <fail>true</fail>
             </configuration>
