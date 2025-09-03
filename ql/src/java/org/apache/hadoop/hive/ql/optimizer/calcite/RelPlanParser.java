@@ -43,7 +43,11 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
@@ -51,12 +55,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.parse.QueryTables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,15 +72,20 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
 
 /**
  * Class responsible for parsing a given plan from a json file.
  */
 public class RelPlanParser {
-  private static final TypeReference<LinkedHashMap<String, Object>> TYPE_REF =
-      new TypeReference<LinkedHashMap<String, Object>>() {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RelPlanParser.class);
+  private static final TypeReference<LinkedHashMap<String, Object>> TYPE_REF = 
+      new TypeReference<>() {
       };
 
   private final RelOptCluster cluster;
@@ -81,9 +94,41 @@ public class RelPlanParser {
   private final Map<String, RelNode> relMap = new LinkedHashMap<>();
   private RelNode lastRel;
 
-  public RelPlanParser(RelOptCluster cluster, RelOptHiveTableFactory relOptHiveTableFactory) {
+  public RelPlanParser(RelOptCluster cluster, HiveConf conf) {
     this.cluster = cluster;
-    this.relOptHiveTableFactory = relOptHiveTableFactory;
+    relOptHiveTableFactory = (tableAlias, tableName, rowType,
+                              nonPartitionColumns, partitionColumns,
+                              virtualColumns, isMaterialized) -> {
+      Table tbl = null;
+      try {
+        tbl = Hive.get()
+            .getTable(tableName.getDb(), tableName.getTable(), tableName.getTableMetaRef(),
+                true, true, false);
+      } catch (HiveException e) {
+        LOG.warn("Could not fetch table from HMS: {}", tableName, e);
+      }
+
+      if (tbl == null) {
+        tbl = new Table(tableName.getDb(), tableName.getTable());
+        tbl.setMaterializedTable(isMaterialized);
+      }
+
+      return new RelOptHiveTable(
+          null,
+          cluster.getTypeFactory(),
+          asList(tableName.getDb(), tableName.getTable()),
+          rowType,
+          tbl,
+          nonPartitionColumns,
+          partitionColumns,
+          virtualColumns,
+          conf,
+          new QueryTables(true),
+          new HashMap<>(),
+          new HashMap<>(),
+          new AtomicInteger()
+      );
+    };
   }
 
   public RelNode parse(String json) throws IOException {
@@ -193,7 +238,7 @@ public class RelPlanParser {
       List<String> qualifiedName = (List<String>) jsonRel.get("table");
       RelDataType rowType = relJson.toType(cluster.getTypeFactory(), jsonRel.get("rowType"));
       String tableAlias = (String) jsonRel.get("table:alias");
-
+      boolean isMaterialized = (boolean) jsonRel.getOrDefault("materializedTable", false);
       Map<Boolean, List<ColumnInfo>> columnInfo = computeColumnInfos(rowType, tableAlias);
       List<ColumnInfo> nonPartitionColumns = columnInfo.getOrDefault(false, new ArrayList<>());
       List<ColumnInfo> partitionColumns = columnInfo.getOrDefault(true, new ArrayList<>());
@@ -204,7 +249,7 @@ public class RelPlanParser {
           null, qualifiedName.get(0), qualifiedName.get(1), (String) jsonRel.get("snapshotRef"));
 
       return relOptHiveTableFactory.createRelOptHiveTable(
-          tableAlias, tableName, rowType, nonPartitionColumns, partitionColumns, virtualColumns);
+          tableAlias, tableName, rowType, nonPartitionColumns, partitionColumns, virtualColumns, isMaterialized);
     }
 
     private List<VirtualColumn> getVirtualColumns() {

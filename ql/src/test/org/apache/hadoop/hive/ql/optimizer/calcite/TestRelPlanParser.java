@@ -27,10 +27,10 @@ import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.TestRuleBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -40,29 +40,20 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestRelPlanParser extends TestRuleBase {
 
-  @Mock
-  private RelOptHiveTableFactory relOptHiveTableFactory;
   private RelNode ts1;
   private RelNode ts2;
+  private HiveConf conf;
 
   @Override
   public void setup() {
     super.setup();
-    when(relOptHiveTableFactory.createRelOptHiveTable(eq("t1"), any(), any(), any(), any(), any()))
-        .thenReturn(t1NativeMock);
-    when(relOptHiveTableFactory.createRelOptHiveTable(eq("t2"), any(), any(), any(), any(), any()))
-        .thenReturn(t2NativeMock);
     ts1 = createTS(t1NativeMock, "t1");
     ts2 = createTS(t2NativeMock, "t2");
+    conf = new HiveConf();
   }
 
   @Test
@@ -92,11 +83,6 @@ public class TestRelPlanParser extends TestRuleBase {
         .build();
 
     serializeDeserializeAndAssertEquals(planToSerialize);
-
-    verify(relOptHiveTableFactory, atLeastOnce())
-        .createRelOptHiveTable(eq("t1"), any(), any(), any(), any(), any());
-    verify(relOptHiveTableFactory, atLeastOnce())
-        .createRelOptHiveTable(eq("t2"), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -213,7 +199,7 @@ public class TestRelPlanParser extends TestRuleBase {
   private void serializeDeserializeAndAssertEquals(RelNode plan) throws IOException {
     Optional<String> planJson = HiveRelOptUtil.serializeToJSON(plan);
     if (planJson.isPresent()) {
-      RelPlanParser parser = new RelPlanParser(relOptCluster, relOptHiveTableFactory);
+      RelPlanParser parser = new RelPlanParser(relOptCluster, conf);
       RelNode parsedPlan = parser.parse(planJson.get());
 
       assertEquals(RelOptUtil.toString(plan), RelOptUtil.toString(parsedPlan));
