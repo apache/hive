@@ -1736,6 +1736,9 @@
                   <excludes>
                     <exclude>jline:jline</exclude>
                   </excludes>
+                  <includes>
+                    <include>jline:jline:1.0</include>
+                  </includes>
                   <searchTransitive>true</searchTransitive>
                   <message>A banned jline2.x dependency/transitive dependency was found!</message>
                 </bannedDependencies>
