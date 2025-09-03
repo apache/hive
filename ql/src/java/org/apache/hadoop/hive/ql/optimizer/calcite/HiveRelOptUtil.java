@@ -43,7 +43,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
@@ -97,9 +96,6 @@ import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -108,7 +104,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
-import org.apache.hadoop.hive.ql.parse.QueryTables;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -118,8 +113,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.Arrays.asList;
 
 
 public class HiveRelOptUtil extends RelOptUtil {
@@ -1164,35 +1157,7 @@ public class HiveRelOptUtil extends RelOptUtil {
     RexBuilder rexBuilder = new RexBuilder(new HiveTypeFactory());
     RelOptCluster cluster = RelOptCluster.create(planner, rexBuilder);
 
-    RelOptHiveTableFactory tableFactory =
-        (tableAlias, tableName, rowType, nonPartitionColumns,
-         partitionColumns, virtualColumns) -> {
-          try {
-            Table tbl = Hive.get()
-                .getTable(tableName.getDb(), tableName.getTable(), tableName.getTableMetaRef(),
-                    true, true, false);
-
-            return new RelOptHiveTable(
-                null,
-                cluster.getTypeFactory(),
-                asList(tableName.getDb(), tableName.getTable()),
-                rowType,
-                tbl,
-                nonPartitionColumns,
-                partitionColumns,
-                virtualColumns,
-                conf,
-                new QueryTables(true),
-                new HashMap<>(),
-                new HashMap<>(),
-                new AtomicInteger()
-            );
-          } catch (HiveException e) {
-            throw new RuntimeException(e);
-          }
-        };
-    
-    RelPlanParser parser = new RelPlanParser(cluster, tableFactory);
+    RelPlanParser parser = new RelPlanParser(cluster, conf);
     RelNode deserializedPlan = parser.parse(jsonPlan);
     // Apply partition pruning to compute partition list in HiveTableScan
     deserializedPlan = applyPartitionPruning(conf, deserializedPlan, cluster, planner);

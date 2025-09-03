@@ -31,5 +31,6 @@ public interface RelOptHiveTableFactory {
       RelDataType rowType,
       List<ColumnInfo> nonPartitionColumns,
       List<ColumnInfo> partitionColumns,
-      List<VirtualColumn> virtualColumns);
+      List<VirtualColumn> virtualColumns,
+      boolean isMaterialized);
 }
