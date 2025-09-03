@@ -84,12 +84,4 @@ public class HiveRelJsonImpl extends RelJsonWriter {
     }
   }
 
-  @Override
-  public String asString() {
-    final Map<String, Object> map = jsonBuilder.map();
-    map.put("rels", relList);
-
-    return new HiveJsonBuilder().toJsonString(map);
-  }
-
 }
