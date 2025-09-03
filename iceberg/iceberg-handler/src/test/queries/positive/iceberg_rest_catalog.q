@@ -20,16 +20,12 @@
 -- Mask iceberg version
 --! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
---! These settings are set in the driver setup (see TestIcebergRESTCatalogLlapLocalCliDriver.java)   
---! conf.set('metastore.client.impl', 'org.apache.iceberg.hive.client.HiveRESTCatalogClient');
---! conf.set('metastore.catalog.default', 'ice01');
---! conf.set('iceberg.catalog.ice01.type', 'rest');
---! conf.set('iceberg.catalog.ice01.uri', <RESTServer URI>);
+set metastore.client.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient;
+set metastore.catalog.default=ice01;
+set iceberg.catalog.ice01.type=rest;
 
---! Verify rest catalog properties are set in conf
-set metastore.client.impl;
-set metastore.catalog.default;
-set iceberg.catalog.ice01.type;
+--! This config is set in the driver setup (see TestIcebergRESTCatalogLlapLocalCliDriver.java)   
+--! conf.set('iceberg.catalog.ice01.uri', <RESTServer URI>);
 
 create database ice_rest;
 use ice_rest;

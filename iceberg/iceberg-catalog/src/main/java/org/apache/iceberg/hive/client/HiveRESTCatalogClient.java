@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -52,6 +51,7 @@ import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.rest.RESTCatalog;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -152,7 +152,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public Database getDatabase(String catName, String dbName) {
+  public Database getDatabase(String catName, String dbName) throws NoSuchObjectException {
     validateCurrentCatalog(catName);
 
     return restCatalog.listNamespaces(Namespace.empty()).stream()
@@ -170,7 +170,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
             LOG.warn("Can not set ownerType: {}", namespaceMetadata.get(DB_OWNER_TYPE), e);
           }
           return database;
-        }).findFirst().get();
+        }).findFirst().orElseThrow(() -> new NoSuchObjectException("Database " + dbName + " not found"));
   }
 
   @Override
@@ -206,10 +206,8 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
         .withPartitionSpec(partitionSpec)
         .withLocation(catalogProperties.getProperty(CatalogUtils.LOCATION))
         .withSortOrder(sortOrder)
-        .withProperties(catalogProperties.entrySet().stream()
-            .collect(Collectors.toMap(entry -> ((Map.Entry<?, ?>) entry).getKey().toString(),
-                    entry -> ((Map.Entry<?, ?>) entry).getValue().toString())
-            )).create();
+        .withProperties(Maps.fromProperties(catalogProperties))
+        .create();
   }
 
   @Override

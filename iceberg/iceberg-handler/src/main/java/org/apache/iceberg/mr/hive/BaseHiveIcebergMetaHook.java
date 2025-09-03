@@ -206,8 +206,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
    */
   private void validateCatalogConfigsDefined() {
     String catalogName = catalogProperties.getProperty(InputFormatConfig.CATALOG_NAME);
-    if (!StringUtils.isEmpty(catalogName) && !Catalogs.ICEBERG_HADOOP_TABLE_NAME.equals(catalogName) &&
-        !Catalogs.ICEBERG_DEFAULT_CATALOG_NAME.equals(catalogName)) {
+    if (!StringUtils.isEmpty(catalogName) && !Catalogs.ICEBERG_HADOOP_TABLE_NAME.equals(catalogName)) {
 
       boolean configsExist = !StringUtils.isEmpty(CatalogUtils.getCatalogType(conf, catalogName)) ||
           !StringUtils.isEmpty(CatalogUtils.getCatalogImpl(conf, catalogName));
@@ -281,10 +280,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // If the table is not managed by Hive, Hadoop or REST catalog, then the location should be set
+    // If the table is not managed by Hive or REST catalog, then the location should be set
     if (!Catalogs.hiveCatalog(conf, catalogProperties) &&
-        !CatalogUtil.ICEBERG_CATALOG_TYPE_REST
-            .equals(Optional.ofNullable(CatalogUtils.getCatalogType(conf, catalogProperties)).orElse(""))) {
+        !CatalogUtil.ICEBERG_CATALOG_TYPE_REST.equals(CatalogUtils.getCatalogType(conf, catalogProperties))) {
       String location = (hmsTable.getSd() != null) ? hmsTable.getSd().getLocation() : null;
       if (location == null && Catalogs.hadoopCatalog(conf, catalogProperties)) {
         location = IcebergTableUtil.defaultWarehouseLocation(

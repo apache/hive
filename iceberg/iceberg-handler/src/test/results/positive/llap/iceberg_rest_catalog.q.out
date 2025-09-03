@@ -1,6 +1,3 @@
-metastore.client.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient
-metastore.catalog.default=ice01
-iceberg.catalog.ice01.type=rest
 PREHOOK: query: create database ice_rest
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:ice_rest

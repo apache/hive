@@ -135,10 +135,10 @@ public class CatalogUtils {
   }
 
   public static String getCatalogType(Configuration conf, Properties catalogProperties) {
-    return Optional.ofNullable(catalogProperties.getProperty(CatalogUtils.CATALOG_NAME))
-        .or(() -> Optional.ofNullable(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT)))
-        .map(catName -> getCatalogType(conf, catName))
-        .orElse(null);
+    String catalogName = catalogProperties.getProperty(
+        CatalogUtils.CATALOG_NAME,
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT));
+    return getCatalogType(conf, catalogName);
   }
 
   /**
@@ -181,11 +181,11 @@ public class CatalogUtils {
     }
   }
 
-  public static String getCatalogImpl(Configuration conf, String catName) {
-    return Optional.ofNullable(catName)
+  public static String getCatalogImpl(Configuration conf, String catalogName) {
+    return Optional.ofNullable(catalogName)
         .filter(StringUtils::isNotEmpty)
         .map(name -> String.format(CatalogUtils.CATALOG_IMPL_TEMPLATE, name))
         .map(conf::get)
-        .orElse("");
+        .orElse(null);
   }
 }

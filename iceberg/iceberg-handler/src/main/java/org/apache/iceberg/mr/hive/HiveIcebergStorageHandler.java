@@ -261,8 +261,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
     // operation.
     String catalogType = CatalogUtils.getCatalogType(conf);
-    return StringUtils.isEmpty(catalogType) || CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equals(catalogType) ?
-        new HiveIcebergMetaHook(conf) : new BaseHiveIcebergMetaHook(conf);
+    if (StringUtils.isEmpty(catalogType) || CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equals(catalogType)) {
+      return new HiveIcebergMetaHook(conf);
+    } else {
+      conf.set(ConfigProperties.LOCK_HIVE_ENABLED, "false");
+      return new BaseHiveIcebergMetaHook(conf);
+    }
   }
 
   @Override
