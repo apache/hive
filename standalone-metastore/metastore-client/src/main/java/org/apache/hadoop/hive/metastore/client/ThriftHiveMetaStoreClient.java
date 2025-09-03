@@ -25,6 +25,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
@@ -261,6 +262,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       if (serviceDiscoveryMode == null || serviceDiscoveryMode.trim().isEmpty()) {
         metastoreUrisString = Arrays.asList(thriftUris.split(","));
       } else if (serviceDiscoveryMode.equalsIgnoreCase("zookeeper")) {
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
+            MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
+          SecurityUtils.setZookeeperClientKerberosJaasConfig(null, null);
+        }
         metastoreUrisString = new ArrayList<String>();
         // Add scheme to the bare URI we get.
         for (String s : MetastoreConf.getZKConfig(conf).getServerUris()) {
@@ -1583,44 +1588,30 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+  public List<Partition> dropPartitions(TableName tableName,
+      RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws NoSuchObjectException, MetaException, TException {
-    if (context == null) {
-      context = new EnvironmentContext();
-    }
-
-    if (context.getProperties() != null &&
-        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
-      return Lists.newArrayList();
-    }
-
-    RequestPartsSpec rps = new RequestPartsSpec();
-    List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
-
-    for (Pair<Integer, byte[]> partExpr : partExprs) {
-      DropPartitionsExpr dpe = new DropPartitionsExpr();
-      dpe.setExpr(partExpr.getRight());
-      dpe.setPartArchiveLevel(partExpr.getLeft());
-      exprs.add(dpe);
-    }
-    rps.setExprs(exprs);
-    DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
-    req.setCatName(catName);
+    DropPartitionsRequest req = new DropPartitionsRequest(tableName.getDb(), tableName.getTable(), partsSpec);
+    req.setCatName(tableName.getCat());
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
 
+    if (context == null) {
+      context = new EnvironmentContext();
+    }
+    if (context.getProperties() != null &&
+        Boolean.parseBoolean(context.getProperties().get(SKIP_DROP_PARTITION))) {
+      return Lists.newArrayList();
+    }
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
       context.putToProperties("ifPurge", "true");
     }
     if (options.writeId != null) {
-      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
       context.putToProperties(hive_metastoreConstants.WRITE_ID, options.writeId.toString());
     }
     if (options.txnId != null) {
-      context = Optional.ofNullable(context).orElse(new EnvironmentContext());
       context.putToProperties(hive_metastoreConstants.TXN_ID, options.txnId.toString());
     }
     req.setEnvironmentContext(context);
@@ -3948,5 +3939,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     }
     PropertyGetResponse response = client.get_properties(request);
     return response.getProperties();
+  }
+
+  @VisibleForTesting
+  public URI[] getMetastoreUris() {
+    return metastoreUris;
   }
 }

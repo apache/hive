@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
@@ -187,7 +188,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   public static String getRootNamespace(Configuration conf, String userProvidedNamespace,
       String defaultNamespacePrefix) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    final boolean isSecure = isZkEnforceSASLClient(conf);
     String rootNs = userProvidedNamespace;
     if (rootNs == null) {
       rootNs = defaultNamespacePrefix + (isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE);
@@ -196,7 +197,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private ACLProvider getACLProviderForZKPath(String zkPath) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    final boolean isSecure = isZkEnforceSASLClient(conf);
     return new ACLProvider() {
       @Override
       public List<ACL> getDefaultAcl() {
@@ -405,7 +406,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private void checkAndSetAcls() throws Exception {
-    if (!ZookeeperUtils.isKerberosEnabled(conf)) {
+    if (!isZkEnforceSASLClient(conf)) {
       return;
     }
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
@@ -670,15 +671,23 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   public void start() throws IOException {
     if (zooKeeperClient != null) {
-      String principal = ZookeeperUtils.setupZookeeperAuth(
-          conf, saslLoginContextName, zkPrincipal, zkKeytab);
-      if (principal != null) {
-        userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(principal);
+      if (isZkEnforceSASLClient(conf)) {
+        if (saslLoginContextName != null) {
+          SecurityUtils.setZookeeperClientKerberosJaasConfig(zkPrincipal, zkKeytab, saslLoginContextName);
+        }
+        if (zkPrincipal != null) {
+          userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(zkPrincipal);
+        }
       }
       zooKeeperClient.start();
     }
     // Init closeable utils in case register is not called (see HIVE-13322)
     CloseableUtils.class.getName();
+  }
+
+  private static boolean isZkEnforceSASLClient(Configuration conf) {
+    return UserGroupInformation.isSecurityEnabled() &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
   }
 
   protected void unregisterInternal() {

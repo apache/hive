@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -743,6 +745,46 @@ public class TestHive {
     finally {
       cleanUpTableQuietly(dbName, tableName);
     }
+  }
+
+  @Test
+  public void testDropPartitionsByNames() throws Throwable {
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
+    String dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    String tblName = "table_for_testDropPartitionsByNames";
+    TableName tableName = new TableName(catName, dbName, tblName);
+
+    Table table = createPartitionedTable(dbName, tblName);
+    for (int i = 10; i <= 12; i++) {
+      Map<String, String> partitionSpec = new ImmutableMap.Builder<String, String>()
+          .put("ds", "20231129")
+          .put("hr", String.valueOf(i))
+          .build();
+      hm.createPartition(table, partitionSpec);
+    }
+
+    List<Partition> partitions = hm.getPartitions(table);
+    assertEquals(3, partitions.size());
+
+    RequestPartsSpec partsSpec = new RequestPartsSpec();
+    partsSpec.setNames(Arrays.asList("ds=20231129/hr=10"));
+    hm.dropPartitions(tableName, partsSpec, PartitionDropOptions.instance());
+    assertEquals(2, hm.getPartitions(table).size());
+
+    try {
+      // drop missing partition name
+      partsSpec.setNames(Arrays.asList("ds=20231129/hr=10", "ds=20231129/hr=11"));
+      hm.dropPartitions(tableName, partsSpec, PartitionDropOptions.instance());
+      fail("Expected exception");
+    } catch (HiveException e) {
+      // expected
+      assertEquals("Some partitions to drop are missing", e.getCause().getMessage());
+      assertEquals(2, hm.getPartitions(table).size());
+    }
+
+    partsSpec.setNames(Arrays.asList("ds=20231129/hr=12", "ds=20231129/hr=11"));
+    hm.dropPartitions(tableName, partsSpec, PartitionDropOptions.instance());
+    assertEquals(0, hm.getPartitions(table).size());
   }
 
   @Test
