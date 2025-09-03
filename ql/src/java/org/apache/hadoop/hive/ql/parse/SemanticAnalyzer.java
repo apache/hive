@@ -12520,7 +12520,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     desc.getTTable().getSd().getSerdeInfo().setSerializationLib(NullStructSerDe.class.getName());
     desc.setInputFormatClass(NullRowsInputFormat.class);
     desc.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
-    tabNameToTabObject.put(TableName.getDbTable(DUMMY_DATABASE, DUMMY_TABLE), desc);
     return desc;
   }
 
