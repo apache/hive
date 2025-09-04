@@ -351,7 +351,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                   sonarAnalysis("""-Dsonar.pullrequest.github.repository=apache/hive \
                                    -Dsonar.pullrequest.key=${CHANGE_ID} \
                                    -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
-                                   -Dsonar.pullrequest.base=${CHANGE_TARGET} \
+                                   -Dsonar.pullrequest.base=target \
                                    -Dsonar.pullrequest.provider=GitHub""")
               }
           } else {
