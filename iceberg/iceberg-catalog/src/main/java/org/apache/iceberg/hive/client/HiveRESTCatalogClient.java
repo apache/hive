@@ -170,7 +170,8 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
             LOG.warn("Can not set ownerType: {}", namespaceMetadata.get(DB_OWNER_TYPE), e);
           }
           return database;
-        }).findFirst().orElseThrow(() -> new NoSuchObjectException("Database " + dbName + " not found"));
+        }).findFirst().orElseThrow(() ->
+            new NoSuchObjectException("Database " + dbName + " not found"));
   }
 
   @Override

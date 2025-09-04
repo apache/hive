@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -188,30 +187,7 @@ public final class Catalogs {
    * @return true if the Catalog is HiveCatalog
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
-    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    String catalogType = CatalogUtils.getCatalogType(conf, catalogName);
-    if (catalogType != null) {
-      return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
-    }
-    catalogType = CatalogUtils.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
-    if (catalogType != null) {
-      return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
-    }
-    return CatalogUtils.getCatalogProperties(conf, catalogName).get(CatalogProperties.CATALOG_IMPL) == null;
-  }
-
-  public static boolean hadoopCatalog(Configuration conf, Properties props) {
-    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    String catalogType = CatalogUtils.getCatalogType(conf, catalogName);
-    if (catalogType != null) {
-      return CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP.equalsIgnoreCase(catalogType);
-    }
-    catalogType = CatalogUtils.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
-    if (catalogType != null) {
-      return CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP.equalsIgnoreCase(catalogType);
-    }
-    return CatalogUtil.ICEBERG_CATALOG_HADOOP.equals(
-        CatalogUtils.getCatalogProperties(conf, catalogName).get(CatalogProperties.CATALOG_IMPL));
+    return CatalogUtils.assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE, null);
   }
 
   /**

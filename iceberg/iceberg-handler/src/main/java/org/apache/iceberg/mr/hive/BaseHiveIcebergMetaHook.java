@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
-import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -137,7 +136,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
       try {
         this.icebergTable = IcebergTableUtil.getTable(conf, catalogProperties, true);
 
-        if (Catalogs.hadoopCatalog(conf, catalogProperties) && hmsTable.getSd() != null &&
+        if (CatalogUtils.hadoopCatalog(conf, catalogProperties) && hmsTable.getSd() != null &&
                 hmsTable.getSd().getLocation() == null) {
           hmsTable.getSd().setLocation(icebergTable.location());
         }
@@ -280,11 +279,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // If the table is not managed by Hive or REST catalog, then the location should be set
-    if (!Catalogs.hiveCatalog(conf, catalogProperties) &&
-        !CatalogUtil.ICEBERG_CATALOG_TYPE_REST.equals(CatalogUtils.getCatalogType(conf, catalogProperties))) {
+    if (CatalogUtils.isHadoopTable(conf, catalogProperties)) {
       String location = (hmsTable.getSd() != null) ? hmsTable.getSd().getLocation() : null;
-      if (location == null && Catalogs.hadoopCatalog(conf, catalogProperties)) {
+      if (location == null && CatalogUtils.hadoopCatalog(conf, catalogProperties)) {
         location = IcebergTableUtil.defaultWarehouseLocation(
             TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()),
             conf, catalogProperties);

@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -42,6 +43,7 @@ public class CatalogUtils {
   public static final String CATALOG_IMPL_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
   public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
   public static final String ICEBERG_HADOOP_TABLE_NAME = "location_based_table";
+  public static final String ICEBERG_DEFAULT_CATALOG_NAME = "default_iceberg";
   public static final String NO_CATALOG_TYPE = "no catalog";
   public static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet.of(
       // We don't want to push down the metadata location props to Iceberg from HMS,
@@ -141,6 +143,28 @@ public class CatalogUtils {
     return getCatalogType(conf, catalogName);
   }
 
+  public static boolean isCustomHadoopCatalogImpl(Configuration conf, String catalogName) {
+    String getCatalogImpl = getCatalogImpl(conf, catalogName);
+    if (StringUtils.isEmpty(getCatalogImpl)) {
+      return false;
+    }
+    try {
+      return Class.forName(CatalogUtil.ICEBERG_CATALOG_HADOOP).isAssignableFrom(Class.forName(getCatalogImpl));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(String.format("Error checking if catalog %s has custom hadoop impl", catalogName), e);
+    }
+  }
+
+  public static boolean isHadoopTable(Configuration conf, Properties catalogProperties) {
+    String catalogName = catalogProperties.getProperty(CATALOG_NAME);
+    return ICEBERG_HADOOP_TABLE_NAME.equals(catalogName) || hadoopCatalog(conf, catalogProperties) ||
+        isCustomHadoopCatalogImpl(conf, catalogName);
+  }
+
+  public static boolean hadoopCatalog(Configuration conf, Properties props) {
+    return assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP, CatalogUtil.ICEBERG_CATALOG_HADOOP);
+  }
+
   /**
    * Get Hadoop config key of a catalog property based on catalog name
    * @param catalogName catalog name
@@ -163,7 +187,7 @@ public class CatalogUtils {
    * @return type of the catalog, can be null
    */
   public static String getCatalogType(Configuration conf, String catalogName) {
-    if (catalogName != null) {
+    if (!StringUtils.isEmpty(catalogName)) {
       String catalogType = conf.get(catalogPropertyConfigKey(
           catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE));
       if (catalogName.equals(ICEBERG_HADOOP_TABLE_NAME)) {
@@ -187,5 +211,17 @@ public class CatalogUtils {
         .map(name -> String.format(CatalogUtils.CATALOG_IMPL_TEMPLATE, name))
         .map(conf::get)
         .orElse(null);
+  }
+
+  public static boolean assertCatalogType(Configuration conf, Properties props, String expectedType,
+      String expectedImpl) {
+    String catalogName = props.getProperty(CATALOG_NAME);
+    String catalogType = Optional.ofNullable(CatalogUtils.getCatalogType(conf, catalogName))
+        .orElseGet(() -> CatalogUtils.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME));
+    if (catalogType != null) {
+      return expectedType.equalsIgnoreCase(catalogType);
+    }
+    return StringUtils.equals(expectedImpl, CatalogUtils.getCatalogProperties(conf, catalogName)
+        .get(CatalogProperties.CATALOG_IMPL));
   }
 }
