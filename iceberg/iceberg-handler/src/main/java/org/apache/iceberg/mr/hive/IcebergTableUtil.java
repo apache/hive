@@ -83,6 +83,7 @@ import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
+import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -233,17 +234,17 @@ public class IcebergTableUtil {
     return table.currentSnapshot();
   }
 
-  static Path getColStatsPath(Table table) {
+  static String getColStatsPath(Table table) {
     return getColStatsPath(table, table.currentSnapshot().snapshotId());
   }
 
-  static Path getColStatsPath(Table table, long snapshotId) {
+  static String getColStatsPath(Table table, long snapshotId) {
     return table.statisticsFiles().stream()
       .filter(stats -> stats.snapshotId() == snapshotId)
       .filter(stats -> stats.blobMetadata().stream()
         .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
       )
-      .map(stats -> new Path(stats.path()))
+      .map(StatisticsFile::path)
       .findAny().orElse(null);
   }
 
@@ -603,11 +604,11 @@ public class IcebergTableUtil {
   public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
     List<T> colStats = Lists.newArrayList();
 
-    Path statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
+    String statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
     if (statsPath == null) {
       return colStats;
     }
-    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath.toString())).build()) {
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
       List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
 
       if (filter != null) {

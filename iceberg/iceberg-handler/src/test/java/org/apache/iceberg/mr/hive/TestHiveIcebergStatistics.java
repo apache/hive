@@ -345,7 +345,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     table.refresh();
 
-    Path tblColPath = IcebergTableUtil.getColStatsPath(table);
+    Path tblColPath = new Path(IcebergTableUtil.getColStatsPath(table));
     Assert.assertNotNull(tblColPath);
     // Check that if colPath is created correctly
     Assert.assertTrue(tblColPath.getFileSystem(shell.getHiveConf()).exists(tblColPath));

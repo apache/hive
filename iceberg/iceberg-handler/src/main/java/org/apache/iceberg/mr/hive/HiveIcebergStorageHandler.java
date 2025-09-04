@@ -46,6 +46,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -636,6 +637,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             );
       } catch (IOException e) {
         LOG.warn("Unable to write column stats to the Puffin file: {}", e.getMessage());
+
+        Path path = new Path(statsPath);
+        FileSystem fs = path.getFileSystem(conf);
+        if (fs.exists(path)) {
+          fs.delete(path, false);
+        }
         return false;
       }
       tbl.updateStatistics()
