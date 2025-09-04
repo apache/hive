@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
@@ -82,6 +83,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.columnsIncludedByNameType;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -209,51 +211,45 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache;
   }
 
-  private static ColumnStatistics updateStatsForAlterPart(RawStore rawStore, Table before, String catalogName,
+  private static void updateStatsForAlterPart(RawStore rawStore, Table before, String catalogName,
       String dbName, String tableName, Partition part) throws Exception {
     List<String> deletedCols = new ArrayList<>();
-    List<ColumnStatistics> multiColumnStats = HiveAlterHandler
-        .updateOrGetPartitionColumnStats(rawStore, catalogName, dbName, tableName, part.getValues(),
-            part.getSd().getCols(), before, part, null, deletedCols);
-    if (multiColumnStats.size() > 1) {
-      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
+    // if this is the table rename, change the cache
+    boolean rename = !Objects.equals(before.getDbName(), dbName) ||
+        !Objects.equals(before.getTableName(), tableName);
+    if (rename) {
+      deletedCols = part.getSd().getCols().stream().map(FieldSchema::getName).toList();
+    } else {
+      HiveAlterHandler
+          .updateOrGetPartitionColumnStats(rawStore, catalogName, dbName, tableName, part.getValues(),
+              part.getSd().getCols(), before, part, deletedCols);
     }
-    ColumnStatistics colStats = multiColumnStats.isEmpty() ? null : multiColumnStats.get(0);
     for (String column : deletedCols) {
       sharedCache.removePartitionColStatsFromCache(catalogName, dbName, tableName, part.getValues(), column);
     }
-    if (colStats != null) {
-      sharedCache.alterPartitionAndStatsInCache(catalogName, dbName, tableName, part.getWriteId(), part.getValues(),
-          part.getParameters(), colStats.getStatsObj());
-    }
-    return colStats;
   }
 
   private static void updateStatsForAlterTable(RawStore rawStore, Table tblBefore, Table tblAfter, String catalogName,
       String dbName, String tableName) throws Exception {
-    ColumnStatistics colStats = null;
     if (tblBefore.isSetPartitionKeys()) {
       List<Partition> parts = sharedCache.listCachedPartitions(catalogName, dbName, tableName, -1);
       for (Partition part : parts) {
-        colStats = updateStatsForAlterPart(rawStore, tblBefore, catalogName, dbName, tableName, part);
+        updateStatsForAlterPart(rawStore, tblBefore, catalogName, dbName, tableName, part);
       }
     }
 
     rawStore.alterTable(catalogName, dbName, tblBefore.getTableName(), tblAfter, null);
 
-    Set<String> deletedCols = new HashSet<>();
-    List<ColumnStatistics> multiColumnStats = HiveAlterHandler.getColumnStats(rawStore, tblBefore);
-    multiColumnStats.forEach(cs ->
-      deletedCols.addAll(HiveAlterHandler.filterColumnStatsForTableColumns(tblBefore.getSd().getCols(), cs)
-          .stream().map(ColumnStatisticsObj::getColName).collect(Collectors.toList())));
-
-    if (multiColumnStats.size() > 1) {
-      throw new RuntimeException("CachedStore can only be enabled for Hive engine");
-    }
-    List<ColumnStatisticsObj> statisticsObjs = multiColumnStats.isEmpty() ? null : multiColumnStats.get(0).getStatsObj();
-    if (colStats != null) {
-      sharedCache.alterTableAndStatsInCache(catalogName, dbName, tableName, tblAfter.getWriteId(), statisticsObjs,
-          tblAfter.getParameters());
+    // if this is the table rename, change the cache
+    boolean rename = !Objects.equals(tblBefore.getDbName(), tblAfter.getDbName()) ||
+        !Objects.equals(tblBefore.getTableName(), tblAfter.getTableName());
+    final List<String> deletedCols;
+    if (rename) {
+      deletedCols = tblBefore.getSd().getCols().stream().map(FieldSchema::getName).toList();
+    } else {
+      deletedCols = tblBefore.getSd().getCols().stream().filter(c -> tblAfter.getSd().getCols().stream()
+              .noneMatch(n -> columnsIncludedByNameType(Arrays.asList(c), Arrays.asList(n)))).map(FieldSchema::getName)
+              .toList();
     }
     for (String column : deletedCols) {
       sharedCache.removeTableColStatsFromCache(catalogName, dbName, tableName, column);
