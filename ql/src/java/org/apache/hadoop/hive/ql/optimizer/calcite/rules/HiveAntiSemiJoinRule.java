@@ -98,8 +98,7 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
     }
 
     // if one of the operand from join condition is not from right table then no need to convert to anti join.
-    boolean hasConditionMet = HiveCalciteUtil.hasJoinConditionOperandFromRightTable(join);
-    if (!hasConditionMet) {
+    if (!HiveCalciteUtil.hasJoinConditionOperandsFromLeftAndRightSide(join)) {
       return;
     }
 

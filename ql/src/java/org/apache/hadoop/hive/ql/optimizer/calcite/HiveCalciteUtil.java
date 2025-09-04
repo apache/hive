@@ -1273,12 +1273,12 @@ public class HiveCalciteUtil {
   }
 
   /**
-   * Checks the operands in the join conditions are from right table or only from left table.
+   * Checks the operands in the join conditions are from right side or only from left side.
    *
    * @param joinRel Join node
-   * @return true if the join condition operands are from right and left table, false otherwise.
+   * @return true if the join condition operands are from right and left side, false otherwise.
    */
-  public static boolean hasJoinConditionOperandFromRightTable(Join joinRel) {
+  public static boolean hasJoinConditionOperandsFromLeftAndRightSide(Join joinRel) {
     RexNode condition = joinRel.getCondition();
     RelNode leftRel = joinRel.getLeft();
     int leftFieldCount = leftRel.getRowType().getFieldCount();
@@ -1286,7 +1286,7 @@ public class HiveCalciteUtil {
     List<RexNode> conditions = RelOptUtil.conjunctions(condition);
     for (RexNode cond : conditions) {
       ImmutableBitSet condBitmap = RelOptUtil.InputFinder.bits(cond);
-      // if condition becomes true if both the operands are from left table
+      // here condition becomes true if both the operands are from left table
       if (leftBitmap.contains(condBitmap)) {
         return false;
       }
