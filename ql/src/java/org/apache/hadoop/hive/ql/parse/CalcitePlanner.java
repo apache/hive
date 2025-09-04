@@ -1850,6 +1850,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 3. Run exhaustive PPD, add not null filters, transitive inference,
       // constant propagation, constant folding
       List<RelOptRule> rules = Lists.newArrayList();
+      rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
+      rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
+      rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
+      rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPT_PPD_WINDOWING)) {
         rules.add(HiveFilterProjectTransposeRule.DETERMINISTIC_WINDOWING);
       } else {
@@ -1872,10 +1876,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         rules.add(HiveReduceExpressionsWithStatsRule.INSTANCE);
       }
       rules.add(HiveProjectFilterPullUpConstantsRule.INSTANCE);
-      rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
-      rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
-      rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
-      rules.add(HiveReduceExpressionsRule.SEMIJOIN_INSTANCE);
       rules.add(HiveAggregateReduceFunctionsRule.INSTANCE);
       rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER)) {
