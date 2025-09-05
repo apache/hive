@@ -658,6 +658,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
     ctxHandler.setSecurityHandler(securityHandler);
   }
+
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
    *
