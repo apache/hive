@@ -1296,6 +1296,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
+    Optional<String> jsonPlan = HiveRelOptUtil.serializeToJSON(optimizedOptiqPlan);
+    if (jsonPlan.isPresent()) {
+      try {
+        optimizedOptiqPlan = HiveRelOptUtil.deserializePlan(conf, jsonPlan.get());
+      } catch (IOException e) {
+        LOG.warn("Cannot deserialize plan from JSON", e);
+      }
+    }
     return optimizedOptiqPlan;
   }
 
@@ -3399,7 +3407,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode subQueryRoot = (ASTNode) next.getChild(1);
             doPhase1(subQueryRoot, qbSQ, ctx1, null);
             getMetaData(qbSQ);
-            qb.getSubqueryMetaDataList().add(qbSQ.getMetaData());
             this.subqueryId++;
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
