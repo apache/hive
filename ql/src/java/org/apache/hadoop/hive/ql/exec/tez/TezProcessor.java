@@ -295,7 +295,12 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       // If there are other speculative attempt execute canCommit first, then wait until the attempt is killed
       // or the committed task fails.
       while (!getContext().canCommit()) {
-        Thread.sleep(100);
+        // If canCommit returns false and fall into this loop, it means another task attempt has committed.
+        // And this task attempt is only needs to sleep for a relatively long time to wait for being killed.
+        // However, we need to avoid low-probability events: the rare case where a task attempt fails after
+        // committed, so we can't set an excessively long delay so that this task attempt could react on time.
+        // 500ms is a trade-off value.
+        Thread.sleep(500);
       }
     } catch (Throwable t) {
       rproc.setAborted(true);
