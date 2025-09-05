@@ -34,6 +34,8 @@ import org.apache.calcite.sql.SqlSelectKeyword;
 import org.apache.calcite.sql.fun.SqlTrimFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Copy of org.apache.calcite.rel.externalize.RelEnumTypes as it has
  * a private constructor - so cannot extend.
@@ -75,27 +77,8 @@ public class HiveRelEnumTypes {
       builder.put(enumConstant.name(), enumConstant);
     }
   }
-
-  /** Converts a literal into a value that can be serialized to JSON.
-   * In particular, if is an enum, converts it to its name. */
-  public static Object fromEnum(Object value) {
-    return value instanceof Enum ? fromEnum((Enum) value) : value;
-  }
-
-  /** Converts an enum into its name.
-   * Throws if the enum's class is not registered. */
-  public static String fromEnum(Enum enumValue) {
-    if (ENUM_BY_NAME.get(enumValue.name()) != enumValue) {
-      throw new AssertionError("cannot serialize enum value to JSON: "
-          + enumValue.getDeclaringClass().getCanonicalName() + "."
-          + enumValue);
-    }
-    return enumValue.name();
-  }
-
-  /** Converts a string to an enum value.
-   * The converse of {@link #fromEnum(Enum)}. */
+  
   public static <E extends Enum<E>> E toEnum(String name) {
-    return (E) ENUM_BY_NAME.get(name);
+    return (E) requireNonNull(ENUM_BY_NAME.get(name));
   }
 }
