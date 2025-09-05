@@ -20,10 +20,12 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +36,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -79,6 +83,7 @@ import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
+import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -91,12 +96,18 @@ import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.puffin.BlobMetadata;
+import org.apache.iceberg.puffin.Puffin;
+import org.apache.iceberg.puffin.PuffinReader;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ByteBuffers;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
@@ -223,18 +234,18 @@ public class IcebergTableUtil {
     return table.currentSnapshot();
   }
 
-  static Optional<Path> getColStatsPath(Table table) {
+  static String getColStatsPath(Table table) {
     return getColStatsPath(table, table.currentSnapshot().snapshotId());
   }
 
-  static Optional<Path> getColStatsPath(Table table, long snapshotId) {
+  static String getColStatsPath(Table table, long snapshotId) {
     return table.statisticsFiles().stream()
       .filter(stats -> stats.snapshotId() == snapshotId)
       .filter(stats -> stats.blobMetadata().stream()
         .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
       )
-      .map(stats -> new Path(stats.path()))
-      .findAny();
+      .map(StatisticsFile::path)
+      .findAny().orElse(null);
   }
 
   static PartitionStatisticsFile getPartitionStatsFile(Table table, long snapshotId) {
@@ -590,6 +601,33 @@ public class IcebergTableUtil {
     return spec;
   }
 
+  public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
+    List<T> colStats = Lists.newArrayList();
+
+    String statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
+    if (statsPath == null) {
+      return colStats;
+    }
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
+      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
+
+      if (filter != null) {
+        blobMetadata = blobMetadata.stream().filter(filter)
+          .toList();
+      }
+      Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
+      LOG.info("Using column stats from: {}", statsPath);
+
+      while (it.hasNext()) {
+        byte[] byteBuffer = ByteBuffers.toByteArray(it.next());
+        colStats.add(SerializationUtils.deserialize(byteBuffer));
+      }
+    } catch (Exception e) {
+      LOG.warn("Unable to read column stats: {}", e.getMessage());
+    }
+    return colStats;
+  }
+
   public static ExecutorService newDeleteThreadPool(String completeName, int numThreads) {
     AtomicInteger deleteThreadsIndex = new AtomicInteger(0);
     return Executors.newFixedThreadPool(numThreads, runnable -> {
@@ -608,7 +646,7 @@ public class IcebergTableUtil {
             .anyMatch(id -> id != table.spec().specId());
   }
 
-  public static <T extends ContentFile> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
+  public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
       Boolean latestSpecOnly) {
     Set<String> partitions = Sets.newHashSet();
     int tableSpecId = icebergTable.spec().specId();
