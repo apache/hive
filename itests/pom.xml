@@ -44,6 +44,7 @@
     <module>qtest-druid</module>
     <module>qtest-kudu</module>
     <module>qtest-iceberg</module>
+    <module>hive-iceberg</module>
   </modules>
   <dependencyManagement>
     <dependencies>

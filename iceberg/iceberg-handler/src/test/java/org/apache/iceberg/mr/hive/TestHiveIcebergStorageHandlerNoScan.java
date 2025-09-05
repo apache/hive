@@ -699,7 +699,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
                                   "'='" +
                                   testTables.catalogName() +
                                   "')"));
-      if (testTableType != TestTables.TestTableType.HADOOP_CATALOG) {
+      if (testTableType != TestTables.TestTableType.HADOOP_CATALOG &&
+          testTableType != TestTables.TestTableType.CUSTOM_CATALOG) {
         assertThatThrownBy
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageStartingWith("Failed to execute Hive query")

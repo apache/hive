@@ -132,6 +132,7 @@ import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataOperations;
 import org.apache.iceberg.ExpireSnapshots;
@@ -173,8 +174,10 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
+import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -258,7 +261,13 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public HiveMetaHook getMetaHook() {
     // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
     // operation.
-    return new HiveIcebergMetaHook(conf);
+    String catalogType = CatalogUtils.getCatalogType(conf);
+    if (StringUtils.isEmpty(catalogType) || CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equals(catalogType)) {
+      return new HiveIcebergMetaHook(conf);
+    } else {
+      conf.set(ConfigProperties.LOCK_HIVE_ENABLED, "false");
+      return new BaseHiveIcebergMetaHook(conf);
+    }
   }
 
   @Override
@@ -2105,7 +2114,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return Collections.emptyList();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return IcebergTableUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
+    return MetastoreUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
   }
 
   @Override
