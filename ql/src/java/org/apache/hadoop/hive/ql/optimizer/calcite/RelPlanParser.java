@@ -432,7 +432,7 @@ public class RelPlanParser {
     }
 
     public RelDistribution getDistribution() {
-      return relJson.toDistribution(get("distribution"));
+      return relJson.toDistribution((Map<String, Object>) get("distribution"));
     }
 
     public ImmutableList<ImmutableList<RexLiteral>> getTuples(String tag) {
