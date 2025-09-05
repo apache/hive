@@ -137,7 +137,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     }
   }
 
-  protected ProcessorContext processorContext;
   private ReflectiveProgressHelper progressHelper;
 
   protected static final NumberFormat taskIdFormat = NumberFormat.getInstance();
@@ -185,46 +184,45 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     Configuration conf = TezUtils.createConfFromUserPayload(getContext().getUserPayload());
     this.jobConf = new JobConf(conf);
     this.jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
-    this.processorContext = getContext();
     initTezAttributes();
-    ExecutionContext execCtx = processorContext.getExecutionContext();
+    ExecutionContext execCtx = getContext().getExecutionContext();
     if (execCtx instanceof Hook) {
       ((Hook)execCtx).initializeHook(this);
     }
-    setupMRLegacyConfigs(processorContext);
+    setupMRLegacyConfigs();
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
 
 
   private void initTezAttributes() {
-    jobConf.set(HIVE_TEZ_VERTEX_NAME, processorContext.getTaskVertexName());
-    jobConf.setInt(HIVE_TEZ_VERTEX_INDEX, processorContext.getTaskVertexIndex());
-    jobConf.setInt(HIVE_TEZ_TASK_INDEX, processorContext.getTaskIndex());
-    jobConf.setInt(HIVE_TEZ_TASK_ATTEMPT_NUMBER, processorContext.getTaskAttemptNumber());
+    jobConf.set(HIVE_TEZ_VERTEX_NAME, getContext().getTaskVertexName());
+    jobConf.setInt(HIVE_TEZ_VERTEX_INDEX, getContext().getTaskVertexIndex());
+    jobConf.setInt(HIVE_TEZ_TASK_INDEX, getContext().getTaskIndex());
+    jobConf.setInt(HIVE_TEZ_TASK_ATTEMPT_NUMBER, getContext().getTaskAttemptNumber());
   }
 
-  private void setupMRLegacyConfigs(ProcessorContext processorContext) {
+  private void setupMRLegacyConfigs() {
     // Hive "insert overwrite local directory" uses task id as dir name
     // Setting the id in jobconf helps to have the similar dir name as MR
     StringBuilder taskAttemptIdBuilder = new StringBuilder("attempt_");
-    taskAttemptIdBuilder.append(processorContext.getApplicationId().getClusterTimestamp())
+    taskAttemptIdBuilder.append(getContext().getApplicationId().getClusterTimestamp())
         .append("_")
-        .append(jobIdFormat.format(processorContext.getApplicationId().getId()))
+        .append(jobIdFormat.format(getContext().getApplicationId().getId()))
         .append("_");
     if (isMap) {
       taskAttemptIdBuilder.append("m_");
     } else {
       taskAttemptIdBuilder.append("r_");
     }
-    taskAttemptIdBuilder.append(taskIdFormat.format(processorContext.getTaskIndex()))
+    taskAttemptIdBuilder.append(taskIdFormat.format(getContext().getTaskIndex()))
       .append("_")
-      .append(processorContext.getTaskAttemptNumber());
+      .append(getContext().getTaskAttemptNumber());
 
     // In MR, mapreduce.task.attempt.id is same as mapred.task.id. Go figure.
     String taskAttemptIdStr = taskAttemptIdBuilder.toString();
     this.jobConf.set("mapred.task.id", taskAttemptIdStr);
     this.jobConf.set("mapreduce.task.attempt.id", taskAttemptIdStr);
-    this.jobConf.setInt("mapred.task.partition", processorContext.getTaskIndex());
+    this.jobConf.setInt("mapred.task.partition", getContext().getTaskIndex());
   }
 
   @Override
@@ -296,7 +294,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       // Try to call canCommit to AM. If there is no other speculative attempt execute canCommit, then continue.
       // If there are other speculative attempt execute canCommit first, then wait until the attempt is killed
       // or the committed task fails.
-      while (!this.processorContext.canCommit()) {
+      while (!getContext().canCommit()) {
         Thread.sleep(100);
       }
     } catch (Throwable t) {
