@@ -136,29 +136,9 @@ public class CatalogUtils {
     return getCatalogType(conf, CatalogUtils.getCatalogName(conf));
   }
 
-  public static String getCatalogType(Configuration conf, Properties catalogProperties) {
-    String catalogName = catalogProperties.getProperty(
-        CatalogUtils.CATALOG_NAME,
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT));
-    return getCatalogType(conf, catalogName);
-  }
-
-  public static boolean isCustomHadoopCatalogImpl(Configuration conf, String catalogName) {
-    String getCatalogImpl = getCatalogImpl(conf, catalogName);
-    if (StringUtils.isEmpty(getCatalogImpl)) {
-      return false;
-    }
-    try {
-      return Class.forName(CatalogUtil.ICEBERG_CATALOG_HADOOP).isAssignableFrom(Class.forName(getCatalogImpl));
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(String.format("Error checking if catalog %s has custom hadoop impl", catalogName), e);
-    }
-  }
-
   public static boolean isHadoopTable(Configuration conf, Properties catalogProperties) {
     String catalogName = catalogProperties.getProperty(CATALOG_NAME);
-    return ICEBERG_HADOOP_TABLE_NAME.equals(catalogName) || hadoopCatalog(conf, catalogProperties) ||
-        isCustomHadoopCatalogImpl(conf, catalogName);
+    return ICEBERG_HADOOP_TABLE_NAME.equals(catalogName) || hadoopCatalog(conf, catalogProperties);
   }
 
   public static boolean hadoopCatalog(Configuration conf, Properties props) {
@@ -218,10 +198,29 @@ public class CatalogUtils {
     String catalogName = props.getProperty(CATALOG_NAME);
     String catalogType = Optional.ofNullable(CatalogUtils.getCatalogType(conf, catalogName))
         .orElseGet(() -> CatalogUtils.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME));
+
     if (catalogType != null) {
       return expectedType.equalsIgnoreCase(catalogType);
     }
-    return StringUtils.equals(expectedImpl, CatalogUtils.getCatalogProperties(conf, catalogName)
-        .get(CatalogProperties.CATALOG_IMPL));
+
+    String actualImpl = CatalogUtils.getCatalogProperties(conf, catalogName).get(CatalogProperties.CATALOG_IMPL);
+
+    // Return true immediately if the strings are equal (this also handles both being null).
+    if (StringUtils.equals(expectedImpl, actualImpl)) {
+      return true;
+    }
+
+    // If they are not equal, but one of them is null, they can't be subtypes.
+    if (expectedImpl == null || actualImpl == null) {
+      return false;
+    }
+
+    // Now that we know both are non-null and not equal, check the class hierarchy.
+    try {
+      return Class.forName(expectedImpl).isAssignableFrom(Class.forName(actualImpl));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(String.format("Error checking if catalog %s is subtype of %s",
+          catalogName, expectedImpl), e);
+    }
   }
 }
