@@ -189,7 +189,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     if (execCtx instanceof Hook) {
       ((Hook)execCtx).initializeHook(this);
     }
-    setupMRLegacyConfigs();
+    setupMRLegacyConfigs(getContext());
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
 
@@ -201,28 +201,28 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     jobConf.setInt(HIVE_TEZ_TASK_ATTEMPT_NUMBER, getContext().getTaskAttemptNumber());
   }
 
-  private void setupMRLegacyConfigs() {
+  private void setupMRLegacyConfigs(ProcessorContext processorContext) {
     // Hive "insert overwrite local directory" uses task id as dir name
     // Setting the id in jobconf helps to have the similar dir name as MR
     StringBuilder taskAttemptIdBuilder = new StringBuilder("attempt_");
-    taskAttemptIdBuilder.append(getContext().getApplicationId().getClusterTimestamp())
+    taskAttemptIdBuilder.append(processorContext.getApplicationId().getClusterTimestamp())
         .append("_")
-        .append(jobIdFormat.format(getContext().getApplicationId().getId()))
+        .append(jobIdFormat.format(processorContext.getApplicationId().getId()))
         .append("_");
     if (isMap) {
       taskAttemptIdBuilder.append("m_");
     } else {
       taskAttemptIdBuilder.append("r_");
     }
-    taskAttemptIdBuilder.append(taskIdFormat.format(getContext().getTaskIndex()))
+    taskAttemptIdBuilder.append(taskIdFormat.format(processorContext.getTaskIndex()))
       .append("_")
-      .append(getContext().getTaskAttemptNumber());
+      .append(processorContext.getTaskAttemptNumber());
 
     // In MR, mapreduce.task.attempt.id is same as mapred.task.id. Go figure.
     String taskAttemptIdStr = taskAttemptIdBuilder.toString();
     this.jobConf.set("mapred.task.id", taskAttemptIdStr);
     this.jobConf.set("mapreduce.task.attempt.id", taskAttemptIdStr);
-    this.jobConf.setInt("mapred.task.partition", getContext().getTaskIndex());
+    this.jobConf.setInt("mapred.task.partition", processorContext.getTaskIndex());
   }
 
   @Override
