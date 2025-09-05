@@ -144,8 +144,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   }
 
   public HiveTableScan(RelInput input) {
-    this(input.getCluster(), input.getTraitSet(), (RelOptHiveTable)input.getTable("table"),
-        (String) input.get("table:alias"), (String) input.get("qbid:alias"),
+    this(input.getCluster(), input.getTraitSet(), (RelOptHiveTable) input.getTable("table"),
+        input.getString("table:alias"), input.getString("qbid:alias"),
         input.get("qbid:alias") != null, input.getBoolean("insideView", false),
         createTableScanTrait(input));
   }
