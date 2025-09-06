@@ -1233,43 +1233,17 @@ public class HiveCalciteUtil {
   }
 
   /**
-   * Checks if any of the expression given as list expressions are from right side of the join.
-   *  This is used during anti join conversion.
-   *
-   * @param joinRel Join node whose right side has to be searched.
-   * @param expressions The list of expression to search.
-   * @return true if any of the expressions is from right side of join.
+   * Given a join, creates a bitset of the joined columns originating from the right-hand side.
+   * @param joinRel a join that concatenates all columns from its inputs (so no semi-join)
+   * @return a bitset
    */
-  public static boolean hasAnyExpressionFromRightSide(RelNode joinRel, List<RexNode> expressions)  {
-    List<RelDataTypeField> joinFields = joinRel.getRowType().getFieldList();
-    int nTotalFields = joinFields.size();
-    List<RelDataTypeField> leftFields = (joinRel.getInputs().get(0)).getRowType().getFieldList();
-    int nFieldsLeft = leftFields.size();
-    ImmutableBitSet rightBitmap = ImmutableBitSet.range(nFieldsLeft, nTotalFields);
-
-    for (RexNode node : expressions) {
-      ImmutableBitSet inputBits = RelOptUtil.InputFinder.bits(node);
-      if (rightBitmap.contains(inputBits)) {
-        return true;
-      }
+  public static ImmutableBitSet getRightSideBitset(RelNode joinRel) {
+    if(joinRel.getInputs().size() != 2) {
+      throw new IllegalArgumentException("The relation must have exactly two children:\n" + RelOptUtil.toString(joinRel));
     }
-    return false;
-  }
-
-  public static boolean hasAllExpressionsFromRightSide(RelNode joinRel, List<RexNode> expressions) {
-    List<RelDataTypeField> joinFields = joinRel.getRowType().getFieldList();
-    int nTotalFields = joinFields.size();
-    List<RelDataTypeField> leftFields = (joinRel.getInputs().get(0)).getRowType().getFieldList();
-    int nFieldsLeft = leftFields.size();
-    ImmutableBitSet rightBitmap = ImmutableBitSet.range(nFieldsLeft, nTotalFields);
-
-    for (RexNode node : expressions) {
-      ImmutableBitSet inputBits = RelOptUtil.InputFinder.bits(node);
-      if (!rightBitmap.contains(inputBits)) {
-        return false;
-      }
-    }
-    return true;
+    int nTotalFields = joinRel.getRowType().getFieldCount();
+    int nFieldsLeft = (joinRel.getInputs().get(0)).getRowType().getFieldCount();
+    return ImmutableBitSet.range(nFieldsLeft, nTotalFields);
   }
 
   /**

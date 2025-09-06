@@ -26,11 +26,14 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.slf4j.Logger;
@@ -39,7 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Optional;
 
 /**
  * Planner rule that converts a join plus filter to anti join.
@@ -86,14 +89,17 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
 
     assert (filter != null);
 
-    List<RexNode> filterList = getResidualFilterNodes(filter, join);
-    if (filterList == null) {
+    ImmutableBitSet rhsFields = HiveCalciteUtil.getRightSideBitset(join);
+    Optional<List<RexNode>> optFilterList = getResidualFilterNodes(filter, join, rhsFields);
+    if (optFilterList.isEmpty()) {
       return;
     }
+    List<RexNode> filterList = optFilterList.get();
 
     // If any projection is there from right side, then we can not convert to anti join.
-    boolean hasProjection = HiveCalciteUtil.hasAnyExpressionFromRightSide(join, project.getProjects());
-    if (hasProjection) {
+    ImmutableBitSet projectedFields = RelOptUtil.InputFinder.bits(project.getProjects(), null);
+    boolean projectionUsesRHS = projectedFields.intersects(rhsFields);
+    if (projectionUsesRHS) {
       return;
     }
 
@@ -119,13 +125,14 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
   /**
    * Extracts the non-null filter conditions from given filter node.
    *
-   * @param filter The filter condition to be checked.
-   * @param join Join node whose right side has to be searched.
+   * @param filter    The filter condition to be checked.
+   * @param join      Join node whose right side has to be searched.
+   * @param rhsFields
    * @return null : Anti join condition is not matched for filter.
-   *         Empty list : No residual filter conditions present.
-   *         Valid list containing the filter to be applied after join.
+   *     Empty list : No residual filter conditions present.
+   *     Valid list containing the filter to be applied after join.
    */
-  private List<RexNode> getResidualFilterNodes(Filter filter, Join join) {
+  private Optional<List<RexNode>> getResidualFilterNodes(Filter filter, Join join, ImmutableBitSet rhsFields) {
     // 1. If null filter is not present from right side then we can not convert to anti join.
     // 2. If any non-null filter is present from right side, we can not convert it to anti join.
     // 3. Keep other filters which needs to be executed after join.
@@ -135,43 +142,76 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
     List<RexNode> aboveFilters = RelOptUtil.conjunctions(filter.getCondition());
     boolean hasNullFilterOnRightSide = false;
     List<RexNode> filterList = new ArrayList<>();
+    final ImmutableBitSet notNullColumnsFromRightSide = getNotNullColumnsFromRightSide(join);
+
     for (RexNode filterNode : aboveFilters) {
-      if (filterNode.getKind() == SqlKind.IS_NULL) {
-        // Null filter from right side table can be removed and its a pre-condition for anti join conversion.
-        if (HiveCalciteUtil.hasAllExpressionsFromRightSide(join, Collections.singletonList(filterNode))
-            && isStrong(((RexCall) filterNode).getOperands().get(0))) {
-          hasNullFilterOnRightSide = true;
-        } else {
-          filterList.add(filterNode);
-        }
-      } else {
-        if (HiveCalciteUtil.hasAnyExpressionFromRightSide(join, Collections.singletonList(filterNode))) {
-          // If some non null condition is present from right side, we can not convert the join to anti join as
-          // anti join does not project the fields from right side.
-          return null;
-        } else {
-          filterList.add(filterNode);
-        }
+      final ImmutableBitSet usedFields = RelOptUtil.InputFinder.bits(filterNode);
+      boolean usesFieldFromRHS = usedFields.intersects(rhsFields);
+
+      if(!usesFieldFromRHS) {
+        // Only LHS fields or constants, so the filterNode is part of the residual filter
+        filterList.add(filterNode);
+        continue;
+      }
+
+      // In the following we check for filter nodes that let us deduce that
+      // "an (originally) not-null column of RHS IS NULL because the LHS row will not be matched"
+
+      boolean usesRHSFieldsOnly = rhsFields.contains(usedFields);
+      if (!usesRHSFieldsOnly) {
+        // If there is a mix between LHS and RHS fields, don't convert to anti-join
+        return Optional.empty();
+      }
+
+      if(filterNode.getKind() != SqlKind.IS_NULL) {
+        return Optional.empty();
+      }
+
+      // Null filter from right side table can be removed and it is a pre-condition for anti join conversion.
+      RexNode arg = ((RexCall) filterNode).getOperands().get(0);
+      if (isStrong(arg, notNullColumnsFromRightSide)) {
+        hasNullFilterOnRightSide = true;
+      } else if(!isStrong(arg, rhsFields)) {
+        // if all RHS fields are null and the IS NULL is still not fulfilled, bail out
+        return Optional.empty();
       }
     }
 
     if (!hasNullFilterOnRightSide) {
-      return null;
+      return Optional.empty();
     }
-    return filterList;
+    return Optional.of(filterList);
   }
 
-  private boolean isStrong(RexNode rexNode) {
-    AtomicBoolean hasCast = new AtomicBoolean(false);
+  private ImmutableBitSet getNotNullColumnsFromRightSide(RelNode joinRel) {
+    // we need to shift the indices of the second child to the right
+    int shift = (joinRel.getInput(0)).getRowType().getFieldCount();
+
+    ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
+    List<RelDataTypeField> rhsFields = joinRel.getInput(1).getRowType().getFieldList();
+    for(RelDataTypeField field : rhsFields) {
+      if(!field.getType().isNullable()) {
+        builder.set(shift+field.getIndex());
+      }
+    }
+    return builder.build();
+  }
+
+  private boolean isStrong(RexNode rexNode, ImmutableBitSet rightSideBitset) {
+    final MutableBoolean hasCast = new MutableBoolean();
     rexNode.accept(new RexVisitorImpl<Void>(true) {
       @Override
       public Void visitCall(RexCall call) {
         if (call.getKind() == SqlKind.CAST) {
-          hasCast.set(true);
+          hasCast.setTrue();
         }
         return super.visitCall(call);
       }
     });
-    return !hasCast.get() && Strong.isStrong(rexNode);
+    if (hasCast.isTrue()) {
+      // Hive's CAST might introduce NULL for NOT NULL fields
+      return false;
+    }
+    return Strong.isNull(rexNode, rightSideBitset);
   }
 }
