@@ -5120,18 +5120,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @Override
   protected Table getTableObjectByName(String tabName, boolean throwException) throws HiveException {
     String[] names = Utilities.getDbTableName(tabName);
-    final String  tableName = names[1];
-    final String  dbName = names[0];
+    final String  catalogName = names[0];
+    final String  tableName = names[2];
+    final String  dbName = names[1];
     String tableMetaRef = null;
-    if (names.length == 3) {
-      tableMetaRef = names[2];
+    if (names.length == 4) {
+      tableMetaRef = names[3];
     }
-    String fullyQualName = dbName + "." + tableName;
+    String fullyQualName = catalogName + "." + dbName + "." + tableName;
     if (tableMetaRef != null) {
       fullyQualName += "." + tableMetaRef;
     }
     if (!tabNameToTabObject.containsKey(fullyQualName)) {
-      Table table = db.getTable(dbName, tableName, tableMetaRef, throwException, false, false);
+      Table table = db.getTable(catalogName, dbName, tableName, tableMetaRef, throwException, false, false);
       if (table != null) {
         tabNameToTabObject.put(fullyQualName, table);
       }
