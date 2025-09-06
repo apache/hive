@@ -272,8 +272,8 @@ public class LazyBinaryMap extends
       if (keyObjects[index] == null) {
         // Keys are always primitive
         keyObjects[index] = LazyBinaryFactory
-            .createLazyBinaryPrimitiveClass((PrimitiveObjectInspector) ((MapObjectInspector) oi)
-            .getMapKeyObjectInspector());
+            .createLazyBinaryPrimitiveClass((PrimitiveObjectInspector) oi
+            .getMapKeyObjectInspector(), false);
       }
       keyObjects[index].init(bytes, keyStart[index], keyLength[index]);
     }
