@@ -119,9 +119,11 @@ def sonarAnalysis(args) {
       -Dsonar.host.url=https://sonarcloud.io \
       """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
 
+      // Sonar scanner runs in a separate JVM so JAVA_OPTS (notably heap size)
+      // must be passed via the appropriate environment variable
       sh """#!/bin/bash -e
       sw java 21 && . /etc/profile.d/java.sh
-      export MAVEN_OPTS=-Xmx5G
+      export SONAR_SCANNER_JAVA_OPTS=-Xmx8g
       """+mvnCmd
   }
 }
