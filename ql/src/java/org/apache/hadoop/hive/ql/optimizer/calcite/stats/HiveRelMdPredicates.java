@@ -30,14 +30,12 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.apache.calcite.linq4j.Linq4j;
-import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.linq4j.function.Predicate1;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.metadata.BuiltInMetadata;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
@@ -49,13 +47,11 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.util.BitSets;
 import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -65,7 +61,6 @@ import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 
 import com.google.common.base.Function;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -93,77 +88,6 @@ public class HiveRelMdPredicates extends RelMdPredicates {
   @Override
   public MetadataDef<BuiltInMetadata.Predicates> getDef() {
     return BuiltInMetadata.Predicates.DEF;
-  }
-
-  /**
-   * Infers predicates for a project.
-   *
-   * <ol>
-   * <li>create a mapping from input to projection. Map only positions that
-   * directly reference an input column.
-   * <li>Expressions that only contain above columns are retained in the
-   * Project's pullExpressions list.
-   * <li>For e.g. expression 'a + e = 9' below will not be pulled up because 'e'
-   * is not in the projection list.
-   *
-   * <pre>
-   * childPullUpExprs:      {a &gt; 7, b + c &lt; 10, a + e = 9}
-   * projectionExprs:       {a, b, c, e / 2}
-   * projectionPullupExprs: {a &gt; 7, b + c &lt; 10}
-   * </pre>
-   *
-   * </ol>
-   */
-  @Override
-  public RelOptPredicateList getPredicates(Project project, RelMetadataQuery mq) {
-
-    RelNode child = project.getInput();
-    final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
-    RelOptPredicateList childInfo = mq.getPulledUpPredicates(child);
-
-    List<RexNode> projectPullUpPredicates = new ArrayList<RexNode>();
-    HashMultimap<Integer, Integer> inpIndxToOutIndxMap = HashMultimap.create();
-
-    ImmutableBitSet.Builder columnsMappedBuilder = ImmutableBitSet.builder();
-    Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION, child.getRowType().getFieldCount(),
-        project.getRowType().getFieldCount());
-
-    for (Ord<RexNode> o : Ord.zip(project.getProjects())) {
-      if (o.e instanceof RexInputRef) {
-        int sIdx = ((RexInputRef) o.e).getIndex();
-        m.set(sIdx, o.i);
-        inpIndxToOutIndxMap.put(sIdx, o.i);
-        columnsMappedBuilder.set(sIdx);
-      }
-    }
-
-    // Go over childPullUpPredicates. If a predicate only contains columns in
-    // 'columnsMapped' construct a new predicate based on mapping.
-    final ImmutableBitSet columnsMapped = columnsMappedBuilder.build();
-    for (RexNode r : childInfo.pulledUpPredicates) {
-      ImmutableBitSet rCols = RelOptUtil.InputFinder.bits(r);
-      if (columnsMapped.contains(rCols)) {
-        r = r.accept(new RexPermuteInputsShuttle(m, child));
-        projectPullUpPredicates.add(r);
-      }
-    }
-
-    // Project can also generate constants. We need to include them.
-    for (Ord<RexNode> expr : Ord.zip(project.getProjects())) {
-      if (RexLiteral.isNullLiteral(expr.e)) {
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL,
-            rexBuilder.makeInputRef(project, expr.i)));
-      } else if (expr.e instanceof RexLiteral) {
-        final RexLiteral literal = (RexLiteral) expr.e;
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), literal));
-      } else if (expr.e instanceof RexCall && HiveCalciteUtil.isDeterministicFuncOnLiterals(expr.e)) {
-      //TODO: Move this to calcite
-        projectPullUpPredicates.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS,
-            rexBuilder.makeInputRef(project, expr.i), expr.e));
-      }
-    }
-    return RelOptPredicateList.of(rexBuilder, projectPullUpPredicates);
   }
 
   /** Infers predicates for a {@link org.apache.calcite.rel.core.Join}. */

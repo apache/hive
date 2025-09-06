@@ -67,6 +67,6 @@ HiveProject(month=[$0], con_usd=[$2])
           HiveFilter(condition=[=($0, 202110)])
             HiveTableScan(table=[[default, test2]], table:alias=[test2])
     HiveProject(mth=[$0], con_usd=[$1])
-      HiveFilter(condition=[IN($0, 202110, 202503)])
+      HiveFilter(condition=[AND(OR(IS NOT DISTINCT FROM($0, 202503), IS NOT DISTINCT FROM($0, 202110)), IS NOT NULL($0))])
         HiveTableScan(table=[[default, test3]], table:alias=[d])
 
