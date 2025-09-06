@@ -161,9 +161,11 @@ public class TestRuleBase {
 
   @Before
   public void setup() {
+    lenient().doReturn(asList("default", "t1")).when(t1NativeMock).getQualifiedName();
     lenient().doReturn(t1NativeType).when(t1NativeMock).getRowType();
     lenient().doReturn(t1Native).when(t1NativeMock).getHiveTableMD();
 
+    lenient().doReturn(asList("default", "t2")).when(t2NativeMock).getQualifiedName();
     lenient().doReturn(t2NativeType).when(t2NativeMock).getRowType();
     lenient().doReturn(t2Native).when(t2NativeMock).getHiveTableMD();
 
