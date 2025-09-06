@@ -181,24 +181,25 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
   @Override
   public void initialize() throws IOException {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
-    Configuration conf = TezUtils.createConfFromUserPayload(getContext().getUserPayload());
+    ProcessorContext processorContext = getContext();
+    Configuration conf = TezUtils.createConfFromUserPayload(processorContext.getUserPayload());
     this.jobConf = new JobConf(conf);
     this.jobConf.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
-    initTezAttributes();
-    ExecutionContext execCtx = getContext().getExecutionContext();
+    initTezAttributes(processorContext);
+    ExecutionContext execCtx = processorContext.getExecutionContext();
     if (execCtx instanceof Hook) {
       ((Hook)execCtx).initializeHook(this);
     }
-    setupMRLegacyConfigs(getContext());
+    setupMRLegacyConfigs(processorContext);
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
 
 
-  private void initTezAttributes() {
-    jobConf.set(HIVE_TEZ_VERTEX_NAME, getContext().getTaskVertexName());
-    jobConf.setInt(HIVE_TEZ_VERTEX_INDEX, getContext().getTaskVertexIndex());
-    jobConf.setInt(HIVE_TEZ_TASK_INDEX, getContext().getTaskIndex());
-    jobConf.setInt(HIVE_TEZ_TASK_ATTEMPT_NUMBER, getContext().getTaskAttemptNumber());
+  private void initTezAttributes(ProcessorContext processorContext) {
+    jobConf.set(HIVE_TEZ_VERTEX_NAME, processorContext.getTaskVertexName());
+    jobConf.setInt(HIVE_TEZ_VERTEX_INDEX, processorContext.getTaskVertexIndex());
+    jobConf.setInt(HIVE_TEZ_TASK_INDEX, processorContext.getTaskIndex());
+    jobConf.setInt(HIVE_TEZ_TASK_ATTEMPT_NUMBER, processorContext.getTaskAttemptNumber());
   }
 
   private void setupMRLegacyConfigs(ProcessorContext processorContext) {
