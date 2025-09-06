@@ -38,12 +38,19 @@ public class AlterTableDropConstraintDesc implements DDLDescWithWriteId, Seriali
   private final ReplicationSpec replicationSpec;
   private final String constraintName;
   private Long writeId;
+  private boolean ifExists;
 
   public AlterTableDropConstraintDesc(TableName tableName, ReplicationSpec replicationSpec, String constraintName)
-      throws SemanticException  {
+      throws SemanticException {
+    this(tableName, replicationSpec, constraintName, false);
+  }
+
+  public AlterTableDropConstraintDesc(TableName tableName, ReplicationSpec replicationSpec, String constraintName,
+      boolean ifExists) throws SemanticException  {
     this.tableName = tableName;
     this.replicationSpec = replicationSpec;
     this.constraintName = constraintName;
+    this.ifExists = ifExists;
   }
 
   public TableName getTableName() {
@@ -81,5 +88,9 @@ public class AlterTableDropConstraintDesc implements DDLDescWithWriteId, Seriali
   @Override
   public boolean mayNeedWriteId() {
     return true;
+  }
+
+  public boolean IfExists() {
+    return ifExists;
   }
 }

@@ -41,6 +41,11 @@ class DropConstraintRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        5 => array(
+            'var' => 'ifExists',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -59,6 +64,10 @@ class DropConstraintRequest
      * @var string
      */
     public $catName = null;
+    /**
+     * @var bool
+     */
+    public $ifExists = null;
 
     public function __construct($vals = null)
     {
@@ -74,6 +83,9 @@ class DropConstraintRequest
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['ifExists'])) {
+                $this->ifExists = $vals['ifExists'];
             }
         }
     }
@@ -125,6 +137,13 @@ class DropConstraintRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 5:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->ifExists);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -157,6 +176,11 @@ class DropConstraintRequest
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 4);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->ifExists !== null) {
+            $xfer += $output->writeFieldBegin('ifExists', TType::BOOL, 5);
+            $xfer += $output->writeBool($this->ifExists);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
