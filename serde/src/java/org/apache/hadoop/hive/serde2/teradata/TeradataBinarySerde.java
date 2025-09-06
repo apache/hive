@@ -77,7 +77,7 @@ import java.util.Properties;
 import static java.lang.String.format;
 
 /**
- * https://cwiki.apache.org/confluence/display/Hive/TeradataBinarySerde.
+ * https://hive.apache.org/docs/latest/user/teradatabinaryserde
  * TeradataBinarySerde handles the serialization and deserialization of Teradata Binary Record
  * passed from TeradataBinaryRecordReader.
  *
