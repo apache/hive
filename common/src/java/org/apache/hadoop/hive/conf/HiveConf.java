@@ -3611,7 +3611,7 @@ public class HiveConf extends Configuration {
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook", "", ""),
     HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE(
         "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
-    HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
+    HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", true,
         "enable or disable the Hive client authorization"),
     HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME("hive.security.authorization.kerberos.use.shortname", true,
         "use short name in Kerberos cluster"),
