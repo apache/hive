@@ -21,11 +21,26 @@ class ThriftHiveMetastore_get_catalogs_args
     static public $isValidate = false;
 
     static public $_TSPEC = array(
+        1 => array(
+            'var' => 'pattern',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\GetCatalogRequest',
+        ),
     );
 
+    /**
+     * @var \metastore\GetCatalogRequest
+     */
+    public $pattern = null;
 
-    public function __construct()
+    public function __construct($vals = null)
     {
+        if (is_array($vals)) {
+            if (isset($vals['pattern'])) {
+                $this->pattern = $vals['pattern'];
+            }
+        }
     }
 
     public function getName()
@@ -47,6 +62,14 @@ class ThriftHiveMetastore_get_catalogs_args
                 break;
             }
             switch ($fid) {
+                case 1:
+                    if ($ftype == TType::STRUCT) {
+                        $this->pattern = new \metastore\GetCatalogRequest();
+                        $xfer += $this->pattern->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -61,6 +84,14 @@ class ThriftHiveMetastore_get_catalogs_args
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_catalogs_args');
+        if ($this->pattern !== null) {
+            if (!is_object($this->pattern)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('pattern', TType::STRUCT, 1);
+            $xfer += $this->pattern->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
         $xfer += $output->writeFieldStop();
         $xfer += $output->writeStructEnd();
         return $xfer;
