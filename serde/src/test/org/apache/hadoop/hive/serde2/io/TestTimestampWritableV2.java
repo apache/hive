@@ -508,6 +508,15 @@ public class TestTimestampWritableV2 {
     verifySetTimestamp((long) Integer.MAX_VALUE * 1000 + 1234);
   }
 
+
+  @Test
+  public void testTimestampWritableV2toString() {
+    TimestampWritableV2 timestampWritableV2 = new TimestampWritableV2(
+        Timestamp.valueOf("10001-01-01 01:01:23"));
+
+    assertEquals("+10001-01-01 01:01:23", timestampWritableV2.toString());
+  }
+
   private static void verifySetTimestamp(long time) {
     Timestamp t1 = Timestamp.ofEpochMilli(time);
     TimestampWritableV2 writable = new TimestampWritableV2(t1);
