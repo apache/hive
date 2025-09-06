@@ -282,3 +282,115 @@ POSTHOOK: Input: default@n
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 NULL
+PREHOOK: query: create table tab1 (col1 int, col2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1
+POSTHOOK: query: create table tab1 (col1 int, col2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1
+PREHOOK: query: create table tab2 (col1 int, col2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab2
+POSTHOOK: query: create table tab2 (col1 int, col2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab2
+PREHOOK: query: insert into tab1 values (123, 1000), (456, 1000), (123, 5000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab1
+POSTHOOK: query: insert into tab1 values (123, 1000), (456, 1000), (123, 5000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab1
+POSTHOOK: Lineage: tab1.col1 SCRIPT []
+POSTHOOK: Lineage: tab1.col2 SCRIPT []
+PREHOOK: query: insert into tab2 values (123, 1000), (456, 1000), (788, 1000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab2
+POSTHOOK: query: insert into tab2 values (123, 1000), (456, 1000), (788, 1000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab2
+POSTHOOK: Lineage: tab2.col1 SCRIPT []
+POSTHOOK: Lineage: tab2.col2 SCRIPT []
+PREHOOK: query: select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1
+PREHOOK: Input: default@tab2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab2
+#### A masked pattern was here ####
+123	5000
+PREHOOK: query: explain CBO select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1
+PREHOOK: Input: default@tab2
+#### A masked pattern was here ####
+POSTHOOK: query: explain CBO select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0], col2=[$1])
+  HiveFilter(condition=[IS NULL($4)])
+    HiveJoin(condition=[AND(=($4, $0), =($3, $1))], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[AND(=($2, $0), =($3, $1))], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(col1=[$0], col2=[$1])
+          HiveTableScan(table=[[default, tab1]], table:alias=[t1])
+        HiveProject(col1=[$0], col2=[$1])
+          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+            HiveTableScan(table=[[default, tab2]], table:alias=[t2])
+      HiveProject(col1=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, tab1]], table:alias=[t3])
+
+PREHOOK: query: select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1
+PREHOOK: Input: default@tab2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab2
+#### A masked pattern was here ####
+123	5000
