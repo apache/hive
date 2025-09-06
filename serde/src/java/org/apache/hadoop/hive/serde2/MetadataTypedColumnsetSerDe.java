@@ -129,10 +129,8 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
     splitLimit = (lastColumnTakesRest && columnNames != null) ? columnNames
         .size() : -1;
 
-    LOG.debug(getClass().getName() + ": initialized with columnNames: "
-        + columnNames + " and separator code=" + (int) separator.charAt(0)
-        + " lastColumnTakesRest=" + lastColumnTakesRest + " splitLimit="
-        + splitLimit);
+    LOG.debug("{}: initialized with columnNames: {} and separator code={} lastColumnTakesRest={} splitLimit={}",
+        getClass().getName(), columnNames, (int) separator.charAt(0), lastColumnTakesRest, splitLimit);
   }
 
   /**

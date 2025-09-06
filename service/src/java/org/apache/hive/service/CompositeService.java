@@ -71,7 +71,7 @@ public class CompositeService extends AbstractService {
       }
       super.start();
     } catch (Throwable e) {
-      LOG.error("Error starting services " + getName(), e);
+      LOG.error("Error starting services {}", getName(), e);
       // Note that the state of the failed service is still INITED and not
       // STARTED. Even though the last service is not started completely, still
       // call stop() on all services including failed service to make sure cleanup
@@ -105,7 +105,7 @@ public class CompositeService extends AbstractService {
       try {
         service.decommission();
       } catch (Throwable t) {
-        LOG.info("Error decommissioning " + service.getName(), t);
+        LOG.info("Error decommissioning {}", service.getName(), t);
       }
     }
     super.decommission();
@@ -118,7 +118,7 @@ public class CompositeService extends AbstractService {
       try {
         service.stop();
       } catch (Throwable t) {
-        LOG.info("Error stopping " + service.getName(), t);
+        LOG.info("Error stopping {}", service.getName(), t);
       }
     }
   }
@@ -141,7 +141,7 @@ public class CompositeService extends AbstractService {
         // Stop the Composite Service
         compositeService.stop();
       } catch (Throwable t) {
-        LOG.info("Error stopping " + compositeService.getName(), t);
+        LOG.info("Error stopping {}", compositeService.getName(), t);
       }
     }
   }

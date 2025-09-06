@@ -293,9 +293,9 @@ public class OperationManager extends AbstractService {
     OperationState opState = operation.getState();
     if (opState.isTerminal()) {
       // Cancel should be a no-op in either cases
-      LOG.debug(opHandle + ": Operation is already aborted in state - " + opState);
+      LOG.debug("{}: Operation is already aborted in state - {}", opHandle, opState);
     } else {
-      LOG.debug(opHandle + ": Attempting to cancel from state - " + opState);
+      LOG.debug("{}: Attempting to cancel from state - {}", opHandle, opState);
       OperationState operationState = OperationState.CANCELED;
       operationState.setErrorMessage(errMsg);
       operation.cancel(operationState);

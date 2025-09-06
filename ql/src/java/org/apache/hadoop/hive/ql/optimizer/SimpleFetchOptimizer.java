@@ -461,7 +461,7 @@ public class SimpleFetchOptimizer extends Transform {
         throws Exception {
       if (splitSample != null && splitSample.getTotalLength() != null) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Threshold " + splitSample.getTotalLength() + " exceeded for pseudoMR mode");
+          LOG.debug("Threshold {} exceeded for pseudoMR mode", splitSample.getTotalLength());
         }
         return (threshold - splitSample.getTotalLength()) > 0;
       }
@@ -514,7 +514,7 @@ public class SimpleFetchOptimizer extends Transform {
                 @Override
                 public Long call() throws Exception {
                   long len = getPathLength(jobConf, path, partition.getInputFormatClass(), threshold);
-                  LOG.trace(path + ", length=" + len);
+                  LOG.trace("{}, length={}", path, len);
                   return total.addAndGet(len);
                 }
               }));
@@ -534,7 +534,7 @@ public class SimpleFetchOptimizer extends Transform {
           }
           return (threshold - total.get()) >= 0;
         } finally {
-          LOG.info("Data set size=" + total.get() + ", threshold=" + threshold);
+          LOG.info("Data set size={}, threshold={}", total.get(), threshold);
           if (pool != null) {
             pool.shutdownNow();
           }
@@ -595,7 +595,7 @@ public class SimpleFetchOptimizer extends Transform {
           while (length <= threshold && results.hasNext()) {
             length += results.next().getLen();
           }
-          LOG.trace("length=" + length + ", threshold=" + threshold);
+          LOG.trace("length={}, threshold={}", length, threshold);
           return length;
         } catch (FileNotFoundException e) {
           return 0;

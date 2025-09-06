@@ -96,7 +96,7 @@ public class LlapZookeeperRegistryImpl
         HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE),
         ConfVars.LLAP_VALIDATE_ACLS);
-    LOG.info("Llap Zookeeper Registry is enabled with registryid: " + instanceName);
+    LOG.info("Llap Zookeeper Registry is enabled with registryid: {}", instanceName);
   }
 
   public Endpoint getRpcEndpoint() {
@@ -388,7 +388,7 @@ public class LlapZookeeperRegistryImpl
           sr = encoder.fromBytes(childData.getPath(), data);
         } catch (IOException e) {
           LOG.error("Unable to decode data for zkpath: {}." +
-              " Ignoring from current instances list..", childData.getPath());
+            " Ignoring from current instances list..", childData.getPath());
           continue;
         }
         String containerStr = sr.get(HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);

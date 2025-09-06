@@ -88,7 +88,7 @@ public class LlapRegistryService extends AbstractService {
       registry.init(conf);
       registry.start();
     }
-    LOG.info("Using LLAP registry (client) type: " + registry);
+    LOG.info("Using LLAP registry (client) type: {}", registry);
     return registry;
   }
 
@@ -110,7 +110,7 @@ public class LlapRegistryService extends AbstractService {
       registry = new LlapFixedRegistryImpl(hosts, conf);
       this.isDynamic=false;
     }
-    LOG.info("Using LLAP registry type " + registry);
+    LOG.info("Using LLAP registry type {}", registry);
   }
 
 

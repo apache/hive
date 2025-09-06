@@ -61,7 +61,7 @@ public class ServiceUtils {
           c.close();
         } catch(IOException e) {
           if (log != null && log.isDebugEnabled()) {
-            log.debug("Exception in closing " + c, e);
+            log.debug("Exception in closing {}", c, e);
           }
         }
       }

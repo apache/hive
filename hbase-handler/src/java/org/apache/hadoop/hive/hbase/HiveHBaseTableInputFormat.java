@@ -211,7 +211,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     // Re-assess this when negotiation is honored and the duplicate evaluation is removed.
     // THIS IGNORES RESIDUAL PARSING FROM HBaseStorageHandler#decomposePredicate
     if (residualPredicate != null) {
-      LOG.debug("Ignoring residual predicate " + residualPredicate.getExprString());
+      LOG.debug("Ignoring residual predicate {}", residualPredicate.getExprString());
     }
 
     Map<String, List<IndexSearchCondition>> split = HiveHBaseInputFormatUtil.decompose(conditions);

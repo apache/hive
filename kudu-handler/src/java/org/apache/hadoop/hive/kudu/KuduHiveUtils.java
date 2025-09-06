@@ -104,11 +104,10 @@ public final class KuduHiveUtils {
         // 'client'. This is necessary if we want to support a job which
         // reads from one cluster and writes to another.
         if (!tok.getService().equals(service)) {
-          LOG.debug("Not importing credentials for service " + service +
-              "(expecting service " + service + ")");
+          LOG.debug("Not importing credentials for service {} (expecting service {})", service, service);
           continue;
         }
-        LOG.debug("Importing credentials for service " + service);
+        LOG.debug("Importing credentials for service {}", service);
         client.importAuthenticationCredentials(tok.getPassword());
         return;
       }
