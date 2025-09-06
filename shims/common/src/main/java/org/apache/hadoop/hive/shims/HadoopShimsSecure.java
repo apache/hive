@@ -23,6 +23,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -132,6 +133,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     protected RecordReader<K, V> curReader;
     protected boolean isShrinked;
     protected long shrinkedLength;
+    protected boolean skipCorruptfile;
 
     @Override
     public boolean next(K key, V value) throws IOException {
@@ -148,13 +150,32 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
     @Override
     public K createKey() {
-      K newKey = curReader.createKey();
-      return (K)(new CombineHiveKey(newKey));
+      skipCorruptfile = jc.getBoolean("hive.exec.skip.protobuf.corruptfile", false);
+      K newKey = null;
+      if (skipCorruptfile) {
+        try {
+          newKey = curReader.createKey();
+        } catch (NullPointerException e) {
+          LOG.info("=================Caught exception: " + e.getMessage() + ", skipping file======================");
+        }
+      } else {
+        newKey = curReader.createKey();
+      }
+      return (K) (new CombineHiveKey(newKey));
     }
 
     @Override
     public V createValue() {
-      return curReader.createValue();
+      skipCorruptfile = jc.getBoolean("hive.exec.skip.protobuf.corruptfile", false);
+      if (skipCorruptfile) {
+        try {
+          return curReader.createValue();
+        } catch (NullPointerException e) {
+          return null;
+        }
+      } else {
+        return curReader.createValue();
+      }
     }
 
     /**
@@ -234,7 +255,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
      * Get the record reader for the next chunk in this CombineFileSplit.
      */
     protected boolean initNextRecordReader(K key) throws IOException {
-
+      skipCorruptfile = jc.getBoolean("hive.exec.skip.protobuf.corruptfile", false);
       RecordReader preReader = curReader; //it is OK, curReader is closed, for we only need footer buffer info from preReader.
       if (curReader != null) {
         curReader.close();
@@ -249,26 +270,49 @@ public abstract class HadoopShimsSecure implements HadoopShims {
         return false;
       }
 
-      // get a record reader for the idx-th chunk
-      try {
-        curReader = rrConstructor.newInstance(new Object[]
-            {split, jc, reporter, Integer.valueOf(idx), preReader});
+      if (skipCorruptfile) {
+        // get a record reader for the idx-th chunk
+        try {
+          curReader = rrConstructor.newInstance(new Object[]
+                  {split, jc, reporter, Integer.valueOf(idx), preReader});
 
-        // change the key if need be
-        if (key != null) {
-          K newKey = curReader.createKey();
-          ((CombineHiveKey)key).setKey(newKey);
+          // change the key if need be
+          if (key != null) {
+            K newKey = curReader.createKey();
+            ((CombineHiveKey) key).setKey(newKey);
+          }
+
+          // setup some helper config variables.
+          jc.set("map.input.file", split.getPath(idx).toString());
+          jc.setLong("map.input.start", split.getOffset(idx));
+          jc.setLong("map.input.length", split.getLength(idx));
+        } catch (InvocationTargetException ITe) {
+          return false;
+        } catch (Exception e) {
+          curReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(e, jc);
         }
+      } else {
+        // get a record reader for the idx-th chunk
+        try {
+          curReader = rrConstructor.newInstance(new Object[]
+                  {split, jc, reporter, Integer.valueOf(idx), preReader});
 
-        // setup some helper config variables.
-        jc.set("map.input.file", split.getPath(idx).toString());
-        jc.setLong("map.input.start", split.getOffset(idx));
-        jc.setLong("map.input.length", split.getLength(idx));
-      } catch (Exception e) {
-        curReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(
-            e, jc);
+          // change the key if need be
+          if (key != null) {
+            K newKey = curReader.createKey();
+            ((CombineHiveKey) key).setKey(newKey);
+          }
+
+          // setup some helper config variables.
+          jc.set("map.input.file", split.getPath(idx).toString());
+          jc.setLong("map.input.start", split.getOffset(idx));
+          jc.setLong("map.input.length", split.getLength(idx));
+        } catch (Exception e) {
+          curReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(
+                  e, jc);
+        }
+        idx++;
       }
-      idx++;
       return true;
     }
   }
