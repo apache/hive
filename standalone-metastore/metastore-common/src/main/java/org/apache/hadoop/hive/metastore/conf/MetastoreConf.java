@@ -906,8 +906,6 @@ public class MetastoreConf {
         org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl.class.getName(),
         "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
             + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
-    FS_HANDLER_CLS("metastore.fs.handler.class", "hive.metastore.fs.handler.class",
-        "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl", ""),
     FS_HANDLER_THREADS_COUNT("metastore.fshandler.threads", "hive.metastore.fshandler.threads", 15,
         "Number of threads to be allocated for metastore handler for fs operations."),
     HMS_HANDLER_ATTEMPTS("metastore.hmshandler.retry.attempts", "hive.hmshandler.retry.attempts", 10,
