@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.common.metrics.metrics2;
 
-import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import java.util.concurrent.TimeUnit;
 
