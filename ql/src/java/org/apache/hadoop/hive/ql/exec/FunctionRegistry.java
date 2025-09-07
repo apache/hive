@@ -785,6 +785,12 @@ public final class FunctionRegistry {
     system.registerFunction("ST_Y", ST_Y.class);
     system.registerFunction("ST_Z", ST_Z.class);
 
+    // Iceberg UDFs
+    system.registerGenericUDF("parse_json", GenericUDFParseJson.class);
+    system.registerGenericUDF("to_json", GenericUDFToJson.class);
+    system.registerGenericUDF("variant_get", GenericUDFVariantGet.class);
+    system.registerGenericUDF("try_variant_get", GenericUDFTryVariantGet.class);
+
 
     try {
       system.registerGenericUDF("iceberg_bucket",
