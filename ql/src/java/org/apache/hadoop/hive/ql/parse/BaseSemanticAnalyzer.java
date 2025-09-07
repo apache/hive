@@ -1047,6 +1047,7 @@ public abstract class BaseSemanticAnalyzer {
     TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_VARIANT, serdeConstants.VARIANT_TYPE_NAME);
   }
 
   private static String getTypeName(ASTNode node) throws SemanticException {

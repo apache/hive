@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -35,11 +37,14 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.schema.SchemaWithPartnerVisitor;
 import org.apache.iceberg.types.Type.PrimitiveType;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.ListType;
 import org.apache.iceberg.types.Types.MapType;
 import org.apache.iceberg.types.Types.NestedField;
 import org.apache.iceberg.types.Types.StructType;
-
+import org.apache.iceberg.variants.Variant;
+import org.apache.iceberg.variants.VariantMetadata;
+import org.apache.iceberg.variants.VariantValue;
 
 class Deserializer {
   private final FieldDeserializer fieldDeserializer;
@@ -163,6 +168,43 @@ class Deserializer {
         return result;
       };
     }
+
+    @Override
+    public FieldDeserializer variant(Types.VariantType variantType, ObjectInspectorPair pair) {
+      return o -> {
+        if (o == null) {
+          return null;
+        }
+
+        // Extract data from the struct representation
+        StructObjectInspector variantInspector = (StructObjectInspector) pair.sourceInspector();
+        Object metadataObj = variantInspector.getStructFieldData(o, variantInspector.getStructFieldRef("metadata"));
+        Object valueObj = variantInspector.getStructFieldData(o, variantInspector.getStructFieldRef("value"));
+
+        if (metadataObj == null || valueObj == null) {
+          return null;
+        }
+
+        // Convert Hive objects to ByteBuffer for Iceberg variant processing
+        ByteBuffer metadataBuffer = convertToByteBuffer(metadataObj);
+        ByteBuffer valueBuffer = convertToByteBuffer(valueObj);
+
+        VariantMetadata variantMetadata = VariantMetadata.from(metadataBuffer);
+        VariantValue variantValue = VariantValue.from(variantMetadata, valueBuffer);
+
+        return Variant.of(variantMetadata, variantValue);
+      };
+    }
+
+    private ByteBuffer convertToByteBuffer(Object obj) {
+      if (obj instanceof org.apache.hadoop.io.BytesWritable bytesWritable) {
+        return ByteBuffer.wrap(bytesWritable.getBytes(), 0, bytesWritable.getLength()).order(ByteOrder.LITTLE_ENDIAN);
+      } else if (obj instanceof org.apache.hadoop.io.Text text) {
+        return ByteBuffer.wrap(text.getBytes(), 0, text.getLength()).order(ByteOrder.LITTLE_ENDIAN);
+      }
+      throw new IllegalArgumentException("Unsupported type for Variant field: " + obj.getClass());
+    }
+
 
     @Override
     public FieldDeserializer map(MapType mapType, ObjectInspectorPair pair, FieldDeserializer keyDeserializer,

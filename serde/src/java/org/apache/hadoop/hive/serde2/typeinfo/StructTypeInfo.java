@@ -44,6 +44,15 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
 
   private List<String> allStructFieldNames;
   private List<TypeInfo> allStructFieldTypeInfos;
+  private boolean isVariant = false;
+
+  public boolean isVariant() {
+    return isVariant;
+  }
+
+  public void setVariant(boolean isVariant) {
+    this.isVariant = isVariant;
+  }
 
   /**
    * For java serialization use only.

@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -398,6 +399,7 @@ public final class TypeInfoUtils {
             && !serdeConstants.MAP_TYPE_NAME.equals(t.text)
             && !serdeConstants.STRUCT_TYPE_NAME.equals(t.text)
             && !serdeConstants.UNION_TYPE_NAME.equals(t.text)
+            && !serdeConstants.VARIANT_TYPE_NAME.equals(t.text)
             && null == PrimitiveObjectInspectorUtils
             .getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
@@ -500,6 +502,14 @@ public final class TypeInfoUtils {
         default:
           return TypeInfoFactory.getPrimitiveTypeInfo(typeEntry.typeName);
         }
+      }
+
+      if (serdeConstants.VARIANT_TYPE_NAME.equals(t.text)) {
+        // Directly return the struct definition for VARIANT
+        StructTypeInfo struct = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(Arrays.asList("metadata", "value"),
+            Arrays.asList(TypeInfoFactory.binaryTypeInfo, TypeInfoFactory.binaryTypeInfo));
+        struct.setVariant(true);
+        return struct;
       }
 
       // Is this a list type?

@@ -156,6 +156,7 @@ TOK_LIST;
 TOK_STRUCT;
 TOK_MAP;
 TOK_UNIONTYPE;
+TOK_VARIANT;
 TOK_COLTYPELIST;
 TOK_CREATECATALOG;
 TOK_CREATEDATABASE;
@@ -2389,7 +2390,8 @@ type
     | listType
     | structType
     | mapType
-    | unionType;
+    | unionType
+    | variantType;
 
 primitiveType
 @init { pushMsg("primitive type specification", state); }
@@ -2440,6 +2442,12 @@ unionType
 @init { pushMsg("uniontype type", state); }
 @after { popMsg(state); }
     : KW_UNIONTYPE LESSTHAN colTypeList GREATERTHAN -> ^(TOK_UNIONTYPE colTypeList)
+    ;
+
+variantType
+@init { pushMsg("variant type", state); }
+@after { popMsg(state); }
+    : KW_VARIANT -> TOK_VARIANT
     ;
 
 setOperator
