@@ -854,13 +854,13 @@ public class TestHiveMetaStoreAuthorizer {
     when(fileStatus.getPath()).thenReturn(new Path(tblName));
     when(wh.getFs(new Path(tblName)).listStatus(new Path(tblName))).thenReturn(new FileStatus[] { fileStatus });
 
-    doThrow(new MetaException("Failed to delete director:"))
+    doThrow(new IOException("Failed to delete director:"))
        .when(wh.getFs(new Path(tblName))).delete(any(Path.class), anyBoolean());
 
     try {
       hmsHandler.drop_table(default_db, tblName, true);
       fail("Expected exception to be thrown due to lack of write permission");
-    } catch (MetaException e) {
+    } catch (IOException e) {
       String expected = "Failed to delete director:";
       assertTrue(e.getMessage().contains(expected));
     }

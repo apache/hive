@@ -3088,11 +3088,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (Exception e) {
       ms.rollbackTransaction();
       LOG.error("Failed to drop table " + name + ", rolling back transaction", e);
-      if (e instanceof MetaException) {
-        throw (MetaException) e;
-      } else {
-        throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      }
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     } finally {
       if (!success) {
         ms.rollbackTransaction();
@@ -3125,7 +3121,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
+  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) throws IOException {
     if (tablePath != null) {
       deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
     }
@@ -3159,7 +3155,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
+  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) throws IOException {
     if (partPaths != null && !partPaths.isEmpty()) {
       for (Path partPath : partPaths) {
         deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
@@ -3198,7 +3194,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    *                removing data from warehouse
    * @param shouldEnableCm If cm should be enabled
    */
-  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) throws MetaException {
+  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) throws IOException {
     try {
       if (shouldEnableCm) {
         //Don't delete cmdir if its inside the partition path
@@ -3217,7 +3213,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      throw new MetaException("Failed to delete directory: " + path.toString() + " . Exception detail : "
+      LOG.error("Failed to delete directory: {}", path, e);
+      throw new IOException("Failed to delete directory: " + path.toString() + " . Exception detail : "
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
