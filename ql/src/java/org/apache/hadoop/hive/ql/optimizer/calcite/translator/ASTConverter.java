@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
@@ -604,22 +603,20 @@ public class ASTConverter {
       // retrieve the base table source.
       QueryBlockInfo tableFunctionSource = convertSource(tfs.getInput(0));
 
-      // Create schema that preserves base table columns with original alias,
-      // but gives new UDTF columns the unique lateral view alias
-      int baseFieldCount = tableFunctionSource.schema.size();
-      List<RelDataTypeField> allOutputFields = tfs.getRowType().getFieldList();
+      // base vs LV aliases/fields
+      final String baseAlias = tableFunctionSource.schema.get(0).table;
+      final String lvAlias = nextAlias();
+      List<RelDataTypeField> baseFields = tfs.getRowType().getFieldList()
+          .subList(0, tableFunctionSource.schema.size());
+      List<RelDataTypeField> lvFields = tfs.getRowType().getFieldList()
+          .subList(tableFunctionSource.schema.size(), tfs.getRowType().getFieldCount());
 
-      final String sqAlias = tableFunctionSource.schema.get(0).table;
-      Stream<ColumnInfo> baseColumnsStream = allOutputFields.subList(0, baseFieldCount).stream()
-          .map(field -> new ColumnInfo(sqAlias, field.getName()));
+      // create LV AST using tableFunctionSource input schema, LV fields & LV alias
+      ast = createASTLateralView(tfs, tableFunctionSource, lvFields, lvAlias);
 
-      final String lateralViewAlias = nextAlias();
-      Stream<ColumnInfo> udtfColumnsStream =
-          allOutputFields.subList(baseFieldCount, allOutputFields.size()).stream()
-              .map(field -> new ColumnInfo(lateralViewAlias, field.getName()));
-
-      s = new Schema(Stream.concat(baseColumnsStream, udtfColumnsStream).toList());
-      ast = createASTLateralView(tfs, s, tableFunctionSource, lateralViewAlias);
+      // for the output schema, use the base columns with the base alias
+      // and UDTF columns with the LV alias
+      s = new Schema(new Schema(baseAlias, baseFields), new Schema(lvAlias, lvFields));
     } else if (r instanceof TableSpool) {
       TableSpool spool = (TableSpool) r;
       ASTConverter cteConverter =
@@ -673,8 +670,9 @@ public class ASTConverter {
     }
   }
 
-  private static ASTNode createASTLateralView(TableFunctionScan tfs, Schema s,
-      QueryBlockInfo tableFunctionSource, String sqAlias) {
+  private static ASTNode createASTLateralView(TableFunctionScan tfs, QueryBlockInfo tableFunctionSource,
+      List<RelDataTypeField> lvFields, String lvAlias) {
+
     // The structure of the AST LATERAL VIEW will be:
     //
     //   TOK_LATERAL_VIEW
@@ -695,7 +693,7 @@ public class ASTConverter {
     RexCall lateralCall = (RexCall) tfs.getCall();
     RexCall call = (RexCall) lateralCall.getOperands().get(0);
     for (RexNode rn : call.getOperands()) {
-      ASTNode expr = rn.accept(new RexVisitor(s, rn instanceof RexLiteral,
+      ASTNode expr = rn.accept(new RexVisitor(tableFunctionSource.schema, rn instanceof RexLiteral,
           tfs.getCluster().getRexBuilder()));
       children.add(expr);
     }
@@ -707,16 +705,13 @@ public class ASTConverter {
 
     // Add only the table generated size columns to the select expr for the function,
     // skipping over the base table columns from the input side of the join.
-    int i = 0;
-    for (ColumnInfo c : s) {
-      if (i++ < tableFunctionSource.schema.size()) {
-        continue;
-      }
-      selexpr.add(HiveParser.Identifier, c.column);
+    for (RelDataTypeField field : lvFields) {
+      selexpr.add(HiveParser.Identifier, field.getName());
     }
+
     // add the table alias for the lateral view.
     ASTBuilder tabAlias = ASTBuilder.construct(HiveParser.TOK_TABALIAS, "TOK_TABALIAS");
-    tabAlias.add(HiveParser.Identifier, sqAlias);
+    tabAlias.add(HiveParser.Identifier, lvAlias);
 
     // add the table alias to the SEL_EXPR
     selexpr.add(tabAlias.node());

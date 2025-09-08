@@ -1,78 +1,69 @@
-PREHOOK: query: SELECT t.key, t.value, lv.col
-FROM (SELECT '238' AS key, 'val_238' AS value) t
-LATERAL VIEW explode(array('238', '86', '311')) lv AS col
-WHERE t.key = '333' OR lv.col = '86'
-ORDER BY t.key, lv.col
+PREHOOK: query: SELECT t.key, lv.col
+FROM (SELECT '1' AS key) t
+LATERAL VIEW explode(array('2', '3')) lv AS col
+WHERE t.key = '4' OR lv.col = '3'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t.key, t.value, lv.col
-FROM (SELECT '238' AS key, 'val_238' AS value) t
-LATERAL VIEW explode(array('238', '86', '311')) lv AS col
-WHERE t.key = '333' OR lv.col = '86'
-ORDER BY t.key, lv.col
+POSTHOOK: query: SELECT t.key, lv.col
+FROM (SELECT '1' AS key) t
+LATERAL VIEW explode(array('2', '3')) lv AS col
+WHERE t.key = '4' OR lv.col = '3'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-238	val_238	86
-PREHOOK: query: SELECT t.key, t.value, lv.col
-FROM (SELECT '238' AS key, 'val_238' AS value) t
-LATERAL VIEW explode(array('238', '86', '311')) lv AS col
+1	3
+PREHOOK: query: SELECT t.key, lv.col
+FROM (SELECT '1' AS key) t
+LATERAL VIEW explode(array('1', '2')) lv AS col
 WHERE t.key != lv.col
-ORDER BY t.key, lv.col
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t.key, t.value, lv.col
-FROM (SELECT '238' AS key, 'val_238' AS value) t
-LATERAL VIEW explode(array('238', '86', '311')) lv AS col
+POSTHOOK: query: SELECT t.key, lv.col
+FROM (SELECT '1' AS key) t
+LATERAL VIEW explode(array('1', '2')) lv AS col
 WHERE t.key != lv.col
-ORDER BY t.key, lv.col
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-238	val_238	311
-238	val_238	86
-PREHOOK: query: SELECT t.key, lv1.col1, lv2.col2
-FROM (SELECT '238' AS key, 'val_238' AS value) t
+1	2
+PREHOOK: query: SELECT t.*, lv1.col1, lv2.col2
+FROM (SELECT 1) t
 LATERAL VIEW explode(array('a', 'b')) lv1 AS col1
 LATERAL VIEW explode(array('b', 'c')) lv2 AS col2
 WHERE lv1.col1 = 'a' OR lv2.col2 = 'c'
-ORDER BY t.key, lv1.col1, lv2.col2
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t.key, lv1.col1, lv2.col2
-FROM (SELECT '238' AS key, 'val_238' AS value) t
+POSTHOOK: query: SELECT t.*, lv1.col1, lv2.col2
+FROM (SELECT 1) t
 LATERAL VIEW explode(array('a', 'b')) lv1 AS col1
 LATERAL VIEW explode(array('b', 'c')) lv2 AS col2
 WHERE lv1.col1 = 'a' OR lv2.col2 = 'c'
-ORDER BY t.key, lv1.col1, lv2.col2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-238	a	b
-238	a	c
-238	b	c
-PREHOOK: query: SELECT t.key, lv1.col1, lv2.col2, lv3.col3
-FROM (SELECT '238' AS key, 'val_238' AS value) t
+1	a	b
+1	a	c
+1	b	c
+PREHOOK: query: SELECT t.*, lv1.col1, lv2.col2, lv3.col3
+FROM (SELECT 1) t
 LATERAL VIEW explode(array('x', 'y')) lv1 AS col1
 LATERAL VIEW explode(array('x', 'y')) lv2 AS col2
 LATERAL VIEW explode(array('x', 'y')) lv3 AS col3
 WHERE lv1.col1 != lv2.col2 AND lv2.col2 != lv3.col3
-ORDER BY t.key, lv1.col1, lv2.col2, lv3.col3
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t.key, lv1.col1, lv2.col2, lv3.col3
-FROM (SELECT '238' AS key, 'val_238' AS value) t
+POSTHOOK: query: SELECT t.*, lv1.col1, lv2.col2, lv3.col3
+FROM (SELECT 1) t
 LATERAL VIEW explode(array('x', 'y')) lv1 AS col1
 LATERAL VIEW explode(array('x', 'y')) lv2 AS col2
 LATERAL VIEW explode(array('x', 'y')) lv3 AS col3
 WHERE lv1.col1 != lv2.col2 AND lv2.col2 != lv3.col3
-ORDER BY t.key, lv1.col1, lv2.col2, lv3.col3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-238	x	y	x
-238	y	x	y
+1	x	y	x
+1	y	x	y
