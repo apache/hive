@@ -22,7 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -77,6 +77,7 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -162,6 +163,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
               if (writers.get(output) != null) {
+                String commitTasksInfoFileLocation = generateCommitTasksInfoFileLocation(table.location());
+                CommitTasksInfo commitTasksInfo =
+                    getCommitTasksInfoFromFileIfExists(commitTasksInfoFileLocation, table.io());
                 List<DataFile> dataFiles = Lists.newArrayList();
                 List<DeleteFile> deleteFiles = Lists.newArrayList();
                 List<DataFile> replacedDataFiles = Lists.newArrayList();
@@ -176,10 +180,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                 }
                 createFileForCommit(
                     new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedPaths),
-                    fileForCommitLocation, table.io());
-              } else {
-                LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
-                createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
+                    fileForCommitLocation, table.io(), commitTasksInfo, commitTasksInfoFileLocation);
               }
             } else {
               // When using Tez multi-table inserts, we could have more output tables in config than
@@ -285,9 +286,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             final Collection<JobContext> jobContexts = outputs.get(output);
             final Table table = output.table;
-            jobContexts.forEach(jobContext -> jobLocations.add(
-                generateJobLocation(table.location(), jobConf, jobContext.getJobID()))
-            );
+            String commitTasksInfoFileLocation = generateCommitTasksInfoFileLocation(table.location());
+            CommitTasksInfo commitTasksInfo =
+                getCommitTasksInfoFromFileIfExists(commitTasksInfoFileLocation, table.io());
+            jobContexts.forEach(jobContext -> {
+              String commitTaskDirectory = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              if (commitTasksInfo.containsCommitTaskDirectory(commitTaskDirectory)) {
+                jobLocations.add(commitTaskDirectory);
+                commitTasksInfo.removeFilesWithDirectory(commitTaskDirectory);
+              }
+            });
+            addItemsForCleanup(commitTasksInfoFileLocation, commitTasksInfo, jobLocations, table.io());
             commitTable(table.io(), fileExecutor, output, jobContexts, operation);
           });
 
@@ -355,16 +364,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .executeWith(tableExecutor)
           .onFailure((output, ex) -> LOG.warn("Failed cleanup table {} on abort job", output, ex))
           .run(output -> {
+            String commitTasksInfoFileLocation = generateCommitTasksInfoFileLocation(output.table.location());
+            CommitTasksInfo commitTasksInfo =
+                getCommitTasksInfoFromFileIfExists(commitTasksInfoFileLocation, output.table.io());
+
             for (JobContext jobContext : outputs.get(output)) {
               LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
               Table table = output.table;
               String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
-              jobLocations.add(jobLocation);
-              // list jobLocation to get number of forCommit files
-              // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
-              int numTasks = listForCommits(jobConf, jobLocation).size();
-              FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
-                  table.io(), false);
+              if (commitTasksInfo.containsCommitTaskDirectory(jobLocation)) {
+                jobLocations.add(jobLocation);
+                commitTasksInfo.removeFilesWithDirectory(jobLocation);
+              }
+              FilesForCommit results = collectResults(fileExecutor, table.location(), table.io(), false);
               // Check if we have files already written and remove data and delta files if there are any
               Tasks.foreach(results.allFiles())
                   .retry(3)
@@ -373,6 +385,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   .onFailure((file, ex) -> LOG.warn("Failed to remove data file {} on abort job", file.location(), ex))
                   .run(file -> table.io().deleteFile(file.location()));
             }
+
+            addItemsForCleanup(commitTasksInfoFileLocation, commitTasksInfo, jobLocations, output.table.io());
+
           }, IOException.class);
     } finally {
       fileExecutor.shutdown();
@@ -385,25 +400,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     for (JobContext jobContext : jobContextList) {
       cleanup(jobContext, jobLocations);
     }
-  }
-
-  /**
-   * Lists the forCommit files under a job location. This should only be used by {@link #abortJob(JobContext, int)},
-   * since on the Tez AM-side it will have no access to the correct number of writer tasks otherwise. The commitJob
-   * should not need to use this listing as it should have access to the vertex status info on the HS2-side.
-   * @param jobConf jobConf used for getting the FS
-   * @param jobLocation The job location that we should list
-   * @return The set of forCommit files under the job location
-   * @throws IOException if the listing fails
-   */
-  private static Set<FileStatus> listForCommits(JobConf jobConf, String jobLocation) throws IOException {
-    Path path = new Path(jobLocation);
-    LOG.debug("Listing job location to get commitTask manifest files for abort: {}", jobLocation);
-    FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
-    LOG.debug("Listing the job location: {} yielded these files: {}", jobLocation, Arrays.toString(children));
-    return Arrays.stream(children)
-        .filter(child -> !child.isDirectory() && child.getPath().getName().endsWith(FOR_COMMIT_EXTENSION))
-        .collect(Collectors.toSet());
   }
 
   /**
@@ -450,19 +446,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       LOG.info("Committing job has started for table: {}, using location: {}",
           table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
-      int numTasks = SessionStateUtil.getCommitInfo(conf, name)
-          .map(info -> info.get(jobContext.getJobID().toString()))
-          .map(SessionStateUtil.CommitInfo::getTaskNum).orElseGet(() -> {
-            // Fallback logic, if number of tasks are not available in the config
-            // If there are reducers, then every reducer will generate a result file.
-            // If this is a map only task, then every mapper will generate a result file.
-            LOG.info("Number of tasks not available in session state for jobID: {}, table: {}. " +
-                "Falling back to jobConf numReduceTasks/numMapTasks", jobContext.getJobID(), name);
-            return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
-          });
-
-      FilesForCommit writeResults = collectResults(
-          numTasks, executor, outputTable.table.location(), jobContext, io, true);
+      FilesForCommit writeResults = collectResults(executor, outputTable.table.location(), io, true);
       dataFiles.addAll(writeResults.dataFiles());
       deleteFiles.addAll(writeResults.deleteFiles());
       replacedDataFiles.addAll(writeResults.replacedDataFiles());
@@ -741,30 +725,28 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   /**
    * Get the committed data or delete files for this table and job.
    *
-   * @param numTasks Number of writer tasks that produced a forCommit file
    * @param executor The executor used for reading the forCommit files parallel
    * @param location The location of the table
-   * @param jobContext The job context
    * @param io The FileIO used for reading a files generated for commit
    * @param throwOnFailure If <code>true</code> then it throws an exception on failure
    * @return The list of the write results, which include the committed data or delete files
    */
-  private static FilesForCommit collectResults(int numTasks, ExecutorService executor, String location,
-      JobContext jobContext, FileIO io, boolean throwOnFailure) {
-    JobConf conf = jobContext.getJobConf();
-    // Reading the committed files. The assumption here is that the taskIds are generated in sequential order
-    // starting from 0.
+  private static FilesForCommit collectResults(ExecutorService executor, String location, FileIO io,
+                                               boolean throwOnFailure) {
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
     Collection<DataFile> replacedDataFiles = new ConcurrentLinkedQueue<>();
     Collection<CharSequence> referencedDataFiles = new ConcurrentLinkedQueue<>();
     Collection<Path> mergedAndDeletedFiles = new ConcurrentLinkedQueue<>();
-    Tasks.range(numTasks)
+
+    String commitTasksInfoFileLocation = generateCommitTasksInfoFileLocation(location);
+    CommitTasksInfo commitTasksInfo = getCommitTasksInfoFromFileIfExists(commitTasksInfoFileLocation, io);
+
+    Tasks.foreach(commitTasksInfo.getCommitTaskFiles())
         .throwFailureWhenFinished(throwOnFailure)
         .executeWith(executor)
         .retry(3)
-        .run(taskId -> {
-          final String taskFileName = generateFileForCommitLocation(location, conf, jobContext.getJobID(), taskId);
+        .run(taskFileName -> {
           final FilesForCommit files = readFileForCommit(taskFileName, io);
           LOG.debug("Found Iceberg commitTask manifest file: {}\n{}", taskFileName, files);
 
@@ -792,6 +774,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     return location + "/temp/" + queryId + "-" + jobId;
   }
 
+  static String generateCommitTasksInfoFileLocation(String location) {
+    return location + "/temp/commitTasksInfo" + CommitTasksInfo.COMMIT_TASKS_INFO_FILE_EXTENSION;
+  }
+
   /**
    * Generates file location based on the task configuration and a specific task id.
    * This file will be used to store the data required to generate the Iceberg commit.
@@ -806,12 +792,55 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     return generateJobLocation(location, conf, jobId) + "/task-" + taskId + FOR_COMMIT_EXTENSION;
   }
 
-  private static void createFileForCommit(FilesForCommit writeResult, String location, FileIO io) throws IOException {
+  public void addItemsForCleanup(String commitTasksInfoFileLocation, CommitTasksInfo commitTasksInfo,
+                                 Collection<String> jobLocations, FileIO io) {
+    if (commitTasksInfo.isEmpty()) {
+      jobLocations.add(commitTasksInfoFileLocation);
+    } else {
+      OutputFile fileForCommit = io.newOutputFile(commitTasksInfoFileLocation);
+
+      try (ObjectOutputStream oos = new ObjectOutputStream(fileForCommit.createOrOverwrite())) {
+        oos.writeObject(commitTasksInfo);
+      } catch (IOException e) {
+        throw new RuntimeException("Unable to write commitTasksInfo file", e);
+      }
+    }
+  }
+
+  private static void createFileForCommit(FilesForCommit writeResult, String location, FileIO io,
+                                          CommitTasksInfo commitTasksInfo, String commitTasksInfoFileLocation)
+      throws IOException {
+    if (!writeResult.hasFilesForCommit()) {
+      return;
+    }
     OutputFile fileForCommit = io.newOutputFile(location);
     try (ObjectOutputStream oos = new ObjectOutputStream(fileForCommit.createOrOverwrite())) {
       oos.writeObject(writeResult);
     }
     LOG.debug("Created Iceberg commitTask manifest file: {}\n{}", location, writeResult);
+
+    commitTasksInfo.addFile(location);
+
+    fileForCommit = io.newOutputFile(commitTasksInfoFileLocation);
+    try (ObjectOutputStream oos = new ObjectOutputStream(fileForCommit.createOrOverwrite())) {
+      oos.writeObject(commitTasksInfo);
+    }
+    LOG.debug("Created Iceberg commitTasksInfo file: {}\n", commitTasksInfoFileLocation);
+  }
+
+  private static CommitTasksInfo getCommitTasksInfoFromFileIfExists(String commitTasksInfoFileLocation, FileIO io) {
+    CommitTasksInfo commitTasksInfo = new CommitTasksInfo(new ArrayList<String>());
+    InputFile commitTasksInfoFile = io.newInputFile(commitTasksInfoFileLocation);
+    if (commitTasksInfoFile.exists()) {
+      try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(commitTasksInfoFileLocation).newStream())) {
+        return (CommitTasksInfo) ois.readObject();
+      } catch (ClassNotFoundException | IOException e) {
+        LOG.error("Can not read or parse commitTasksInfo file: {}\n", commitTasksInfoFileLocation);
+        throw new NotFoundException("Can not read or parse commitTasksInfo file %s even when it exists",
+            commitTasksInfoFileLocation);
+      }
+    }
+    return commitTasksInfo;
   }
 
   private static FilesForCommit readFileForCommit(String fileForCommitLocation, FileIO io) {
@@ -846,13 +875,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
               FileSystem fileSystem = new Path(table.location()).getFileSystem(jobConf);
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
-              // list jobLocation to get number of forCommit files
-              // we do this because map/reduce num in jobConf is unreliable
-              // and we have no access to vertex status info
-              int numTasks = listForCommits(jobConf, jobLocation).size();
-              FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
-                  table.io(), false);
+              FilesForCommit results = collectResults(fileExecutor, table.location(), table.io(), false);
               for (DataFile dataFile : results.dataFiles()) {
                 Path filePath = new Path(dataFile.location());
                 parentDirToDataFile.computeIfAbsent(filePath.getParent(), k -> Lists.newArrayList())
@@ -894,13 +917,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
-              // list jobLocation to get number of forCommit files
-              // we do this because map/reduce num in jobConf is unreliable
-              // and we have no access to vertex status info
-              int numTasks = listForCommits(jobConf, jobLocation).size();
-              FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
-                  table.io(), false);
+              FilesForCommit results = collectResults(fileExecutor, table.location(), table.io(), false);
               files.addAll(results.dataFiles());
               files.addAll(results.deleteFiles());
             }
