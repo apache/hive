@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1079,13 +1081,22 @@ public class HiveRelOptUtil extends RelOptUtil {
    * to parse the string back.
    */
   public static String toJsonString(final RelNode rel) {
+    return serializeWithPlanWriter(rel, new HiveRelJsonImplWithStats());
+  }
+
+  private static String serializeWithPlanWriter(RelNode rel, HiveRelJsonImpl planWriter) {
     if (rel == null) {
       return null;
     }
-
-    final HiveRelJsonImpl planWriter = new HiveRelJsonImpl();
     rel.explain(planWriter);
     return planWriter.asString();
+  }
+
+  public static String serializeToJSON(final RelNode rel) {
+    JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
+    outJSONObject.put("CBOPlan", serializeWithPlanWriter(rel, new HiveRelJsonImpl()));
+
+    return outJSONObject.toString();
   }
 
   /**

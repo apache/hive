@@ -27,7 +27,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import java.nio.charset.Charset;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -74,8 +76,6 @@ import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.AbstractRelNode;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollations;
-import org.apache.calcite.rel.RelDistribution;
-import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -174,6 +174,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvide
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSqlTypeUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTableFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelPlanParser;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.CteRuleConfig;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
@@ -345,7 +347,6 @@ import java.math.BigDecimal;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -364,9 +365,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
@@ -417,6 +421,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Pattern.compile("VARCHAR\\(2147483647\\)");
   private static final Pattern PATTERN_TIMESTAMP =
       Pattern.compile("TIMESTAMP\\(9\\)");
+
+  private static final int PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT = 1_000_000;
 
   /**
    * This is the list of operators that are specifically used in Hive.
@@ -1570,7 +1576,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   /**
    * Code responsible for Calcite plan generation and optimization.
    */
-  public class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode> {
+  public class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode>, RelOptHiveTableFactory {
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
     private FunctionHelper                                functionHelper;
@@ -1759,16 +1765,56 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
+
       return calcitePlan;
     }
 
     private RelNode applySearchExpandTransforms(RelNode basePlan, RelMetadataProvider mdProvider,
-        RexExecutor executor) {
+                                                RexExecutor executor) {
       HepProgramBuilder searchProgram = new HepProgramBuilder();
       searchProgram.addRuleCollection(ImmutableList.of(HiveSearchRules.FILTER_SEARCH_EXPAND,
           HiveSearchRules.PROJECT_SEARCH_EXPAND,
           HiveSearchRules.JOIN_SEARCH_EXPAND));
       return executeProgram(basePlan, searchProgram.build(), mdProvider, executor);
+    }
+
+    private Optional<String> serializePlan(RelNode plan) {
+      if (!isSerializable(plan)) {
+        return Optional.empty();
+      }
+
+      String jsonPlan = HiveRelOptUtil.serializeToJSON(plan);
+      if (stringSizeGreaterThan(jsonPlan, PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT)) {
+        return Optional.empty();
+      }
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan to serialize: \n{}", RelOptUtil.toString(plan));
+        LOG.debug("JSON plan: \n{}", jsonPlan);
+      }
+
+      return Optional.of(jsonPlan);
+    }
+
+    private RelNode deserializePlan(RelOptCluster cluster, String jsonPlan) throws IOException {
+      RelPlanParser parser = new RelPlanParser(cluster, this, partitionCache);
+      RelNode deserializedPlan = parser.parse(jsonPlan);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Deserialized plan: \n{}", RelOptUtil.toString(deserializedPlan));
+      }
+      
+      return deserializedPlan;
+    }
+
+    private boolean isSerializable(RelNode plan) {
+      return !stringSizeGreaterThan(ctx.getCmd(), PLAN_SERIALIZATION_DESERIALIZATION_STR_SIZE_LIMIT) &&
+          HiveRelNode.stream(plan)
+            .noneMatch(node -> node.getConvention().getName().toLowerCase().contains("jdbc"));
+    }
+
+    private boolean stringSizeGreaterThan(String str, int length) {
+      return str.getBytes(Charset.defaultCharset()).length > length;
     }
 
     /**
@@ -3150,7 +3196,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               metrics.add(field.getName());
             }
 
-            List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+            List<Interval> intervals = asList(DruidTable.DEFAULT_INTERVAL);
             rowType = dtFactory.createStructType(druidColTypes, druidColNames);
             DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
                 dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
@@ -3324,6 +3370,86 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return filterRel;
     }
 
+    @Override
+    public RelOptHiveTable createRelOptHiveTable(
+        String tableAlias,
+        TableName tableName,
+        RelDataType rowType,
+        List<ColumnInfo> nonPartitionColumns,
+        List<ColumnInfo> partitionColumns,
+        List<VirtualColumn> virtualColumns) {
+
+      Table tbl = getTable(tableAlias, tableName);
+
+      return new RelOptHiveTable(
+          relOptSchema,
+          cluster.getTypeFactory(),
+          asList(tableName.getDb(), tableName.getTable()),
+          rowType,
+          tbl,
+          nonPartitionColumns,
+          partitionColumns,
+          virtualColumns,
+          conf,
+          db,
+          tabNameToTabObject,
+          partitionCache,
+          colStatsCache,
+          noColsMissingStats
+      );
+    }
+
+    // TODO: Probably could simplify this method. Maybe we don't need to look in QB.
+    private Table getTable(String alias, TableName tableName) {
+      String fullTableName = tableName.getNotEmptyDbTable();
+      // Look in QB
+      Table result = verifyTableName(getQB().getTableForAlias(alias), fullTableName);
+
+      // Look in ctx if it's a materialized table
+      if (result == null/* && jsonRel.containsKey("materializedTable") && jsonRel.get("materializedTable")*/) {
+        // TODO: Is it possible that materializedTable is false or missing but Context returns it via getMaterializedTable ?
+        result = verifyTableName(
+            getTableUsing(ctx::getMaterializedTable, alias, tableName.getTable(), fullTableName),
+            fullTableName
+        );
+      }
+
+      // Look in tabNameToTabObject
+      if (result == null) {
+        result = verifyTableName(
+            getTableUsing(tabNameToTabObject::getParsedTable, fullTableName),
+            fullTableName
+        );
+      }
+
+      // Finally try HMS
+      if (result == null) {
+        try {
+          result = db.getTable(
+              tableName.getDb(), tableName.getTable(), tableName.getTableMetaRef(),
+              true, true, false
+          );
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      return result;
+    }
+
+    private Table verifyTableName(Table table, String fullName) {
+      if (table == null) {
+        return null;
+      }
+      String tableName = TableName.getDbTable(table.getDbName(), table.getTableName());
+
+      return fullName.equals(tableName) ? table : null;
+    }
+
+    private Table getTableUsing(Function<String, Table> function, String... names) {
+      return Stream.of(names).map(function).filter(Objects::nonNull).findFirst().orElse(null);
+    }
+
     /**
      * Shuttle that replaces certain references with correlation variables
      * if needed.
@@ -3433,6 +3559,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode subQueryRoot = (ASTNode) next.getChild(1);
             doPhase1(subQueryRoot, qbSQ, ctx1, null);
             getMetaData(qbSQ);
+            qb.getSubqueryMetaDataList().add(qbSQ.getMetaData());
             this.subqueryId++;
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
