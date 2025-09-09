@@ -120,30 +120,30 @@ POSTHOOK: Lineage: torpedos.admiral_id SCRIPT [(ships)s.FieldSchema(name:id, typ
 POSTHOOK: Lineage: torpedos.id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: torpedos.ship_id SIMPLE [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: select
-    s.id
+    `s`.`id`
 from
-    ships s,
-    ship_types st,
-    torpedos t
+    `ships` `s`,
+    `ship_types` `st`,
+    `torpedos` `t`
 where
-    (st.id = 1 or st.id=2)
-    and ship_type_id=st.id
-    and ship_id=s.id
+    (`st`.`id` = 1 or `st`.`id`=2)
+    and `ship_type_id`=`st`.`id`
+    and `ship_id`=`s`.`id`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ship_types
 PREHOOK: Input: default@ships
 PREHOOK: Input: default@torpedos
 #### A masked pattern was here ####
 POSTHOOK: query: select
-    s.id
+    `s`.`id`
 from
-    ships s,
-    ship_types st,
-    torpedos t
+    `ships` `s`,
+    `ship_types` `st`,
+    `torpedos` `t`
 where
-    (st.id = 1 or st.id=2)
-    and ship_type_id=st.id
-    and ship_id=s.id
+    (`st`.`id` = 1 or `st`.`id`=2)
+    and `ship_type_id`=`st`.`id`
+    and `ship_id`=`s`.`id`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ship_types
 POSTHOOK: Input: default@ships

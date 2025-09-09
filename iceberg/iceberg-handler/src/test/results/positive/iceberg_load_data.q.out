@@ -61,11 +61,11 @@ Stage-3
                           Output:["strcol","intcol","pcol"]
                            Please refer to the previous Select Operator [SEL_12]
 
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE `ice_parquet`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 PREHOOK: Output: default@ice_parquet
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE `ice_parquet`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
 POSTHOOK: Output: default@ice_parquet
@@ -162,9 +162,9 @@ Stage-0
   Move Operator
     table:{"name:":"default.ice_avro"}
 
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE `ice_avro`
 PREHOOK: type: LOAD
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE `ice_avro`
 POSTHOOK: type: LOAD
 PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
 PREHOOK: type: LOAD
@@ -276,9 +276,9 @@ Stage-0
   Move Operator
     table:{"name:":"default.ice_orc"}
 
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE `ice_orc`
 PREHOOK: type: LOAD
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE `ice_orc`
 POSTHOOK: type: LOAD
 PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
 PREHOOK: type: LOAD

@@ -133,17 +133,17 @@ bit_vector          	HL
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
 PREHOOK: query: select 1
-from default.sr0  store_returns , default.rx0 reason
-            where sr_reason_sk = r_reason_sk
-              and r_reason_id = 'AAAAAAAAAAAAAAAA'
+from `default`.`sr0`  `store_returns` , `default`.`rx0` `reason`
+            where `sr_reason_sk` = `r_reason_sk`
+              and `r_reason_id` = 'AAAAAAAAAAAAAAAA'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rx0
 PREHOOK: Input: default@sr0
 #### A masked pattern was here ####
 POSTHOOK: query: select 1
-from default.sr0  store_returns , default.rx0 reason
-            where sr_reason_sk = r_reason_sk
-              and r_reason_id = 'AAAAAAAAAAAAAAAA'
+from `default`.`sr0`  `store_returns` , `default`.`rx0` `reason`
+            where `sr_reason_sk` = `r_reason_sk`
+              and `r_reason_id` = 'AAAAAAAAAAAAAAAA'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rx0
 POSTHOOK: Input: default@sr0

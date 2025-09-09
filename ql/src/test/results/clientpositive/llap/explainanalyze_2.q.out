@@ -1,21 +1,21 @@
-PREHOOK: query: SELECT x.key, z.value, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
+PREHOOK: query: SELECT `x`.`key`, `z`.`value`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key, z.value, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `z`.`value`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.key, z.value, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
+POSTHOOK: query: SELECT `x`.`key`, `z`.`value`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key, z.value, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `z`.`value`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -161,32 +161,32 @@ Stage-0
                                 TableScan [TS_146] (rows=500/500 width=178)
                                   default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
+PREHOOK: query: SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value)
+POSTHOOK: query: SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -577,12 +577,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n11@ds=2008-04-08
 POSTHOOK: Output: default@tab2_n3@ds=2008-04-08
 POSTHOOK: Lineage: tab2_n3 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n11)srcbucket_mapjoin_n11.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tab2_n3 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n11)srcbucket_mapjoin_n11.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key
+PREHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n6
 PREHOOK: Input: default@tab_n6@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key
+POSTHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n6
 POSTHOOK: Input: default@tab_n6@ds=2008-04-08
@@ -623,12 +623,12 @@ Stage-0
               TableScan [TS_0] (rows=242/242 width=95)
                 default@tab_n6,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key join tab_n6 s2 on s1.value=s2.value
+PREHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key` join `tab_n6` `s2` on `s1`.`value`=`s2`.`value`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n6
 PREHOOK: Input: default@tab_n6@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key join tab_n6 s2 on s1.value=s2.value
+POSTHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key` join `tab_n6` `s2` on `s1`.`value`=`s2`.`value`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n6
 POSTHOOK: Input: default@tab_n6@ds=2008-04-08
@@ -686,14 +686,14 @@ Stage-0
                 TableScan [TS_6] (rows=242/242 width=91)
                   default@tab_n6,s2,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
 
-PREHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key
+PREHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab2_n3` `s3` on `s1`.`key`=`s3`.`key`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab2_n3
 PREHOOK: Input: default@tab2_n3@ds=2008-04-08
 PREHOOK: Input: default@tab_n6
 PREHOOK: Input: default@tab_n6@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key
+POSTHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab2_n3` `s3` on `s1`.`key`=`s3`.`key`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab2_n3
 POSTHOOK: Input: default@tab2_n3@ds=2008-04-08
@@ -740,14 +740,14 @@ Stage-0
               TableScan [TS_0] (rows=242/242 width=95)
                 default@tab_n6,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key join tab2_n3 s2 on s1.value=s2.value
+PREHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab2_n3` `s3` on `s1`.`key`=`s3`.`key` join `tab2_n3` `s2` on `s1`.`value`=`s2`.`value`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab2_n3
 PREHOOK: Input: default@tab2_n3@ds=2008-04-08
 PREHOOK: Input: default@tab_n6
 PREHOOK: Input: default@tab_n6@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select s1.key as key, s1.value as value from tab_n6 s1 join tab2_n3 s3 on s1.key=s3.key join tab2_n3 s2 on s1.value=s2.value
+POSTHOOK: query: select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab2_n3` `s3` on `s1`.`key`=`s3`.`key` join `tab2_n3` `s2` on `s1`.`value`=`s2`.`value`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab2_n3
 POSTHOOK: Input: default@tab2_n3@ds=2008-04-08
@@ -811,20 +811,20 @@ Stage-0
                 TableScan [TS_6] (rows=242/242 width=91)
                   default@tab2_n3,s2,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
 
-PREHOOK: query: select count(*) from (select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key
+PREHOOK: query: select count(*) from (select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key`
 UNION  ALL
-select s2.key as key, s2.value as value from tab_n6 s2
-) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
+select `s2`.`key` as `key`, `s2`.`value` as `value` from `tab_n6` `s2`
+) `a_n14` join `tab_part_n7` `b_n10` on (`a_n14`.`key` = `b_n10`.`key`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n6
 PREHOOK: Input: default@tab_n6@ds=2008-04-08
 PREHOOK: Input: default@tab_part_n7
 PREHOOK: Input: default@tab_part_n7@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from (select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key
+POSTHOOK: query: select count(*) from (select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key`
 UNION  ALL
-select s2.key as key, s2.value as value from tab_n6 s2
-) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
+select `s2`.`key` as `key`, `s2`.`value` as `value` from `tab_n6` `s2`
+) `a_n14` join `tab_part_n7` `b_n10` on (`a_n14`.`key` = `b_n10`.`key`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n6
 POSTHOOK: Input: default@tab_n6@ds=2008-04-08
@@ -911,20 +911,20 @@ Stage-0
                       TableScan [TS_71] (rows=242/242 width=4)
                         default@tab_n6,s2,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
-PREHOOK: query: select count(*) from (select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key join tab_n6 s2 on s1.value=s2.value
+PREHOOK: query: select count(*) from (select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key` join `tab_n6` `s2` on `s1`.`value`=`s2`.`value`
 UNION  ALL
-select s2.key as key, s2.value as value from tab_n6 s2
-) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
+select `s2`.`key` as `key`, `s2`.`value` as `value` from `tab_n6` `s2`
+) `a_n14` join `tab_part_n7` `b_n10` on (`a_n14`.`key` = `b_n10`.`key`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n6
 PREHOOK: Input: default@tab_n6@ds=2008-04-08
 PREHOOK: Input: default@tab_part_n7
 PREHOOK: Input: default@tab_part_n7@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from (select s1.key as key, s1.value as value from tab_n6 s1 join tab_n6 s3 on s1.key=s3.key join tab_n6 s2 on s1.value=s2.value
+POSTHOOK: query: select count(*) from (select `s1`.`key` as `key`, `s1`.`value` as `value` from `tab_n6` `s1` join `tab_n6` `s3` on `s1`.`key`=`s3`.`key` join `tab_n6` `s2` on `s1`.`value`=`s2`.`value`
 UNION  ALL
-select s2.key as key, s2.value as value from tab_n6 s2
-) a_n14 join tab_part_n7 b_n10 on (a_n14.key = b_n10.key)
+select `s2`.`key` as `key`, `s2`.`value` as `value` from `tab_n6` `s2`
+) `a_n14` join `tab_part_n7` `b_n10` on (`a_n14`.`key` = `b_n10`.`key`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n6
 POSTHOOK: Input: default@tab_n6@ds=2008-04-08
@@ -1051,21 +1051,21 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@c_n3
 PREHOOK: query: from
 (
-SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union all select * from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union all select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union all
-SELECT x.key, y.value
-FROM src x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union all select `key`, `value` from `src` union all select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union all
-SELECT x.key, y.value
-FROM src1 x JOIN src1 y ON (x.key = y.key) 
-JOIN (select key, value from src1 union all select key, value from src union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
-) tmp
-INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src1` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union all select `key`, `value` from `src` union all select `key`, `value` from `src` union all select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
+) `tmp`
+INSERT OVERWRITE TABLE `a_n14` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `b_n10` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `c_n3` SELECT `tmp`.`key`, `tmp`.`value`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1074,21 +1074,21 @@ PREHOOK: Output: default@b_n10
 PREHOOK: Output: default@c_n3
 POSTHOOK: query: from
 (
-SELECT x.key, y.value
-FROM src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union all select * from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union all select * from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union all
-SELECT x.key, y.value
-FROM src x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key`, `y`.`value`
+FROM `src` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union all select `key`, `value` from `src` union all select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union all
-SELECT x.key, y.value
-FROM src1 x JOIN src1 y ON (x.key = y.key) 
-JOIN (select key, value from src1 union all select key, value from src union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
-) tmp
-INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
+SELECT `x`.`key`, `y`.`value`
+FROM `src1` `x` JOIN `src1` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union all select `key`, `value` from `src` union all select `key`, `value` from `src` union all select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
+) `tmp`
+INSERT OVERWRITE TABLE `a_n14` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `b_n10` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `c_n3` SELECT `tmp`.`key`, `tmp`.`value`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -1431,18 +1431,18 @@ Stage-7
 
 PREHOOK: query: FROM
 ( 
-SELECT x.key as key, y.value as value from src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value) 
+SELECT `x`.`key` as `key`, `y`.`value` as `value` from `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`) 
 union
-SELECT x.key as key, y.value as value from src x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key` as `key`, `y`.`value` as `value` from `src` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key as key, y.value as value from src1 x JOIN src1 y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
-) tmp
-INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
+SELECT `x`.`key` as `key`, `y`.`value` as `value` from `src1` `x` JOIN `src1` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
+) `tmp`
+INSERT OVERWRITE TABLE `a_n14` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `b_n10` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `c_n3` SELECT `tmp`.`key`, `tmp`.`value`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1451,18 +1451,18 @@ PREHOOK: Output: default@b_n10
 PREHOOK: Output: default@c_n3
 POSTHOOK: query: FROM
 ( 
-SELECT x.key as key, y.value as value from src1 x JOIN src y ON (x.key = y.key) 
-JOIN (select * from src1 union select * from src)z ON (x.value = z.value) 
+SELECT `x`.`key` as `key`, `y`.`value` as `value` from `src1` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select * from `src1` union select * from `src`)`z` ON (`x`.`value` = `z`.`value`) 
 union
-SELECT x.key as key, y.value as value from src x JOIN src y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src)z ON (x.value = z.value)
+SELECT `x`.`key` as `key`, `y`.`value` as `value` from `src` `x` JOIN `src` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
 union
-SELECT x.key as key, y.value as value from src1 x JOIN src1 y ON (x.key = y.key) 
-JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
-) tmp
-INSERT OVERWRITE TABLE a_n14 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b_n10 SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c_n3 SELECT tmp.key, tmp.value
+SELECT `x`.`key` as `key`, `y`.`value` as `value` from `src1` `x` JOIN `src1` `y` ON (`x`.`key` = `y`.`key`) 
+JOIN (select `key`, `value` from `src1` union select `key`, `value` from `src` union select `key`, `value` from `src` union select `key`, `value` from `src`)`z` ON (`x`.`value` = `z`.`value`)
+) `tmp`
+INSERT OVERWRITE TABLE `a_n14` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `b_n10` SELECT `tmp`.`key`, `tmp`.`value`
+INSERT OVERWRITE TABLE `c_n3` SELECT `tmp`.`key`, `tmp`.`value`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -1832,20 +1832,20 @@ POSTHOOK: query: CREATE TABLE DEST2_n29(key STRING, val1 STRING, val2 STRING) ST
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST2_n29
-PREHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+PREHOOK: query: FROM (select 'tst1' as `key`, cast(count(1) as string) as `value` from `src` `s1`
                          UNION DISTINCT  
-      select s2.key as key, s2.value as value from src s2) unionsrc_n3
-INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key, unionsrc_n3.value
+      select `s2`.`key` as `key`, `s2`.`value` as `value` from `src` `s2`) `unionsrc_n3`
+INSERT OVERWRITE TABLE `DEST1_n105` SELECT `unionsrc_n3`.`key`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`
+INSERT OVERWRITE TABLE `DEST2_n29` SELECT `unionsrc_n3`.`key`, `unionsrc_n3`.`value`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`, `unionsrc_n3`.`value`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n105
 PREHOOK: Output: default@dest2_n29
-POSTHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+POSTHOOK: query: FROM (select 'tst1' as `key`, cast(count(1) as string) as `value` from `src` `s1`
                          UNION DISTINCT  
-      select s2.key as key, s2.value as value from src s2) unionsrc_n3
-INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key, unionsrc_n3.value
+      select `s2`.`key` as `key`, `s2`.`value` as `value` from `src` `s2`) `unionsrc_n3`
+INSERT OVERWRITE TABLE `DEST1_n105` SELECT `unionsrc_n3`.`key`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`
+INSERT OVERWRITE TABLE `DEST2_n29` SELECT `unionsrc_n3`.`key`, `unionsrc_n3`.`value`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`, `unionsrc_n3`.`value`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n105
@@ -1952,7 +1952,7 @@ Stage-5
         table:{"name:":"default.dest2_n29"}
          Please refer to the previous Stage-3
 
-PREHOOK: query: FROM UNIQUEJOIN PRESERVE src a_n14 (a_n14.key), PRESERVE src1 b_n10 (b_n10.key), PRESERVE srcpart c_n3 (c_n3.key) SELECT a_n14.key, b_n10.key, c_n3.key
+PREHOOK: query: FROM UNIQUEJOIN PRESERVE `src` `a_n14` (`a_n14`.`key`), PRESERVE `src1` `b_n10` (`b_n10`.`key`), PRESERVE `srcpart` `c_n3` (`c_n3`.`key`) SELECT `a_n14`.`key`, `b_n10`.`key`, `c_n3`.`key`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -1962,7 +1962,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: FROM UNIQUEJOIN PRESERVE src a_n14 (a_n14.key), PRESERVE src1 b_n10 (b_n10.key), PRESERVE srcpart c_n3 (c_n3.key) SELECT a_n14.key, b_n10.key, c_n3.key
+POSTHOOK: query: FROM UNIQUEJOIN PRESERVE `src` `a_n14` (`a_n14`.`key`), PRESERVE `src1` `b_n10` (`b_n10`.`key`), PRESERVE `srcpart` `c_n3` (`c_n3`.`key`) SELECT `a_n14`.`key`, `b_n10`.`key`, `c_n3`.`key`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -2024,31 +2024,31 @@ Stage-0
                 default@srcpart,c_n3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: FROM (
-      select key, value from (
-      select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
+      select `key`, `value` from (
+      select 'tst1' as `key`, cast(count(1) as string) as `value`, 'tst1' as `value2` from `src` `s1`
                          UNION all 
-      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub_n10
+      select `s2`.`key` as `key`, `s2`.`value` as `value`, 'tst1' as `value2` from `src` `s2`) `unionsub_n10`
                          UNION all
-      select key, value from src s0
-                             ) unionsrc_n3
-INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
-GROUP BY unionsrc_n3.key, unionsrc_n3.value
+      select `key`, `value` from `src` `s0`
+                             ) `unionsrc_n3`
+INSERT OVERWRITE TABLE `DEST1_n105` SELECT `unionsrc_n3`.`key`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`
+INSERT OVERWRITE TABLE `DEST2_n29` SELECT `unionsrc_n3`.`key`, `unionsrc_n3`.`value`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) 
+GROUP BY `unionsrc_n3`.`key`, `unionsrc_n3`.`value`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n105
 PREHOOK: Output: default@dest2_n29
 POSTHOOK: query: FROM (
-      select key, value from (
-      select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
+      select `key`, `value` from (
+      select 'tst1' as `key`, cast(count(1) as string) as `value`, 'tst1' as `value2` from `src` `s1`
                          UNION all 
-      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub_n10
+      select `s2`.`key` as `key`, `s2`.`value` as `value`, 'tst1' as `value2` from `src` `s2`) `unionsub_n10`
                          UNION all
-      select key, value from src s0
-                             ) unionsrc_n3
-INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
-GROUP BY unionsrc_n3.key, unionsrc_n3.value
+      select `key`, `value` from `src` `s0`
+                             ) `unionsrc_n3`
+INSERT OVERWRITE TABLE `DEST1_n105` SELECT `unionsrc_n3`.`key`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`
+INSERT OVERWRITE TABLE `DEST2_n29` SELECT `unionsrc_n3`.`key`, `unionsrc_n3`.`value`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) 
+GROUP BY `unionsrc_n3`.`key`, `unionsrc_n3`.`value`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n105
@@ -2183,25 +2183,25 @@ Stage-5
          Please refer to the previous Stage-3
 
 PREHOOK: query: FROM (
-      select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
+      select 'tst1' as `key`, cast(count(1) as string) as `value`, 'tst1' as `value2` from `src` `s1`
                          UNION all 
-      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
-                             ) unionsrc_n3
-INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
-GROUP BY unionsrc_n3.key, unionsrc_n3.value
+      select `s2`.`key` as `key`, `s2`.`value` as `value`, 'tst1' as `value2` from `src` `s2`
+                             ) `unionsrc_n3`
+INSERT OVERWRITE TABLE `DEST1_n105` SELECT `unionsrc_n3`.`key`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`
+INSERT OVERWRITE TABLE `DEST2_n29` SELECT `unionsrc_n3`.`key`, `unionsrc_n3`.`value`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) 
+GROUP BY `unionsrc_n3`.`key`, `unionsrc_n3`.`value`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n105
 PREHOOK: Output: default@dest2_n29
 POSTHOOK: query: FROM (
-      select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
+      select 'tst1' as `key`, cast(count(1) as string) as `value`, 'tst1' as `value2` from `src` `s1`
                          UNION all 
-      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
-                             ) unionsrc_n3
-INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
-GROUP BY unionsrc_n3.key, unionsrc_n3.value
+      select `s2`.`key` as `key`, `s2`.`value` as `value`, 'tst1' as `value2` from `src` `s2`
+                             ) `unionsrc_n3`
+INSERT OVERWRITE TABLE `DEST1_n105` SELECT `unionsrc_n3`.`key`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) GROUP BY `unionsrc_n3`.`key`
+INSERT OVERWRITE TABLE `DEST2_n29` SELECT `unionsrc_n3`.`key`, `unionsrc_n3`.`value`, COUNT(DISTINCT SUBSTR(`unionsrc_n3`.`value`,5)) 
+GROUP BY `unionsrc_n3`.`key`, `unionsrc_n3`.`value`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n105
