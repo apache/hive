@@ -18,44 +18,27 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.calcite.avatica.util.TimeUnit;
-import org.apache.calcite.rel.RelCollations;
-import org.apache.calcite.rel.RelDistribution;
-import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelInput;
-import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.externalize.RelEnumTypes;
 import org.apache.calcite.rel.externalize.RelJson;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexCorrelVariable;
-import org.apache.calcite.rex.RexDigestIncludeType;
-import org.apache.calcite.rex.RexDynamicParam;
-import org.apache.calcite.rex.RexFieldAccess;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexOver;
-import org.apache.calcite.rex.RexSlot;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
-import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
@@ -63,12 +46,9 @@ import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ConversionUtil;
-import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.JsonBuilder;
-import org.apache.calcite.util.TimestampString;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
@@ -76,11 +56,20 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFun
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateAddSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveDateSubSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFromUnixTimeSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToUnixTimestampSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTruncSqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Hive extension of RelJson, used for serialization and deserialization.
@@ -104,13 +93,24 @@ public class HiveRelJson extends RelJson {
     }
   }
 
-//  @Override
-//  public Object toJson(Object value) {
-//    if (value instanceof HiveTableScan.HiveTableScanTrait) {
-//      return ((HiveTableScan.HiveTableScanTrait) value).name();
-//    }
-//    return super.toJson(value);
-//  }
+  @Override
+  public Object toJson(Object value) {
+    if (value instanceof HiveTableScan.HiveTableScanTrait) {
+      return ((HiveTableScan.HiveTableScanTrait) value).name();
+    }
+
+    Object jsonObject = super.toJson(value);
+    
+    // Add type information for all RexCall nodes. Failing to do this
+    // can cause datatype of the RexCall to differ after deserialization
+    // as it will be derived in RelJson.toRex method
+    if (jsonObject instanceof Map && value instanceof RexCall) {
+      Map<String, Object> map = (Map<String, Object>) jsonObject;
+      map.put("type", toJson(((RexCall) value).getType()));
+    }
+    
+    return jsonObject;
+  }
 
 //  @Override
 //  public Object toJson(AggregateCall node) {
@@ -199,7 +199,7 @@ public class HiveRelJson extends RelJson {
 //    }
 //  }
 
-  @Nullable
+ // @Nullable
 //  private Map<String, Object> toJsonRexCall(RexNode node) {
 //    Map<String, Object> map = null;
 //    if (node instanceof RexCall) {
@@ -408,127 +408,136 @@ public class HiveRelJson extends RelJson {
 //    return RelDistributions.ANY;
 //  }
 
-//  private SqlOperator toOp(RelInput input, String op, Map<String, Object> map) {
-//    switch (op) {
-//      case "IN":
-//        return HiveIn.INSTANCE;
-//      case "BETWEEN":
-//        return HiveBetween.INSTANCE;
-//      case "YEAR":
-//        return HiveExtractDate.YEAR;
-//      case "QUARTER":
-//        return HiveExtractDate.QUARTER;
-//      case "MONTH":
-//        return HiveExtractDate.MONTH;
-//      case "WEEK":
-//        return HiveExtractDate.WEEK;
-//      case "DAY":
-//        return HiveExtractDate.DAY;
-//      case "HOUR":
-//        return HiveExtractDate.HOUR;
-//      case "MINUTE":
-//        return HiveExtractDate.MINUTE;
-//      case "SECOND":
-//        return HiveExtractDate.SECOND;
-//      case "FLOOR_YEAR":
-//        return HiveFloorDate.YEAR;
-//      case "FLOOR_QUARTER":
-//        return HiveFloorDate.QUARTER;
-//      case "FLOOR_MONTH":
-//        return HiveFloorDate.MONTH;
-//      case "FLOOR_WEEK":
-//        return HiveFloorDate.WEEK;
-//      case "FLOOR_DAY":
-//        return HiveFloorDate.DAY;
-//      case "FLOOR_HOUR":
-//        return HiveFloorDate.HOUR;
-//      case "FLOOR_MINUTE":
-//        return HiveFloorDate.MINUTE;
-//      case "FLOOR_SECOND":
-//        return HiveFloorDate.SECOND;
-//      case "||":
-//        return HiveConcat.INSTANCE;
-//      case "TRUNC":
-//        return HiveTruncSqlOperator.INSTANCE;
-//      case "TO_DATE":
-//        return HiveToDateSqlOperator.INSTANCE;
-//      case "UNIX_TIMESTAMP":
-//        if (!((List) map.get(OPERANDS)).isEmpty()) {
-//          return HiveToUnixTimestampSqlOperator.INSTANCE;
-//        }
-//        return HiveUnixTimestampSqlOperator.INSTANCE;
-//      case "FROM_UNIXTIME":
-//        return HiveFromUnixTimeSqlOperator.INSTANCE;
-//      case "DATE_ADD":
-//        return HiveDateAddSqlOperator.INSTANCE;
-//      case "DATE_SUB":
-//        return HiveDateSubSqlOperator.INSTANCE;
-//      case "+":
-//        if (((List) map.get(OPERANDS)).size() > 1) {
-//          return SqlStdOperatorTable.PLUS;
-//        }
-//        return SqlStdOperatorTable.UNARY_PLUS;
-//      case "-":
-//        if (((List) map.get(OPERANDS)).size() > 1) {
-//          return SqlStdOperatorTable.MINUS;
-//        }
-//        return SqlStdOperatorTable.UNARY_MINUS;
-//      case "MAP":
-//        return SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR;
-//      case "ARRAY":
-//        return SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR;
-//      default:
-//        SqlOperator operator = getOperatorFromDefault(op);
-//        if (operator != null) {
-//          return operator;
-//        }
-//        final Object jsonType = map.get("type");
-//        final RelDataType type = toType(input.getCluster().getTypeFactory(), jsonType);
-//        final List operands = (List) map.get(OPERANDS);
-//        final List<RelDataType> operandsTypes =
-//            toRexList(input, operands).stream().map(RexNode::getType).collect(Collectors.toList());
-//        final List<SqlTypeFamily> typeFamily = operandsTypes.stream()
-//            .map(e -> Util.first(e.getSqlTypeName().getFamily(), SqlTypeFamily.ANY))
-//            .collect(Collectors.toList());
-//        final boolean isDeterministic = (boolean) map.get("deterministic");
-//        final boolean isDynamicFunction = (boolean) map.get("dynamic");
-//        return new CalciteSqlFn(
-//            op, SqlKind.OTHER_FUNCTION, ReturnTypes.explicit(type),
-//            InferTypes.explicit(operandsTypes), OperandTypes.family(typeFamily),
-//            SqlFunctionCategory.USER_DEFINED_FUNCTION, isDeterministic, isDynamicFunction
-//        );
-//    }
-//  }
+  private SqlOperator toOp(RelInput input, String op, Map<String, Object> map) {
+    switch (op) {
+      case "IN":
+        return HiveIn.INSTANCE;
+      case "BETWEEN":
+        return HiveBetween.INSTANCE;
+      case "YEAR":
+        return HiveExtractDate.YEAR;
+      case "QUARTER":
+        return HiveExtractDate.QUARTER;
+      case "MONTH":
+        return HiveExtractDate.MONTH;
+      case "WEEK":
+        return HiveExtractDate.WEEK;
+      case "DAY":
+        return HiveExtractDate.DAY;
+      case "HOUR":
+        return HiveExtractDate.HOUR;
+      case "MINUTE":
+        return HiveExtractDate.MINUTE;
+      case "SECOND":
+        return HiveExtractDate.SECOND;
+      case "FLOOR_YEAR":
+        return HiveFloorDate.YEAR;
+      case "FLOOR_QUARTER":
+        return HiveFloorDate.QUARTER;
+      case "FLOOR_MONTH":
+        return HiveFloorDate.MONTH;
+      case "FLOOR_WEEK":
+        return HiveFloorDate.WEEK;
+      case "FLOOR_DAY":
+        return HiveFloorDate.DAY;
+      case "FLOOR_HOUR":
+        return HiveFloorDate.HOUR;
+      case "FLOOR_MINUTE":
+        return HiveFloorDate.MINUTE;
+      case "FLOOR_SECOND":
+        return HiveFloorDate.SECOND;
+      case "||":
+        return HiveConcat.INSTANCE;
+      case "TRUNC":
+        return HiveTruncSqlOperator.INSTANCE;
+      case "TO_DATE":
+        return HiveToDateSqlOperator.INSTANCE;
+      case "UNIX_TIMESTAMP":
+        if (!((List) map.get(OPERANDS)).isEmpty()) {
+          return HiveToUnixTimestampSqlOperator.INSTANCE;
+        }
+        return HiveUnixTimestampSqlOperator.INSTANCE;
+      case "FROM_UNIXTIME":
+        return HiveFromUnixTimeSqlOperator.INSTANCE;
+      case "DATE_ADD":
+        return HiveDateAddSqlOperator.INSTANCE;
+      case "DATE_SUB":
+        return HiveDateSubSqlOperator.INSTANCE;
+      case "+":
+        if (((List) map.get(OPERANDS)).size() > 1) {
+          return SqlStdOperatorTable.PLUS;
+        }
+        return SqlStdOperatorTable.UNARY_PLUS;
+      case "-":
+        if (((List) map.get(OPERANDS)).size() > 1) {
+          return SqlStdOperatorTable.MINUS;
+        }
+        return SqlStdOperatorTable.UNARY_MINUS;
+      case "MAP":
+        return SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR;
+      case "ARRAY":
+        return SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR;
+      default:
+        SqlOperator operator = getOperatorFromDefault(op);
+        if (operator != null) {
+          return operator;
+        }
+        final Object jsonType = map.get("type");
+        final RelDataType type = toType(input.getCluster().getTypeFactory(), jsonType);
+        final List operands = (List) map.get(OPERANDS);
+        final List<RelDataType> operandsTypes =
+            toRexList(input, operands).stream().map(RexNode::getType).collect(Collectors.toList());
+        final List<SqlTypeFamily> typeFamily = operandsTypes.stream()
+            .map(e -> Util.first(e.getSqlTypeName().getFamily(), SqlTypeFamily.ANY))
+            .collect(Collectors.toList());
+        final boolean isDeterministic = (boolean) map.get("deterministic");
+        final boolean isDynamicFunction = (boolean) map.get("dynamic");
+        return new CalciteSqlFn(
+            op, SqlKind.OTHER_FUNCTION, ReturnTypes.explicit(type),
+            InferTypes.explicit(operandsTypes), OperandTypes.family(typeFamily),
+            SqlFunctionCategory.USER_DEFINED_FUNCTION, isDeterministic, isDynamicFunction
+        );
+    }
+  }
 
-//  private static class CalciteSqlFn extends SqlFunction {
-//    private final boolean deterministic;
-//    private final boolean dynamicFunction;
-//
-//    public CalciteSqlFn(String name, SqlKind kind, SqlReturnTypeInference returnTypeInference,
-//                        SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
-//                        SqlFunctionCategory category, boolean deterministic, boolean dynamicFunction) {
-//      super(name, kind, returnTypeInference, operandTypeInference, operandTypeChecker, category);
-//      this.deterministic = deterministic;
-//      this.dynamicFunction = dynamicFunction;
-//    }
-//
-//    @Override
-//    public boolean isDeterministic() {
-//      return deterministic;
-//    }
-//
-//    @Override
-//    public boolean isDynamicFunction() {
-//      return dynamicFunction;
-//    }
-//  }
+  private static class CalciteSqlFn extends SqlFunction {
+    private final boolean deterministic;
+    private final boolean dynamicFunction;
+
+    public CalciteSqlFn(String name, SqlKind kind, SqlReturnTypeInference returnTypeInference,
+                        SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker,
+                        SqlFunctionCategory category, boolean deterministic, boolean dynamicFunction) {
+      super(name, kind, returnTypeInference, operandTypeInference, operandTypeChecker, category);
+      this.deterministic = deterministic;
+      this.dynamicFunction = dynamicFunction;
+    }
+
+    @Override
+    public boolean isDeterministic() {
+      return deterministic;
+    }
+
+    @Override
+    public boolean isDynamicFunction() {
+      return dynamicFunction;
+    }
+  }
   
   public RexNode toRex(RelInput relInput, Object o) {
-    try {
-      return (RexNode) toRexMethod.invoke(this, relInput, o);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    if (o instanceof Map map && map.containsKey("op")) {
+      final Map opMap = (Map) map.get("op");
+      if (opMap != null && map.get("window") == null) {
+        return toRexOperator(relInput, opMap, map, relInput.getCluster().getTypeFactory());
+      }
+    } else {
+      try {
+        return (RexNode) toRexMethod.invoke(this, relInput, o);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
+    
+    return null;
   }
 
 //  public RexNode toRex(RelInput relInput, Object o) {
@@ -621,26 +630,21 @@ public class HiveRelJson extends RelJson {
 //    throw new RuntimeException("input field " + input + " is out of range");
 //  }
 
-//  private RexNode toRexOperator(RelInput relInput, Map opMap, Map map, RelDataTypeFactory typeFactory) {
-//    RexBuilder rexBuilder = relInput.getCluster().getRexBuilder();
-//    final String opName = (String) opMap.get("name");
-//    final List operands = (List) map.get(OPERANDS);
-//    final List<RexNode> rexOperands = toRexList(relInput, operands);
-//    final Object jsonType = map.get("type");
-//    final Map window = (Map) map.get("window");
-//    if (window != null) {
-//      return toRexWindow(relInput, opName, map, typeFactory, jsonType, window, rexOperands);
-//    } else {
-//      final SqlOperator operator = toOp(relInput, opName, map);
-//      final RelDataType type;
-//      if (jsonType != null) {
-//        type = toType(typeFactory, jsonType);
-//      } else {
-//        type = rexBuilder.deriveReturnType(operator, rexOperands);
-//      }
-//      return rexBuilder.makeCall(type, operator, rexOperands);
-//    }
-//  }
+  private RexNode toRexOperator(RelInput relInput, Map opMap, Map map, RelDataTypeFactory typeFactory) {
+    RexBuilder rexBuilder = relInput.getCluster().getRexBuilder();
+    final String opName = (String) opMap.get("name");
+    final List operands = (List) map.get(OPERANDS);
+    final Object jsonType = map.get("type");
+    final List<RexNode> rexOperands = toRexList(relInput, operands);
+    final SqlOperator operator = toOp(relInput, opName, map);
+    final RelDataType type;
+    if (jsonType != null) {
+      type = toType(typeFactory, jsonType);
+    } else {
+      type = rexBuilder.deriveReturnType(operator, rexOperands);
+    }
+    return rexBuilder.makeCall(type, operator, rexOperands);
+  }
 
 //  private RexNode toRexWindow(RelInput relInput, String opName, Map map, RelDataTypeFactory typeFactory,
 //                              Object jsonType, Map window, List<RexNode> rexOperands) {
@@ -711,13 +715,13 @@ public class HiveRelJson extends RelJson {
 //    return list;
 //  }
 
-//  private List<RexNode> toRexList(RelInput relInput, List operands) {
-//    final List<RexNode> list = new ArrayList<>();
-//    for (Object operand : operands) {
-//      list.add(toRex(relInput, operand));
-//    }
-//    return list;
-//  }
+  private List<RexNode> toRexList(RelInput relInput, List operands) {
+    final List<RexNode> list = new ArrayList<>();
+    for (Object operand : operands) {
+      list.add(toRex(relInput, operand));
+    }
+    return list;
+  }
 
 //  private RexWindowBound toRexWindowBound(RelInput input, Map<String, Object> map) {
 //    if (map == null) {
@@ -755,17 +759,21 @@ public class HiveRelJson extends RelJson {
 //    }
 //  }
 
-//  @Override
-//  public RelDataType toType(RelDataTypeFactory typeFactory, Object o) {
-//    if (o instanceof List) {
-//      return toType(typeFactory, (List<Map<String, Object>>) o);
-//    } else if (o instanceof Map) {
-//      return toType(typeFactory, (Map<String, Object>) o);
-//    } else {
-//      final SqlTypeName sqlTypeName = Util.enumVal(SqlTypeName.class, (String) o);
-//      return typeFactory.createSqlType(sqlTypeName);
-//    }
-//  }
+  @Override
+  public RelDataType toType(RelDataTypeFactory typeFactory, Object o) {
+    RelDataType type = super.toType(typeFactory, o);
+    
+    // Ensure all character types have UTF-16 charset and collation
+    // Without this, Strings can have extra "UTF-16LE" appended to them
+    // after deserialization
+    if (SqlTypeUtil.inCharFamily(type)) {
+      type = typeFactory.createTypeWithCharsetAndCollation(
+          type, Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT
+      );
+    }
+    
+    return type;
+  }
 
 //  private RelDataType toType(RelDataTypeFactory typeFactory, Map<String, Object> o) {
 //    final Object fields = o.get("fields");

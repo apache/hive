@@ -1301,7 +1301,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       try {
         optimizedOptiqPlan = HiveRelOptUtil.deserializePlan(conf, jsonPlan.get());
       } catch (IOException e) {
-        LOG.warn("Cannot deserialize plan from JSON", e);
+        throw new SemanticException(e);
       }
     }
     return optimizedOptiqPlan;
