@@ -241,6 +241,10 @@ public final class TypeInfoFactory {
     return result;
   }
 
+  public static TypeInfo getVariantTypeInfo() {
+    return new VariantTypeInfo();
+  }
+
   static ConcurrentHashMap<TypeInfo, TypeInfo> cachedListTypeInfo = new ConcurrentHashMap<TypeInfo, TypeInfo>();
 
   public static TypeInfo getListTypeInfo(TypeInfo elementTypeInfo) {

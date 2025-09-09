@@ -111,8 +111,6 @@ class HiveSchemaConverter {
             return Types.TimestampType.withoutZone();
           case DATE:
             return Types.DateType.get();
-          case VARIANT:
-            return Types.VariantType.get();
           case DECIMAL:
             DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
             return Types.DecimalType.of(decimalTypeInfo.precision(), decimalTypeInfo.scale());
@@ -129,9 +127,6 @@ class HiveSchemaConverter {
         }
       case STRUCT:
         StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-        if (structTypeInfo.isVariant()) {
-          return Types.VariantType.get();
-        }
         List<Types.NestedField> fields =
             convertInternal(structTypeInfo.getAllStructFieldNames(), structTypeInfo.getAllStructFieldTypeInfos(),
                     Collections.emptyList());
@@ -148,7 +143,8 @@ class HiveSchemaConverter {
         int listId = id++;
         Type listType = convertType(listTypeInfo.getListElementTypeInfo());
         return Types.ListType.ofOptional(listId, listType);
-      case UNION:
+      case VARIANT:
+        return Types.VariantType.get();
       default:
         throw new IllegalArgumentException("Unknown type " + typeInfo.getCategory());
     }

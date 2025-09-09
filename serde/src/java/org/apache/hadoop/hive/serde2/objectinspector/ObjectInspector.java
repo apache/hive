@@ -46,8 +46,8 @@ public interface ObjectInspector extends Cloneable {
    * Category.
    *
    */
-  public static enum Category {
-    PRIMITIVE, LIST, MAP, STRUCT, UNION
+  enum Category {
+    PRIMITIVE, LIST, MAP, STRUCT, UNION, VARIANT
   };
 
   /**

@@ -504,14 +504,6 @@ public final class TypeInfoUtils {
         }
       }
 
-      if (serdeConstants.VARIANT_TYPE_NAME.equals(t.text)) {
-        // Directly return the struct definition for VARIANT
-        StructTypeInfo struct = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(Arrays.asList("metadata", "value"),
-            Arrays.asList(TypeInfoFactory.binaryTypeInfo, TypeInfoFactory.binaryTypeInfo));
-        struct.setVariant(true);
-        return struct;
-      }
-
       // Is this a list type?
       if (serdeConstants.LIST_TYPE_NAME.equals(t.text)) {
         expect("<");
@@ -576,6 +568,11 @@ public final class TypeInfoUtils {
         } while (true);
 
         return TypeInfoFactory.getUnionTypeInfo(objectTypeInfos);
+      }
+
+      // Is this a variant type?
+      if (serdeConstants.VARIANT_TYPE_NAME.equals(t.text)) {
+        return TypeInfoFactory.getVariantTypeInfo();
       }
 
       throw new RuntimeException("Internal error parsing position "
@@ -824,6 +821,8 @@ public final class TypeInfoUtils {
       result = TypeInfoFactory.getUnionTypeInfo(objectTypeInfos);
       break;
     }
+    case VARIANT:
+      return TypeInfoFactory.getVariantTypeInfo();
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }

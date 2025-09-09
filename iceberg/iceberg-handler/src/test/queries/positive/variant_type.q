@@ -9,7 +9,7 @@
 CREATE EXTERNAL TABLE variant_test_basic (
     id INT,
     data VARIANT
-) STORED BY ICEBERG stored as avro tblproperties('format-version'='3');
+) STORED BY ICEBERG tblproperties('format-version'='3');
 
 -- Insert primitive types
 INSERT INTO variant_test_basic VALUES
@@ -27,7 +27,7 @@ SELECT id, to_json(data) as json_data FROM variant_test_basic ORDER BY id;
 CREATE EXTERNAL TABLE variant_test_complex (
     id INT,
     data VARIANT
-) STORED BY ICEBERG  tblproperties('format-version'='3');;
+) STORED BY ICEBERG tblproperties('format-version'='3');;
 
 -- Insert complex JSON structures
 INSERT INTO variant_test_complex VALUES
@@ -44,7 +44,7 @@ SELECT id, to_json(data) as json_data FROM variant_test_complex ORDER BY id;
 CREATE EXTERNAL TABLE variant_test_edge_cases (
     id INT,
     data VARIANT
-) STORED BY ICEBERG  tblproperties('format-version'='3');;
+) STORED BY ICEBERG tblproperties('format-version'='3');;
 
 -- Insert edge cases
 INSERT INTO variant_test_edge_cases VALUES
@@ -63,7 +63,7 @@ CREATE TABLE variant_test_operations (
     id INT,
     metadata VARIANT,
     payload VARIANT
-) STORED BY ICEBERG  tblproperties('format-version'='3');
+) STORED BY ICEBERG tblproperties('format-version'='3');
 
 -- Insert data with multiple variant columns
 INSERT INTO variant_test_operations VALUES

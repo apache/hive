@@ -66,7 +66,6 @@ public class GenericUDFParseJson extends GenericUDF {
     // Return a Variant OI
     StructTypeInfo struct = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(Arrays.asList("metadata", "value"),
         Arrays.asList(TypeInfoFactory.binaryTypeInfo, TypeInfoFactory.binaryTypeInfo));
-    struct.setVariant(true);
     return TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(struct);
   }
 

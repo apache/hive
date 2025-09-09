@@ -65,8 +65,7 @@ public class TestGenericUDFInitializeOnCompareUDF {
 
     List<ObjectInspector> primitives = new ArrayList<>();
     for (PrimitiveObjectInspector.PrimitiveCategory l : PrimitiveObjectInspector.PrimitiveCategory.values()) {
-      if (l == PrimitiveObjectInspector.PrimitiveCategory.UNKNOWN
-          || l == PrimitiveObjectInspector.PrimitiveCategory.VARIANT) {
+      if (l == PrimitiveObjectInspector.PrimitiveCategory.UNKNOWN) {
         continue;
       }
       primitives.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(l));
@@ -98,7 +97,7 @@ public class TestGenericUDFInitializeOnCompareUDF {
     return generateArguments().stream().filter(args -> {
       ObjectInspector.Category left = args.left.getCategory();
       ObjectInspector.Category right = args.right.getCategory();
-      return left.equals(right) && !(PRIMITIVE.equals(left) && PRIMITIVE.equals(right));
+      return left.equals(right) && !PRIMITIVE.equals(left);
     });
   }
 
