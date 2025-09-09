@@ -65,7 +65,8 @@ public class TestGenericUDFInitializeOnCompareUDF {
 
     List<ObjectInspector> primitives = new ArrayList<>();
     for (PrimitiveObjectInspector.PrimitiveCategory l : PrimitiveObjectInspector.PrimitiveCategory.values()) {
-      if (l == PrimitiveObjectInspector.PrimitiveCategory.UNKNOWN) {
+      if (l == PrimitiveObjectInspector.PrimitiveCategory.UNKNOWN
+          || l == PrimitiveObjectInspector.PrimitiveCategory.VARIANT) {
         continue;
       }
       primitives.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(l));

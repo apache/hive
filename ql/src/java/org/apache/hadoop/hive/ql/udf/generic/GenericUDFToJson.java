@@ -25,11 +25,9 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -218,8 +216,8 @@ public class GenericUDFToJson extends GenericUDF {
         case 11: // date
           decodeDate(buf, sb);
           break;
-        case 12: // timestamp
-        case 13: // timestamp without timezone
+        case 12: // timestamp with timezone (MICROS)
+        case 13: // timestamp without timezone (MICROS)
           decodeTimestamp(primitiveHeader, buf, sb);
           break;
         case 14: // float
@@ -231,22 +229,12 @@ public class GenericUDFToJson extends GenericUDF {
         case 16: // string
           decodeString(buf, sb);
           break;
-        case 17: // time without timezone
-          decodeTime(buf, sb);
-          break;
-        case 18: // timestamp with timezone (nanos)
-        case 19: // timestamp without timezone (nanos)
-          decodeTimestampNanos(primitiveHeader, buf, sb);
-          break;
-        case 20: // uuid
-          decodeUuid(buf, sb);
-          break;
         default:
           throw new IOException("Unknown primitive type: " + primitiveHeader);
       }
     }
 
-    private static void decodeShortString(int length, ByteBuffer buf, StringBuilder sb) throws IOException {
+    private static void decodeShortString(int length, ByteBuffer buf, StringBuilder sb) {
       byte[] bytes = new byte[length];
       buf.get(bytes);
       String str = new String(bytes, StandardCharsets.UTF_8);
@@ -367,36 +355,42 @@ public class GenericUDFToJson extends GenericUDF {
       }
 
       BigDecimal decimal = new BigDecimal(unscaled, scale);
-      sb.append(decimal.toString());
+      sb.append(decimal);
     }
 
 
     private static void decodeDate(ByteBuffer buf, StringBuilder sb) {
       int days = buf.getInt();
       LocalDate date = LocalDate.ofEpochDay(days);
-      sb.append("\"").append(date.toString()).append("\"");
+      sb.append("\"").append(date).append("\"");
     }
 
-    private static void decodeTimestamp(int timestampType, ByteBuffer buf, StringBuilder sb) {
+    private static void decodeTimestamp(int timestampType, ByteBuffer buf, StringBuilder sb) throws IOException {
       long micros = buf.getLong();
-      Instant instant = Instant.ofEpochSecond(micros / 1_000_000, (micros % 1_000_000) * 1000);
-      sb.append("\"").append(instant.toString()).append("\"");
+      switch (timestampType) {
+        case 12: // timestamp with timezone (MICROS)
+          Instant instantWithTz = Instant.ofEpochSecond(micros / 1_000_000, (micros % 1_000_000) * 1000);
+          sb.append("\"").append(instantWithTz.toString()).append("\""); // Instant includes 'Z' for UTC
+          break;
+        case 13: // timestamp without timezone (MICROS)
+          // For timestamp without timezone, we format without timezone offset
+          Instant instantNoTz = Instant.ofEpochSecond(micros / 1_000_000, (micros % 1_000_000) * 1000);
+          String formatted = instantNoTz.toString().replace("Z", ""); // Remove 'Z' for no timezone
+          sb.append("\"").append(formatted).append("\"");
+          break;
+        default:
+          throw new IOException("Invalid timestamp type: " + timestampType);
+      }
     }
 
-    private static void decodeTimestampNanos(int timestampType, ByteBuffer buf, StringBuilder sb) {
-      long nanos = buf.getLong();
-      Instant instant = Instant.ofEpochSecond(nanos / 1_000_000_000, nanos % 1_000_000_000);
-      sb.append("\"").append(instant.toString()).append("\"");
-    }
-
-    private static void decodeBinary(ByteBuffer buf, StringBuilder sb) throws IOException {
+    private static void decodeBinary(ByteBuffer buf, StringBuilder sb) {
       int length = buf.getInt();
       byte[] bytes = new byte[length];
       buf.get(bytes);
       sb.append("\"").append(Base64.getEncoder().encodeToString(bytes)).append("\"");
     }
 
-    private static void decodeString(ByteBuffer buf, StringBuilder sb) throws IOException {
+    private static void decodeString(ByteBuffer buf, StringBuilder sb) {
       int length = buf.getInt();
       byte[] bytes = new byte[length];
       buf.get(bytes);
@@ -404,21 +398,8 @@ public class GenericUDFToJson extends GenericUDF {
       sb.append("\"").append(escapeJson(str)).append("\"");
     }
 
-    private static void decodeTime(ByteBuffer buf, StringBuilder sb) {
-      long micros = buf.getLong();
-      LocalTime time = LocalTime.ofNanoOfDay(micros * 1000);
-      sb.append("\"").append(time.toString()).append("\"");
-    }
-
-    private static void decodeUuid(ByteBuffer buf, StringBuilder sb) {
-      long mostSigBits = buf.getLong();
-      long leastSigBits = buf.getLong();
-      UUID uuid = new UUID(mostSigBits, leastSigBits);
-      sb.append("\"").append(uuid.toString()).append("\"");
-    }
-
     // Utility methods
-    private static int readUnsignedLE(ByteBuffer buf, int bytes) throws IOException {
+    private static int readUnsignedLE(ByteBuffer buf, int bytes) {
       int result = 0;
       for (int i = 0; i < bytes; i++) {
         result |= (buf.get() & 0xFF) << (8 * i);

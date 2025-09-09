@@ -23,11 +23,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 @Description(
     name = "try_variant_get",
     value = "_FUNC_(variant, path[, type]) - Extracts a sub-variant from variant according to path, and casts it to type. Returns null on error.",
-    extended = "Example:\n" +
-        "> SELECT _FUNC_(parse_json('{\"a\": 1}'), '$.a', 'int');\n" +
-        "1\n" +
-        "> SELECT _FUNC_(parse_json('[1, \"hello\"]'), '$[1]', 'int');\n" +
-        "NULL"
+    extended = """
+        Example:
+        > SELECT _FUNC_(parse_json('{"a": 1}'), '$.a', 'int');
+        1
+        > SELECT _FUNC_(parse_json('[1, "hello"]'), '$[1]', 'int');
+        NULL"""
 )
 public class GenericUDFTryVariantGet extends GenericUDFVariantGet {
 

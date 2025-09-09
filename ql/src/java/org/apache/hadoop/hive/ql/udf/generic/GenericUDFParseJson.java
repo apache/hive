@@ -23,7 +23,10 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -40,12 +43,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.BytesWritable;
 
-@Description(name = "parse_json", value = "_FUNC_(json_string) - Parses a JSON string into a VARIANT type", extended =
-    "Example:\n" + "  > SELECT _FUNC_('{\"a\":5}');\n" + "  {\"a\":5}")
+@Description(name = "parse_json", value = "_FUNC_(json_string) - Parses a JSON string into a VARIANT type", extended = """
+    Example:
+      > SELECT _FUNC_('{"a":5}');
+      {"a":5}""")
 public class GenericUDFParseJson extends GenericUDF {
-  private transient PrimitiveObjectInspector inputOI;
+  private PrimitiveObjectInspector inputOI;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -85,11 +89,9 @@ public class GenericUDFParseJson extends GenericUDF {
     return "parse_json(" + children[0] + ")";
   }
 
-  public static final class VariantJsonEncoder {
+  static final class VariantJsonEncoder {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    // Basic limits (we support dynamic widths up to 4 bytes)
-    private static final int MAX_OFFSET_SIZE = 4;
     private static final int MAX_FIELD_ID_SIZE = 4;
     private static final int MAX_FIELD_OFFSET_SIZE = 4;
 
@@ -100,7 +102,7 @@ public class GenericUDFParseJson extends GenericUDF {
       List<String> dictionary = collectDictionary(root);
 
       // 2) build dict index map
-      java.util.Map<String, Integer> dictIndex = new java.util.HashMap<>(dictionary.size());
+      Map<String, Integer> dictIndex = HashMap.newHashMap(dictionary.size());
       for (int i = 0; i < dictionary.size(); i++) {
         dictIndex.put(dictionary.get(i), i);
       }
@@ -113,11 +115,7 @@ public class GenericUDFParseJson extends GenericUDF {
     }
 
     private static List<String> collectDictionary(JsonNode node) {
-      Set<String> keys = new TreeSet<>((a, b) -> {
-        // lexicographic unsigned byte ordering over UTF-8 -> we approximate using String.compareTo
-        // If precise unsigned byte ordering needed, convert bytes and compare unsigned.
-        return a.compareTo(b);
-      });
+      Set<String> keys = new TreeSet<>(Comparator.naturalOrder());
       collectKeys(node, keys);
       return new ArrayList<>(keys);
     }
@@ -201,14 +199,14 @@ public class GenericUDFParseJson extends GenericUDF {
       // null
       if (node == null || node.isNull()) {
         // primitive null ID = 0 ; basic_type = 0
-        out.write((0 << 2) | 0);
+        out.write((0 << 2));
         return;
       }
 
       // boolean
       if (node.isBoolean()) {
         int id = node.booleanValue() ? 1 : 2;
-        out.write((id << 2) | 0);
+        out.write((id << 2));
         return;
       }
 
@@ -226,17 +224,17 @@ public class GenericUDFParseJson extends GenericUDF {
           byte[] unscaledLE = bigIntegerToLittleEndian(unscaled, requiredBytesForPrecision(precision));
           if (precision <= 9) {
             // decimal4 -> primitive id 8 (decimal4)
-            out.write((8 << 2) | 0);
+            out.write((8 << 2));
             out.write(scale & 0xFF); // 1 byte scale
             out.write(unscaledLE);
             return;
           } else if (precision <= 18) {
-            out.write((9 << 2) | 0); // decimal8
+            out.write((9 << 2)); // decimal8
             out.write(scale & 0xFF);
             out.write(unscaledLE);
             return;
           } else if (precision <= 38) {
-            out.write((10 << 2) | 0); // decimal16
+            out.write((10 << 2)); // decimal16
             out.write(scale & 0xFF);
             out.write(unscaledLE);
             return;
@@ -246,12 +244,12 @@ public class GenericUDFParseJson extends GenericUDF {
         } else {
           // no fractional part and fits in double? use integer mapping if fits else double
           if (node.isFloat()) {
-            out.write((14 << 2) | 0); // float
+            out.write((14 << 2)); // float
             writeFloatLE(out, (float) node.doubleValue());
             return;
           } else {
             // if it's exact integer would have hit integral path earlier. fallback to double
-            out.write((7 << 2) | 0); // double
+            out.write((7 << 2)); // double
             writeDoubleLE(out, node.doubleValue());
             return;
           }
@@ -262,19 +260,19 @@ public class GenericUDFParseJson extends GenericUDF {
       if (node.isInt() || node.isLong() || node.canConvertToLong()) {
         long v = node.longValue();
         if (v >= Byte.MIN_VALUE && v <= Byte.MAX_VALUE) {
-          out.write((3 << 2) | 0); // int8
+          out.write((3 << 2)); // int8
           out.write((int) (v & 0xFF));
           return;
         } else if (v >= Short.MIN_VALUE && v <= Short.MAX_VALUE) {
-          out.write((4 << 2) | 0); // int16
+          out.write((4 << 2)); // int16
           writeShortLE(out, (int) v);
           return;
         } else if (v >= Integer.MIN_VALUE && v <= Integer.MAX_VALUE) {
-          out.write((5 << 2) | 0); // int32
+          out.write((5 << 2)); // int32
           writeIntLE(out, (int) v);
           return;
         } else {
-          out.write((6 << 2) | 0); // int64
+          out.write((6 << 2)); // int64
           writeLongLE(out, v);
           return;
         }
@@ -288,7 +286,7 @@ public class GenericUDFParseJson extends GenericUDF {
         if (looksLikeUUID(s)) {
           // Fallback to string until Iceberg supports UUID (20)
           byte[] utf8 = s.getBytes(StandardCharsets.UTF_8);
-          out.write((16 << 2) | 0); // STRING primitive id 16
+          out.write((16 << 2)); // STRING primitive id 16
           writeIntLE(out, utf8.length);
           out.write(utf8);
           return;
@@ -297,7 +295,7 @@ public class GenericUDFParseJson extends GenericUDF {
         // try date
         java.time.LocalDate ldate = tryParseDate(s);
         if (ldate != null) {
-          out.write((11 << 2) | 0); // date id 11
+          out.write((11 << 2)); // date id 11
           int days = (int) ldate.toEpochDay();
           writeIntLE(out, days);
           return;
@@ -306,7 +304,7 @@ public class GenericUDFParseJson extends GenericUDF {
         // try time (no timezone)
         java.time.LocalTime ltime = tryParseTime(s);
         if (ltime != null) {
-          // Fallback to string until Iceberg supports TIME_NTZ (17)
+          // Fallback to string - Iceberg doesn't support TIME_NTZ (case 17)
           byte[] utf8 = s.getBytes(StandardCharsets.UTF_8);
           if (utf8.length < 64) {
             int basicType = 1;
@@ -314,7 +312,7 @@ public class GenericUDFParseJson extends GenericUDF {
             out.write((header << 2) | basicType);
             out.write(utf8);
           } else {
-            out.write((16 << 2) | 0); // STRING primitive id 16
+            out.write((16 << 2)); // STRING primitive id 16
             writeIntLE(out, utf8.length);
             out.write(utf8);
           }
@@ -324,8 +322,14 @@ public class GenericUDFParseJson extends GenericUDF {
         // try timestamp (ISO with timezone or Z)
         java.time.Instant inst = tryParseInstant(s);
         if (inst != null) {
-          // encode timestamp (with timezone -> MICROS) id 12; if no tz and no offset we could pick NTZ
-          out.write((12 << 2) | 0);
+          // Check if the original string had timezone information
+          boolean hasTimezone = s.contains("Z") || s.contains("+") || s.contains("-");
+
+          if (hasTimezone) {
+            out.write((12 << 2)); // timestamp with timezone (MICROS)
+          } else {
+            out.write((13 << 2)); // timestamp without timezone (MICROS)
+          }
           long micros = inst.getEpochSecond() * 1_000_000L + (inst.getNano() / 1000);
           writeLongLE(out, micros);
           return;
@@ -340,7 +344,7 @@ public class GenericUDFParseJson extends GenericUDF {
           out.write((header << 2) | basicType);
           out.write(utf8);
         } else {
-          out.write((16 << 2) | 0); // STRING primitive id 16
+          out.write((16 << 2)); // STRING primitive id 16
           writeIntLE(out, utf8.length);
           out.write(utf8);
         }
@@ -350,7 +354,7 @@ public class GenericUDFParseJson extends GenericUDF {
       // binary node:
       if (node.isBinary()) {
         byte[] bytes = node.binaryValue();
-        out.write((15 << 2) | 0); // binary id 15
+        out.write((15 << 2)); // binary id 15
         writeIntLE(out, bytes.length);
         out.write(bytes);
         return;
@@ -495,7 +499,7 @@ public class GenericUDFParseJson extends GenericUDF {
         out.write((header << 2) | basicType);
         out.write(utf8);
       } else {
-        out.write((16 << 2) | 0);
+        out.write((16 << 2));
         writeIntLE(out, utf8.length);
         out.write(utf8);
       }
@@ -547,7 +551,7 @@ public class GenericUDFParseJson extends GenericUDF {
       return 16;
     }
 
-    private static byte[] bigIntegerToLittleEndian(java.math.BigInteger bi, int length) throws IOException {
+    private static byte[] bigIntegerToLittleEndian(java.math.BigInteger bi, int length) {
       byte[] be = bi.toByteArray();
       byte[] le = new byte[length];
 
@@ -567,25 +571,6 @@ public class GenericUDFParseJson extends GenericUDF {
     private static boolean looksLikeUUID(String s) {
       return s != null && s.length() == 36 && s.charAt(8) == '-' && s.charAt(13) == '-' && s.charAt(18) == '-'
           && s.charAt(23) == '-';
-    }
-
-    private static byte[] uuidToBytesBigEndian(String s) throws IOException {
-      java.util.UUID uuid = java.util.UUID.fromString(s);
-      ByteArrayOutputStream bout = new ByteArrayOutputStream(16);
-      writeLongBE(bout, uuid.getMostSignificantBits());
-      writeLongBE(bout, uuid.getLeastSignificantBits());
-      return bout.toByteArray();
-    }
-
-    private static void writeLongBE(OutputStream out, long v) throws IOException {
-      out.write((int) ((v >> 56) & 0xFF));
-      out.write((int) ((v >> 48) & 0xFF));
-      out.write((int) ((v >> 40) & 0xFF));
-      out.write((int) ((v >> 32) & 0xFF));
-      out.write((int) ((v >> 24) & 0xFF));
-      out.write((int) ((v >> 16) & 0xFF));
-      out.write((int) ((v >> 8) & 0xFF));
-      out.write((int) (v & 0xFF));
     }
 
     private static java.time.LocalDate tryParseDate(String s) {

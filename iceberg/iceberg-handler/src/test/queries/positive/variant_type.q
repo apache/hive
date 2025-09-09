@@ -20,6 +20,15 @@ INSERT INTO variant_test_basic VALUES
 (5, parse_json('3.14')),
 (6, parse_json('"hello world"'));
 
+-- Insert timestamp types (only microsecond precision supported by Iceberg)
+INSERT INTO variant_test_basic VALUES
+(7, parse_json('"2023-01-01T12:00:00.123456Z"')),
+(8, parse_json('"2023-01-01T12:00:00.123456"')),
+(9, parse_json('"2023-01-01T12:00:00.123456789Z"')),
+(10, parse_json('"2023-01-01T12:00:00.123456789"')),
+(11, parse_json('"12:30:45.123456"')),
+(12, parse_json('"2023-12-25"'));
+
 -- Retrieve and verify
 SELECT id, to_json(data) as json_data FROM variant_test_basic ORDER BY id;
 

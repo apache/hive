@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 

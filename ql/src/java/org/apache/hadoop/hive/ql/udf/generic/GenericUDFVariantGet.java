@@ -25,11 +25,9 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -40,13 +38,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
-@Description(name = "variant_get", value = "_FUNC_(variant, path[, type]) - Extracts a sub-variant from variant according to path, and casts it to type", extended =
-    "Example:\n" + "> SELECT _FUNC_(parse_json('{\"a\": 1}'), '$.a', 'int');\n" + "1\n"
-        + "> SELECT _FUNC_(parse_json('{\"a\": 1}'), '$.b', 'int');\n" + "NULL\n"
-        + "> SELECT _FUNC_(parse_json('[1, \"2\"]'), '$[1]', 'string');\n" + "2\n"
-        + "> SELECT _FUNC_(parse_json('[1, \"hello\"]'), '$[1]');\n" + "\"hello\"")
+@Description(name = "variant_get", value = "_FUNC_(variant, path[, type]) - Extracts a sub-variant from variant according to path, and casts it to type", extended = """
+    Example:
+    > SELECT _FUNC_(parse_json('{"a": 1}'), '$.a', 'int');
+    1
+    > SELECT _FUNC_(parse_json('{"a": 1}'), '$.b', 'int');
+    NULL
+    > SELECT _FUNC_(parse_json('[1, "2"]'), '$[1]', 'string');
+    2
+    > SELECT _FUNC_(parse_json('[1, "hello"]'), '$[1]');
+    "hello\"""")
 public class GenericUDFVariantGet extends GenericUDF {
   private StructObjectInspector variantOI;
   private PrimitiveObjectInspector pathOI;
@@ -146,7 +148,6 @@ public class GenericUDFVariantGet extends GenericUDF {
     if (version != 1)
       throw new IOException("Unsupported variant metadata version: " + version);
 
-    boolean sortedStrings = ((header >> 4) & 0x01) == 1;
     int offsetSizeMinusOne = (header >> 6) & 0x03;
     int offsetSize = offsetSizeMinusOne + 1;
 
@@ -257,20 +258,13 @@ public class GenericUDFVariantGet extends GenericUDF {
         return decodeDate(buf);
       case 12: // timestamp (MICROS)
       case 13: // timestamp without time zone (MICROS)
-        return decodeTimestampMicros(buf);
+        return decodeTimestampMicros(buf, primitiveHeader);
       case 14: // float
         return buf.getFloat();
       case 15: // binary
         return decodeBinary(buf);
       case 16: // string
         return decodeString(buf);
-      case 17: // time without time zone (MICROS)
-        return decodeTimeMicros(buf);
-      case 18: // timestamp with time zone (NANOS)
-      case 19: // timestamp without time zone (NANOS)
-        return decodeTimestampNanos(buf);
-      case 20: // uuid
-        return decodeUuid(buf);
       default:
         return null;
     }
@@ -308,52 +302,38 @@ public class GenericUDFVariantGet extends GenericUDF {
   private Object decodeDate(ByteBuffer buf) {
     int days = buf.getInt();
     LocalDate date = LocalDate.ofEpochDay(days);
-    return "\"" + date.toString() + "\"";
+    return date.toString();
   }
 
-  private Object decodeTimestampMicros(ByteBuffer buf) {
+  private Object decodeTimestampMicros(ByteBuffer buf, int primitiveHeader) {
     long micros = buf.getLong();
     Instant instant = Instant.ofEpochSecond(micros / 1_000_000, (micros % 1_000_000) * 1000);
-    return "\"" + instant.toString() + "\"";
+
+    if (primitiveHeader == 12) { // with timezone
+      return instant.toString(); // Includes 'Z'
+    } else { // case 13: without timezone
+      return instant.toString().replace("Z", ""); // Remove 'Z'
+    }
   }
 
-  private Object decodeTimestampNanos(ByteBuffer buf) {
-    long nanos = buf.getLong();
-    Instant instant = Instant.ofEpochSecond(nanos / 1_000_000_000, nanos % 1_000_000_000);
-    return "\"" + instant.toString() + "\"";
-  }
-
-  private Object decodeBinary(ByteBuffer buf) throws IOException {
+  private Object decodeBinary(ByteBuffer buf) {
     int length = buf.getInt();
     byte[] bytes = new byte[length];
     buf.get(bytes);
-    return "\"" + Base64.getEncoder().encodeToString(bytes) + "\"";
+    return Base64.getEncoder().encodeToString(bytes);
   }
 
-  private Object decodeString(ByteBuffer buf) throws IOException {
+  private Object decodeString(ByteBuffer buf) {
     int length = buf.getInt();
     byte[] bytes = new byte[length];
     buf.get(bytes);
-    return "\"" + new String(bytes, StandardCharsets.UTF_8) + "\"";
+    return new String(bytes, StandardCharsets.UTF_8);
   }
 
-  private Object decodeTimeMicros(ByteBuffer buf) {
-    long micros = buf.getLong();
-    LocalTime time = LocalTime.ofNanoOfDay(micros * 1000);
-    return "\"" + time.toString() + "\"";
-  }
-
-  private Object decodeUuid(ByteBuffer buf) {
-    long mostSigBits = buf.getLong();
-    long leastSigBits = buf.getLong();
-    UUID uuid = new UUID(mostSigBits, leastSigBits);
-    return "\"" + uuid.toString() + "\"";
-  }
-
-  private Object decodeShortString(int length, ByteBuffer buf) throws IOException {
+  private Object decodeShortString(int length, ByteBuffer buf) {
     byte[] bytes = new byte[length];
     buf.get(bytes);
-    return "\"" + new String(bytes, StandardCharsets.UTF_8) + "\"";
+    return new String(bytes, StandardCharsets.UTF_8);
   }
 
   private Object decodeObject(byte[] value, int pos, List<String> dictionary) throws IOException {
@@ -603,12 +583,7 @@ public class GenericUDFVariantGet extends GenericUDF {
           if (value instanceof Number) {
             return ((Number) value).intValue();
           } else if (value instanceof String) {
-            // Remove quotes if it's a JSON string
-            String str = value.toString();
-            if (str.startsWith("\"") && str.endsWith("\"")) {
-              str = str.substring(1, str.length() - 1);
-            }
-            return Integer.parseInt(str);
+            return Integer.parseInt((String) value); // No quote stripping needed
           }
           break;
         case "string":
@@ -618,37 +593,23 @@ public class GenericUDFVariantGet extends GenericUDF {
           if (value instanceof Boolean) {
             return value;
           } else if (value instanceof String) {
-            String str = value.toString();
-            if (str.startsWith("\"") && str.endsWith("\"")) {
-              str = str.substring(1, str.length() - 1);
-            }
-            return Boolean.parseBoolean(str);
+            return Boolean.parseBoolean((String) value);
           }
           break;
         case "double":
           if (value instanceof Number) {
             return ((Number) value).doubleValue();
           } else if (value instanceof String) {
-            String str = value.toString();
-            if (str.startsWith("\"") && str.endsWith("\"")) {
-              str = str.substring(1, str.length() - 1);
-            }
-            return Double.parseDouble(str);
+            return Double.parseDouble((String) value);
           }
           break;
         case "long":
           if (value instanceof Number) {
             return ((Number) value).longValue();
           } else if (value instanceof String) {
-            String str = value.toString();
-            if (str.startsWith("\"") && str.endsWith("\"")) {
-              str = str.substring(1, str.length() - 1);
-            }
-            return Long.parseLong(str);
+            return Long.parseLong((String) value);
           }
           break;
-        case "variant":
-          return value;
         default:
           return value;
       }
