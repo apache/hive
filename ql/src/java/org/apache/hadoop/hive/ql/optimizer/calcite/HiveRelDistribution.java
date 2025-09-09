@@ -28,6 +28,7 @@ import org.apache.calcite.plan.RelTrait;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
+import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mappings.TargetMapping;
@@ -37,6 +38,9 @@ import com.google.common.collect.Ordering;
 public class HiveRelDistribution implements RelDistribution {
 
   private static final Ordering<Iterable<Integer>> ORDERING = Ordering.<Integer>natural().lexicographical();
+
+  public static final HiveRelDistribution ANY =
+      new HiveRelDistribution(RelDistribution.Type.ANY, RelDistributions.ANY.getKeys());
 
   public static HiveRelDistribution from(
           List<RelFieldCollation> fieldCollations, RelDistribution.Type distributionType) {

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptUtil;
@@ -414,20 +415,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private long getMaxNulls(RexCall call, HiveTableScan t) {
-    long tmpNoNulls = 0;
-    long maxNoNulls = 0;
-
     Set<Integer> iRefSet = HiveCalciteUtil.getInputRefs(call);
-    List<ColStatistics> colStats = t.getColStat(new ArrayList<Integer>(iRefSet));
+    List<ColStatistics> colStats = t.getColStat(new ArrayList<>(iRefSet));
 
-    for (ColStatistics cs : colStats) {
-      tmpNoNulls = cs.getNumNulls();
-      if (tmpNoNulls > maxNoNulls) {
-        maxNoNulls = tmpNoNulls;
-      }
-    }
-
-    return maxNoNulls;
+    return colStats.stream()
+        .filter(Objects::nonNull)
+        .map(ColStatistics::getNumNulls)
+        .max(Long::compare)
+        .orElse(0L);
   }
 
   private Double getMaxNDV(RexCall call) {

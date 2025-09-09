@@ -699,7 +699,11 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeExactLiteral((BigDecimal) value, calciteDataType);
       break;
     case FLOAT:
-      calciteLiteral = rexBuilder.makeApproxLiteral(
+      // We mostly convert FLOAT to exact literal everywhere else, except when
+      // there is a suffix 'F'. See TypeCheckProcFactory.NumExprProcessor#process
+      // Converting to an exact literal helps with deserialization by avoiding
+      // scientific notation.
+      calciteLiteral = rexBuilder.makeExactLiteral(
           new BigDecimal(Float.toString((Float)value)), calciteDataType);
       break;
     case DOUBLE:
@@ -707,7 +711,11 @@ public class RexNodeConverter {
       if (Double.isNaN((Double) value)) {
         throw new CalciteSemanticException("NaN", UnsupportedFeature.Invalid_decimal);
       }
-      calciteLiteral = rexBuilder.makeApproxLiteral(
+      // We mostly convert DOUBLE to exact literal everywhere else, except when
+      // there is a suffix 'D'. See TypeCheckProcFactory.NumExprProcessor#process
+      // Converting to an exact literal helps with deserialization by avoiding
+      // scientific notation.
+      calciteLiteral = rexBuilder.makeExactLiteral(
           new BigDecimal(Double.toString((Double)value)), calciteDataType);
       break;
     case CHAR:

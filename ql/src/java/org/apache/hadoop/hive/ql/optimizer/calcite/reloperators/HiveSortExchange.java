@@ -25,10 +25,13 @@ import org.apache.calcite.rel.RelCollationImpl;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelDistributionTraitDef;
+import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.SortExchange;
 import org.apache.calcite.rex.RexNode;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
@@ -46,6 +49,21 @@ public final class HiveSortExchange extends SortExchange implements HiveRelNode 
       RelNode input, RelDistribution distribution, RelCollation collation, ImmutableList<RexNode> keys) {
     super(cluster, traitSet, input, distribution, collation);
     this.keys = new ImmutableList.Builder<RexNode>().addAll(keys).build();
+  }
+
+  public HiveSortExchange(RelInput input) {
+    this(
+        input.getCluster(),
+        getTraitSet(
+            input.getCluster(),
+            RelCollationTraitDef.INSTANCE.canonize(input.getCollation()),
+            RelDistributionTraitDef.INSTANCE.canonize(getDistribution(input))
+        ),
+        input.getInput(),
+        RelDistributionTraitDef.INSTANCE.canonize(getDistribution(input)),
+        RelCollationTraitDef.INSTANCE.canonize(input.getCollation()),
+        getKeys(input)
+    );
   }
 
   /**
@@ -85,6 +103,28 @@ public final class HiveSortExchange extends SortExchange implements HiveRelNode 
     }
 
     return new HiveSortExchange(cluster, traitSet, input, distribution, collation, builder.build());
+  }
+
+  private static ImmutableList<RexNode> getKeys(RelInput input) {
+    RelCollation collation = RelCollationTraitDef.INSTANCE.canonize(input.getCollation());
+    RelTraitSet traitSet = getTraitSet(input.getCluster(), collation, input.getDistribution());
+    RelCollation canonizedCollation = traitSet.canonize(RelCollationImpl.of(collation.getFieldCollations()));
+    ImmutableList.Builder<RexNode> builder = ImmutableList.builder();
+    for (RelFieldCollation relFieldCollation : canonizedCollation.getFieldCollations()) {
+      int index = relFieldCollation.getFieldIndex();
+      builder.add(input.getCluster().getRexBuilder().makeInputRef(input.getInput(), index));
+    }
+
+    return builder.build();
+  }
+
+  private static RelDistribution getDistribution(RelInput input) {
+    RelDistribution result = input.getDistribution();
+    if (RelDistribution.Type.ANY == result.getType()) {
+      result = HiveRelDistribution.ANY;
+    }
+
+    return result;
   }
 
   @Override

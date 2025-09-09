@@ -16,17 +16,36 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
+import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.prepare.RelOptTableImpl;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Spool;
 import org.apache.calcite.rel.core.TableSpool;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+
+import java.util.List;
+import java.util.Objects;
 
 public class HiveTableSpool extends TableSpool implements HiveRelNode {
   public HiveTableSpool(RelNode input, Type readType, Type writeType, RelOptTable table) {
     super(input.getCluster(), TraitsUtil.getDefaultTraitSet(input.getCluster()), input, readType, writeType, table);
+  }
+  
+  public HiveTableSpool(RelInput relInput) {
+    this(
+        relInput.getInput(),
+        relInput.getEnum("readType", Type.class),
+        relInput.getEnum("writeType", Type.class),
+        RelOptTableImpl.create(
+            null, relInput.getRowType("rowType"),
+            (List<String>) relInput.get("table"), null
+        )
+    );
   }
 
   @Override
@@ -36,6 +55,10 @@ public class HiveTableSpool extends TableSpool implements HiveRelNode {
 
   @Override
   public RelWriter explainTerms(final RelWriter pw) {
-    return pw.input("input", getInput()).item("table", getTable().getQualifiedName());
+    return pw.input("input", getInput())
+        .item("table", Objects.requireNonNull(getTable()).getQualifiedName())
+        .itemIf("readType", readType.name(), pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
+        .itemIf("writeType", writeType.name(), pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES)
+        .itemIf("rowType", getRowType(), pw.getDetailLevel() == SqlExplainLevel.ALL_ATTRIBUTES);
   }
 }
