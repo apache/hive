@@ -1,14 +1,14 @@
 PREHOOK: query: CREATE EXTERNAL TABLE variant_test_basic (
     id INT,
     data VARIANT
-) STORED BY ICEBERG  tblproperties('format-version'='3')
+) STORED BY ICEBERG stored as avro tblproperties('format-version'='3')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@variant_test_basic
 POSTHOOK: query: CREATE EXTERNAL TABLE variant_test_basic (
     id INT,
     data VARIANT
-) STORED BY ICEBERG  tblproperties('format-version'='3')
+) STORED BY ICEBERG stored as avro tblproperties('format-version'='3')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@variant_test_basic
@@ -32,26 +32,6 @@ POSTHOOK: query: INSERT INTO variant_test_basic VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@variant_test_basic
-PREHOOK: query: INSERT INTO variant_test_basic VALUES
-(7, parse_json('"2023-01-01T12:00:00.123456Z"')),
-(8, parse_json('"2023-01-01T12:00:00.123456"')),
-(9, parse_json('"2023-01-01T12:00:00.123456789Z"')),
-(10, parse_json('"2023-01-01T12:00:00.123456789"')),
-(11, parse_json('"12:30:45.123456"')),
-(12, parse_json('"2023-12-25"'))
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@variant_test_basic
-POSTHOOK: query: INSERT INTO variant_test_basic VALUES
-(7, parse_json('"2023-01-01T12:00:00.123456Z"')),
-(8, parse_json('"2023-01-01T12:00:00.123456"')),
-(9, parse_json('"2023-01-01T12:00:00.123456789Z"')),
-(10, parse_json('"2023-01-01T12:00:00.123456789"')),
-(11, parse_json('"12:30:45.123456"')),
-(12, parse_json('"2023-12-25"'))
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@variant_test_basic
 PREHOOK: query: SELECT id, to_json(data) as json_data FROM variant_test_basic ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@variant_test_basic
@@ -66,12 +46,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	42
 5	3.14
 6	"hello world"
-7	"2023-01-01T12:00:00.123456Z"
-8	"2023-01-01T12:00:00.123456"
-9	"2023-01-01T12:00:00.123456Z"
-10	"2023-01-01T12:00:00.123456789"
-11	"12:30:45.123456"
-12	"2023-12-25"
 PREHOOK: query: CREATE EXTERNAL TABLE variant_test_complex (
     id INT,
     data VARIANT
@@ -537,3 +511,78 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@variant_test_complex
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	apple	banana	cherry
+PREHOOK: query: CREATE EXTERNAL TABLE variant_test_basic_avro (
+    id INT,
+    data VARIANT
+) STORED BY ICEBERG stored as avro tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@variant_test_basic_avro
+POSTHOOK: query: CREATE EXTERNAL TABLE variant_test_basic_avro (
+    id INT,
+    data VARIANT
+) STORED BY ICEBERG stored as avro tblproperties('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@variant_test_basic_avro
+PREHOOK: query: INSERT INTO variant_test_basic_avro VALUES
+(7, parse_json('"2023-01-01T12:00:00.123456Z"')),
+(8, parse_json('"2023-01-01T12:00:00.123456"')),
+(9, parse_json('"2023-01-01T12:00:00.123456789Z"')),
+(10, parse_json('"2023-01-01T12:00:00.123456789"')),
+(11, parse_json('"12:30:45.123456"')),
+(12, parse_json('"2023-12-25"'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@variant_test_basic_avro
+POSTHOOK: query: INSERT INTO variant_test_basic_avro VALUES
+(7, parse_json('"2023-01-01T12:00:00.123456Z"')),
+(8, parse_json('"2023-01-01T12:00:00.123456"')),
+(9, parse_json('"2023-01-01T12:00:00.123456789Z"')),
+(10, parse_json('"2023-01-01T12:00:00.123456789"')),
+(11, parse_json('"12:30:45.123456"')),
+(12, parse_json('"2023-12-25"'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@variant_test_basic_avro
+PREHOOK: query: SELECT id, to_json(data) as json_data FROM variant_test_basic_avro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@variant_test_basic_avro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, to_json(data) as json_data FROM variant_test_basic_avro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@variant_test_basic_avro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+7	"2023-01-01T12:00:00.123456Z"
+8	"2023-01-01T12:00:00.123456"
+9	"2023-01-01T12:00:00.123456Z"
+10	"2023-01-01T12:00:00.123456789"
+11	"12:30:45.123456"
+12	"2023-12-25"
+PREHOOK: query: ALTER TABLE variant_test_basic ADD COLUMNS (extra_info VARIANT)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@variant_test_basic
+PREHOOK: Output: default@variant_test_basic
+POSTHOOK: query: ALTER TABLE variant_test_basic ADD COLUMNS (extra_info VARIANT)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@variant_test_basic
+POSTHOOK: Output: default@variant_test_basic
+PREHOOK: query: INSERT INTO variant_test_basic VALUES
+(7, parse_json('{"key": "value"}'), parse_json('{"additional": "info"}'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@variant_test_basic
+POSTHOOK: query: INSERT INTO variant_test_basic VALUES
+(7, parse_json('{"key": "value"}'), parse_json('{"additional": "info"}'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@variant_test_basic
+PREHOOK: query: select id, to_json(data), to_json(extra_info) from variant_test_basic where id = 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@variant_test_basic
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, to_json(data), to_json(extra_info) from variant_test_basic where id = 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@variant_test_basic
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+7	{"key":"value"}	{"additional":"info"}

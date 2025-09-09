@@ -9,7 +9,7 @@
 CREATE EXTERNAL TABLE variant_test_basic (
     id INT,
     data VARIANT
-) STORED BY ICEBERG  tblproperties('format-version'='3');
+) STORED BY ICEBERG stored as avro tblproperties('format-version'='3');
 
 -- Insert primitive types
 INSERT INTO variant_test_basic VALUES
@@ -19,15 +19,6 @@ INSERT INTO variant_test_basic VALUES
 (4, parse_json('42')),
 (5, parse_json('3.14')),
 (6, parse_json('"hello world"'));
-
--- Insert timestamp types (only microsecond precision supported by Iceberg)
-INSERT INTO variant_test_basic VALUES
-(7, parse_json('"2023-01-01T12:00:00.123456Z"')),
-(8, parse_json('"2023-01-01T12:00:00.123456"')),
-(9, parse_json('"2023-01-01T12:00:00.123456789Z"')),
-(10, parse_json('"2023-01-01T12:00:00.123456789"')),
-(11, parse_json('"12:30:45.123456"')),
-(12, parse_json('"2023-12-25"'));
 
 -- Retrieve and verify
 SELECT id, to_json(data) as json_data FROM variant_test_basic ORDER BY id;
@@ -194,3 +185,28 @@ SELECT
     variant_get(data, '$[2]') as elem2
 FROM variant_test_complex
 WHERE id = 3;
+
+-- try with AVRO table
+CREATE EXTERNAL TABLE variant_test_basic_avro (
+    id INT,
+    data VARIANT
+) STORED BY ICEBERG stored as avro tblproperties('format-version'='3');
+
+-- Insert timestamp types
+INSERT INTO variant_test_basic_avro VALUES
+(7, parse_json('"2023-01-01T12:00:00.123456Z"')),
+(8, parse_json('"2023-01-01T12:00:00.123456"')),
+(9, parse_json('"2023-01-01T12:00:00.123456789Z"')),
+(10, parse_json('"2023-01-01T12:00:00.123456789"')),
+(11, parse_json('"12:30:45.123456"')),
+(12, parse_json('"2023-12-25"'));
+
+-- Retrieve and verify timestamps
+SELECT id, to_json(data) as json_data FROM variant_test_basic_avro;
+
+-- Add a variant type column to an existing table
+ALTER TABLE variant_test_basic ADD COLUMNS (extra_info VARIANT);
+INSERT INTO variant_test_basic VALUES
+(7, parse_json('{"key": "value"}'), parse_json('{"additional": "info"}'));
+
+select id, to_json(data), to_json(extra_info) from variant_test_basic where id = 7;

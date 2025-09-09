@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE EXTERNAL TABLE variant_test_basic (id INT, data VARIANT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@variant_test_basic
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Column name data cannot be of type 'variant' as it is not supported in non-Iceberg tables.
