@@ -165,6 +165,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                 List<DataFile> dataFiles = Lists.newArrayList();
                 List<DeleteFile> deleteFiles = Lists.newArrayList();
                 List<DataFile> replacedDataFiles = Lists.newArrayList();
+                List<DeleteFile> rewrittenDeleteFiles = Lists.newArrayList();
                 Set<CharSequence> referencedDataFiles = Sets.newHashSet();
 
                 for (HiveIcebergWriter writer : writers.get(output)) {
@@ -173,10 +174,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   deleteFiles.addAll(files.deleteFiles());
                   replacedDataFiles.addAll(files.replacedDataFiles());
                   referencedDataFiles.addAll(files.referencedDataFiles());
+                  rewrittenDeleteFiles.addAll(files.rewrittenDeleteFiles());
                 }
                 createFileForCommit(
-                    new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedPaths),
-                    fileForCommitLocation, table.io());
+                    new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedPaths,
+                        rewrittenDeleteFiles), fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
@@ -426,6 +428,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     List<DataFile> dataFiles = Lists.newArrayList();
     List<DeleteFile> deleteFiles = Lists.newArrayList();
     List<DataFile> replacedDataFiles = Lists.newArrayList();
+    List<DeleteFile> rewrittenDeleteFiles = Lists.newArrayList();
     Set<CharSequence> referencedDataFiles = Sets.newHashSet();
     Set<Path> mergedAndDeletedFiles = Sets.newHashSet();
 
@@ -467,6 +470,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       deleteFiles.addAll(writeResults.deleteFiles());
       replacedDataFiles.addAll(writeResults.replacedDataFiles());
       referencedDataFiles.addAll(writeResults.referencedDataFiles());
+      rewrittenDeleteFiles.addAll(writeResults.rewrittenDeleteFiles());
 
       mergedAndDeletedFiles.addAll(writeResults.mergedAndDeletedFiles());
     }
@@ -474,8 +478,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     dataFiles.removeIf(dataFile -> mergedAndDeletedFiles.contains(new Path(dataFile.location())));
     deleteFiles.removeIf(deleteFile -> mergedAndDeletedFiles.contains(new Path(deleteFile.location())));
 
-    FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles,
-        Collections.emptySet());
+    FilesForCommit filesForCommit =
+        new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, Collections.emptySet(),
+            rewrittenDeleteFiles);
     long startTime = System.currentTimeMillis();
 
     if (Operation.IOW != operation) {
@@ -562,6 +567,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       RowDelta write = table.newRowDelta();
       results.dataFiles().forEach(write::addRows);
       results.deleteFiles().forEach(write::addDeletes);
+      results.rewrittenDeleteFiles().forEach(write::removeDeletes);
 
       if (StringUtils.isNotEmpty(branchName)) {
         write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
@@ -757,6 +763,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
     Collection<DataFile> replacedDataFiles = new ConcurrentLinkedQueue<>();
+    Collection<DeleteFile> rewrittenDeleteFiles = new ConcurrentLinkedQueue<>();
     Collection<CharSequence> referencedDataFiles = new ConcurrentLinkedQueue<>();
     Collection<Path> mergedAndDeletedFiles = new ConcurrentLinkedQueue<>();
     Tasks.range(numTasks)
@@ -771,11 +778,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           dataFiles.addAll(files.dataFiles());
           deleteFiles.addAll(files.deleteFiles());
           replacedDataFiles.addAll(files.replacedDataFiles());
+          rewrittenDeleteFiles.addAll(files.rewrittenDeleteFiles());
           referencedDataFiles.addAll(files.referencedDataFiles());
           mergedAndDeletedFiles.addAll(files.mergedAndDeletedFiles());
         });
 
-    return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedAndDeletedFiles);
+    return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedAndDeletedFiles,
+        rewrittenDeleteFiles);
   }
 
   /**
