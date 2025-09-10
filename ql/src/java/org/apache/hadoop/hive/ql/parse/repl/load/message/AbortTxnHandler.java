@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -27,6 +28,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * AbortTxnHandler
@@ -42,6 +45,17 @@ public class AbortTxnHandler extends AbstractMessageHandler {
     }
 
     AbortTxnMessage msg = deserializer.getAbortTxnMessage(context.dmd.getPayload());
+
+    // Saving the timestamp of all write abort txn in metric 'progress' to calculate lag between src and tgt
+    List<Long> writeIds = msg.getWriteIds();
+    List<String> databases = Optional.ofNullable(msg.getDbsUpdated())
+                              .orElse(Collections.emptyList())
+                              .stream()
+                              .map(StringUtils::normalizeIdentifier)
+                              .toList();
+    if (databases.contains(context.dbName) && writeIds != null && !writeIds.isEmpty()) {
+      context.getMetricCollector().setSrcTimeInProgress(msg.getTimestamp());
+    }
 
     Task<ReplTxnWork> abortTxnTask = TaskFactory.get(
         new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName, null,
