@@ -46,12 +46,12 @@ public class FilesForCommit implements Serializable {
 
   public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles,
       Collection<DataFile> replacedDataFiles, Collection<CharSequence> referencedDataFiles,
-      Collection<Path> mergedAndDeletedFiles, Collection<DeleteFile> rewrittenDeleteFiles) {
+      Collection<DeleteFile> rewrittenDeleteFiles, Collection<Path> mergedAndDeletedFiles) {
     this.dataFiles = dataFiles;
     this.deleteFiles = deleteFiles;
     this.replacedDataFiles = replacedDataFiles;
-    this.rewrittenDeleteFiles = rewrittenDeleteFiles;
     this.referencedDataFiles = referencedDataFiles;
+    this.rewrittenDeleteFiles = rewrittenDeleteFiles;
     this.mergedAndDeletedFiles = mergedAndDeletedFiles;
   }
 
@@ -64,7 +64,7 @@ public class FilesForCommit implements Serializable {
   public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles,
       Collection<CharSequence> referencedDataFiles, List<DeleteFile> rewrittenDeleteFiles) {
     return new FilesForCommit(Collections.emptyList(), deleteFiles, Collections.emptyList(), referencedDataFiles,
-        Collections.emptySet(), rewrittenDeleteFiles);
+        rewrittenDeleteFiles, Collections.emptySet());
   }
 
   public static FilesForCommit onlyData(Collection<DataFile> dataFiles) {
@@ -118,8 +118,8 @@ public class FilesForCommit implements Serializable {
         .add("deleteFiles", deleteFiles.toString())
         .add("replacedDataFiles", replacedDataFiles.toString())
         .add("referencedDataFiles", referencedDataFiles.toString())
-        .add("mergedAndDeletedFiles", mergedAndDeletedFiles.toString())
         .add("rewrittenDeleteFiles", rewrittenDeleteFiles.toString())
+        .add("mergedAndDeletedFiles", mergedAndDeletedFiles.toString())
         .toString();
   }
 }

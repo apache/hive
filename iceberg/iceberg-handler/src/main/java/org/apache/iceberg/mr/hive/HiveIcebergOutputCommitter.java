@@ -177,8 +177,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   rewrittenDeleteFiles.addAll(files.rewrittenDeleteFiles());
                 }
                 createFileForCommit(
-                    new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedPaths,
-                        rewrittenDeleteFiles), fileForCommitLocation, table.io());
+                    new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles,
+                        rewrittenDeleteFiles, mergedPaths), fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
@@ -479,8 +479,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     deleteFiles.removeIf(deleteFile -> mergedAndDeletedFiles.contains(new Path(deleteFile.location())));
 
     FilesForCommit filesForCommit =
-        new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, Collections.emptySet(),
-            rewrittenDeleteFiles);
+        new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, rewrittenDeleteFiles,
+            Collections.emptySet());
     long startTime = System.currentTimeMillis();
 
     if (Operation.IOW != operation) {
@@ -783,8 +783,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           mergedAndDeletedFiles.addAll(files.mergedAndDeletedFiles());
         });
 
-    return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedAndDeletedFiles,
-        rewrittenDeleteFiles);
+    return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, rewrittenDeleteFiles,
+        mergedAndDeletedFiles);
   }
 
   /**
