@@ -17,21 +17,29 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.externalize.RelJson;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexFieldCollation;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlFunction;
@@ -70,24 +78,34 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToUnixTimest
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTruncSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
+import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 
 /**
  * Hive extension of RelJson, used for serialization and deserialization.
  */
 public class HiveRelJson extends RelJson {
   private final JsonBuilder jsonBuilder;
-  private static final String NULLABLE = "nullable";
   private static final String OPERANDS = "operands";
   private static final String DISTINCT = "distinct";
   private static final String LITERAL = "literal";
-  private static Method toRexMethod = null;
+  private static Method toRex = null;
+  private static Method addRexFieldCollationList = null;
+  private static Method toRexWindowBound = null;
+  private static Method toJsonSqlOperator = null;
 
   public HiveRelJson(JsonBuilder jsonBuilder) {
     super(jsonBuilder);
     this.jsonBuilder = jsonBuilder;
     try {
-      toRexMethod = RelJson.class.getDeclaredMethod("toRex", RelInput.class, Object.class);
-      toRexMethod.setAccessible(true);
+      toRex = RelJson.class.getDeclaredMethod("toRex", RelInput.class, Object.class);
+      toRex.setAccessible(true);
+      addRexFieldCollationList = RelJson.class
+          .getDeclaredMethod("addRexFieldCollationList", List.class, RelInput.class, List.class);
+      addRexFieldCollationList.setAccessible(true);
+      toRexWindowBound = RelJson.class.getDeclaredMethod("toRexWindowBound", RelInput.class, Map.class);
+      toRexWindowBound.setAccessible(true);
+      toJsonSqlOperator = RelJson.class.getDeclaredMethod("toJson", SqlOperator.class);
+      toJsonSqlOperator.setAccessible(true);
     } catch (NoSuchMethodException e) {
       throw new RuntimeException(e);
     }
@@ -95,230 +113,57 @@ public class HiveRelJson extends RelJson {
 
   @Override
   public Object toJson(Object value) {
-    if (value instanceof HiveTableScan.HiveTableScanTrait) {
-      return ((HiveTableScan.HiveTableScanTrait) value).name();
-    }
-
-    Object jsonObject = super.toJson(value);
-    
-    // Add type information for all RexCall nodes. Failing to do this
-    // can cause datatype of the RexCall to differ after deserialization
-    // as it will be derived in RelJson.toRex method
-    if (jsonObject instanceof Map && value instanceof RexCall) {
-      Map<String, Object> map = (Map<String, Object>) jsonObject;
-      map.put("type", toJson(((RexCall) value).getType()));
-    }
-    
-    return jsonObject;
+    return switch (value) {
+      case null -> null;
+      case HiveTableScan.HiveTableScanTrait trait -> trait.name();
+      case RexNode rexNode -> toJson(rexNode);
+      case SqlOperator operator -> {
+        try {
+          yield toJsonSqlOperator.invoke(this, operator);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+      default -> super.toJson(value);
+    };
   }
 
-//  @Override
-//  public Object toJson(AggregateCall node) {
-//    final Map<String, Object> map = (Map<String, Object>) super.toJson(node);
-//    map.put("type", toJson(node.getType()));
-//    if (node.getCollation() != RelCollations.EMPTY) {
-//      map.put("collation", toJson(node.getCollation()));
-//    }
-//    return map;
-//  }
-
-//  private Object toJson(RelDataTypeField node) {
-//    final Map<String, Object> map;
-//    if (node.getType().isStruct()) {
-//      map = jsonBuilder.map();
-//      map.put("fields", toJson(node.getType()));
-//    } else {
-//      map = (Map<String, Object>) toJson(node.getType());
-//    }
-//    map.put("name", node.getName());
-//    return map;
-//  }
-
-//  private Object toJson(RelDataType node) {
-//    if (node.isStruct()) {
-//      final List<Object> list = jsonBuilder.list();
-//      for (RelDataTypeField field : node.getFieldList()) {
-//        list.add(toJson(field));
-//      }
-//      return list;
-//    } else {
-//      final Map<String, Object> map = jsonBuilder.map();
-//      map.put("type", node.getSqlTypeName().name());
-//      map.put(NULLABLE, node.isNullable());
-//      if (node.getSqlTypeName().allowsPrec()) {
-//        map.put("precision", node.getPrecision());
-//      }
-//      if (node.getSqlTypeName().allowsScale()) {
-//        map.put("scale", node.getScale());
-//      }
-//
-//      if (SqlTypeName.MAP == node.getSqlTypeName()) {
-//        map.put("key", toJson(node.getKeyType()));
-//        map.put("value", toJson(node.getValueType()));
-//      } else if (SqlTypeName.ARRAY == node.getSqlTypeName()) {
-//        map.put("component", toJson(node.getComponentType()));
-//      }
-//      return map;
-//    }
-//  }
-
-//  private Object toJson(RexNode node) {
-//    final Map<String, Object> map;
-//    switch (node.getKind()) {
-//      case FIELD_ACCESS:
-//        map = jsonBuilder.map();
-//        final RexFieldAccess fieldAccess = (RexFieldAccess) node;
-//        map.put("field", fieldAccess.getField().getName());
-//        map.put("expr", toJson(fieldAccess.getReferenceExpr()));
-//        return map;
-//      case LITERAL:
-//        return toJsonLiteral((RexLiteral) node);
-//      case INPUT_REF:
-//      case LOCAL_REF:
-//        map = jsonBuilder.map();
-//        map.put("input", ((RexSlot) node).getIndex());
-//        map.put("name", ((RexSlot) node).getName());
-//        map.put("type", toJson(node.getType()));
-//        return map;
-//      case CORREL_VARIABLE:
-//        map = jsonBuilder.map();
-//        map.put("correl", ((RexCorrelVariable) node).getName());
-//        map.put("type", toJson(node.getType()));
-//        return map;
-//      case DYNAMIC_PARAM:
-//        map = jsonBuilder.map();
-//        map.put("dynamic_param", true);
-//        map.put("index", ((RexDynamicParam) node).getIndex());
-//        return map;
-//      default:
-//        Map<String, Object> mapRexCall = toJsonRexCall(node);
-//        if (mapRexCall != null) {
-//          return mapRexCall;
-//        }
-//        throw new UnsupportedOperationException("unknown rex " + node);
-//    }
-//  }
-
- // @Nullable
-//  private Map<String, Object> toJsonRexCall(RexNode node) {
-//    Map<String, Object> map = null;
-//    if (node instanceof RexCall) {
-//      final RexCall call = (RexCall) node;
-//      map = jsonBuilder.map();
-//      map.put("op", toJson(call.getOperator()));
-//      map.put("type", toJson(call.getType()));
-//      final List<Object> list = jsonBuilder.list();
-//      for (RexNode operand : call.getOperands()) {
-//        list.add(toJson(operand));
-//      }
-//      map.put(OPERANDS, list);
-//      switch (node.getKind()) {
-//        case CAST:
-////        case MAP_QUERY_CONSTRUCTOR:
-////        case MAP_VALUE_CONSTRUCTOR:
-////        case ARRAY_QUERY_CONSTRUCTOR:
-////        case ARRAY_VALUE_CONSTRUCTOR:
-//          map.put("type", toJson(node.getType()));
-//          break;
-//        default:
-//          break;
-//      }
-//      if (call.getOperator() instanceof SqlFunction &&
-//          (((SqlFunction) call.getOperator()).getFunctionType().isUserDefined())) {
-//        SqlOperator op = call.getOperator();
-//        map.put("class", op.getClass().getName());
-//        map.put("type", toJson(node.getType()));
-//        map.put("deterministic", op.isDeterministic());
-//        map.put("dynamic", op.isDynamicFunction());
-//      }
-//      if (call instanceof RexOver) {
-//        RexOver over = (RexOver) call;
-//        map.put(DISTINCT, over.isDistinct());
-//        map.put("type", toJson(node.getType()));
-//        map.put("window", toJson(over.getWindow()));
-//        map.put("ignoreNulls", toJson(over.ignoreNulls()));
-//      }
-//    }
-//    return map;
-//  }
-
-//  @NotNull
-//  private Map<String, Object> toJsonLiteral(RexLiteral literal) {
-//    final Map<String, Object> map;
-//    map = jsonBuilder.map();
-//    final Object value;
-//    if (SqlTypeFamily.TIMESTAMP == literal.getTypeName().getFamily()) {
-//      // Had to do this to prevent millis or nanos from getting trimmed
-//      value = literal.computeDigest(RexDigestIncludeType.NO_TYPE);
-//    } else {
-//      value = literal.getValue3();
-//    }
-//    map.put(LITERAL, RelEnumTypes.fromEnum(value));
-//    map.put("type", toJson(literal.getType()));
-//    return map;
-//  }
-
-  // Upgrade to Calcite 1.23.0 to remove this method
-//  private Object toJson(RelDistribution relDistribution) {
-//    final Map<String, Object> map = jsonBuilder.map();
-//    map.put("type", relDistribution.getType().name());
-//
-//    if (!relDistribution.getKeys().isEmpty()) {
-//      List<Object> keys = new ArrayList<>(relDistribution.getKeys().size());
-//      for (Integer key : relDistribution.getKeys()) {
-//        keys.add(toJson(key));
-//      }
-//      map.put("keys", keys);
-//    }
-//    return map;
-//  }
-
-//  private Map toJson(SqlOperator operator) {
-//    // User-defined operators are not yet handled.
-//    Map map = jsonBuilder.map();
-//    map.put("name", operator.getName());
-//    map.put("kind", operator.kind.toString());
-//    map.put("syntax", operator.getSyntax().toString());
-//    return map;
-//  }
-
-//  private RexNode makeLiteral(RexBuilder rexBuilder, Object literal, RelDataType type) {
-//    switch (type.getSqlTypeName()) {
-//      case CHAR:
-//      case VARCHAR:
-//        literal = RexNodeExprFactory.makeHiveUnicodeString((String) literal);
-//        return rexBuilder.makeLiteral(literal, type, true);
-//      case TIMESTAMP:
-//      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
-//        Object timeStampLiteral = literal;
-//        if (literal instanceof Integer) {
-//          timeStampLiteral = (long) (int) literal;
-//        } else if (literal instanceof String) {
-//          timeStampLiteral = new TimestampString((String) literal);
-//        }
-//        return rexBuilder.makeLiteral(timeStampLiteral, type, false);
-//      case SYMBOL:
-//        return rexBuilder.makeLiteral(HiveRelEnumTypes.toEnum((String) literal), type, true);
-//      case DECIMAL:
-//        if (literal instanceof BigInteger) {
-//          return rexBuilder.makeLiteral(new BigDecimal((BigInteger) literal), type, true);
-//        }
-//        break;
-//      case DOUBLE:
-//        if (literal instanceof Integer) {
-//          return rexBuilder.makeExactLiteral(new BigDecimal((Integer) literal), type);
-//        }
-//        break;
-//      case FLOAT:
-//        if (literal instanceof Integer) {
-//          return rexBuilder.makeLiteral(new BigDecimal((Integer) literal), type, true);
-//        }
-//        break;
-//      default:
-//        break;
-//    }
-//    return rexBuilder.makeLiteral(literal, type, true);
-//  }
+  private Object toJson(RexNode node) {
+    if (node instanceof RexCall rexCall) {
+      return toJsonRexCall(rexCall);
+    }
+    return super.toJson(node);
+  }
+  
+  private Map<String, Object> toJsonRexCall(RexCall node) {
+    Map<String, Object> map = null;
+    if (node != null) {
+      map = jsonBuilder.map();
+      map.put("op", toJson(node.getOperator()));
+      map.put("type", toJson(node.getType()));
+      final List<Object> list = jsonBuilder.list();
+      for (RexNode operand : node.getOperands()) {
+        list.add(toJson(operand));
+      }
+      map.put(OPERANDS, list);
+      if (Objects.requireNonNull(node.getKind()) == SqlKind.CAST) {
+        map.put("type", toJson(node.getType()));
+      }
+      if (node.getOperator() instanceof SqlFunction op && (op.getFunctionType().isUserDefined())) {
+        map.put("class", op.getClass().getName());
+        map.put("type", toJson(node.getType()));
+        map.put("deterministic", op.isDeterministic());
+        map.put("dynamic", op.isDynamicFunction());
+      }
+      if (node instanceof RexOver over) {
+        map.put(DISTINCT, over.isDistinct());
+        map.put("type", toJson(node.getType()));
+        map.put("window", toJson(over.getWindow()));
+        map.put("ignoreNulls", toJson(over.ignoreNulls()));
+      }
+    }
+    return map;
+  }
 
   private SqlOperator getOperatorFromDefault(String op) {
     // TODO: build a map, for more efficient lookup
@@ -353,134 +198,88 @@ public class HiveRelJson extends RelJson {
       typeFamilyBuilder.add(Util.first(at.getSqlTypeName().getFamily(), SqlTypeFamily.ANY));
     }
     final SqlOperandTypeChecker operandTypeChecker = OperandTypes.family(typeFamilyBuilder.build());
-    switch (aggName) {
-      case "$SUM0":
-        return new HiveSqlSumEmptyIsZeroAggFunction(
-            distinct, returnTypeInference, operandTypeInference, operandTypeChecker
-        );
-      case "sum":
-        return new HiveSqlSumAggFunction(distinct, returnTypeInference, operandTypeInference, operandTypeChecker);
-      case "count":
-        return new HiveSqlCountAggFunction(distinct, returnTypeInference, operandTypeInference, operandTypeChecker);
-      case "min":
-        return new HiveSqlMinMaxAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker, true);
-      case "max":
-        return new HiveSqlMinMaxAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker, false);
-      case "avg":
-        return new HiveSqlAverageAggFunction(distinct, returnTypeInference, operandTypeInference, operandTypeChecker);
-      case "std":
-      case "stddev":
-      case "stddev_pop":
-        return new HiveSqlVarianceAggFunction("stddev_pop", SqlKind.STDDEV_POP, returnTypeInference, operandTypeInference,
-            operandTypeChecker);
-      case "stddev_samp":
-        return new HiveSqlVarianceAggFunction("stddev_samp", SqlKind.STDDEV_SAMP, returnTypeInference,
-            operandTypeInference, operandTypeChecker);
-      case "variance":
-      case "var_pop":
-        return new HiveSqlVarianceAggFunction("var_pop", SqlKind.VAR_POP, returnTypeInference, operandTypeInference,
-            operandTypeChecker);
-      case "var_samp":
-        return new HiveSqlVarianceAggFunction("var_samp", SqlKind.VAR_SAMP, returnTypeInference, operandTypeInference,
-            operandTypeChecker);
-      default:
+    return switch (aggName) {
+      case "$SUM0" -> new HiveSqlSumEmptyIsZeroAggFunction(
+          distinct, returnTypeInference, operandTypeInference, operandTypeChecker
+      );
+      case "sum" -> new HiveSqlSumAggFunction(distinct, returnTypeInference, operandTypeInference, operandTypeChecker);
+      case "count" ->
+          new HiveSqlCountAggFunction(distinct, returnTypeInference, operandTypeInference, operandTypeChecker);
+      case "min" -> new HiveSqlMinMaxAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker, true);
+      case "max" -> new HiveSqlMinMaxAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker, false);
+      case "avg" ->
+          new HiveSqlAverageAggFunction(distinct, returnTypeInference, operandTypeInference, operandTypeChecker);
+      case "std", "stddev", "stddev_pop" ->
+          new HiveSqlVarianceAggFunction("stddev_pop", SqlKind.STDDEV_POP, returnTypeInference, operandTypeInference,
+              operandTypeChecker);
+      case "stddev_samp" -> new HiveSqlVarianceAggFunction("stddev_samp", SqlKind.STDDEV_SAMP, returnTypeInference,
+          operandTypeInference, operandTypeChecker);
+      case "variance", "var_pop" ->
+          new HiveSqlVarianceAggFunction("var_pop", SqlKind.VAR_POP, returnTypeInference, operandTypeInference,
+              operandTypeChecker);
+      case "var_samp" ->
+          new HiveSqlVarianceAggFunction("var_samp", SqlKind.VAR_SAMP, returnTypeInference, operandTypeInference,
+              operandTypeChecker);
+      default -> {
         SqlOperator operator = getOperatorFromDefault(aggName);
         if (operator != null) {
-          return (SqlAggFunction) operator;
+          yield (SqlAggFunction) operator;
         }
-        return new SqlFunctionConverter.CalciteUDAF(distinct, aggName, returnTypeInference, operandTypeInference, operandTypeChecker);
-    }
+        yield new SqlFunctionConverter.CalciteUDAF(distinct, aggName, returnTypeInference, operandTypeInference, operandTypeChecker);
+      }
+    };
   }
 
-//  public RelDistribution toDistribution(Object o) {
-//    if (o instanceof Map) {
-//      Map<String, Object> map = (Map<String, Object>) o;
-//      final RelDistribution.Type type =
-//          Util.enumVal(RelDistribution.Type.class,
-//              (String) map.get("type"));
-//
-//      List<Integer> keys = new ArrayList<>();
-//      if (map.containsKey("keys")) {
-//        keys = (List<Integer>) map.get("keys");
-//      }
-//      return RelDistributions.of(type, ImmutableIntList.copyOf(keys));
-//    }
-//    return RelDistributions.ANY;
-//  }
-
   private SqlOperator toOp(RelInput input, String op, Map<String, Object> map) {
-    switch (op) {
-      case "IN":
-        return HiveIn.INSTANCE;
-      case "BETWEEN":
-        return HiveBetween.INSTANCE;
-      case "YEAR":
-        return HiveExtractDate.YEAR;
-      case "QUARTER":
-        return HiveExtractDate.QUARTER;
-      case "MONTH":
-        return HiveExtractDate.MONTH;
-      case "WEEK":
-        return HiveExtractDate.WEEK;
-      case "DAY":
-        return HiveExtractDate.DAY;
-      case "HOUR":
-        return HiveExtractDate.HOUR;
-      case "MINUTE":
-        return HiveExtractDate.MINUTE;
-      case "SECOND":
-        return HiveExtractDate.SECOND;
-      case "FLOOR_YEAR":
-        return HiveFloorDate.YEAR;
-      case "FLOOR_QUARTER":
-        return HiveFloorDate.QUARTER;
-      case "FLOOR_MONTH":
-        return HiveFloorDate.MONTH;
-      case "FLOOR_WEEK":
-        return HiveFloorDate.WEEK;
-      case "FLOOR_DAY":
-        return HiveFloorDate.DAY;
-      case "FLOOR_HOUR":
-        return HiveFloorDate.HOUR;
-      case "FLOOR_MINUTE":
-        return HiveFloorDate.MINUTE;
-      case "FLOOR_SECOND":
-        return HiveFloorDate.SECOND;
-      case "||":
-        return HiveConcat.INSTANCE;
-      case "TRUNC":
-        return HiveTruncSqlOperator.INSTANCE;
-      case "TO_DATE":
-        return HiveToDateSqlOperator.INSTANCE;
-      case "UNIX_TIMESTAMP":
+    return switch (op) {
+      case "IN" -> HiveIn.INSTANCE;
+      case "BETWEEN" -> HiveBetween.INSTANCE;
+      case "YEAR" -> HiveExtractDate.YEAR;
+      case "QUARTER" -> HiveExtractDate.QUARTER;
+      case "MONTH" -> HiveExtractDate.MONTH;
+      case "WEEK" -> HiveExtractDate.WEEK;
+      case "DAY" -> HiveExtractDate.DAY;
+      case "HOUR" -> HiveExtractDate.HOUR;
+      case "MINUTE" -> HiveExtractDate.MINUTE;
+      case "SECOND" -> HiveExtractDate.SECOND;
+      case "FLOOR_YEAR" -> HiveFloorDate.YEAR;
+      case "FLOOR_QUARTER" -> HiveFloorDate.QUARTER;
+      case "FLOOR_MONTH" -> HiveFloorDate.MONTH;
+      case "FLOOR_WEEK" -> HiveFloorDate.WEEK;
+      case "FLOOR_DAY" -> HiveFloorDate.DAY;
+      case "FLOOR_HOUR" -> HiveFloorDate.HOUR;
+      case "FLOOR_MINUTE" -> HiveFloorDate.MINUTE;
+      case "FLOOR_SECOND" -> HiveFloorDate.SECOND;
+      case "||" -> HiveConcat.INSTANCE;
+      case "TRUNC" -> HiveTruncSqlOperator.INSTANCE;
+      case "TO_DATE" -> HiveToDateSqlOperator.INSTANCE;
+      case "UNIX_TIMESTAMP" -> {
         if (!((List) map.get(OPERANDS)).isEmpty()) {
-          return HiveToUnixTimestampSqlOperator.INSTANCE;
+          yield HiveToUnixTimestampSqlOperator.INSTANCE;
         }
-        return HiveUnixTimestampSqlOperator.INSTANCE;
-      case "FROM_UNIXTIME":
-        return HiveFromUnixTimeSqlOperator.INSTANCE;
-      case "DATE_ADD":
-        return HiveDateAddSqlOperator.INSTANCE;
-      case "DATE_SUB":
-        return HiveDateSubSqlOperator.INSTANCE;
-      case "+":
+        yield HiveUnixTimestampSqlOperator.INSTANCE;
+      }
+      case "FROM_UNIXTIME" -> HiveFromUnixTimeSqlOperator.INSTANCE;
+      case "DATE_ADD" -> HiveDateAddSqlOperator.INSTANCE;
+      case "DATE_SUB" -> HiveDateSubSqlOperator.INSTANCE;
+      case "+" -> {
         if (((List) map.get(OPERANDS)).size() > 1) {
-          return SqlStdOperatorTable.PLUS;
+          yield SqlStdOperatorTable.PLUS;
         }
-        return SqlStdOperatorTable.UNARY_PLUS;
-      case "-":
+        yield SqlStdOperatorTable.UNARY_PLUS;
+      }
+      case "-" -> {
         if (((List) map.get(OPERANDS)).size() > 1) {
-          return SqlStdOperatorTable.MINUS;
+          yield SqlStdOperatorTable.MINUS;
         }
-        return SqlStdOperatorTable.UNARY_MINUS;
-      case "MAP":
-        return SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR;
-      case "ARRAY":
-        return SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR;
-      default:
+        yield SqlStdOperatorTable.UNARY_MINUS;
+      }
+      case "MAP" -> SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR;
+      case "ARRAY" -> SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR;
+      default -> {
         SqlOperator operator = getOperatorFromDefault(op);
         if (operator != null) {
-          return operator;
+          yield operator;
         }
         final Object jsonType = map.get("type");
         final RelDataType type = toType(input.getCluster().getTypeFactory(), jsonType);
@@ -492,12 +291,13 @@ public class HiveRelJson extends RelJson {
             .collect(Collectors.toList());
         final boolean isDeterministic = (boolean) map.get("deterministic");
         final boolean isDynamicFunction = (boolean) map.get("dynamic");
-        return new CalciteSqlFn(
+        yield new CalciteSqlFn(
             op, SqlKind.OTHER_FUNCTION, ReturnTypes.explicit(type),
             InferTypes.explicit(operandsTypes), OperandTypes.family(typeFamily),
             SqlFunctionCategory.USER_DEFINED_FUNCTION, isDeterministic, isDynamicFunction
         );
-    }
+      }
+    };
   }
 
   private static class CalciteSqlFn extends SqlFunction {
@@ -522,198 +322,142 @@ public class HiveRelJson extends RelJson {
       return dynamicFunction;
     }
   }
-  
+
   public RexNode toRex(RelInput relInput, Object o) {
-    if (o instanceof Map map && map.containsKey("op")) {
-      final Map opMap = (Map) map.get("op");
-      if (opMap != null && map.get("window") == null) {
-        return toRexOperator(relInput, opMap, map, relInput.getCluster().getTypeFactory());
-      }
-    } else {
-      try {
-        return (RexNode) toRexMethod.invoke(this, relInput, o);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+    if (o == null) {
+      return null;
     }
     
-    return null;
+    try {
+      return switch (o) {
+        case Map map -> toRexMap(relInput, map, relInput.getCluster());
+        default -> (RexNode) toRex.invoke(this, relInput, o);
+      };
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
-//  public RexNode toRex(RelInput relInput, Object o) {
-//    final RelOptCluster cluster = relInput.getCluster();
-//    final RexBuilder rexBuilder = cluster.getRexBuilder();
-//    if (o == null) {
-//      return null;
-//    } else if (o instanceof Map) {
-//      return toRexMap(relInput, o, cluster);
-//    } else if (o instanceof Boolean) {
-//      return rexBuilder.makeLiteral((Boolean) o);
-//    } else if (o instanceof String) {
-//      return rexBuilder.makeLiteral((String) o);
-//    } else if (o instanceof Number) {
-//      return makeNumberLiteral((Number) o, rexBuilder);
-//    } else {
-//      throw new UnsupportedOperationException("cannot convert to rex " + o);
-//    }
-//  }
+  private RexNode toRexMap(RelInput relInput, Object o, RelOptCluster cluster)
+      throws InvocationTargetException, IllegalAccessException {
+    Map map = (Map) o;
+    final Map opMap = (Map) map.get("op");
+    final RelDataTypeFactory typeFactory = cluster.getTypeFactory();
+    if (opMap != null) {
+      return toRexOperator(relInput, opMap, map, typeFactory);
+    }
+    if (map.containsKey(LITERAL)) {
+      return makeLiteral(relInput, map, typeFactory);
+    }
+    return (RexNode) toRex.invoke(this, relInput, o);
+  }
 
-//  private RexNode toRexMap(RelInput relInput, Object o, RelOptCluster cluster) {
-//    RexBuilder rexBuilder = relInput.getCluster().getRexBuilder();
-//    Map map = (Map) o;
-//    final Map opMap = (Map) map.get("op");
-//    final RelDataTypeFactory typeFactory = cluster.getTypeFactory();
-//    if (opMap != null) {
-//      return toRexOperator(relInput, opMap, map, typeFactory);
-//    }
-//    final Integer input = (Integer) map.get("input");
-//    if (input != null) {
-//      return makeInputRef(relInput, input, rexBuilder);
-//    }
-//    final String field = (String) map.get("field");
-//    if (field != null) {
-//      final Object jsonExpr = map.get("expr");
-//      final RexNode expr = toRex(relInput, jsonExpr);
-//      return rexBuilder.makeFieldAccess(expr, field, true);
-//    }
-//    final String correl = (String) map.get("correl");
-//    if (correl != null) {
-//      final Object jsonType = map.get("type");
-//      RelDataType type = toType(typeFactory, jsonType);
-//      return rexBuilder.makeCorrel(type, new CorrelationId(correl));
-//    }
-//    if (map.containsKey(LITERAL)) {
-//      return makeLiteral(relInput, map, typeFactory);
-//    }
-//    if (map.containsKey("dynamic_param")) {
-//      int index = (int) map.get("index");
-//      return rexBuilder.makeDynamicParam(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.NULL), index);
-//    }
-//    throw new UnsupportedOperationException("cannot convert to rex " + o);
-//  }
+  private RexNode makeLiteral(RelInput relInput, Map map, RelDataTypeFactory typeFactory) throws InvocationTargetException, IllegalAccessException {
+    Object literal = map.get(LITERAL);
+    RexBuilder rexBuilder = relInput.getCluster().getRexBuilder();
+    final RelDataType type = toType(typeFactory, map.get("type"));
+    if (literal == null) {
+      return rexBuilder.makeNullLiteral(type);
+    }
+    if (type == null) {
+      // In previous versions, type was not specified for all literals.
+      // To keep backwards compatibility, if type is not specified
+      // we just interpret the literal
+      return (RexNode) toRex.invoke(this, relInput, literal);
+    }
+    return makeLiteral(rexBuilder, literal, type);
+  }
 
-//  private static RexLiteral makeNumberLiteral(Number o, RexBuilder rexBuilder) {
-//    if (o instanceof Double || o instanceof Float) {
-//      return rexBuilder.makeApproxLiteral(BigDecimal.valueOf(o.doubleValue()));
-//    } else {
-//      return rexBuilder.makeExactLiteral(BigDecimal.valueOf(o.longValue()));
-//    }
-//  }
+  private RexNode makeLiteral(RexBuilder rexBuilder, Object literal, RelDataType type) {
+    return switch (type.getSqlTypeName()) {
+      case CHAR, VARCHAR -> {
+        literal = RexNodeExprFactory.makeHiveUnicodeString((String) literal);
+        yield rexBuilder.makeLiteral(literal, type, true);
+      }
+      case DOUBLE, FLOAT -> {
+        if (literal instanceof BigDecimal bd) {
+          yield rexBuilder.makeExactLiteral(bd, type);
+        } else if (literal instanceof Integer i) {
+          yield rexBuilder.makeExactLiteral(new BigDecimal(i), type);
+        }
+        yield rexBuilder.makeLiteral(literal, type, true);
+      }
+      default -> rexBuilder.makeLiteral(literal, type, true);
+    };
+  }
 
-//  private RexNode makeLiteral(RelInput relInput, Map map, RelDataTypeFactory typeFactory) {
-//    Object literal = map.get(LITERAL);
-//    RexBuilder rexBuilder = relInput.getCluster().getRexBuilder();
-//    final RelDataType type = toType(typeFactory, map.get("type"));
-//    if (literal == null) {
-//      return rexBuilder.makeNullLiteral(type);
-//    }
-//    if (type == null) {
-//      // In previous versions, type was not specified for all literals.
-//      // To keep backwards compatibility, if type is not specified
-//      // we just interpret the literal
-//      return toRex(relInput, literal);
-//    }
-//    return makeLiteral(rexBuilder, literal, type);
-//  }
-
-//  private static RexInputRef makeInputRef(RelInput relInput, Integer input, RexBuilder rexBuilder) {
-//    List<RelNode> inputNodes = relInput.getInputs();
-//    int i = input;
-//    for (RelNode inputNode : inputNodes) {
-//      final RelDataType rowType = inputNode.getRowType();
-//      if (i < rowType.getFieldCount()) {
-//        final RelDataTypeField field = rowType.getFieldList().get(i);
-//        return rexBuilder.makeInputRef(field.getType(), input);
-//      }
-//      i -= rowType.getFieldCount();
-//    }
-//    throw new RuntimeException("input field " + input + " is out of range");
-//  }
-
-  private RexNode toRexOperator(RelInput relInput, Map opMap, Map map, RelDataTypeFactory typeFactory) {
+  private RexNode toRexOperator(RelInput relInput, Map opMap, Map map, RelDataTypeFactory typeFactory) 
+      throws InvocationTargetException, IllegalAccessException {
     RexBuilder rexBuilder = relInput.getCluster().getRexBuilder();
     final String opName = (String) opMap.get("name");
     final List operands = (List) map.get(OPERANDS);
-    final Object jsonType = map.get("type");
     final List<RexNode> rexOperands = toRexList(relInput, operands);
-    final SqlOperator operator = toOp(relInput, opName, map);
-    final RelDataType type;
-    if (jsonType != null) {
-      type = toType(typeFactory, jsonType);
+    final Object jsonType = map.get("type");
+    final Map window = (Map) map.get("window");
+    if (window != null) {
+      return toRexWindow(relInput, opName, map, typeFactory, jsonType, window, rexOperands);
     } else {
-      type = rexBuilder.deriveReturnType(operator, rexOperands);
+      final SqlOperator operator = toOp(relInput, opName, map);
+      final RelDataType type;
+      if (jsonType != null) {
+        type = toType(typeFactory, jsonType);
+      } else {
+        type = rexBuilder.deriveReturnType(operator, rexOperands);
+      }
+      return rexBuilder.makeCall(type, operator, rexOperands);
     }
-    return rexBuilder.makeCall(type, operator, rexOperands);
   }
 
-//  private RexNode toRexWindow(RelInput relInput, String opName, Map map, RelDataTypeFactory typeFactory,
-//                              Object jsonType, Map window, List<RexNode> rexOperands) {
-//    final SqlAggFunction operator = toAggregation(relInput, opName, map);
-//    final RelDataType type = toType(typeFactory, jsonType);
-//    List<RexNode> partitionKeys = new ArrayList<>();
-//    if (window.containsKey("partition")) {
-//      partitionKeys = toRexList(relInput, (List) window.get("partition"));
-//    }
-//    List<RexFieldCollation> orderKeys = new ArrayList<>();
-//    if (window.containsKey("order")) {
-//      orderKeys = toRexFieldCollationList(relInput, (List) window.get("order"));
-//    }
-//    final RexWindowBound lowerBound;
-//    final RexWindowBound upperBound;
-//    final boolean physical;
-//    if (window.get("rows-lower") != null) {
-//      lowerBound = toRexWindowBound(relInput, (Map) window.get("rows-lower"));
-//      upperBound = toRexWindowBound(relInput, (Map) window.get("rows-upper"));
-//      physical = true;
-//    } else if (window.get("range-lower") != null) {
-//      lowerBound = toRexWindowBound(relInput, (Map) window.get("range-lower"));
-//      upperBound = toRexWindowBound(relInput, (Map) window.get("range-upper"));
-//      physical = false;
-//    } else {
-//      // No ROWS or RANGE clause
-//      lowerBound = null;
-//      upperBound = null;
-//      physical = false;
-//    }
-//    final boolean distinct = (Boolean) map.get(DISTINCT);
-//    final boolean ignoreNulls = (Boolean) map.get("ignoreNulls");
-//    return relInput.getCluster().getRexBuilder().makeOver(
-//        type,
-//        operator,
-//        rexOperands,
-//        partitionKeys,
-//        ImmutableList.copyOf(orderKeys),
-//        lowerBound,
-//        upperBound,
-//        physical,
-//        true,
-//        false,
-//        distinct,
-//        ignoreNulls);
-//  }
-
-//  private List<RexFieldCollation> toRexFieldCollationList(RelInput relInput, List<Map<String, Object>> order) {
-//    if (order == null) {
-//      return null;
-//    }
-//
-//    List<RexFieldCollation> list = new ArrayList<>();
-//    for (Map<String, Object> o : order) {
-//      RexNode expr = toRex(relInput, o.get("expr"));
-//      Set<SqlKind> directions = new HashSet<>();
-//      if (RelFieldCollation.Direction.valueOf((String) o.get("direction")) == RelFieldCollation.Direction.DESCENDING) {
-//        directions.add(SqlKind.DESCENDING);
-//      }
-//      if (RelFieldCollation.NullDirection.valueOf((String) o.get("null-direction")) == RelFieldCollation.NullDirection.FIRST) {
-//        directions.add(SqlKind.NULLS_FIRST);
-//      } else {
-//        directions.add(SqlKind.NULLS_LAST);
-//      }
-//      list.add(new RexFieldCollation(expr, directions));
-//    }
-//
-//    return list;
-//  }
+  private RexNode toRexWindow(
+      RelInput relInput, 
+      String opName,
+      Map map,
+      RelDataTypeFactory typeFactory,
+      Object jsonType,
+      Map window, 
+      List<RexNode> rexOperands) throws InvocationTargetException, IllegalAccessException {
+    final SqlAggFunction operator = toAggregation(relInput, opName, map);
+    final RelDataType type = toType(typeFactory, jsonType);
+    List<RexNode> partitionKeys = new ArrayList<>();
+    if (window.containsKey("partition")) {
+      partitionKeys = toRexList(relInput, (List) window.get("partition"));
+    }
+    List<RexFieldCollation> orderKeys = new ArrayList<>();
+    if (window.containsKey("order")) {
+      addRexFieldCollationList.invoke(this, orderKeys, relInput, window.get("order"));
+    }
+    final RexWindowBound lowerBound;
+    final RexWindowBound upperBound;
+    final boolean physical;
+    if (window.get("rows-lower") != null) {
+      lowerBound = (RexWindowBound) toRexWindowBound.invoke(this, relInput, window.get("rows-lower"));
+      upperBound = (RexWindowBound) toRexWindowBound.invoke(this, relInput, window.get("rows-upper"));
+      physical = true;
+    } else if (window.get("range-lower") != null) {
+      lowerBound = (RexWindowBound) toRexWindowBound.invoke(this, relInput, window.get("range-lower"));
+      upperBound = (RexWindowBound) toRexWindowBound.invoke(this, relInput, window.get("range-upper"));
+      physical = false;
+    } else {
+      // No ROWS or RANGE clause
+      lowerBound = null;
+      upperBound = null;
+      physical = false;
+    }
+    final boolean distinct = (Boolean) map.get(DISTINCT);
+    return relInput.getCluster().getRexBuilder().makeOver(
+        type,
+        operator,
+        rexOperands,
+        partitionKeys,
+        ImmutableList.copyOf(orderKeys),
+        lowerBound,
+        upperBound,
+        physical,
+        true,
+        false,
+        distinct,
+        false);
+  }
 
   private List<RexNode> toRexList(RelInput relInput, List operands) {
     final List<RexNode> list = new ArrayList<>();
@@ -723,46 +467,10 @@ public class HiveRelJson extends RelJson {
     return list;
   }
 
-//  private RexWindowBound toRexWindowBound(RelInput input, Map<String, Object> map) {
-//    if (map == null) {
-//      return null;
-//    }
-//
-//    final String type = (String) map.get("type");
-//    switch (type) {
-//      case "CURRENT_ROW":
-//        return RexWindowBounds.create(SqlWindow.createCurrentRow(SqlParserPos.ZERO), null);
-//      case "UNBOUNDED_PRECEDING":
-//        return RexWindowBounds.create(SqlWindow.createUnboundedPreceding(SqlParserPos.ZERO), null);
-//      case "UNBOUNDED_FOLLOWING":
-//        return RexWindowBounds.create(SqlWindow.createUnboundedFollowing(SqlParserPos.ZERO), null);
-//      case "PRECEDING":
-//        RexNode precedingOffset = toRex(input, map.get("offset"));
-//        return RexWindowBounds.create(
-//            null,
-//            input.getCluster()
-//                .getRexBuilder()
-//                .makeCall(
-//                    new SqlPostfixOperator("PRECEDING", SqlKind.PRECEDING, 20, ReturnTypes.ARG0, null, null),
-//                    precedingOffset));
-//      case "FOLLOWING":
-//        RexNode followingOffset = toRex(input, map.get("offset"));
-//        return RexWindowBounds.create(
-//            null,
-//            input.getCluster()
-//                .getRexBuilder()
-//                .makeCall(
-//                    new SqlPostfixOperator("FOLLOWING", SqlKind.FOLLOWING, 20, ReturnTypes.ARG0, null, null),
-//                    followingOffset));
-//      default:
-//        throw new UnsupportedOperationException("cannot convert type to rex window bound " + type);
-//    }
-//  }
-
   @Override
   public RelDataType toType(RelDataTypeFactory typeFactory, Object o) {
     RelDataType type = super.toType(typeFactory, o);
-    
+
     // Ensure all character types have UTF-16 charset and collation
     // Without this, Strings can have extra "UTF-16LE" appended to them
     // after deserialization
@@ -771,81 +479,7 @@ public class HiveRelJson extends RelJson {
           type, Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT
       );
     }
-    
+
     return type;
   }
-
-//  private RelDataType toType(RelDataTypeFactory typeFactory, Map<String, Object> o) {
-//    final Object fields = o.get("fields");
-//    if (fields != null) {
-//      // Nested struct
-//      return toType(typeFactory, fields);
-//    } else {
-//      final SqlTypeName sqlTypeName = Util.enumVal(SqlTypeName.class, (String) o.get("type"));
-//      final Integer precision = (Integer) o.get("precision");
-//      final Integer scale = (Integer) o.get("scale");
-//      RelDataType type;
-//      if (SqlTypeName.INTERVAL_TYPES.contains(sqlTypeName)) {
-//        return createSqlIntervalType(typeFactory, sqlTypeName);
-//      }
-//      if (SqlTypeName.ARRAY == sqlTypeName) {
-//        return createArrayType(typeFactory, o);
-//      }
-//      if (SqlTypeName.MAP == sqlTypeName) {
-//        return createMapType(typeFactory, o);
-//      }
-//      if (precision == null) {
-//        type = typeFactory.createSqlType(sqlTypeName);
-//      } else if (scale == null) {
-//        type = typeFactory.createSqlType(sqlTypeName, precision);
-//      } else {
-//        type = typeFactory.createSqlType(sqlTypeName, precision, scale);
-//      }
-//      if (SqlTypeUtil.inCharFamily(type)) {
-//        type = typeFactory.createTypeWithCharsetAndCollation(
-//            type, Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT
-//        );
-//      }
-//      final boolean nullable = (Boolean) o.get(NULLABLE);
-//      return typeFactory.createTypeWithNullability(type, nullable);
-//    }
-//  }
-
-//  private RelDataType createMapType(RelDataTypeFactory typeFactory, Map<String, Object> o) {
-//    Object key = o.get("key");
-//    Object value = o.get("value");
-//    final Boolean nullable = (Boolean) o.get(NULLABLE);
-//    RelDataType keyType = toType(typeFactory, key);
-//    RelDataType valueType = toType(typeFactory, value);
-//    RelDataType type = typeFactory.createMapType(keyType, valueType);
-//    if (nullable != null) {
-//      type = typeFactory.createTypeWithNullability(type, nullable);
-//    }
-//    return type;
-//  }
-//
-//  private RelDataType createArrayType(RelDataTypeFactory typeFactory, Map<String, Object> o) {
-//    final Boolean nullable = (Boolean) o.get(NULLABLE);
-//    final Object component = o.get("component");
-//    RelDataType type = toType(typeFactory, component);
-//    type = typeFactory.createArrayType(type, -1);
-//    if (nullable != null) {
-//      type = typeFactory.createTypeWithNullability(type, nullable);
-//    }
-//    return type;
-//  }
-//
-//  private static RelDataType createSqlIntervalType(RelDataTypeFactory typeFactory, SqlTypeName sqlTypeName) {
-//    TimeUnit startUnit = sqlTypeName.getStartUnit();
-//    TimeUnit endUnit = sqlTypeName.getEndUnit();
-//    return typeFactory.createSqlIntervalType(new SqlIntervalQualifier(startUnit, endUnit, SqlParserPos.ZERO));
-//  }
-//
-//  private RelDataType toType(RelDataTypeFactory typeFactory, List<Map<String, Object>> o) {
-//    final RelDataTypeFactory.Builder builder = typeFactory.builder();
-//    for (Map<String, Object> jsonMap : o) {
-//      builder.add((String) jsonMap.get("name"), toType(typeFactory, jsonMap));
-//    }
-//    return builder.build();
-//  }
 }
