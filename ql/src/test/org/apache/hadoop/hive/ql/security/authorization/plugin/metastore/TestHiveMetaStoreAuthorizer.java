@@ -60,7 +60,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.io.File;
-import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.Arrays;
 
@@ -861,7 +860,7 @@ public class TestHiveMetaStoreAuthorizer {
     try {
       hmsHandler.drop_table(default_db, tblName, true);
       fail("Expected exception to be thrown due to lack of write permission");
-    } catch (IOException e) {
+    } catch (MetaException e) {
       String expected = "Failed to delete director:";
       assertTrue(e.getMessage().contains(expected));
     }
