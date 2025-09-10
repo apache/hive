@@ -87,7 +87,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
   @Override
   protected void configurePositionDelete(Parquet.DeleteWriteBuilder builder) {
-    builder.createWriterFunc(GenericParquetWriter::buildWriter);
+    builder.createWriterFunc(GenericParquetWriter::create);
   }
 
   @Override
