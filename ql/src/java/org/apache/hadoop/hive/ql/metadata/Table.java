@@ -265,10 +265,12 @@ public class Table implements Serializable {
   public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
     validateName(conf);
+
     if (getCols().isEmpty()) {
-      throw new HiveException(
-          "at least one column must be specified for the table");
+      throw new HiveException("at least one column must be specified for the table");
     }
+    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
+
     if (!isView()) {
       if (null == getDeserializer(false)) {
         throw new HiveException("must specify a non-null serDe");
@@ -288,8 +290,6 @@ public class Table implements Serializable {
       assert(getViewOriginalText() == null);
       assert(getViewExpandedText() == null);
     }
-
-    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
   }
 
   public void validateName(Configuration conf) throws HiveException {
