@@ -39,7 +39,9 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -82,25 +84,38 @@ public class TestInitiator extends CompactorTest {
     rqst = new CompactionRequest("default", "rflw2", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", WORKER_VERSION));
-    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
+    CompactionInfo ci1 = txnHandler.findNextToCompact(
+            aFindNextCompactRequest(ServerUtils.hostname() + "-193892", WORKER_VERSION));
+    CompactionInfo ci2 = txnHandler.findNextToCompact(
+            aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
 
     startInitiator();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
-    boolean sawInitiated = false;
+    int numWorkingCompactions = 0;
     for (ShowCompactResponseElement c : compacts) {
       if (c.getState().equals("working")) {
-        Assert.assertEquals("nosuchhost-193892", c.getWorkerid());
-      } else if (c.getState().equals("initiated")) {
-        sawInitiated = true;
+        numWorkingCompactions++;
       } else {
         Assert.fail("Unexpected state");
       }
     }
-    Assert.assertTrue(sawInitiated);
+    Assert.assertEquals(2, numWorkingCompactions);
+
+    // Simulating nosuchhost-193892 worker completes compaction
+    txnHandler.markCompacted(ci2);
+    txnHandler.markCleaned(ci2);
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(1).getState()));
+    Assert.assertTrue(TxnHandler.WORKING_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+    
+    txnHandler.revokeTimedoutWorkers(0);
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertTrue(TxnHandler.INITIATED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
   }
 
   @Test
