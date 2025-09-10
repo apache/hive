@@ -21,10 +21,8 @@ package org.apache.iceberg.mr.hive.serde.objectinspector;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.variants.Variant;
 
@@ -42,17 +40,12 @@ import org.apache.iceberg.variants.Variant;
  * </ul>
  * <p>
  */
-public final class IcebergVariantObjectInspector extends StandardStructObjectInspector {
+public final class IcebergVariantObjectInspector extends VariantObjectInspector {
 
-  public IcebergVariantObjectInspector() {
-    super(ImmutableList.of("metadata", "value"), createObjectInspectors());
-  }
+  private static final IcebergVariantObjectInspector INSTANCE = new IcebergVariantObjectInspector();
 
-  private static List<ObjectInspector> createObjectInspectors() {
-    return ImmutableList.of(
-        PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector,
-        PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
-    );
+  public static IcebergVariantObjectInspector get() {
+    return INSTANCE;
   }
 
   @Override

@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -821,8 +820,6 @@ public final class TypeInfoUtils {
       result = TypeInfoFactory.getUnionTypeInfo(objectTypeInfos);
       break;
     }
-    case VARIANT:
-      return TypeInfoFactory.getVariantTypeInfo();
     default: {
       throw new RuntimeException("Unknown ObjectInspector category!");
     }

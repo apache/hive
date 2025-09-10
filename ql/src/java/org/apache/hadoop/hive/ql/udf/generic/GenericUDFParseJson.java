@@ -39,10 +39,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 @Description(name = "parse_json", value = "_FUNC_(json_string) - Parses a JSON string into a VARIANT type", extended = """
     Example:
@@ -64,9 +62,7 @@ public class GenericUDFParseJson extends GenericUDF {
     inputOI = (PrimitiveObjectInspector) arguments[0];
 
     // Return a Variant OI
-    StructTypeInfo struct = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(Arrays.asList("metadata", "value"),
-        Arrays.asList(TypeInfoFactory.binaryTypeInfo, TypeInfoFactory.binaryTypeInfo));
-    return TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(struct);
+    return ObjectInspectorFactory.getVariantObjectInspector();
   }
 
   @Override
@@ -108,7 +104,7 @@ public class GenericUDFParseJson extends GenericUDF {
 
       // 3) encode metadata and value
       byte[] metadataBytes = encodeMetadata(dictionary);
-      byte[] valueBytes = encodeValue(root, dictionary, dictIndex);
+      byte[] valueBytes = encodeValue(root, dictIndex);
 
       return Arrays.asList(metadataBytes, valueBytes);
     }
@@ -185,20 +181,20 @@ public class GenericUDFParseJson extends GenericUDF {
       return 4;
     }
 
-    private static byte[] encodeValue(JsonNode node, List<String> dictionary, java.util.Map<String, Integer> dictIndex)
+    private static byte[] encodeValue(JsonNode node, java.util.Map<String, Integer> dictIndex)
         throws IOException {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
-      encodeNode(node, dictionary, dictIndex, out);
+      encodeNode(node, dictIndex, out);
       return out.toByteArray();
     }
 
     // Main encoding: writes value_metadata + optional value_data
-    private static void encodeNode(JsonNode node, List<String> dictionary, java.util.Map<String, Integer> dictIndex,
+    private static void encodeNode(JsonNode node, java.util.Map<String, Integer> dictIndex,
         OutputStream out) throws IOException {
       // null
       if (node == null || node.isNull()) {
         // primitive null ID = 0 ; basic_type = 0
-        out.write((0 << 2));
+        out.write(0);
         return;
       }
 
@@ -369,7 +365,7 @@ public class GenericUDFParseJson extends GenericUDF {
         offsets[0] = 0;
         for (int i = 0; i < n; i++) {
           ByteArrayOutputStream tmp = new ByteArrayOutputStream();
-          encodeNode(node.get(i), dictionary, dictIndex, tmp);
+          encodeNode(node.get(i), dictIndex, tmp);
           byte[] eb = tmp.toByteArray();
           encodedChildren.add(eb);
           offsets[i + 1] = offsets[i] + eb.length;
@@ -427,7 +423,7 @@ public class GenericUDFParseJson extends GenericUDF {
         for (int i = 0; i < m; i++) {
           JsonNode child = node.get(fnames.get(i));
           ByteArrayOutputStream tmp = new ByteArrayOutputStream();
-          encodeNode(child, dictionary, dictIndex, tmp);
+          encodeNode(child, dictIndex, tmp);
           byte[] vb = tmp.toByteArray();
           encodedVals.add(vb);
           offsets[i + 1] = offsets[i] + vb.length;

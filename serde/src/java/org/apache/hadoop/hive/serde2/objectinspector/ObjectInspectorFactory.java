@@ -363,6 +363,10 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
+  public static VariantObjectInspector getVariantObjectInspector() {
+    return VariantObjectInspector.get();
+  }
+
   public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
       List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
