@@ -126,6 +126,7 @@ KW_ARRAY: 'ARRAY';
 KW_STRUCT: 'STRUCT';
 KW_MAP: 'MAP';
 KW_UNIONTYPE: 'UNIONTYPE';
+KW_VARIANT: 'VARIANT';
 KW_REDUCE: 'REDUCE';
 KW_PARTITIONED: 'PARTITIONED';
 KW_CLUSTERED: 'CLUSTERED';
@@ -407,7 +408,6 @@ KW_ORPHAN_FILES: 'ORPHAN-FILES';
 KW_OLDER: 'OLDER';
 KW_THAN: 'THAN';
 KW_OPTIMIZE: 'OPTIMIZE';
-KW_VARIANT: 'VARIANT';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

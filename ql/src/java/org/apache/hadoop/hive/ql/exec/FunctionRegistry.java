@@ -791,7 +791,6 @@ public final class FunctionRegistry {
     system.registerGenericUDF("variant_get", GenericUDFVariantGet.class);
     system.registerGenericUDF("try_variant_get", GenericUDFTryVariantGet.class);
 
-
     try {
       system.registerGenericUDF("iceberg_bucket",
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergBucket"));

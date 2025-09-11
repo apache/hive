@@ -176,7 +176,7 @@ class Deserializer {
         }
         // Extract data from the struct representation
         StructObjectInspector oi = (StructObjectInspector) pair.sourceInspector();
-        VariantField field = new VariantField(oi.getStructFieldsDataAsList(o));
+        VariantField field = VariantField.from(oi.getStructFieldsDataAsList(o));
 
         if (field.getMetadata() == null || field.getValue() == null) {
           return null;

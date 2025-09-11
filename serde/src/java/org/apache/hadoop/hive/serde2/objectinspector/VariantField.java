@@ -29,9 +29,13 @@ public class VariantField {
   private final ByteBuffer value;
   private final ByteBuffer metadata;
 
-  public VariantField(List<Object> data) {
+  private VariantField(List<Object> data) {
       this.metadata = convertToByteBuffer(data, 0);
       this.value = convertToByteBuffer(data, 1);
+  }
+
+  public static VariantField from(List<Object> data) {
+    return new VariantField(data);
   }
 
   private static ByteBuffer convertToByteBuffer(List<Object> data, int position) {
