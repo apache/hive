@@ -599,24 +599,7 @@ public class ASTConverter {
       }
     } else if (isLateralView(r)) {
       TableFunctionScan tfs = ((TableFunctionScan) r);
-
-      // retrieve the base table source.
-      QueryBlockInfo tableFunctionSource = convertSource(tfs.getInput(0));
-
-      // base vs LV aliases/fields
-      final String baseAlias = tableFunctionSource.schema.get(0).table;
-      final String lvAlias = nextAlias();
-      List<RelDataTypeField> baseFields = tfs.getRowType().getFieldList()
-          .subList(0, tableFunctionSource.schema.size());
-      List<RelDataTypeField> lvFields = tfs.getRowType().getFieldList()
-          .subList(tableFunctionSource.schema.size(), tfs.getRowType().getFieldCount());
-
-      // create LV AST using tableFunctionSource input schema, LV fields & LV alias
-      ast = createASTLateralView(tfs, tableFunctionSource, lvFields, lvAlias);
-
-      // for the output schema, use the base columns with the base alias
-      // and UDTF columns with the LV alias
-      s = new Schema(new Schema(baseAlias, baseFields), new Schema(lvAlias, lvFields));
+      return createASTLateralView(tfs, convertSource(tfs.getInput(0)), nextAlias());
     } else if (r instanceof TableSpool) {
       TableSpool spool = (TableSpool) r;
       ASTConverter cteConverter =
@@ -670,9 +653,8 @@ public class ASTConverter {
     }
   }
 
-  private static ASTNode createASTLateralView(TableFunctionScan tfs, QueryBlockInfo tableFunctionSource,
-      List<RelDataTypeField> lvFields, String lvAlias) {
-
+  private static QueryBlockInfo createASTLateralView(TableFunctionScan tfs, QueryBlockInfo tableFunctionSource,
+      String alias) {
     // The structure of the AST LATERAL VIEW will be:
     //
     //   TOK_LATERAL_VIEW
@@ -705,13 +687,15 @@ public class ASTConverter {
 
     // Add only the table generated size columns to the select expr for the function,
     // skipping over the base table columns from the input side of the join.
+    List<RelDataTypeField> lvFields = tfs.getRowType().getFieldList()
+        .subList(tableFunctionSource.schema.size(), tfs.getRowType().getFieldCount());
     for (RelDataTypeField field : lvFields) {
       selexpr.add(HiveParser.Identifier, field.getName());
     }
 
     // add the table alias for the lateral view.
     ASTBuilder tabAlias = ASTBuilder.construct(HiveParser.TOK_TABALIAS, "TOK_TABALIAS");
-    tabAlias.add(HiveParser.Identifier, lvAlias);
+    tabAlias.add(HiveParser.Identifier, alias);
 
     // add the table alias to the SEL_EXPR
     selexpr.add(tabAlias.node());
@@ -727,7 +711,8 @@ public class ASTConverter {
     // finally, add the LATERAL VIEW clause under the left side source which is the base table.
     lateralview.add(tableFunctionSource.ast);
 
-    return lateralview.node();
+    Schema outputSchema = new Schema(tableFunctionSource.schema, new Schema(alias, lvFields));
+    return new QueryBlockInfo(outputSchema, lateralview.node());
   }
 
   private boolean isLateralView(RelNode relNode) {
