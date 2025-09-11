@@ -22,11 +22,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -34,10 +30,10 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.VariantVal;
+import org.apache.hadoop.hive.serde2.typeinfo.VariantUtil;
 
 @Description(name = "variant_get", value = "_FUNC_(variant, path[, type]) - Extracts a sub-variant from variant according to path, and casts it to type", extended = """
     Example:
@@ -54,6 +50,9 @@ public class GenericUDFVariantGet extends GenericUDF {
   private PrimitiveObjectInspector pathOI;
   private PrimitiveObjectInspector typeOI;
   private boolean hasTypeArgument;
+
+  // Inner classes
+  enum VariantType {NULL, PRIMITIVE, STRING, OBJECT, ARRAY}
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -86,21 +85,14 @@ public class GenericUDFVariantGet extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     try {
       Object variantObj = arguments[0].get();
-      if (variantObj == null)
+      if (variantObj == null) {
         return null;
-
-      // Get the struct fields - using field names instead of position
-      StructField metadataField = variantOI.getStructFieldRef("metadata");
-      StructField valueField = variantOI.getStructFieldRef("value");
-
-      if (metadataField == null || valueField == null) {
-        throw new HiveException("Variant struct must have 'metadata' and 'value' fields");
       }
+      VariantVal variantVal = VariantVal.from(variantOI.getStructFieldsDataAsList(variantObj));
 
-      Object metadataObj = variantOI.getStructFieldData(variantObj, metadataField);
-      Object valueObj = variantOI.getStructFieldData(variantObj, valueField);
-      if (metadataObj == null || valueObj == null)
+      if (variantVal.getMetadata() == null || variantVal.getValue() == null) {
         return null;
+      }
 
       Object pathObj = arguments[1].get();
       if (pathObj == null)
@@ -119,14 +111,11 @@ public class GenericUDFVariantGet extends GenericUDF {
       if (parsedPath == null)
         return null;
 
-      byte[] metadata = convertToByteArray(metadataObj);
-      byte[] value = convertToByteArray(valueObj);
-
       // Parse metadata to get dictionary
-      List<String> dictionary = parseMetadata(metadata);
+      List<String> dictionary = VariantUtil.parseMetadata(variantVal.getMetadata());
 
       // Extract value using path
-      Object result = extractValue(value, 0, dictionary, parsedPath, 0);
+      Object result = VariantDecoder.extractValue(variantVal.getValue(), 0, dictionary, parsedPath, 0);
 
       // Cast to target type
       return castValue(result, targetType);
@@ -136,443 +125,257 @@ public class GenericUDFVariantGet extends GenericUDF {
     }
   }
 
-  private List<String> parseMetadata(byte[] metadata) throws IOException {
-    if (metadata == null || metadata.length == 0) {
-      return new ArrayList<>();
-    }
+  static class VariantDecoder {
 
-    ByteBuffer buf = ByteBuffer.wrap(metadata).order(ByteOrder.LITTLE_ENDIAN);
-
-    byte header = buf.get();
-    int version = header & 0x0F;
-    if (version != 1)
-      throw new IOException("Unsupported variant metadata version: " + version);
-
-    int offsetSizeMinusOne = (header >> 6) & 0x03;
-    int offsetSize = offsetSizeMinusOne + 1;
-
-    int dictionarySize = readUnsignedLE(buf, offsetSize);
-
-    int[] offsets = new int[dictionarySize + 1];
-    for (int i = 0; i <= dictionarySize; i++) {
-      offsets[i] = readUnsignedLE(buf, offsetSize);
-    }
-
-    List<String> dictionary = new ArrayList<>(dictionarySize);
-    int bytesStart = buf.position();
-
-    for (int i = 0; i < dictionarySize; i++) {
-      int start = offsets[i];
-      int end = offsets[i + 1];
-      int length = end - start;
-
-      if (length < 0 || bytesStart + start + length > metadata.length) {
-        throw new IOException("Invalid string offset in dictionary");
-      }
-
-      byte[] stringBytes = new byte[length];
-      buf.position(bytesStart + start);
-      buf.get(stringBytes);
-      dictionary.add(new String(stringBytes, StandardCharsets.UTF_8));
-    }
-
-    return dictionary;
-  }
-
-  private Object extractValue(byte[] value, int pos, List<String> dictionary, VariantPath path, int segmentIndex)
-      throws IOException {
-    if (pos >= value.length)
-      return null;
-
-    if (segmentIndex >= path.getSegments().size()) {
-      return decodeValue(value, pos, dictionary);
-    }
-
-    PathSegment segment = path.getSegments().get(segmentIndex);
-    VariantType type = getValueType(value, pos);
-
-    if (segment instanceof FieldSegment && type == VariantType.OBJECT) {
-      String fieldName = ((FieldSegment) segment).fieldName();
-      int fieldPos = findFieldPosition(value, pos, dictionary, fieldName);
-      if (fieldPos == -1)
-        return null;
-      return extractValue(value, fieldPos, dictionary, path, segmentIndex + 1);
-    } else if (segment instanceof IndexSegment && type == VariantType.ARRAY) {
-      int index = ((IndexSegment) segment).index();
-      int elementPos = getArrayElementPosition(value, pos, index);
-      if (elementPos == -1)
-        return null;
-      return extractValue(value, elementPos, dictionary, path, segmentIndex + 1);
-    }
-
-    return null;
-  }
-
-  private Object decodeValue(byte[] value, int pos, List<String> dictionary) throws IOException {
-    if (pos >= value.length)
-      return null;
-
-    byte valueMetadata = value[pos];
-    int basicType = valueMetadata & 0x03;
-    int valueHeader = (valueMetadata >> 2) & 0x3F;
-
-    ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1).order(ByteOrder.LITTLE_ENDIAN);
-
-    switch (basicType) {
-      case 0: // Primitive type
-        return decodePrimitive(valueHeader, buf);
-      case 1: // Short string
-        return decodeShortString(valueHeader, buf);
-      case 2: // Object
-        return decodeObject(value, pos, dictionary);
-      case 3: // Array
-        return decodeArray(value, pos, dictionary);
-      default:
-        return null;
-    }
-  }
-
-  private Object decodePrimitive(int primitiveHeader, ByteBuffer buf) throws IOException {
-    switch (primitiveHeader) {
-      case 0: // null
-        return null;
-      case 1: // boolean true
-        return true;
-      case 2: // boolean false
-        return false;
-      case 3: // int8
-        return (int) buf.get();
-      case 4: // int16
-        return (int) buf.getShort();
-      case 5: // int32
-        return buf.getInt();
-      case 6: // int64
-        return buf.getLong();
-      case 7: // double
-        return buf.getDouble();
-      case 8: // decimal4
-      case 9: // decimal8
-      case 10: // decimal16
-        return decodeDecimal(primitiveHeader, buf);
-      case 11: // date
-        return decodeDate(buf);
-      case 12: // timestamp (MICROS)
-      case 13: // timestamp without time zone (MICROS)
-        return decodeTimestampMicros(buf, primitiveHeader);
-      case 14: // float
-        return buf.getFloat();
-      case 15: // binary
-        return decodeBinary(buf);
-      case 16: // string
-        return decodeString(buf);
-      default:
-        return null;
-    }
-  }
-
-  private Object decodeDecimal(int primitiveHeader, ByteBuffer buf) throws IOException {
-    byte scale = buf.get();
-    BigInteger unscaled;
-
-    switch (primitiveHeader) {
-      case 8: // decimal4
-        unscaled = BigInteger.valueOf(buf.getInt());
-        break;
-      case 9: // decimal8
-        unscaled = BigInteger.valueOf(buf.getLong());
-        break;
-      case 10: // decimal16
-        byte[] decimalBytes = new byte[16];
-        buf.get(decimalBytes);
-        // Convert from little-endian to big-endian for BigInteger
-        for (int i = 0; i < 8; i++) {
-          byte temp = decimalBytes[i];
-          decimalBytes[i] = decimalBytes[15 - i];
-          decimalBytes[15 - i] = temp;
-        }
-        unscaled = new BigInteger(decimalBytes);
-        break;
-      default:
-        throw new IOException("Invalid decimal primitive type: " + primitiveHeader);
-    }
-
-    return new BigDecimal(unscaled, scale).toString();
-  }
-
-  private Object decodeDate(ByteBuffer buf) {
-    int days = buf.getInt();
-    LocalDate date = LocalDate.ofEpochDay(days);
-    return date.toString();
-  }
-
-  private Object decodeTimestampMicros(ByteBuffer buf, int primitiveHeader) {
-    long micros = buf.getLong();
-    Instant instant = Instant.ofEpochSecond(micros / 1_000_000, (micros % 1_000_000) * 1000);
-
-    if (primitiveHeader == 12) { // with timezone
-      return instant.toString(); // Includes 'Z'
-    } else { // case 13: without timezone
-      return instant.toString().replace("Z", ""); // Remove 'Z'
-    }
-  }
-
-  private Object decodeBinary(ByteBuffer buf) {
-    int length = buf.getInt();
-    byte[] bytes = new byte[length];
-    buf.get(bytes);
-    return Base64.getEncoder().encodeToString(bytes);
-  }
-
-  private Object decodeString(ByteBuffer buf) {
-    int length = buf.getInt();
-    byte[] bytes = new byte[length];
-    buf.get(bytes);
-    return new String(bytes, StandardCharsets.UTF_8);
-  }
-
-  private Object decodeShortString(int length, ByteBuffer buf) {
-    byte[] bytes = new byte[length];
-    buf.get(bytes);
-    return new String(bytes, StandardCharsets.UTF_8);
-  }
-
-  private Object decodeObject(byte[] value, int pos, List<String> dictionary) throws IOException {
-    if (pos >= value.length)
-      return null;
-
-    ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1).order(ByteOrder.LITTLE_ENDIAN);
-
-    int header = (value[pos] >> 2) & 0x3F;
-    int isLarge = (header >> 4) & 0x01;
-    int fieldIdSizeMinusOne = (header >> 2) & 0x03;
-    int fieldOffsetSizeMinusOne = header & 0x03;
-
-    int fieldIdSize = fieldIdSizeMinusOne + 1;
-    int fieldOffsetSize = fieldOffsetSizeMinusOne + 1;
-
-    // Read number of elements
-    int numElements;
-    if (isLarge == 1) {
-      if (buf.remaining() < 4)
-        return null;
-      numElements = buf.getInt();
-    } else {
-      if (buf.remaining() < 1)
-        return null;
-      numElements = buf.get() & 0xFF;
-    }
-
-    if (numElements < 0)
-      return null;
-
-    // Read field IDs
-    int[] fieldIds = new int[numElements];
-    for (int i = 0; i < numElements; i++) {
-      if (buf.remaining() < fieldIdSize)
-        return null;
-      fieldIds[i] = readUnsignedLE(buf, fieldIdSize);
-    }
-
-    // Read field offsets
-    int[] fieldOffsets = new int[numElements + 1];
-    for (int i = 0; i <= numElements; i++) {
-      if (buf.remaining() < fieldOffsetSize)
-        return null;
-      fieldOffsets[i] = readUnsignedLE(buf, fieldOffsetSize);
-    }
-
-    // Build JSON object string
-    StringBuilder json = new StringBuilder("{");
-    int valuesStart = buf.position();
-
-    for (int i = 0; i < numElements; i++) {
-      if (i > 0)
-        json.append(",");
-
-      // Get field name from dictionary
-      if (fieldIds[i] < 0 || fieldIds[i] >= dictionary.size()) {
-        return null; // Invalid dictionary index
-      }
-      String fieldName = dictionary.get(fieldIds[i]);
-
-      // Decode field value
-      int fieldPos = valuesStart + fieldOffsets[i];
-      if (fieldPos >= value.length)
-        return null;
-
-      Object fieldValue = decodeValue(value, fieldPos, dictionary);
-      json.append("\"").append(fieldName).append("\":").append(fieldValue);
-    }
-
-    json.append("}");
-    return json.toString();
-  }
-
-  private Object decodeArray(byte[] value, int pos, List<String> dictionary) throws IOException {
-    if (pos >= value.length)
-      return null;
-
-    ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1).order(ByteOrder.LITTLE_ENDIAN);
-
-    int header = (value[pos] >> 2) & 0x3F;
-    int isLarge = (header >> 2) & 0x01;
-    int fieldOffsetSizeMinusOne = header & 0x03;
-    int fieldOffsetSize = fieldOffsetSizeMinusOne + 1;
-
-    // Read number of elements
-    int numElements;
-    if (isLarge == 1) {
-      if (buf.remaining() < 4)
-        return null;
-      numElements = buf.getInt();
-    } else {
-      if (buf.remaining() < 1)
-        return null;
-      numElements = buf.get() & 0xFF;
-    }
-
-    if (numElements < 0)
-      return null;
-
-    // Read element offsets
-    int[] elementOffsets = new int[numElements + 1];
-    for (int i = 0; i <= numElements; i++) {
-      if (buf.remaining() < fieldOffsetSize)
-        return null;
-      elementOffsets[i] = readUnsignedLE(buf, fieldOffsetSize);
-    }
-
-    // Build JSON array string
-    StringBuilder json = new StringBuilder("[");
-    int valuesStart = buf.position();
-
-    for (int i = 0; i < numElements; i++) {
-      if (i > 0)
-        json.append(",");
-
-      // Decode array element
-      int elementPos = valuesStart + elementOffsets[i];
-      if (elementPos >= value.length)
-        return null;
-
-      Object elementValue = decodeValue(value, elementPos, dictionary);
-      json.append(elementValue);
-    }
-
-    json.append("]");
-    return json.toString();
-  }
-
-  private int findFieldPosition(byte[] value, int pos, List<String> dictionary, String fieldName) {
-    try {
+    private static Object extractValue(byte[] value, int pos, List<String> dictionary, VariantPath path, int segmentIndex)
+          throws IOException {
       if (pos >= value.length)
-        return -1;
+        return null;
 
-      ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1).order(ByteOrder.LITTLE_ENDIAN);
+      if (segmentIndex >= path.getSegments().size()) {
+        return decodeValue(value, pos, dictionary);
+      }
 
+      PathSegment segment = path.getSegments().get(segmentIndex);
+      VariantType type = getValueType(value, pos);
+
+      if (segment instanceof FieldSegment && type == VariantType.OBJECT) {
+        String fieldName = ((FieldSegment) segment).fieldName();
+        int fieldPos = findFieldPosition(value, pos, dictionary, fieldName);
+        if (fieldPos == -1)
+          return null;
+        return extractValue(value, fieldPos, dictionary, path, segmentIndex + 1);
+      } else if (segment instanceof IndexSegment && type == VariantType.ARRAY) {
+        int index = ((IndexSegment) segment).index();
+        int elementPos = getArrayElementPosition(value, pos, index);
+        if (elementPos == -1)
+          return null;
+        return extractValue(value, elementPos, dictionary, path, segmentIndex + 1);
+      }
+
+      return null;
+    }
+
+    private static Object decodeValue(byte[] value, int pos, List<String> dictionary) throws IOException {
+      if (pos >= value.length)
+        return null;
+
+      byte valueMetadata = value[pos];
+      int basicType = valueMetadata & 0x03;
+      int valueHeader = (valueMetadata >> 2) & 0x3F;
+
+      ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1)
+          .order(ByteOrder.LITTLE_ENDIAN);
+
+      switch (basicType) {
+        case 0: // Primitive type
+          return decodePrimitive(valueHeader, buf);
+        case 1: // Short string
+          return VariantUtil.decodeShortString(valueHeader, buf);
+        case 2: // Object
+          return decodeObject(value, pos, dictionary);
+        case 3: // Array
+          return decodeArray(value, pos, dictionary);
+        default:
+          return null;
+      }
+    }
+
+    private static Object decodePrimitive(int primitiveHeader, ByteBuffer buf) throws IOException {
+      switch (primitiveHeader) {
+        case 0: // null
+          return null;
+        case 1: // boolean true
+          return true;
+        case 2: // boolean false
+          return false;
+        case 3: // int8
+          return (int) buf.get();
+        case 4: // int16
+          return (int) buf.getShort();
+        case 5: // int32
+          return buf.getInt();
+        case 6: // int64
+          return buf.getLong();
+        case 7: // double
+          return buf.getDouble();
+        case 8: // decimal4
+        case 9: // decimal8
+        case 10: // decimal16
+          return decodeDecimal(primitiveHeader, buf);
+        case 11: // date
+          return VariantUtil.decodeDate(buf);
+        case 12: // timestamp (MICROS)
+        case 13: // timestamp without time zone (MICROS)
+          return VariantUtil.decodeTimestamp(primitiveHeader, buf);
+        case 14: // float
+          return buf.getFloat();
+        case 15: // binary
+          return VariantUtil.decodeBinary(buf);
+        case 16: // string
+          return VariantUtil.decodeString(buf);
+        default:
+          return null;
+      }
+    }
+
+    private static Object decodeDecimal(int primitiveHeader, ByteBuffer buf) throws IOException {
+      byte scale = buf.get();
+      BigInteger unscaled = VariantUtil.decodeDecimalUnscaled(primitiveHeader, buf);
+      return new BigDecimal(unscaled, scale).toString();
+    }
+
+    private static Object decodeObject(byte[] value, int pos, List<String> dictionary) throws IOException {
+      if (pos >= value.length)
+        return null;
+
+      ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1)
+          .order(ByteOrder.LITTLE_ENDIAN);
       int header = (value[pos] >> 2) & 0x3F;
-      int isLarge = (header >> 4) & 0x01;
-      int fieldIdSizeMinusOne = (header >> 2) & 0x03;
-      int fieldOffsetSizeMinusOne = header & 0x03;
 
-      int fieldIdSize = fieldIdSizeMinusOne + 1;
-      int fieldOffsetSize = fieldOffsetSizeMinusOne + 1;
+      StringBuilder json = new StringBuilder();
+      VariantUtil.decodeObject(header, buf, dictionary, json, (b, d, s) -> {
+        // Convert ByteBuffer position back to byte array position
+        int fieldPos = pos + 1 + b.position();
+        Object fieldValue = decodeValue(value, fieldPos, dictionary);
+        s.append(fieldValue);
+      });
 
-      // Read number of elements
-      int numElements;
-      if (isLarge == 1) {
-        if (buf.remaining() < 4)
+      return json.toString();
+    }
+
+    private static Object decodeArray(byte[] value, int pos, List<String> dictionary) throws IOException {
+      if (pos >= value.length)
+        return null;
+
+      ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1)
+          .order(ByteOrder.LITTLE_ENDIAN);
+      int header = (value[pos] >> 2) & 0x3F;
+
+      StringBuilder json = new StringBuilder();
+      VariantUtil.decodeArray(header, buf, dictionary, json, (b, d, s) -> {
+        // Decode array element
+        int elementPos = pos + 1 + b.position();
+        Object elementValue = decodeValue(value, elementPos, dictionary);
+        s.append(elementValue);
+      });
+
+      return json.toString();
+    }
+
+    private static int findFieldPosition(byte[] value, int pos, List<String> dictionary, String fieldName) {
+      try {
+        if (pos >= value.length)
           return -1;
-        numElements = buf.getInt();
-      } else {
-        if (buf.remaining() < 1)
+
+        ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1)
+            .order(ByteOrder.LITTLE_ENDIAN);
+
+        int header = (value[pos] >> 2) & 0x3F;
+        int isLarge = (header >> 4) & 0x01;
+        int fieldIdSizeMinusOne = (header >> 2) & 0x03;
+        int fieldOffsetSizeMinusOne = header & 0x03;
+
+        int fieldIdSize = fieldIdSizeMinusOne + 1;
+        int fieldOffsetSize = fieldOffsetSizeMinusOne + 1;
+
+        // Read number of elements
+        int numElements;
+        if (isLarge == 1) {
+          if (buf.remaining() < 4)
+            return -1;
+          numElements = buf.getInt();
+        } else {
+          if (buf.remaining() < 1)
+            return -1;
+          numElements = buf.get() & 0xFF;
+        }
+
+        if (numElements < 0)
           return -1;
-        numElements = buf.get() & 0xFF;
-      }
 
-      if (numElements < 0)
-        return -1;
+        // Read field IDs and find matching field
+        int[] fieldIds = new int[numElements];
+        for (int i = 0; i < numElements; i++) {
+          if (buf.remaining() < fieldIdSize)
+            return -1;
+          fieldIds[i] = VariantUtil.readUnsignedLE(buf, fieldIdSize);
+        }
 
-      // Read field IDs and find matching field
-      int[] fieldIds = new int[numElements];
-      for (int i = 0; i < numElements; i++) {
-        if (buf.remaining() < fieldIdSize)
-          return -1;
-        fieldIds[i] = readUnsignedLE(buf, fieldIdSize);
-      }
+        // Read field offsets
+        int[] fieldOffsets = new int[numElements + 1];
+        for (int i = 0; i <= numElements; i++) {
+          if (buf.remaining() < fieldOffsetSize)
+            return -1;
+          fieldOffsets[i] = VariantUtil.readUnsignedLE(buf, fieldOffsetSize);
+        }
 
-      // Read field offsets
-      int[] fieldOffsets = new int[numElements + 1];
-      for (int i = 0; i <= numElements; i++) {
-        if (buf.remaining() < fieldOffsetSize)
-          return -1;
-        fieldOffsets[i] = readUnsignedLE(buf, fieldOffsetSize);
-      }
+        int valuesStart = buf.position();
 
-      int valuesStart = buf.position();
-
-      // Find the field with matching name
-      for (int i = 0; i < numElements; i++) {
-        if (fieldIds[i] >= 0 && fieldIds[i] < dictionary.size()) {
-          String currentFieldName = dictionary.get(fieldIds[i]);
-          if (fieldName.equals(currentFieldName)) {
-            return valuesStart + fieldOffsets[i];
+        // Find the field with matching name
+        for (int i = 0; i < numElements; i++) {
+          if (fieldIds[i] >= 0 && fieldIds[i] < dictionary.size()) {
+            String currentFieldName = dictionary.get(fieldIds[i]);
+            if (fieldName.equals(currentFieldName)) {
+              return valuesStart + fieldOffsets[i];
+            }
           }
         }
-      }
 
-      return -1;
-
-    } catch (Exception e) {
-      return -1;
-    }
-  }
-
-  private int getArrayElementPosition(byte[] value, int pos, int index) {
-    try {
-      if (pos >= value.length)
         return -1;
 
-      ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1).order(ByteOrder.LITTLE_ENDIAN);
-
-      int header = (value[pos] >> 2) & 0x3F;
-      int isLarge = (header >> 2) & 0x01;
-      int fieldOffsetSizeMinusOne = header & 0x03;
-      int fieldOffsetSize = fieldOffsetSizeMinusOne + 1;
-
-      // Read number of elements
-      int numElements;
-      if (isLarge == 1) {
-        if (buf.remaining() < 4)
-          return -1;
-        numElements = buf.getInt();
-      } else {
-        if (buf.remaining() < 1)
-          return -1;
-        numElements = buf.get() & 0xFF;
+      } catch (Exception e) {
+        return -1;
       }
+    }
 
-      if (index < 0 || index >= numElements) {
-        return -1; // Index out of bounds
-      }
-
-      // Read element offsets
-      int[] elementOffsets = new int[numElements + 1];
-      for (int i = 0; i <= numElements; i++) {
-        if (buf.remaining() < fieldOffsetSize)
+    private static int getArrayElementPosition(byte[] value, int pos, int index) {
+      try {
+        if (pos >= value.length)
           return -1;
-        elementOffsets[i] = readUnsignedLE(buf, fieldOffsetSize);
+
+        ByteBuffer buf = ByteBuffer.wrap(value, pos + 1, value.length - pos - 1)
+            .order(ByteOrder.LITTLE_ENDIAN);
+
+        int header = (value[pos] >> 2) & 0x3F;
+        int isLarge = (header >> 2) & 0x01;
+        int fieldOffsetSizeMinusOne = header & 0x03;
+        int fieldOffsetSize = fieldOffsetSizeMinusOne + 1;
+
+        // Read number of elements
+        int numElements;
+        if (isLarge == 1) {
+          if (buf.remaining() < 4)
+            return -1;
+          numElements = buf.getInt();
+        } else {
+          if (buf.remaining() < 1)
+            return -1;
+          numElements = buf.get() & 0xFF;
+        }
+
+        if (index < 0 || index >= numElements) {
+          return -1; // Index out of bounds
+        }
+
+        // Read element offsets
+        int[] elementOffsets = new int[numElements + 1];
+        for (int i = 0; i <= numElements; i++) {
+          if (buf.remaining() < fieldOffsetSize)
+            return -1;
+          elementOffsets[i] = VariantUtil.readUnsignedLE(buf, fieldOffsetSize);
+        }
+
+        int valuesStart = buf.position();
+        return valuesStart + elementOffsets[index];
+
+      } catch (Exception e) {
+        return -1;
       }
-
-      int valuesStart = buf.position();
-      return valuesStart + elementOffsets[index];
-
-    } catch (Exception e) {
-      return -1;
     }
   }
 
-  private Object castValue(Object value, String targetType) {
+  private static Object castValue(Object value, String targetType) {
     if (value == null)
       return null;
 
@@ -620,27 +423,7 @@ public class GenericUDFVariantGet extends GenericUDF {
   }
 
   // Helper methods
-  private int readUnsignedLE(ByteBuffer buf, int bytes) {
-    int result = 0;
-    for (int i = 0; i < bytes; i++) {
-      result |= (buf.get() & 0xFF) << (8 * i);
-    }
-    return result;
-  }
-
-  private byte[] convertToByteArray(Object obj) {
-    if (obj instanceof byte[])
-      return (byte[]) obj;
-    if (obj instanceof BytesWritable) {
-      BytesWritable bw = (BytesWritable) obj;
-      byte[] bytes = new byte[bw.getLength()];
-      System.arraycopy(bw.getBytes(), 0, bytes, 0, bw.getLength());
-      return bytes;
-    }
-    throw new IllegalArgumentException("Unsupported type: " + obj.getClass());
-  }
-
-  private VariantType getValueType(byte[] value, int pos) {
+  private static VariantType getValueType(byte[] value, int pos) {
     if (pos >= value.length)
       return VariantType.NULL;
     byte firstByte = value[pos];
@@ -664,50 +447,48 @@ public class GenericUDFVariantGet extends GenericUDF {
     return "variant_get(" + String.join(", ", children) + ")";
   }
 
-  // Inner classes
-  enum VariantType {NULL, PRIMITIVE, STRING, OBJECT, ARRAY}
-
-  public static class VariantPath {
+  private static class VariantPath {
     private final List<PathSegment> segments;
 
-    public VariantPath(List<PathSegment> segments) {
+    private VariantPath(List<PathSegment> segments) {
       this.segments = segments;
     }
 
-    public List<PathSegment> getSegments() {
+    private List<PathSegment> getSegments() {
       return segments;
     }
   }
 
-  public interface PathSegment {
+  private interface PathSegment {
   }
 
-  public static class FieldSegment implements PathSegment {
+  private static class FieldSegment implements PathSegment {
     private final String fieldName;
 
-    public FieldSegment(String fieldName) {
+    private FieldSegment(String fieldName) {
       this.fieldName = fieldName;
     }
 
-    public String fieldName() {
+    private String fieldName() {
       return fieldName;
     }
   }
 
-  public static class IndexSegment implements PathSegment {
+  private static class IndexSegment implements PathSegment {
     private final int index;
 
-    public IndexSegment(int index) {
+    private IndexSegment(int index) {
       this.index = index;
     }
 
-    public int index() {
+    private int index() {
       return index;
     }
   }
 
-  public static class VariantPathParser {
-    public static VariantPath parse(String path) {
+  private static class VariantPathParser {
+
+    private static VariantPath parse(String path) {
       if (path == null || !path.startsWith("$"))
         return null;
       List<PathSegment> segments = new ArrayList<>();

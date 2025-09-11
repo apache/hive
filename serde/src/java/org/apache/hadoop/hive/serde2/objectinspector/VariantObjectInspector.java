@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-
 import java.util.List;
 
 public class VariantObjectInspector extends StandardStructObjectInspector {
@@ -28,7 +26,7 @@ public class VariantObjectInspector extends StandardStructObjectInspector {
   private static final VariantObjectInspector INSTANCE = new VariantObjectInspector();
 
   protected VariantObjectInspector() {
-    super(ImmutableList.of("metadata", "value"), createObjectInspectors());
+    super(List.of("metadata", "value"), createObjectInspectors());
   }
 
   public static VariantObjectInspector get() {
@@ -36,7 +34,7 @@ public class VariantObjectInspector extends StandardStructObjectInspector {
   }
 
   private static List<ObjectInspector> createObjectInspectors() {
-    return ImmutableList.of(
+    return List.of(
         PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector,
         PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
     );

@@ -16,50 +16,44 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.serde2.objectinspector;
+package org.apache.hadoop.hive.serde2.typeinfo;
 
 import com.google.common.collect.Iterables;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.List;
 
 public class VariantVal {
 
-  private final ByteBuffer value;
-  private final ByteBuffer metadata;
+  private final byte[] value;
+  private final byte[] metadata;
 
   private VariantVal(List<Object> data) {
-      this.metadata = convertToByteBuffer(data, 0);
-      this.value = convertToByteBuffer(data, 1);
+      this.metadata = convertToByteArray(data, 0);
+      this.value = convertToByteArray(data, 1);
   }
 
   public static VariantVal from(List<Object> data) {
     return new VariantVal(data);
   }
 
-  private static ByteBuffer convertToByteBuffer(List<Object> data, int position) {
+  private static byte[] convertToByteArray(List<Object> data, int position) {
     Object obj = (data != null) ?
         Iterables.get(data, position, null) : null;
-    if (obj == null) {
-      return null;
-    }
-    return ByteBuffer.wrap(
-        switch (obj) {
-          case byte[] bytes -> bytes;
-          case org.apache.hadoop.io.BytesWritable bytesWritable -> bytesWritable.getBytes();
-          case org.apache.hadoop.io.Text text -> text.getBytes();
-          default ->
-            throw new IllegalArgumentException("Unsupported type for Variant field: " + obj.getClass());
-        })
-        .order(ByteOrder.LITTLE_ENDIAN);
+    return switch (obj) {
+      case null -> null;
+      case byte[] bytes -> bytes;
+      case org.apache.hadoop.io.BytesWritable bytesWritable -> bytesWritable.getBytes();
+      case org.apache.hadoop.io.Text text -> text.getBytes();
+      default ->
+        throw new IllegalArgumentException("Unsupported type for Variant field: " + obj.getClass());
+    };
   }
 
-  public ByteBuffer getValue() {
+  public byte[] getValue() {
     return value;
   }
 
-  public ByteBuffer getMetadata() {
+  public byte[] getMetadata() {
     return metadata;
   }
 }

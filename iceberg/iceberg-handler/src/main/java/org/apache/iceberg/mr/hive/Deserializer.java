@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -27,7 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.VariantVal;
+import org.apache.hadoop.hive.serde2.typeinfo.VariantVal;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
@@ -175,14 +177,17 @@ class Deserializer {
           return null;
         }
         // Extract data from the struct representation
-        StructObjectInspector oi = (StructObjectInspector) pair.sourceInspector();
-        VariantVal field = VariantVal.from(oi.getStructFieldsDataAsList(o));
+        StructObjectInspector soi = (StructObjectInspector) pair.sourceInspector();
+        VariantVal variantVal = VariantVal.from(soi.getStructFieldsDataAsList(o));
 
-        if (field.getMetadata() == null || field.getValue() == null) {
+        if (variantVal.getMetadata() == null || variantVal.getValue() == null) {
           return null;
         }
-        VariantMetadata metadata = VariantMetadata.from(field.getMetadata());
-        VariantValue value = VariantValue.from(metadata, field.getValue());
+        VariantMetadata metadata = VariantMetadata.from(
+            ByteBuffer.wrap(variantVal.getMetadata()).order(ByteOrder.LITTLE_ENDIAN));
+
+        VariantValue value = VariantValue.from(metadata,
+            ByteBuffer.wrap(variantVal.getValue()).order(ByteOrder.LITTLE_ENDIAN));
 
         return Variant.of(metadata, value);
       };
