@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantVal;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 public class GenericUDFToJson extends GenericUDF {
@@ -54,36 +54,18 @@ public class GenericUDFToJson extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object variantObj = arguments[0].get();
-    if (variantObj == null)
+    if (variantObj == null) {
       return null;
+    }
+    VariantVal field = VariantVal.from(soi.getStructFieldsDataAsList(variantObj));
 
-    Object metadataObj = soi.getStructFieldData(variantObj, soi.getAllStructFieldRefs().get(0));
-    Object valueObj = soi.getStructFieldData(variantObj, soi.getAllStructFieldRefs().get(1));
-    if (metadataObj == null || valueObj == null)
+    if (field.getMetadata() == null || field.getValue() == null) {
       return null;
-
-    // Handle both byte[] and BytesWritable types
-    byte[] metadata = convertToByteArray(metadataObj);
-    byte[] value = convertToByteArray(valueObj);
-
+    }
     try {
-      return VariantJsonDecoder.toJson(metadata, value);
+      return VariantJsonDecoder.toJson(field.getMetadata(), field.getValue());
     } catch (Exception e) {
       throw new HiveException("Error decoding variant to JSON", e);
-    }
-  }
-
-  // Helper method to handle both byte[] and BytesWritable
-  private byte[] convertToByteArray(Object obj) {
-    if (obj instanceof byte[]) {
-      return (byte[]) obj;
-    } else if (obj instanceof org.apache.hadoop.io.BytesWritable) {
-      org.apache.hadoop.io.BytesWritable bytesWritable = (org.apache.hadoop.io.BytesWritable) obj;
-      byte[] bytes = new byte[bytesWritable.getLength()];
-      System.arraycopy(bytesWritable.getBytes(), 0, bytes, 0, bytesWritable.getLength());
-      return bytes;
-    } else {
-      throw new IllegalArgumentException("Unsupported type for variant field: " + obj.getClass());
     }
   }
 
@@ -94,13 +76,7 @@ public class GenericUDFToJson extends GenericUDF {
 
   static class VariantJsonDecoder {
 
-    public static String toJson(byte[] metadataBytes, byte[] valueBytes) throws IOException {
-      if (valueBytes == null || valueBytes.length == 0)
-        return "null";
-
-      ByteBuffer metadataBuf = ByteBuffer.wrap(metadataBytes).order(ByteOrder.LITTLE_ENDIAN);
-      ByteBuffer valueBuf = ByteBuffer.wrap(valueBytes).order(ByteOrder.LITTLE_ENDIAN);
-
+    public static String toJson(ByteBuffer metadataBuf, ByteBuffer valueBuf) throws IOException {
       // Parse metadata first
       List<String> dictionary = parseMetadata(metadataBuf);
 

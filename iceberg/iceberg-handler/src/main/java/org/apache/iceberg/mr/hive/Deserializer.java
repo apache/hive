@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.VariantField;
+import org.apache.hadoop.hive.serde2.objectinspector.VariantVal;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
@@ -176,7 +176,7 @@ class Deserializer {
         }
         // Extract data from the struct representation
         StructObjectInspector oi = (StructObjectInspector) pair.sourceInspector();
-        VariantField field = VariantField.from(oi.getStructFieldsDataAsList(o));
+        VariantVal field = VariantVal.from(oi.getStructFieldsDataAsList(o));
 
         if (field.getMetadata() == null || field.getValue() == null) {
           return null;

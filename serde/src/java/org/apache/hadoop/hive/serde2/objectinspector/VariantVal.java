@@ -24,34 +24,35 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 
-public class VariantField {
+public class VariantVal {
 
   private final ByteBuffer value;
   private final ByteBuffer metadata;
 
-  private VariantField(List<Object> data) {
+  private VariantVal(List<Object> data) {
       this.metadata = convertToByteBuffer(data, 0);
       this.value = convertToByteBuffer(data, 1);
   }
 
-  public static VariantField from(List<Object> data) {
-    return new VariantField(data);
+  public static VariantVal from(List<Object> data) {
+    return new VariantVal(data);
   }
 
   private static ByteBuffer convertToByteBuffer(List<Object> data, int position) {
     Object obj = (data != null) ?
         Iterables.get(data, position, null) : null;
-    return switch (obj) {
-      case null -> null;
-      case org.apache.hadoop.io.BytesWritable bytesWritable ->
-          ByteBuffer.wrap(bytesWritable.getBytes(), 0, bytesWritable.getLength())
-              .order(ByteOrder.LITTLE_ENDIAN);
-      case org.apache.hadoop.io.Text text ->
-          ByteBuffer.wrap(text.getBytes(), 0, text.getLength())
-              .order(ByteOrder.LITTLE_ENDIAN);
-      default ->
-          throw new IllegalArgumentException("Unsupported type for Variant field: " + obj.getClass());
-    };
+    if (obj == null) {
+      return null;
+    }
+    return ByteBuffer.wrap(
+        switch (obj) {
+          case byte[] bytes -> bytes;
+          case org.apache.hadoop.io.BytesWritable bytesWritable -> bytesWritable.getBytes();
+          case org.apache.hadoop.io.Text text -> text.getBytes();
+          default ->
+            throw new IllegalArgumentException("Unsupported type for Variant field: " + obj.getClass());
+        })
+        .order(ByteOrder.LITTLE_ENDIAN);
   }
 
   public ByteBuffer getValue() {
