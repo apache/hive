@@ -854,7 +854,7 @@ public class TestHiveMetaStoreAuthorizer {
     when(fileStatus.getPath()).thenReturn(new Path(tblName));
     when(wh.getFs(new Path(tblName)).listStatus(new Path(tblName))).thenReturn(new FileStatus[] { fileStatus });
 
-    doThrow(new IOException("Failed to delete director:"))
+    doThrow(new MetaException("Failed to delete director:"))
        .when(wh.getFs(new Path(tblName))).delete(any(Path.class), anyBoolean());
 
     try {
