@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
@@ -161,7 +162,10 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
             primaryKeys.stream().map(SQLPrimaryKey::getColumn_name).collect(Collectors.toSet()))
         .orElse(Collections.emptySet());
 
-    Schema schema = schema(catalogProperties, hmsTable, identifierFields);
+    Map<String, String> defaultValues = request.getDefaultConstraints().stream()
+        .collect(Collectors.toMap(SQLDefaultConstraint::getColumn_name, SQLDefaultConstraint::getDefault_value));
+
+    Schema schema = schema(catalogProperties, hmsTable, identifierFields, defaultValues);
     PartitionSpec spec = spec(conf, schema, hmsTable);
 
     // If there are partition keys specified remove them from the HMS table and add them to the column list
@@ -303,7 +307,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected Schema schema(Properties properties, org.apache.hadoop.hive.metastore.api.Table hmsTable,
-                        Set<String> identifierFields) {
+                        Set<String> identifierFields, Map<String, String> defaultValues) {
     boolean autoConversion = conf.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
 
     if (properties.getProperty(InputFormatConfig.TABLE_SCHEMA) != null) {
@@ -313,7 +317,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
       cols.addAll(hmsTable.getPartitionKeys());
     }
-    Schema schema = HiveSchemaUtil.convert(cols, autoConversion);
+    Schema schema = HiveSchemaUtil.convert(cols, autoConversion, defaultValues);
 
     return getSchemaWithIdentifierFields(schema, identifierFields);
   }

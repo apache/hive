@@ -54,6 +54,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import java.util.Collections;
 import java.util.Map;
 
 import java.util.Arrays;
@@ -214,7 +216,7 @@ public class TestHiveRESTCatalogClientIT {
     sd.getSerdeInfo().setParameters(new java.util.HashMap<>());
     table.setSd(sd);
     
-    Schema schema = HiveSchemaUtil.convert(cols, false);
+    Schema schema = HiveSchemaUtil.convert(cols, false, Collections.emptyMap());
     PartitionSpec spec = PartitionSpec.builderFor(schema).identity("city").build();
     String specString = PartitionSpecParser.toJson(spec);
     table.setParameters(new java.util.HashMap<>());

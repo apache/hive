@@ -337,6 +337,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
     List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
     List<SQLNotNullConstraint> notNullConstraints = new ArrayList<>();
     List<SQLDefaultConstraint> defaultConstraints = new ArrayList<>();
+    List<ConstraintsUtils.ConstraintInfo> defaultConstraintInfo = new ArrayList<>();
     List<SQLCheckConstraint> checkConstraints = new ArrayList<>();
     List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
@@ -461,14 +462,14 @@ public class CreateTableAnalyzer extends CalcitePlanner {
           break;
         case HiveParser.TOK_TABCOLLIST:
           cols = getColumns(child, true, ctx.getTokenRewriteStream(), primaryKeys, foreignKeys, uniqueConstraints,
-              notNullConstraints, defaultConstraints, checkConstraints, conf);
+              notNullConstraints, defaultConstraintInfo, checkConstraints, conf);
           break;
         case HiveParser.TOK_TABLECOMMENT:
           comment = unescapeSQLString(child.getChild(0).getText());
           break;
         case HiveParser.TOK_TABLEPARTCOLS:
           partCols = getColumns(child, false, ctx.getTokenRewriteStream(), primaryKeys, foreignKeys, uniqueConstraints,
-              notNullConstraints, defaultConstraints, checkConstraints, conf);
+              notNullConstraints, defaultConstraintInfo, checkConstraints, conf);
           if (hasConstraints(partCols, defaultConstraints, notNullConstraints, checkConstraints)) {
             //TODO: these constraints should be supported for partition columns
             throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
@@ -648,14 +649,19 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         } else {
           tblLocation = getDefaultLocation(qualifiedTabName.getDb(), qualifiedTabName.getTable(), isExt);
         }
+        boolean isNativeColumnDefaultSupported = false;
         try {
           HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
           if (storageHandler != null) {
             storageHandler.addResourcesForCreateTable(tblProps, conf);
+            isNativeColumnDefaultSupported = storageHandler.supportsNativeColumnDefault(tblProps);
           }
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
+
+        ConstraintsUtils.constraintInfosToDefaultConstraints(qualifiedTabName, defaultConstraintInfo,
+            crtTblDesc.getDefaultConstraints(), isNativeColumnDefaultSupported);
         SessionStateUtil.addResourceOrThrow(conf, META_TABLE_LOCATION, tblLocation);
         break;
       case CTT: // CREATE TRANSACTIONAL TABLE

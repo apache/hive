@@ -168,7 +168,7 @@ public class TestHiveRESTCatalogClient {
     table.setSd(new StorageDescriptor());
     table.getSd().setCols(cols);
 
-    Schema schema = HiveSchemaUtil.convert(cols, false);
+    Schema schema = HiveSchemaUtil.convert(cols, false, Collections.emptyMap());
     PartitionSpec spec = PartitionSpec.builderFor(schema).identity("city").build();
     String specString = PartitionSpecParser.toJson(spec);
 
