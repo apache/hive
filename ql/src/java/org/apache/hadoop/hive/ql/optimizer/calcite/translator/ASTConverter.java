@@ -1229,10 +1229,6 @@ public class ASTConverter {
         add(new ColumnInfo(tabAlias, field.getName()));
       }
     }
-
-    Schema(java.util.Collection<? extends ColumnInfo> c) {
-      super(c);
-    }
   }
 
   /*
