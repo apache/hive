@@ -107,6 +107,22 @@ public class TestSetProcessor {
     Assert.assertTrue(output.contains("hidden"));
   }
 
+  @Test
+  public void testRemovedConfigs() throws Exception {
+    Assert.assertEquals(baos.size(),0);
+    for (String entry : processor.getRemovedHiveConfigs()) {
+      // trying to set value
+      runSetProcessor(entry + "=Something");
+      // trying to get the value based on the previous set
+      runSetProcessor(entry);
+      Assert.assertTrue(baos.size() > 0);
+      String output = baos.toString();
+      Assert.assertTrue(output.contains("undefined"));
+      Assert.assertFalse(output.contains("Something"));
+    }
+    Assert.assertTrue(baos.size() > 0);
+  }
+
   /*
    * Simulates the set <command>;
    */
