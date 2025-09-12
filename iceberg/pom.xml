@@ -30,7 +30,6 @@
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
     <iceberg.avro.version>1.12.0</iceberg.avro.version>
-    <iceberg.checkstyle.plugin.version>3.5.0</iceberg.checkstyle.plugin.version>
     <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
     <google.errorprone.version>2.29.2</google.errorprone.version>
     <assertj.version>3.27.3</assertj.version>
@@ -270,7 +269,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${iceberg.checkstyle.plugin.version}</version>
+        <version>${maven.checkstyle.plugin.version}</version>
         <configuration>
           <skip>${validate.skip}</skip>
           <propertyExpansion>config_loc=${basedir}/${path.to.iceberg.root}/checkstyle/</propertyExpansion>

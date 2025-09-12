@@ -19,6 +19,9 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-standalone-metastore-client</artifactId>
   <name>Hive Metastore Client</name>
+  <properties>
+    <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.hive</groupId>
