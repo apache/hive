@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -162,7 +164,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
             primaryKeys.stream().map(SQLPrimaryKey::getColumn_name).collect(Collectors.toSet()))
         .orElse(Collections.emptySet());
 
-    Map<String, String> defaultValues = request.getDefaultConstraints().stream()
+    Map<String, String> defaultValues = Stream.ofNullable(request.getDefaultConstraints()).flatMap(Collection::stream)
         .collect(Collectors.toMap(SQLDefaultConstraint::getColumn_name, SQLDefaultConstraint::getDefault_value));
 
     Schema schema = schema(catalogProperties, hmsTable, identifierFields, defaultValues);
