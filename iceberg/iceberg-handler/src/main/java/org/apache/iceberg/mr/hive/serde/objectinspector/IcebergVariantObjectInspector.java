@@ -21,9 +21,9 @@ package org.apache.iceberg.mr.hive.serde.objectinspector;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
-import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.variants.Variant;
 
 /**
@@ -42,9 +42,12 @@ import org.apache.iceberg.variants.Variant;
  */
 public final class IcebergVariantObjectInspector extends VariantObjectInspector {
 
-  private static final IcebergVariantObjectInspector INSTANCE = new IcebergVariantObjectInspector();
+  private static final ObjectInspector INSTANCE = new IcebergVariantObjectInspector();
 
-  public static IcebergVariantObjectInspector get() {
+  private IcebergVariantObjectInspector() {
+  }
+
+  public static ObjectInspector get() {
     return INSTANCE;
   }
 
@@ -58,13 +61,13 @@ public final class IcebergVariantObjectInspector extends VariantObjectInspector 
 
     switch (field.getFieldID()) {
       case 0: // "metadata" field (binary)
-        ByteBuffer metadataBuffer = ByteBuffer.allocate(variant.metadata().sizeInBytes());
-        variant.metadata().writeTo(metadataBuffer, 0);
-        return metadataBuffer.array();
+        ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes());
+        variant.metadata().writeTo(metadata, 0);
+        return metadata.array();
       case 1: // "value" field (binary)
-        ByteBuffer valueBuffer = ByteBuffer.allocate(variant.value().sizeInBytes());
-        variant.value().writeTo(valueBuffer, 0);
-        return valueBuffer.array();
+        ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes());
+        variant.value().writeTo(value, 0);
+        return value.array();
       default:
         throw new IllegalArgumentException("Unknown field position: " + field.getFieldID());
     }
@@ -76,13 +79,13 @@ public final class IcebergVariantObjectInspector extends VariantObjectInspector 
       return null;
     }
     Variant variant = (Variant) data;
-    ByteBuffer metadataBuffer = ByteBuffer.allocate(variant.metadata().sizeInBytes());
-    variant.metadata().writeTo(metadataBuffer, 0);
+    ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes());
+    variant.metadata().writeTo(metadata, 0);
 
-    ByteBuffer valueBuffer = ByteBuffer.allocate(variant.value().sizeInBytes());
-    variant.value().writeTo(valueBuffer, 0);
+    ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes());
+    variant.value().writeTo(value, 0);
 
     // Return the data for our fields in the correct order: metadata, value
-    return ImmutableList.of(metadataBuffer.array(), valueBuffer.array());
+    return List.of(metadata.array(), value.array());
   }
 }

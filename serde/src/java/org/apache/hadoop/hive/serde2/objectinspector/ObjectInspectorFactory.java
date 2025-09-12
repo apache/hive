@@ -363,7 +363,7 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
-  public static VariantObjectInspector getVariantObjectInspector() {
+  public static ObjectInspector getVariantObjectInspector() {
     return VariantObjectInspector.get();
   }
 

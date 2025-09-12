@@ -16,27 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.serde2.objectinspector;
+package org.apache.hadoop.hive.serde2.variant;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import java.util.List;
-
-public class VariantObjectInspector extends StandardStructObjectInspector {
-
-  private static final ObjectInspector INSTANCE = new VariantObjectInspector();
-
-  protected VariantObjectInspector() {
-    super(List.of("metadata", "value"), createObjectInspectors());
-  }
-
-  public static ObjectInspector get() {
-    return INSTANCE;
-  }
-
-  private static List<ObjectInspector> createObjectInspectors() {
-    return List.of(
-        PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector,
-        PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
-    );
-  }
+/**
+ * An exception indicating that we are attempting to build a variant with it value or metadata
+ * exceeding the 16MiB size limit.
+ */
+public class VariantSizeLimitException extends RuntimeException {
 }

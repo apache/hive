@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.VariantVal;
+import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
@@ -43,7 +43,6 @@ import org.apache.iceberg.types.Types.ListType;
 import org.apache.iceberg.types.Types.MapType;
 import org.apache.iceberg.types.Types.NestedField;
 import org.apache.iceberg.types.Types.StructType;
-import org.apache.iceberg.variants.Variant;
 import org.apache.iceberg.variants.VariantMetadata;
 import org.apache.iceberg.variants.VariantValue;
 
@@ -172,24 +171,21 @@ class Deserializer {
 
     @Override
     public FieldDeserializer variant(Types.VariantType variantType, ObjectInspectorPair pair) {
-      return o -> {
-        if (o == null) {
+      return variantObj -> {
+        if (variantObj == null) {
           return null;
         }
         // Extract data from the struct representation
-        StructObjectInspector soi = (StructObjectInspector) pair.sourceInspector();
-        VariantVal variantVal = VariantVal.from(soi.getStructFieldsDataAsList(o));
+        StructObjectInspector variantOI = (StructObjectInspector) pair.sourceInspector();
+        Variant variant = Variant.from(variantOI.getStructFieldsDataAsList(variantObj));
 
-        if (variantVal.getMetadata() == null || variantVal.getValue() == null) {
-          return null;
-        }
         VariantMetadata metadata = VariantMetadata.from(
-            ByteBuffer.wrap(variantVal.getMetadata()).order(ByteOrder.LITTLE_ENDIAN));
+            ByteBuffer.wrap(variant.getMetadata()).order(ByteOrder.LITTLE_ENDIAN));
 
         VariantValue value = VariantValue.from(metadata,
-            ByteBuffer.wrap(variantVal.getValue()).order(ByteOrder.LITTLE_ENDIAN));
+            ByteBuffer.wrap(variant.getValue()).order(ByteOrder.LITTLE_ENDIAN));
 
-        return Variant.of(metadata, value);
+        return org.apache.iceberg.variants.Variant.of(metadata, value);
       };
     }
 
