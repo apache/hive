@@ -316,9 +316,9 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT COUNT(*)
-FROM src1 x JOIN srcpart z ON (x.key = z.key)
-JOIN srcpart w ON (x.key = w.key)
-JOIN src y ON (y.key = x.key)
+FROM `src1` `x` JOIN `srcpart` `z` ON (`x`.`key` = `z`.`key`)
+JOIN `srcpart` `w` ON (`x`.`key` = `w`.`key`)
+JOIN `src` `y` ON (`y`.`key` = `x`.`key`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -329,9 +329,9 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT COUNT(*)
-FROM src1 x JOIN srcpart z ON (x.key = z.key)
-JOIN srcpart w ON (x.key = w.key)
-JOIN src y ON (y.key = x.key)
+FROM `src1` `x` JOIN `srcpart` `z` ON (`x`.`key` = `z`.`key`)
+JOIN `srcpart` `w` ON (`x`.`key` = `w`.`key`)
+JOIN `src` `y` ON (`y`.`key` = `x`.`key`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
