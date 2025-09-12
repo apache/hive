@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Filter;
@@ -69,6 +70,10 @@ public class HiveFilter extends Filter implements HiveRelNode {
   public HiveFilter(RelOptCluster cluster, RelTraitSet traits, RelNode child, RexNode condition) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, condition);
     this.correlationInfos = new CorrelationInfoSupplier(getCondition());
+  }
+
+  public HiveFilter(RelInput input) {
+    this(input.getCluster(), input.getTraitSet(), input.getInput(), input.getExpression("condition"));
   }
 
   @Override

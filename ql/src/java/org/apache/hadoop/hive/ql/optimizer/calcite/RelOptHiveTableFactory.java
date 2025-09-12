@@ -15,24 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
+package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.calcite.plan.Convention;
-import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
-import java.util.stream.Stream;
+import java.util.List;
 
-public interface HiveRelNode extends RelNode {
-
-  /** Calling convention for relational operations that occur in Hive. */
-  Convention CONVENTION = new Convention.Impl("HIVE", HiveRelNode.class);
-
-  static Stream<RelNode> stream(RelNode node) {
-    return Stream.concat(
-        Stream.of(node),
-        node.getInputs()
-            .stream()
-            .flatMap(HiveRelNode::stream)
-    );
-  }
+public interface RelOptHiveTableFactory {
+  RelOptHiveTable createRelOptHiveTable(
+      String tableAlias,
+      TableName tableName,
+      RelDataType rowType,
+      List<ColumnInfo> nonPartitionColumns,
+      List<ColumnInfo> partitionColumns,
+      List<VirtualColumn> virtualColumns,
+      boolean isMaterialized);
 }
