@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,6 +37,9 @@ public class CheckResult {
   private Set<PartitionResult> partitionsNotInMs = new TreeSet<>();
   private Set<PartitionResult> expiredPartitions = new TreeSet<>();
   private Set<PartitionResult> correctPartitions = new TreeSet<>();
+
+  private Map<String, String> smallFilesStats = new HashMap<>();
+
   private long maxWriteId;
   private long maxTxnId;
 
@@ -113,6 +117,14 @@ public class CheckResult {
 
   public void setCorrectPartitions(final Set<PartitionResult> correctPartitions) {
     this.correctPartitions = correctPartitions;
+  }
+
+  public Map<String, String> getSmallFilesStats() {
+    return this.smallFilesStats;
+  }
+
+  public void setSmallFilesStats(Map<String, String> smallFilesStats) {
+    this.smallFilesStats = smallFilesStats;
   }
 
   public long getMaxWriteId() {

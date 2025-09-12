@@ -38,6 +38,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
@@ -348,6 +350,7 @@ public class HiveMetaStoreChecker {
       allPartDirs = partDirs;
     }
 
+    Map<String, String> smallFilesStats = new HashMap<>();
     // check that the partition folders exist on disk
     for (Partition partition : parts) {
       if (partition == null) {
@@ -358,6 +361,28 @@ public class HiveMetaStoreChecker {
       if (partPath == null) {
         continue;
       }
+
+      // check the table/partition if (totalSize / numFiles) is less than avgFileSize
+      Map<String, String> partitionParameters = partition.getParameters();
+      if (partitionParameters != null) {
+        long totalSize = Long.parseLong(partitionParameters.getOrDefault(StatsSetupConst.TOTAL_SIZE, "0"));
+        long numFiles = Long.parseLong(partitionParameters.getOrDefault(StatsSetupConst.NUM_FILES, "0"));
+        if (numFiles != 0) {
+          long avgFileSize = totalSize / numFiles;
+          long HIVE_FILES_AVG_SIZE = conf.getLong("hive.merge.smallfiles.avgsize", 0);
+          if (avgFileSize <= HIVE_FILES_AVG_SIZE) {
+            StringBuilder tmpStatsSb = new StringBuilder();
+            tmpStatsSb.append("totalSize = ").append(totalSize).append(", numFiles = ")
+                    .append(numFiles).append(". ");
+            smallFilesStats.putIfAbsent(Warehouse.makePartName(table.getPartitionKeys(), partition.getValues()), tmpStatsSb.toString());
+            result.setSmallFilesStats(smallFilesStats);
+          }
+        } else {
+          LOG.warn("Partition total number of files is 0.");
+          LOG.debug("Partition total number of files is 0. Table name : {}, Partition values : {}. ", partition.getTableName(), partition.getValues().toString());
+        }
+      }
+
       fs = partPath.getFileSystem(conf);
 
       CheckResult.PartitionResult prFromMetastore = new CheckResult.PartitionResult();
