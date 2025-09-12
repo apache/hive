@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
@@ -475,8 +474,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
         innerReader = new NullRowsRecordReader(job, split);
       } else {
-        innerReader = HiveIOExceptionHandlerUtil
-            .handleRecordReaderCreationException(e, job);
+        throw new IOException("Exception caught while creating the inner reader", e);
       }
     }
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
