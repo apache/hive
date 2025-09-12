@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.RewriterFactory;
 import org.apache.hadoop.hive.ql.parse.rewrite.UpdateStatement;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 import java.util.LinkedHashSet;
 import java.util.List;

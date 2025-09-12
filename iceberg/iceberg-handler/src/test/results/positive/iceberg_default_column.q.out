@@ -1,0 +1,87 @@
+PREHOOK: query: CREATE TABLE t3 (
+  id INT,
+  point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25,
+  salary DOUBLE DEFAULT 50000.0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_date DATE DEFAULT '2024-01-01',
+  created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
+  score DECIMAL(5,2) DEFAULT 100.00,
+  category STRING DEFAULT 'general'
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: CREATE TABLE t3 (
+  id INT,
+  point STRUCT<x:INT, y:INT> DEFAULT 'x:100,y:99',
+  name STRING DEFAULT 'unknown',
+  age INT DEFAULT 25,
+  salary DOUBLE DEFAULT 50000.0,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_date DATE DEFAULT '2024-01-01',
+  created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
+  score DECIMAL(5,2) DEFAULT 100.00,
+  category STRING DEFAULT 'general'
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: INSERT INTO t3 (id, point) VALUES (2, named_struct('x', CAST(null AS INT), 'y', 7))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: INSERT INTO t3 (id, point) VALUES (2, named_struct('x', CAST(null AS INT), 'y', 7))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+PREHOOK: query: INSERT INTO t3 (id) VALUES (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: INSERT INTO t3 (id) VALUES (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+PREHOOK: query: INSERT INTO t3 (id, name) VALUES (4, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: INSERT INTO t3 (id, name) VALUES (4, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+PREHOOK: query: INSERT INTO t3 (id, name, age) VALUES (5, 'custom_name', 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: INSERT INTO t3 (id, name, age) VALUES (5, 'custom_name', 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+PREHOOK: query: INSERT INTO t3 (id, point) VALUES (6, named_struct('x', CAST(null AS INT), 'y', CAST(null AS INT)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: INSERT INTO t3 (id, point) VALUES (6, named_struct('x', CAST(null AS INT), 'y', CAST(null AS INT)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+PREHOOK: query: SELECT * FROM t3 ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM t3 ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	{"x":100,"y":7}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+3	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+4	{"x":100,"y":99}	NULL	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+5	{"x":100,"y":99}	custom_name	30	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+6	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general

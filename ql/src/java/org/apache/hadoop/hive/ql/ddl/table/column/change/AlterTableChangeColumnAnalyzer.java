@@ -129,8 +129,9 @@ public class AlterTableChangeColumnAnalyzer extends AbstractAlterTableAnalyzer {
         break;
       case HiveParser.TOK_DEFAULT_VALUE:
         defaultConstraints = new ArrayList<>();
-        ConstraintsUtils.processDefaultConstraints(tableName, constraintChild, ImmutableList.of(newColumnName),
-            defaultConstraints, (ASTNode) command.getChild(2), this.ctx.getTokenRewriteStream());
+        ConstraintsUtils.constraintInfosToDefaultConstraints(tableName,
+            ConstraintsUtils.processDefaultConstraints(constraintChild, ImmutableList.of(newColumnName),
+                (ASTNode) command.getChild(2), this.ctx.getTokenRewriteStream()), defaultConstraints, false);
         break;
       case HiveParser.TOK_NOT_NULL:
         notNullConstraints = new ArrayList<>();
