@@ -656,7 +656,7 @@ public final class ObjectInspectorUtils {
   }
 
   /**
-   * https://cwiki.apache.org/confluence/display/Hive/LanguageManual+DDL+BucketedTables
+   * https://hive.apache.org/docs/latest/language/languagemanual-ddl-bucketedtables
    * @param hashCode as produced by {@link #getBucketHashCode(Object[], ObjectInspector[])}
    */
   public static int getBucketNumber(int hashCode, int numberOfBuckets) {

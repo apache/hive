@@ -264,7 +264,7 @@ similarly for mapKeyType/mapKeyTypeInfo */
   public HCatFieldSchema(String fieldName, Type type, Type mapKeyType, HCatSchema mapValueSchema, String comment) throws HCatException {
     assertTypeInCategory(type, Category.MAP, fieldName);
     //Hive only supports primitive map keys: 
-    //https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Types#LanguageManualTypes-ComplexTypes
+    // https://hive.apache.org/docs/latest/language/languagemanual-types/#complex-types
     assertTypeInCategory(mapKeyType, Category.PRIMITIVE, fieldName);
     this.fieldName = fieldName;
     this.type = Type.MAP;

@@ -18,4 +18,4 @@ limitations under the License.
 -->
 # Hbase Storage Handler
 
-[Link for documentation]( https://cwiki.apache.org/confluence/display/Hive/HBaseIntegration)
+[Link for documentation](https://hive.apache.org/docs/latest/user/hbaseintegration)

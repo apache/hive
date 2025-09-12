@@ -21,9 +21,9 @@ End to end tests in templeton runs tests against an existing templeton server.
 It runs hcat, mapreduce, streaming, hive and pig tests.
 This requires Hadoop cluster and Hive metastore running.
 
-It's a good idea to look at current versions of
-https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat and 
-https://cwiki.apache.org/confluence/display/Hive/WebHCat+Configure
+It's a good idea to look at current versions of:
+https://hive.apache.org/docs/latest/webhcat/webhcat-installwebhcat
+https://hive.apache.org/docs/latest/webhcat/webhcat-configure
 
 See deployers/README.txt for help automating some of the steps in this document.
 
@@ -98,13 +98,13 @@ Tips:
 be obtained from Pig and the other two are obtained from your Hadoop distribution.
 For Hadoop 1.x you would need to upload hadoop-examples.jar twice to HDFS one as hclient.jar and other as hexamples.jar.
 For Hadoop 2.x you would need to upload hadoop-mapreduce-client-jobclient.jar to HDFS as hclient.jar and hadoop-mapreduce-examples.jar to HDFS as hexamples.jar. 
-Also see https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat#WebHCatInstallWebHCat-HadoopDistributedCache
+Also see https://hive.apache.org/docs/latest/webhcat/webhcat-installwebhcat/#hadoop-distributed-cache
  for notes on additional JAR files to copy to HDFS.
 
 5. Make sure TEMPLETON_HOME environment variable is set
 
 6. hadoop/conf/core-site.xml should have items described in
-https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat#WebHCatInstallWebHCat-Permissions
+https://hive.apache.org/docs/latest/webhcat/webhcat-installwebhcat/#permissions
 
 7. Currently Pig tar file available on http://pig.apache.org/ contains jar files compiled to work with Hadoop 1.x.
 To run WebHCat tests on Hadoop 2.x you need to build your own Pig tar for Hadoop 2. To do that download the 
@@ -173,7 +173,7 @@ and webhcat.proxyuser.hue.hosts defined, i.e. 'hue' should be allowed to imperso
 [Of course, 'hcat' proxyuser should be configured in core-site.xml for the command to succeed.]
 
 Furthermore, metastore side file based security should be enabled. 
-(See https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization#LanguageManualAuthorization-MetastoreServerSecurity for more info) 
+(See https://hive.apache.org/docs/latest/language/languagemanual-authorization/#hive-authorization-options for more info) 
 
 To do this 3 properties in hive-site.xml should be configured:
 1) hive.security.metastore.authorization.manager set to 
