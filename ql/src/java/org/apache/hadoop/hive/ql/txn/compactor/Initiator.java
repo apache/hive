@@ -236,7 +236,10 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
-    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(ServerUtils.hostname());
+    if (!remoteOnly && 
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore")) {
+      txnHandler.revokeFromLocalWorkers(ServerUtils.hostname());
+    }
     txnHandler.revokeTimedoutWorkers(HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }
