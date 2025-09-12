@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.VariantObjectInspector;
-import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.variants.Variant;
 
 /**
@@ -83,6 +82,6 @@ public final class IcebergVariantObjectInspector extends VariantObjectInspector 
     variant.value().writeTo(valueBuffer, 0);
 
     // Return the data for our fields in the correct order: metadata, value
-    return ImmutableList.of(metadataBuffer.array(), valueBuffer.array());
+    return List.of(metadataBuffer.array(), valueBuffer.array());
   }
 }

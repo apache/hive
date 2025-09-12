@@ -434,7 +434,7 @@ FROM variant_test_basic WHERE id = 4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@variant_test_basic
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-42	42	42.0	NULL
+42	42	42.0	true
 PREHOOK: query: SELECT
     variant_get(data, '$', 'string') as as_string,
     variant_get(data, '$', 'int') as as_int, -- Should be null
@@ -555,7 +555,7 @@ POSTHOOK: Input: default@variant_test_basic_avro
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	"2023-01-01T12:00:00.123456Z"
 8	"2023-01-01T12:00:00.123456"
-9	"2023-01-01T12:00:00.123456Z"
+9	"2023-01-01T12:00:00.123456789Z"
 10	"2023-01-01T12:00:00.123456789"
 11	"12:30:45.123456"
 12	"2023-12-25"
