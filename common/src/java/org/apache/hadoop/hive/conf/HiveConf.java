@@ -5607,11 +5607,16 @@ public class HiveConf extends Configuration {
     HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
         "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
 
+    HIVE_IGNORE_REMOVED_CONFIGS_LIST("hive.ignore.removed.configs.list",
+            "",
+            "Comma separated list of configuration options which are removed from hive code. Silently ignore if the user tries to set them"),
+
     // If a parameter is added to the restricted list, add a test in TestRestrictedList.Java
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
         "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
         "hive.users.in.admin.role,hive.server2.xsrf.filter.enabled,hive.server2.csrf.filter.enabled,hive.security.authorization.enabled," +
+            "hive.ignore.removed.configs.list," +
             "hive.distcp.privileged.doAs," +
             "hive.server2.authentication.ldap.baseDN," +
             "hive.server2.authentication.ldap.url," +
@@ -7259,6 +7264,10 @@ public class HiveConf extends Configuration {
   public static String generateDeprecationWarning() {
     return "This config will be deprecated and may not be available in the future "
         + "versions. Please adjust DDL towards the new semantics.";
+  }
+
+  public static String generateRemovedWarning() {
+    return "This config does not exist in the current version of Hive. Consider removing this config.";
   }
 
   private static final Object reverseMapLock = new Object();

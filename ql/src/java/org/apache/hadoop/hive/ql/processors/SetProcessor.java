@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultN
 
 import static org.apache.hadoop.hive.conf.SystemVariables.*;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -55,19 +56,26 @@ public class SetProcessor implements CommandProcessor {
   private static final SessionState.LogHelper console = SessionState.getConsole();
 
   private static final String prefix = "set: ";
-  private static final Set<String> removedConfigs =
+  private static final Set<String> removedHiveConfigs =
       Sets.newHashSet("hive.mapred.supports.subdirectories",
           "hive.enforce.sorting","hive.enforce.bucketing",
           "hive.outerjoin.supports.filters",
           "hive.llap.zk.sm.principal",
-          "hive.llap.zk.sm.keytab.file"
+          "hive.llap.zk.sm.keytab.file",
+          "hive.stats.fetch.partition.stats",
+          "hive.optimize.sort.dynamic.partition",
+          "hive.metastore.initial.metadata.count.enabled",
+          "hive.cli.pretty.output.num.cols",
+          "hive.debug.localtask",
+          "hive.timedout.txn.reaper.start"
           );
   // Allow the user to set the ORC properties without getting an error.
+  private static final Set<String> allowOrcConfigs = new HashSet<>();
   static {
     for(OrcConf var: OrcConf.values()) {
       String name = var.getHiveConfName();
       if (name != null && name.startsWith("hive.")) {
-        removedConfigs.add(name);
+        allowOrcConfigs.add(name);
       }
     }
   }
@@ -138,6 +146,10 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     return false;
+  }
+
+  public Set<String> getRemovedHiveConfigs() {
+    return removedHiveConfigs;
   }
 
   private void dumpOption(String s) {
@@ -228,6 +240,22 @@ public class SetProcessor implements CommandProcessor {
         throws IllegalArgumentException {
     String result = null;
     HiveConf conf = ss.getConf();
+
+    String removedHiveConfigsList = conf.getVar(HiveConf.ConfVars.HIVE_IGNORE_REMOVED_CONFIGS_LIST);
+    if (removedHiveConfigsList != null && !removedHiveConfigsList.isEmpty()) {
+      for (String entry : removedHiveConfigsList.split(",")) {
+        if (!removedHiveConfigs.contains(entry.trim())) {
+          removedHiveConfigs.add(entry.trim());
+        }
+      }
+    }
+    if (removedHiveConfigs.contains(key)) {
+      // do not do anything. do not throw any error, just silently return
+      result = HiveConf.generateRemovedWarning();
+      LOG.warn(result);
+      return result;
+    }
+
     String value = new VariableSubstitution(new HiveVariableSource() {
       @Override
       public Map<String, String> getHiveVariable() {
@@ -251,7 +279,7 @@ public class SetProcessor implements CommandProcessor {
           message.append("' FAILED in validation : ").append(fail).append('.');
           throw new IllegalArgumentException(message.toString());
         }
-      } else if (!removedConfigs.contains(key) && key.startsWith("hive.")) {
+      } else if (!allowOrcConfigs.contains(key) && key.startsWith("hive.")) {
         throw new IllegalArgumentException("hive configuration " + key + " does not exists.");
       }
     }
