@@ -503,7 +503,7 @@ public class Warehouse {
     }
   }
 
-  public boolean isWritable(Path path) throws IOException {
+  public boolean isWritable(Path path) {
     if (!storageAuthCheck) {
       // no checks for non-secure hadoop installations
       return true;
@@ -511,12 +511,9 @@ public class Warehouse {
     if (path == null) { //what??!!
       return false;
     }
-    final FileStatus stat;
-    final FileSystem fs;
     try {
-      fs = getFs(path);
-      stat = fs.getFileStatus(path);
-      HdfsUtils.checkFileAccess(fs, stat, FsAction.WRITE);
+      FileSystem fs = getFs(path);
+      HdfsUtils.checkFileAccess(fs, path, FsAction.WRITE);
       return true;
     } catch (FileNotFoundException fnfe){
       // File named by path doesn't exist; nothing to validate.

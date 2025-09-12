@@ -62,7 +62,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -108,12 +107,12 @@ final class HMSClient implements AutoCloseable {
   }
 
   HMSClient(@Nullable URI uri)
-      throws TException, IOException, InterruptedException, LoginException, URISyntaxException {
+      throws TException, IOException, InterruptedException, URISyntaxException {
     this(uri, CONFIG_DIR);
   }
 
   HMSClient(@Nullable URI uri, @Nullable String confDir)
-      throws TException, IOException, InterruptedException, LoginException, URISyntaxException {
+      throws TException, IOException, InterruptedException, URISyntaxException {
     this.confDir = confDir == null ? CONFIG_DIR : confDir;
     getClient(uri);
   }
@@ -138,7 +137,7 @@ final class HMSClient implements AutoCloseable {
    * @throws InterruptedException if interrupted during kerberos setup
    */
   private void getClient(@Nullable URI uri)
-      throws TException, IOException, InterruptedException, URISyntaxException, LoginException {
+      throws TException, IOException, InterruptedException, URISyntaxException {
     Configuration conf = MetastoreConf.newMetastoreConf();
     addResource(conf, HIVE_SITE);
     if (uri != null) {
@@ -427,7 +426,7 @@ final class HMSClient implements AutoCloseable {
   }
 
   private TTransport open(Configuration conf, @NotNull URI uri) throws
-      TException, IOException, LoginException {
+      TException, IOException {
     boolean useSSL = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL);
     boolean useFramedTransport = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
@@ -514,9 +513,6 @@ final class HMSClient implements AutoCloseable {
         try {
           UserGroupInformation ugi = SecurityUtils.getUGI();
           client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
-        } catch (LoginException e) {
-          LOG.warn("Failed to do login. set_ugi() is not successful, " +
-              "Continuing without it.", e);
         } catch (IOException e) {
           LOG.warn("Failed to find ugi of client set_ugi() is not successful, " +
               "Continuing without it.", e);
