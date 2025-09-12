@@ -436,6 +436,10 @@
               <groupId>commons-beanutils</groupId>
               <artifactId>commons-beanutils-core</artifactId>
             </exclusion>
+            <exclusion>
+              <groupId>jline</groupId>
+              <artifactId>jline</artifactId>
+            </exclusion>
           </exclusions>
         </dependency>
         <!-- Override the thrift dependency pulled in for metaserver -->
