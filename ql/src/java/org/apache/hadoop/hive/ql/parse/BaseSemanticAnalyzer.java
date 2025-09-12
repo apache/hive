@@ -445,7 +445,7 @@ public abstract class BaseSemanticAnalyzer {
     List<String> parts = new ArrayList<>();
     for (int i = 0; i < tableNameNode.getChildCount(); i++) {
       String part = unescapeIdentifier(tableNameNode.getChild(i).getText());
-      if (part.contains(".")) {
+      if (part != null && part.contains(".")) {
         throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tableNameNode));
       }
       parts.add(part);
@@ -512,7 +512,7 @@ public abstract class BaseSemanticAnalyzer {
         tableMetaRef = tmpNames[1];
       }
       return TableName.fromString(tableName,
-              dbTablePair.getLeft(),
+              dbTablePair.getLeft() == null ? SessionState.get().getCurrentCatalog() : dbTablePair.getLeft(),
           dbTablePair.getMiddle() == null ? currentDatabase : dbTablePair.getMiddle(),
           tableMetaRef)
           .getNotEmptyDbTable();

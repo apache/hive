@@ -158,8 +158,11 @@ public class UnparseTranslator {
     if (tableName.getChildCount() == 2 || tableName.getChildCount() == 3 || tableName.getChildCount() == 4) {
       addIdentifierTranslation((ASTNode)tableName.getChild(0));
       addIdentifierTranslation((ASTNode)tableName.getChild(1));
-      addIdentifierTranslation((ASTNode)tableName.getChild(2));
+      if (tableName.getChildCount() == 3) {
+        addIdentifierTranslation((ASTNode)tableName.getChild(2));
+      }
       if (tableName.getChildCount() == 4) {
+        addIdentifierTranslation((ASTNode)tableName.getChild(2));
         addIdentifierTranslation((ASTNode)tableName.getChild(3));
       }
     }
