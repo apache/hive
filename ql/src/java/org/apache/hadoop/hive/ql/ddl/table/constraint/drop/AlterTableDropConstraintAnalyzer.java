@@ -48,9 +48,9 @@ public class AlterTableDropConstraintAnalyzer extends AbstractAlterTableAnalyzer
   @Override
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
-    String constraintName = unescapeIdentifier(command.getChild(0).getText());
-
-    AlterTableDropConstraintDesc desc = new AlterTableDropConstraintDesc(tableName, null, constraintName);
+    boolean ifExists = command.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null;
+    String constraintName = unescapeIdentifier(command.getChild((ifExists) ? 1 : 0).getText());
+    AlterTableDropConstraintDesc desc = new AlterTableDropConstraintDesc(tableName, null, constraintName, ifExists);
 
     Table table = getTable(tableName);
     WriteEntity.WriteType writeType = null;

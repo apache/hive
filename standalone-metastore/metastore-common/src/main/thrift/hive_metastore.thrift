@@ -840,7 +840,8 @@ struct DropConstraintRequest {
   1: required string dbname,
   2: required string tablename,
   3: required string constraintname,
-  4: optional string catName
+  4: optional string catName,
+  5: optional bool ifExists
 }
 
 struct AddPrimaryKeyRequest {
