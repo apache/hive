@@ -52,24 +52,24 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
   public void run() {
     LOG.debug("Running IcebergHouseKeeperService...");
 
-    String catalogName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_TABLE_EXPIRY_CATALOG_NAME);
+    String catalogPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_TABLE_EXPIRY_CATALOG_PATTERN);
     String dbPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_TABLE_EXPIRY_DATABASE_PATTERN);
     String tablePattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.ICEBERG_TABLE_EXPIRY_TABLE_PATTERN);
 
     TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
     try (AutoCloseable closeable = mutex.acquireLock(TxnStore.MUTEX_KEY.IcebergHouseKeeper.name())) {
-      expireTables(catalogName, dbPattern, tablePattern);
+      expireTables(catalogPattern, dbPattern, tablePattern);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void expireTables(String catalogName, String dbPattern, String tablePattern) {
+  private void expireTables(String catalogPattern, String dbPattern, String tablePattern) {
     try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
       int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
       Iterable<org.apache.hadoop.hive.metastore.api.Table> tables =
-          IcebergTableUtil.getTableFetcher(msc, catalogName, dbPattern, tablePattern).getTables(maxBatchSize);
+          IcebergTableUtil.getTableFetcher(msc, catalogPattern, dbPattern, tablePattern).getTables(maxBatchSize);
       // TODO : HIVE-29163 - Create client with cache in metastore package and then use it in TableFetcher
       //  and HiveTableOperations to reduce the number of msc calls and fetch it from cache
       for (org.apache.hadoop.hive.metastore.api.Table table : tables) {

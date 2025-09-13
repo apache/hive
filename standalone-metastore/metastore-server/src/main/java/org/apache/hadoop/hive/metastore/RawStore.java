@@ -188,7 +188,7 @@ public interface RawStore extends Configurable {
    * Get all the catalogs.
    * @return list of names of all catalogs in the system
    */
-  List<String> getCatalogs();
+  List<String> getCatalogs(String catalogPattern);
 
   /**
    * Drop a catalog.  The catalog must be empty.

@@ -65,6 +65,11 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public final List<String> getCatalogs() throws MetaException, TException {
+    return getCatalogs(null);
+  }
+
+  @Override
   public final List<String> getDatabases(String databasePattern) throws MetaException, TException {
     return getDatabases(getDefaultCatalog(conf), databasePattern);
   }

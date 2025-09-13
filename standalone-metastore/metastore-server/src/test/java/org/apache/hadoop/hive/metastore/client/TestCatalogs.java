@@ -139,6 +139,10 @@ public class TestCatalogs extends MetaStoreClientTest {
 
     List<String> catalogs = client.getCatalogs();
     Assert.assertEquals(4, catalogs.size());
+    List<String> catalogsByPattern = client.getCatalogs("cat*");
+    Assert.assertEquals(2, catalogsByPattern.size());
+    List<String> catalogsByEmptyPattern = client.getCatalogs("");
+    Assert.assertEquals(0, catalogsByEmptyPattern.size());
     catalogs.sort(Comparator.naturalOrder());
     List<String> expected = new ArrayList<>(catNames.length + 1);
     expected.add(Warehouse.DEFAULT_CATALOG_NAME);

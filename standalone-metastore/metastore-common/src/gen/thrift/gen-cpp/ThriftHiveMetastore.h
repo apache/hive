@@ -32,7 +32,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void create_catalog(const CreateCatalogRequest& catalog) = 0;
   virtual void alter_catalog(const AlterCatalogRequest& rqst) = 0;
   virtual void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) = 0;
-  virtual void get_catalogs(GetCatalogsResponse& _return) = 0;
+  virtual void get_catalogs(GetCatalogsResponse& _return, const GetCatalogRequest& pattern) = 0;
   virtual void drop_catalog(const DropCatalogRequest& catName) = 0;
   virtual void create_database(const Database& database) = 0;
   virtual void create_database_req(const CreateDatabaseRequest& createDatabaseRequest) = 0;
@@ -357,7 +357,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_catalog(GetCatalogResponse& /* _return */, const GetCatalogRequest& /* catName */) override {
     return;
   }
-  void get_catalogs(GetCatalogsResponse& /* _return */) override {
+  void get_catalogs(GetCatalogsResponse& /* _return */, const GetCatalogRequest& /* pattern */) override {
     return;
   }
   void drop_catalog(const DropCatalogRequest& /* catName */) override {
@@ -1918,19 +1918,30 @@ class ThriftHiveMetastore_get_catalog_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_catalogs_args__isset {
+  _ThriftHiveMetastore_get_catalogs_args__isset() : pattern(false) {}
+  bool pattern :1;
+} _ThriftHiveMetastore_get_catalogs_args__isset;
 
 class ThriftHiveMetastore_get_catalogs_args {
  public:
 
-  ThriftHiveMetastore_get_catalogs_args(const ThriftHiveMetastore_get_catalogs_args&) noexcept;
-  ThriftHiveMetastore_get_catalogs_args& operator=(const ThriftHiveMetastore_get_catalogs_args&) noexcept;
+  ThriftHiveMetastore_get_catalogs_args(const ThriftHiveMetastore_get_catalogs_args&);
+  ThriftHiveMetastore_get_catalogs_args& operator=(const ThriftHiveMetastore_get_catalogs_args&);
   ThriftHiveMetastore_get_catalogs_args() noexcept {
   }
 
   virtual ~ThriftHiveMetastore_get_catalogs_args() noexcept;
+  GetCatalogRequest pattern;
 
-  bool operator == (const ThriftHiveMetastore_get_catalogs_args & /* rhs */) const
+  _ThriftHiveMetastore_get_catalogs_args__isset __isset;
+
+  void __set_pattern(const GetCatalogRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_catalogs_args & rhs) const
   {
+    if (!(pattern == rhs.pattern))
+      return false;
     return true;
   }
   bool operator != (const ThriftHiveMetastore_get_catalogs_args &rhs) const {
@@ -1950,6 +1961,7 @@ class ThriftHiveMetastore_get_catalogs_pargs {
 
 
   virtual ~ThriftHiveMetastore_get_catalogs_pargs() noexcept;
+  const GetCatalogRequest* pattern;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -35693,8 +35705,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) override;
   void send_get_catalog(const GetCatalogRequest& catName);
   void recv_get_catalog(GetCatalogResponse& _return);
-  void get_catalogs(GetCatalogsResponse& _return) override;
-  void send_get_catalogs();
+  void get_catalogs(GetCatalogsResponse& _return, const GetCatalogRequest& pattern) override;
+  void send_get_catalogs(const GetCatalogRequest& pattern);
   void recv_get_catalogs(GetCatalogsResponse& _return);
   void drop_catalog(const DropCatalogRequest& catName) override;
   void send_drop_catalog(const DropCatalogRequest& catName);
@@ -37199,13 +37211,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void get_catalogs(GetCatalogsResponse& _return) override {
+  void get_catalogs(GetCatalogsResponse& _return, const GetCatalogRequest& pattern) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_catalogs(_return);
+      ifaces_[i]->get_catalogs(_return, pattern);
     }
-    ifaces_[i]->get_catalogs(_return);
+    ifaces_[i]->get_catalogs(_return, pattern);
     return;
   }
 
@@ -39903,8 +39915,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) override;
   int32_t send_get_catalog(const GetCatalogRequest& catName);
   void recv_get_catalog(GetCatalogResponse& _return, const int32_t seqid);
-  void get_catalogs(GetCatalogsResponse& _return) override;
-  int32_t send_get_catalogs();
+  void get_catalogs(GetCatalogsResponse& _return, const GetCatalogRequest& pattern) override;
+  int32_t send_get_catalogs(const GetCatalogRequest& pattern);
   void recv_get_catalogs(GetCatalogsResponse& _return, const int32_t seqid);
   void drop_catalog(const DropCatalogRequest& catName) override;
   int32_t send_drop_catalog(const DropCatalogRequest& catName);
