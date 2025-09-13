@@ -132,6 +132,16 @@ public class TestBeelineArgParsing {
   }
 
   @Test
+  public void testSimpleArgsWithSpaceInUrl() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"-u", "url with space", "-n", "name",
+            "-p", "password", "-d", "driver", "-a", "authType"};
+    org.junit.Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.connectArgs.equals("urlwithspace name password driver"));
+    Assert.assertTrue(bl.getOpts().getAuthType().equals("authType"));
+  }
+
+  @Test
   public void testEmptyHiveConfVariable() throws Exception {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream ops = new PrintStream(os);
