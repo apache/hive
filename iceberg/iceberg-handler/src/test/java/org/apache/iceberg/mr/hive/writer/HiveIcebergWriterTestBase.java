@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -48,12 +49,11 @@ import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.StructLikeSet;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HiveIcebergWriterTestBase {
   // Schema passed to create tables
@@ -77,19 +77,21 @@ public class HiveIcebergWriterTestBase {
   protected Table table;
   protected WriterBuilder writerBuilder;
 
-  @Rule
-  public TemporaryFolder temp = new TemporaryFolder();
+  @TempDir
+  public Path temp;
 
-  @Parameterized.Parameter(0)
   public FileFormat fileFormat;
 
-  @Parameterized.Parameter(1)
   public boolean partitioned;
 
-  @Parameterized.Parameter(2)
   public boolean skipRowData;
 
-  @Parameterized.Parameters(name = "fileFormat={0}, partitioned={1}, skipRowData={2}")
+  public HiveIcebergWriterTestBase(FileFormat pFileFormat, boolean pPartitioned, boolean pSkipRowData) {
+    this.fileFormat = pFileFormat;
+    this.partitioned = pPartitioned;
+    this.skipRowData = pSkipRowData;
+  }
+
   public static Collection<Object[]> parameters() {
     return Lists.newArrayList(new Object[][] {
         { FileFormat.PARQUET, true, true },
@@ -107,10 +109,10 @@ public class HiveIcebergWriterTestBase {
     });
   }
 
-  @Before
+  @BeforeEach
   public void init() throws IOException {
-    File location = temp.newFolder(fileFormat.name());
-    Assert.assertTrue(location.delete());
+    File location = temp.resolve(fileFormat.name()).toFile();
+    assertThat(location).doesNotExist();
 
     PartitionSpec spec = !partitioned ? PartitionSpec.unpartitioned() :
         PartitionSpec.builderFor(SCHEMA)
@@ -136,7 +138,7 @@ public class HiveIcebergWriterTestBase {
         .queryId("Q_ID");
   }
 
-  @After
+  @AfterEach
   public void cleanUp() {
     tables.dropTable(helper.table().location());
   }
