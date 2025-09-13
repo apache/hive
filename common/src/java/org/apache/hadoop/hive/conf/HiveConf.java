@@ -6606,7 +6606,7 @@ public class HiveConf extends Configuration {
     if (msUri == null || msUri.isEmpty()) {
       msUri = this.get("metastore.thrift.uris");
     }
-    LOG.debug("Found metastore URI of " + msUri);
+    LOG.debug("Found metastore URI of {}", msUri);
     if(HiveConfUtil.isEmbeddedMetaStore(msUri)){
       setLoadMetastoreConfig(true);
     }

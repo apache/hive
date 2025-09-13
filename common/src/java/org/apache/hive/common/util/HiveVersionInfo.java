@@ -124,7 +124,7 @@ public class HiveVersionInfo {
   }
 
   public static void main(String[] args) {
-    LOG.debug("version: "+ version);
+    LOG.debug("version: {}", version);
     System.out.println("Hive " + getVersion());
     System.out.println("Git " + getUrl() + " -r " + getRevision());
     System.out.println("Compiled by " + getUser() + " on " + getDate());
