@@ -173,7 +173,8 @@ public class TestReservedWords {
         "WHEN",
         "WHERE",
         "WINDOW",
-        "WITH"
+        "WITH",
+        "VARIANT"
     );
   }
 

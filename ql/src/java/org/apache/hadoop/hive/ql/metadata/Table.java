@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -87,6 +88,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -263,10 +265,12 @@ public class Table implements Serializable {
   public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
     validateName(conf);
+
     if (getCols().isEmpty()) {
-      throw new HiveException(
-          "at least one column must be specified for the table");
+      throw new HiveException("at least one column must be specified for the table");
     }
+    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
+
     if (!isView()) {
       if (null == getDeserializer(false)) {
         throw new HiveException("must specify a non-null serDe");
@@ -286,8 +290,6 @@ public class Table implements Serializable {
       assert(getViewOriginalText() == null);
       assert(getViewExpandedText() == null);
     }
-
-    validateColumns(getCols(), getPartCols());
   }
 
   public void validateName(Configuration conf) throws HiveException {
@@ -1149,7 +1151,7 @@ public class Table implements Serializable {
     return deserializer.shouldStoreFieldsInMetastore(tableParams);
   }
 
-  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
+  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols, boolean icebergTable)
       throws HiveException {
     Set<String> colNames = new HashSet<>();
     for (FieldSchema col: columns) {
@@ -1157,6 +1159,10 @@ public class Table implements Serializable {
       if (colNames.contains(colName)) {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");
+      }
+      if (!icebergTable && VARIANT_TYPE_NAME.equalsIgnoreCase(col.getType())) {
+        throw new HiveException(
+            "Column name " + colName + " cannot be of type 'variant' as it is not supported in non-Iceberg tables.");
       }
       colNames.add(colName);
     }
