@@ -172,13 +172,6 @@ public class Timestamp implements Comparable<Timestamp> {
     return localDateTime.atZone(id).toInstant().toEpochMilli();
   }
 
-  public long toEpochMicro(ZoneId id) {
-    return localDateTime.atZone(id)
-            .toInstant()
-            .getEpochSecond() * 1_000_000L +
-            localDateTime.getNano() / 1000;
-  }
-
   public void setTimeInMillis(long epochMilli) {
     localDateTime = LocalDateTime.ofInstant(
         Instant.ofEpochMilli(epochMilli), ZoneOffset.UTC);
@@ -250,7 +243,7 @@ public class Timestamp implements Comparable<Timestamp> {
   }
 
   public static Timestamp ofEpochMicro(long epochMicro) {
-    int nanos = (int) ((epochMicro % 1000000) * 1000);
+    int nanos = Math.toIntExact((epochMicro % 1000000) * 1000);
     epochMicro -= nanos / 1_000_000;
 
     Instant instant = Instant.ofEpochSecond(

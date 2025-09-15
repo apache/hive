@@ -188,36 +188,48 @@ public class CalendarUtils {
   }
 
   /**
+   * Converts epoch microseconds between hybrid Julian/Gregorian and proleptic Gregorian calendars.
+   *
+   * This method preserves the string representation of the timestamp by formatting the input microseconds
+   * using the provided 'fromFormatter', then parsing it back using the 'toFormatter'. This effectively
+   * shifts the epoch offset between the two calendar systems for dates before the switchover threshold.
+   *
+   * @param micros      Epoch microseconds to convert.
+   * @param threshold   Switchover threshold in microseconds; conversion only occurs if micros < threshold.
+   * @param fromFormatter Formatter used to format the instant (source calendar system).
+   * @param toFormatter   Formatter used to parse the formatted string (target calendar system).
+   * @return Converted epoch microseconds in the target calendar system.
+   * @throws IllegalArgumentException if the formatted date string cannot be parsed.
+   */
+  private static long convertMicros(long micros, long threshold, DateTimeFormatter fromFormatter, DateTimeFormatter toFormatter) {
+    long result = micros;
+    if (micros < threshold) {
+      Instant instant = Instant.ofEpochSecond(
+              micros / 1_000_000L,
+              (micros % 1_000_000L) * 1_000L
+      );
+      String dateStr = fromFormatter.format(instant.atZone(ZoneOffset.UTC));
+      try {
+        Instant parsedInstant = LocalDateTime.parse(dateStr, toFormatter)
+                .atZone(ZoneOffset.UTC)
+                .toInstant();
+        result = parsedInstant.getEpochSecond() * 1_000_000L +
+                parsedInstant.getNano() / 1000L;
+      } catch (DateTimeParseException e) {
+        throw new IllegalArgumentException("Can't parse " + dateStr, e);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Convert epoch microseconds from the hybrid Julian/Gregorian calendar to the
    * proleptic Gregorian.
    * @param hybridMicros Microseconds of epoch in the hybrid Julian/Gregorian
    * @return Microseconds of epoch in the proleptic Gregorian
    */
   public static long convertTimeToProlepticMicros(long hybridMicros) {
-    long prolepticMicros = hybridMicros;
-    if (hybridMicros < SWITCHOVER_MICROS) {
-      // Convert microseconds to Instant
-      Instant instant = Instant.ofEpochSecond(
-              hybridMicros / 1_000_000L,
-              (hybridMicros % 1_000_000L) * 1_000L
-      );
-
-      // Format using hybrid formatter
-      String dateStr = HYBRID_TIME_FORMAT_MICROS.format(instant.atZone(ZoneOffset.UTC));
-
-      // Parse using proleptic formatter
-      try {
-        Instant prolepticInstant = LocalDateTime.parse(dateStr, PROLEPTIC_TIME_FORMAT_MICROS)
-                .atZone(ZoneOffset.UTC)
-                .toInstant();
-
-        prolepticMicros = prolepticInstant.getEpochSecond() * 1_000_000L +
-                prolepticInstant.getNano() / 1000L;
-      } catch (DateTimeParseException e) {
-        throw new IllegalArgumentException("Can't parse " + dateStr, e);
-      }
-    }
-    return prolepticMicros;
+    return convertMicros(hybridMicros, SWITCHOVER_MICROS, HYBRID_TIME_FORMAT_MICROS, PROLEPTIC_TIME_FORMAT_MICROS);
   }
 
   /**
@@ -246,30 +258,7 @@ public class CalendarUtils {
    * @return Microseconds of epoch in the hybrid Julian/Gregorian
    */
   public static long convertTimeToHybridMicros(long prolepticMicros) {
-    long hybridMicros = prolepticMicros;
-    if (prolepticMicros < SWITCHOVER_MICROS) {
-      // Convert microseconds to Instant
-      Instant instant = Instant.ofEpochSecond(
-              prolepticMicros / 1_000_000L,
-              (prolepticMicros % 1_000_000L) * 1_000L
-      );
-
-      // Format using proleptic formatter
-      String dateStr = PROLEPTIC_TIME_FORMAT_MICROS.format(instant.atZone(ZoneOffset.UTC));
-
-      // Parse using hybrid formatter
-      try {
-        Instant hybridInstant = LocalDateTime.parse(dateStr, HYBRID_TIME_FORMAT_MICROS)
-                .atZone(ZoneOffset.UTC)
-                .toInstant();
-
-        hybridMicros = hybridInstant.getEpochSecond() * 1_000_000L +
-                hybridInstant.getNano() / 1000L;
-      } catch (DateTimeParseException e) {
-        throw new IllegalArgumentException("Can't parse " + dateStr, e);
-      }
-    }
-    return hybridMicros;
+    return convertMicros(prolepticMicros, SWITCHOVER_MICROS, PROLEPTIC_TIME_FORMAT_MICROS, HYBRID_TIME_FORMAT_MICROS);
   }
 
   /**
