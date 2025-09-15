@@ -24,10 +24,12 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /*
 HiveMetaStoreAuthorizableEvent: Abstract class for getting the MetaStore Event context for HiveMetaStore Authorization
@@ -38,6 +40,17 @@ public abstract class HiveMetaStoreAuthorizableEvent {
 
   protected HiveMetaStoreAuthorizableEvent(PreEventContext preEventContext) {
     this.preEventContext = preEventContext;
+  }
+
+  protected HiveAuthzContext buildAuthzContext() {
+    HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
+
+    Map<String, Object> clientConfig = HiveMetaStoreAuthorizer.getClientConfig();
+    if (clientConfig != null) {
+      builder.setClientConfig(clientConfig);
+    }
+
+    return builder.build();
   }
 
   public abstract HiveMetaStoreAuthzInfo getAuthzContext();
