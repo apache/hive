@@ -1,0 +1,71 @@
+PREHOOK: query: SELECT t.key, lv.col
+FROM (SELECT stack(2, '0', '1') AS key) t
+LATERAL VIEW explode(array('2', '3')) lv AS col
+WHERE t.key = '0' OR lv.col = '3'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t.key, lv.col
+FROM (SELECT stack(2, '0', '1') AS key) t
+LATERAL VIEW explode(array('2', '3')) lv AS col
+WHERE t.key = '0' OR lv.col = '3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0	2
+0	3
+1	3
+PREHOOK: query: SELECT t.key, lv.col
+FROM (SELECT '1' AS key) t
+LATERAL VIEW explode(array('1', '2')) lv AS col
+WHERE t.key != lv.col
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t.key, lv.col
+FROM (SELECT '1' AS key) t
+LATERAL VIEW explode(array('1', '2')) lv AS col
+WHERE t.key != lv.col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	2
+PREHOOK: query: SELECT t.*, lv1.col1, lv2.col2
+FROM (SELECT 1) t
+LATERAL VIEW explode(array('a', 'b')) lv1 AS col1
+LATERAL VIEW explode(array('b', 'c')) lv2 AS col2
+WHERE lv1.col1 = 'a' OR lv2.col2 = 'c'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t.*, lv1.col1, lv2.col2
+FROM (SELECT 1) t
+LATERAL VIEW explode(array('a', 'b')) lv1 AS col1
+LATERAL VIEW explode(array('b', 'c')) lv2 AS col2
+WHERE lv1.col1 = 'a' OR lv2.col2 = 'c'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	a	b
+1	a	c
+1	b	c
+PREHOOK: query: SELECT t.*, lv1.col1, lv2.col2, lv3.col3
+FROM (SELECT 1) t
+LATERAL VIEW explode(array('x', 'y')) lv1 AS col1
+LATERAL VIEW explode(array('x', 'y')) lv2 AS col2
+LATERAL VIEW explode(array('x', 'y')) lv3 AS col3
+WHERE lv1.col1 != lv2.col2 AND lv2.col2 != lv3.col3
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t.*, lv1.col1, lv2.col2, lv3.col3
+FROM (SELECT 1) t
+LATERAL VIEW explode(array('x', 'y')) lv1 AS col1
+LATERAL VIEW explode(array('x', 'y')) lv2 AS col2
+LATERAL VIEW explode(array('x', 'y')) lv3 AS col3
+WHERE lv1.col1 != lv2.col2 AND lv2.col2 != lv3.col3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	x	y	x
+1	y	x	y
