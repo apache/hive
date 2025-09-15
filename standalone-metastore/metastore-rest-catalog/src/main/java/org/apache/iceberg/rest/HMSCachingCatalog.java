@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.rest;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Ticker;
 import java.util.List;
 import java.util.Map;
@@ -58,13 +57,13 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   }
 
   @Override
-  public void createNamespace(Namespace nmspc, Map<String, String> map) {
-    hiveCatalog.createNamespace(nmspc, map);
+  public void createNamespace(Namespace namespace, Map<String, String> map) {
+    hiveCatalog.createNamespace(namespace, map);
   }
 
   @Override
-  public List<Namespace> listNamespaces(Namespace nmspc) throws NoSuchNamespaceException {
-    return hiveCatalog.listNamespaces(nmspc);
+  public List<Namespace> listNamespaces(Namespace namespace) throws NoSuchNamespaceException {
+    return hiveCatalog.listNamespaces(namespace);
   }
 
   /**
@@ -113,12 +112,10 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
 
   @Override
   public Table loadTable(final TableIdentifier identifier) {
-    final Cache<TableIdentifier, Table> cache = this.tableCache;
-    final HiveCatalog catalog = this.hiveCatalog;
     final TableIdentifier canonicalized = identifier.toLowerCase();
-    Table cachedTable = cache.getIfPresent(canonicalized);
+    final Table cachedTable = tableCache.getIfPresent(canonicalized);
     if (cachedTable != null) {
-      final String location = catalog.getTableMetadataLocation(canonicalized);
+      final String location = hiveCatalog.getTableMetadataLocation(canonicalized);
       if (location == null) {
         LOG.debug("Table {} has no location, returning cached table without location", canonicalized);
       } else {
@@ -140,12 +137,12 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
       LOG.debug("Cache miss for table: {}", canonicalized);
       onCacheMiss(canonicalized);
     }
-    Table table = cache.get(canonicalized, catalog::loadTable);
+    final Table table = tableCache.get(canonicalized, hiveCatalog::loadTable);
     if (table instanceof BaseMetadataTable) {
       // Cache underlying table
       TableIdentifier originTableIdentifier =
               TableIdentifier.of(canonicalized.namespace().levels());
-      Table originTable = cache.get(originTableIdentifier, catalog::loadTable);
+      Table originTable = tableCache.get(originTableIdentifier, hiveCatalog::loadTable);
       // Share TableOperations instance of origin table for all metadata tables, so that metadata
       // table instances are refreshed as well when origin table instance is refreshed.
       if (originTable instanceof HasTableOperations tableOps) {
@@ -153,8 +150,8 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
         MetadataTableType type = MetadataTableType.from(canonicalized.name());
         Table metadataTable =
                 MetadataTableUtils.createMetadataTableInstance(
-                        ops, catalog.name(), originTableIdentifier, canonicalized, type);
-        cache.put(canonicalized, metadataTable);
+                        ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
+        tableCache.put(canonicalized, metadataTable);
         onCacheMetaLoad(canonicalized);
         LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
         // Return the metadata table instead of the original table
@@ -167,27 +164,27 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
   }
 
   @Override
-  public Map<String, String> loadNamespaceMetadata(Namespace nmspc) throws NoSuchNamespaceException {
-    return hiveCatalog.loadNamespaceMetadata(nmspc);
+  public Map<String, String> loadNamespaceMetadata(Namespace namespace) throws NoSuchNamespaceException {
+    return hiveCatalog.loadNamespaceMetadata(namespace);
   }
 
   @Override
-  public boolean dropNamespace(Namespace nmspc) throws NamespaceNotEmptyException {
-    List<TableIdentifier> tables = listTables(nmspc);
+  public boolean dropNamespace(Namespace namespace) throws NamespaceNotEmptyException {
+    List<TableIdentifier> tables = listTables(namespace);
     for (TableIdentifier ident : tables) {
       invalidateTable(ident);
     }
-    return hiveCatalog.dropNamespace(nmspc);
+    return hiveCatalog.dropNamespace(namespace);
   }
 
   @Override
-  public boolean setProperties(Namespace nmspc, Map<String, String> map) throws NoSuchNamespaceException {
-    return hiveCatalog.setProperties(nmspc, map);
+  public boolean setProperties(Namespace namespace, Map<String, String> map) throws NoSuchNamespaceException {
+    return hiveCatalog.setProperties(namespace, map);
   }
 
   @Override
-  public boolean removeProperties(Namespace nmspc, Set<String> set) throws NoSuchNamespaceException {
-    return hiveCatalog.removeProperties(nmspc, set);
+  public boolean removeProperties(Namespace namespace, Set<String> set) throws NoSuchNamespaceException {
+    return hiveCatalog.removeProperties(namespace, set);
   }
 
   @Override
