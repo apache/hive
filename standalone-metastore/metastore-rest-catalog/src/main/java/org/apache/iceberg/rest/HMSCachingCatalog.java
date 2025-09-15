@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.rest;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Ticker;
 import java.util.List;
 import java.util.Map;
@@ -152,6 +153,105 @@ public class HMSCachingCatalog extends CachingCatalog implements SupportsNamespa
                 MetadataTableUtils.createMetadataTableInstance(
                         ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
         tableCache.put(canonicalized, metadataTable);
+        onCacheMetaLoad(canonicalized);
+        LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
+        // Return the metadata table instead of the original table
+        return metadataTable;
+      }
+    }
+    onCacheLoad(canonicalized);
+    LOG.debug("Loaded table: {} ", canonicalized);
+    return table;
+  }
+
+  /**
+   * Callback when cache invalidates the entry for a given table identifier.
+   *
+   * @param tid the table identifier to invalidate
+   */
+  protected void onCacheInvalidate(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+
+  /**
+   * Callback when cache loads a table for a given table identifier.
+   *
+   * @param tid the table identifier
+   */
+  protected void onCacheLoad(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+
+  /**
+   * Callback when cache hit for a given table identifier.
+   *
+   * @param tid the table identifier
+   */
+  protected void onCacheHit(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+
+  /**
+   * Callback when cache miss occurs for a given table identifier.
+   *
+   * @param tid the table identifier
+   */
+  protected void onCacheMiss(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+  /**
+   * Callback when cache loads a metadata table for a given table identifier.
+   *
+   * @param tid the table identifier
+   */
+  protected void onCacheMetaLoad(TableIdentifier tid) {
+    // This method is intentionally left empty. It can be overridden in subclasses if needed.
+  }
+
+  @Override
+  public Table loadTable(final TableIdentifier identifier) {
+    final Cache<TableIdentifier, Table> cache = this.tableCache;
+    final HiveCatalog catalog = this.hiveCatalog;
+    final TableIdentifier canonicalized = identifier.toLowerCase();
+    Table cachedTable = cache.getIfPresent(canonicalized);
+    if (cachedTable != null) {
+      final String location = catalog.getTableMetadataLocation(canonicalized);
+      if (location == null) {
+        LOG.debug("Table {} has no location, returning cached table without location", canonicalized);
+      } else {
+        String cachedLocation = cachedTable instanceof HasTableOperations tableOps
+                ? tableOps.operations().current().metadataFileLocation()
+                : null;
+        if (!location.equals(cachedLocation)) {
+          LOG.debug("Invalidate table {}, cached {} != actual {}", canonicalized, cachedLocation, location);
+          // Invalidate the cached table if the location is different
+          invalidateTable(canonicalized);
+          onCacheInvalidate(canonicalized);
+        } else {
+          LOG.debug("Returning cached table: {}", canonicalized);
+          onCacheHit(canonicalized);
+          return cachedTable;
+        }
+      }
+    } else {
+      LOG.debug("Cache miss for table: {}", canonicalized);
+      onCacheMiss(canonicalized);
+    }
+    Table table = cache.get(canonicalized, catalog::loadTable);
+    if (table instanceof BaseMetadataTable) {
+      // Cache underlying table
+      TableIdentifier originTableIdentifier =
+              TableIdentifier.of(canonicalized.namespace().levels());
+      Table originTable = cache.get(originTableIdentifier, catalog::loadTable);
+      // Share TableOperations instance of origin table for all metadata tables, so that metadata
+      // table instances are refreshed as well when origin table instance is refreshed.
+      if (originTable instanceof HasTableOperations tableOps) {
+        TableOperations ops = tableOps.operations();
+        MetadataTableType type = MetadataTableType.from(canonicalized.name());
+        Table metadataTable =
+                MetadataTableUtils.createMetadataTableInstance(
+                        ops, catalog.name(), originTableIdentifier, canonicalized, type);
+        cache.put(canonicalized, metadataTable);
         onCacheMetaLoad(canonicalized);
         LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
         // Return the metadata table instead of the original table
