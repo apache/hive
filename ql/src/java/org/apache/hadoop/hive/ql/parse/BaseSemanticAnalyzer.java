@@ -2008,7 +2008,7 @@ public abstract class BaseSemanticAnalyzer {
     try {
       String tableName = tableMetaRef == null ? tblName : tblName + "." + tableMetaRef;
       tab = database == null ? db.getTable(tableName, false)
-          : db.getTable(database, tblName, tableMetaRef, false);
+          : db.getTable(SessionState.get().getCurrentCatalog(), database, tblName, tableMetaRef, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
