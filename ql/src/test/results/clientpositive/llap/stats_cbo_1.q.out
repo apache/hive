@@ -147,6 +147,8 @@ POSTHOOK: Input: default@repro
 POSTHOOK: Output: default@repro
 WARNING: Invalid statistics: Number of null values > number of tuples. Consider recomputing statistics for table: default.repro
 WARNING: Invalid statistics: Number of null values > number of tuples. Consider recomputing statistics for table: default.repro
+WARNING: Invalid statistics: Number of null values > number of tuples. Consider recomputing statistics for table: default.repro
+WARNING: Invalid statistics: Number of null values > number of tuples. Consider recomputing statistics for table: default.repro
 PREHOOK: query: EXPLAIN
 SELECT * FROM (SELECT * FROM repro) a, (SELECT * FROM repro) b, (SELECT * FROM repro) c  WHERE a.i IS NOT NULL AND b.i IS NOT NULL AND b.i = a.i AND a.i = c.i
 PREHOOK: type: QUERY
