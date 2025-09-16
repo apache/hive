@@ -195,7 +195,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
       cols.addAll(table.getPartitionKeys());
     }
     Properties catalogProperties = CatalogUtils.getCatalogProperties(table);
-    Schema schema = HiveSchemaUtil.convert(cols, true);
+    Schema schema = HiveSchemaUtil.convert(cols, true, Collections.emptyMap());
     Map<String, String> envCtxProps = Optional.ofNullable(request.getEnvContext())
         .map(EnvironmentContext::getProperties)
         .orElse(Collections.emptyMap());

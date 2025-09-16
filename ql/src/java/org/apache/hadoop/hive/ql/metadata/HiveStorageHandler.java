@@ -76,7 +76,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.mapred.TaskAttemptContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -1019,5 +1018,9 @@ public interface HiveStorageHandler extends Configurable {
 
   default void setMergeTaskDeleteProperties(TableDesc tableDesc) {
     throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
+  }
+
+  default boolean supportsNativeColumnDefault(Map<String, String> tblProps) {
+    return false;
   }
 }

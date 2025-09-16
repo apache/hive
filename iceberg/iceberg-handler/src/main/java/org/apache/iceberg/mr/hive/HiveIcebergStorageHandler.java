@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -303,6 +304,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
     tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
+    SessionStateUtil.getResource(conf, SessionStateUtil.MISSING_COLUMNS)
+        .ifPresent(cols -> map.put(SessionStateUtil.MISSING_COLUMNS, String.join(",", (HashSet<String>) cols)));
+
   }
 
   /**
@@ -2205,6 +2209,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return IcebergTableUtil.hasUndergonePartitionEvolution(table);
   }
+
+  @Override
+  public boolean supportsNativeColumnDefault(Map<String, String> tblProps) {
+    return IcebergTableUtil.formatVersion(tblProps) >= 3;
+  }
+
 
   private static List<FieldSchema> schema(List<VirtualColumn> exprs) {
     return exprs.stream().map(v ->

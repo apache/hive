@@ -19,8 +19,11 @@
 
 package org.apache.iceberg.hive;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -28,8 +31,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
@@ -51,29 +57,56 @@ class HiveSchemaConverter {
     this.id = 1;
   }
 
-  static Schema convert(List<String> names, List<TypeInfo> typeInfos, List<String> comments, boolean autoConvert) {
+  static Schema convert(List<String> names, List<TypeInfo> typeInfos, List<String> comments, boolean autoConvert,
+      Map<String, String> defaultValues) {
     HiveSchemaConverter converter = new HiveSchemaConverter(autoConvert);
-    return new Schema(converter.convertInternal(names, typeInfos, comments));
+    return new Schema(converter.convertInternal(names, typeInfos, comments, defaultValues));
   }
 
   static Type convert(TypeInfo typeInfo, boolean autoConvert) {
     HiveSchemaConverter converter = new HiveSchemaConverter(autoConvert);
-    return converter.convertType(typeInfo);
+    return converter.convertType(typeInfo, null);
   }
 
-  List<Types.NestedField> convertInternal(List<String> names, List<TypeInfo> typeInfos, List<String> comments) {
+  List<Types.NestedField> convertInternal(List<String> names, List<TypeInfo> typeInfos, List<String> comments,
+      Map<String, String> defaultValues) {
     List<Types.NestedField> result = Lists.newArrayListWithExpectedSize(names.size());
     int outerId = id + names.size();
     id = outerId;
     for (int i = 0; i < names.size(); ++i) {
-      result.add(Types.NestedField.optional(outerId - names.size() + i, names.get(i), convertType(typeInfos.get(i)),
-          comments.isEmpty() || i >= comments.size() ? null : comments.get(i)));
-    }
+      Type type = convertType(typeInfos.get(i), defaultValues.get(names.get(i)));
+      String columnName = names.get(i);
+      Types.NestedField.Builder fieldBuilder =
+          Types.NestedField.builder()
+              .asOptional()
+              .withId(outerId - names.size() + i)
+              .withName(columnName)
+              .ofType(type)
+              .withDoc(comments.isEmpty() || i >= comments.size() ? null : comments.get(i));
 
+      if (defaultValues.containsKey(columnName)) {
+        if (type.isPrimitiveType()) {
+          Object icebergDefaultValue = getDefaultValue(stripQuotes(defaultValues.get(columnName)), type);
+          fieldBuilder.withWriteDefault(Expressions.lit(icebergDefaultValue));
+        } else if (!type.isStructType()) {
+          throw new UnsupportedOperationException(
+              "Default values for " + columnName + " of type " + type + " are not supported");
+        }
+      }
+
+      result.add(fieldBuilder.build());
+    }
     return result;
   }
 
-  Type convertType(TypeInfo typeInfo) {
+  private static Object getDefaultValue(String defaultValue, Type type) {
+    return switch (type.typeId()) {
+      case DATE, TIME, TIMESTAMP, TIMESTAMP_NANO -> Literal.of(defaultValue).to(type).value();
+      default -> Conversions.fromPartitionString(type, defaultValue);
+    };
+  }
+
+  Type convertType(TypeInfo typeInfo, String defaultValue) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
@@ -129,24 +162,42 @@ class HiveSchemaConverter {
         StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
         List<Types.NestedField> fields =
             convertInternal(structTypeInfo.getAllStructFieldNames(), structTypeInfo.getAllStructFieldTypeInfos(),
-                    Collections.emptyList());
+                    Collections.emptyList(), getDefaultValuesMap(defaultValue));
         return Types.StructType.of(fields);
       case MAP:
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         int keyId = id++;
-        Type keyType = convertType(mapTypeInfo.getMapKeyTypeInfo());
+        Type keyType = convertType(mapTypeInfo.getMapKeyTypeInfo(), defaultValue);
         int valueId = id++;
-        Type valueType = convertType(mapTypeInfo.getMapValueTypeInfo());
+        Type valueType = convertType(mapTypeInfo.getMapValueTypeInfo(), defaultValue);
         return Types.MapType.ofOptional(keyId, valueId, keyType, valueType);
       case LIST:
         ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
         int listId = id++;
-        Type listType = convertType(listTypeInfo.getListElementTypeInfo());
+        Type listType = convertType(listTypeInfo.getListElementTypeInfo(), defaultValue);
         return Types.ListType.ofOptional(listId, listType);
       case VARIANT:
         return Types.VariantType.get();
       default:
         throw new IllegalArgumentException("Unknown type " + typeInfo.getCategory());
     }
+  }
+
+  private Map<String, String> getDefaultValuesMap(String defaultValue) {
+    if (defaultValue == null || defaultValue.isEmpty()) {
+      return Collections.emptyMap();
+    }
+    // For Struct, the default value is expected to be in key:value format
+    return Arrays.stream(stripQuotes(defaultValue).split(","))
+        .map(s -> s.split(":", 2)) // split into key:value
+        .collect(Collectors.toMap(arr -> arr[0], arr -> arr[1]));
+  }
+
+  public static String stripQuotes(String val) {
+    if (val.charAt(0) == '\'' && val.charAt(val.length() - 1) == '\'' ||
+        val.charAt(0) == '"' && val.charAt(val.length() - 1) == '"') {
+      return val.substring(1, val.length() - 1);
+    }
+    return val;
   }
 }

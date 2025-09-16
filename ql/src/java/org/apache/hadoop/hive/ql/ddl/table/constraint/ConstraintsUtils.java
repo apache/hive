@@ -66,22 +66,26 @@ public final class ConstraintsUtils {
     throw new UnsupportedOperationException("ConstraintsUtils should not be instantiated!");
   }
 
-  private static class ConstraintInfo {
+  public static class ConstraintInfo {
     final String colName;
     final String constraintName;
     final boolean enable;
     final boolean validate;
     final boolean rely;
     final String defaultValue;
+    final TypeInfo columnType;
+    final TypeInfo defaultValueType;
 
     ConstraintInfo(String colName, String constraintName, boolean enable, boolean validate, boolean rely,
-        String defaultValue) {
+        String defaultValue, TypeInfo columnType, TypeInfo defaultValueType) {
       this.colName = colName;
       this.constraintName = constraintName;
       this.enable = enable;
       this.validate = validate;
       this.rely = rely;
       this.defaultValue = defaultValue;
+      this.columnType = columnType;
+      this.defaultValueType = defaultValueType;
     }
   }
 
@@ -146,19 +150,21 @@ public final class ConstraintsUtils {
     }
   }
 
-  public static void processDefaultConstraints(TableName tableName, ASTNode child, List<String> columnNames,
-      List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild, TokenRewriteStream tokenRewriteStream)
-          throws SemanticException {
-    List<ConstraintInfo> defaultInfos = generateConstraintInfos(child, columnNames, typeChild, tokenRewriteStream);
-    constraintInfosToDefaultConstraints(tableName, defaultInfos, defaultConstraints);
+  public static List<ConstraintInfo> processDefaultConstraints(ASTNode child,
+      List<String> columnNames, final ASTNode typeChild, TokenRewriteStream tokenRewriteStream)
+      throws SemanticException {
+    return generateConstraintInfos(child, columnNames, typeChild, tokenRewriteStream);
   }
 
-  private static void constraintInfosToDefaultConstraints(TableName tableName, List<ConstraintInfo> defaultInfos,
-      List<SQLDefaultConstraint> defaultConstraints) {
+  public static void constraintInfosToDefaultConstraints(TableName tableName, List<ConstraintInfo> defaultInfos,
+      List<SQLDefaultConstraint> defaultConstraints, boolean isNativeColumnDefaultSupported) throws SemanticException {
     for (ConstraintInfo defaultInfo : defaultInfos) {
-      defaultConstraints.add(new SQLDefaultConstraint(tableName.getCat(), tableName.getDb(), tableName.getTable(),
-          defaultInfo.colName, defaultInfo.defaultValue, defaultInfo.constraintName, defaultInfo.enable,
-          defaultInfo.validate, defaultInfo.rely));
+      ConstraintsUtils.validateDefaultColumnType(defaultInfo.columnType, defaultInfo.defaultValueType,
+          defaultInfo.defaultValue, isNativeColumnDefaultSupported);
+      defaultConstraints.add(
+          new SQLDefaultConstraint(tableName.getCat(), tableName.getDb(), tableName.getTable(), defaultInfo.colName,
+              defaultInfo.defaultValue, defaultInfo.constraintName, defaultInfo.enable, defaultInfo.validate,
+              defaultInfo.rely));
     }
   }
 
@@ -215,6 +221,8 @@ public final class ConstraintsUtils {
     boolean enable = true;
     boolean validate = false;
     boolean rely = true;
+    TypeInfo colTypeInfo = null;
+    TypeInfo defaultValueType = null;
     String checkOrDefaultValue = null;
     int childType = child.getToken().getType();
     for (int i = 0; i < child.getChildCount(); i++) {
@@ -243,7 +251,10 @@ public final class ConstraintsUtils {
         rely = false;
       } else if (childType == HiveParser.TOK_DEFAULT_VALUE) {
         // try to get default value only if this is DEFAULT constraint
-        checkOrDefaultValue = getDefaultValue(grandChild, typeChildForDefault, tokenRewriteStream);
+        colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(BaseSemanticAnalyzer.getTypeStringFromAST(typeChildForDefault));
+        Object[] defaultValueTypeAndValue = getDefaultValue(grandChild, tokenRewriteStream);
+        checkOrDefaultValue = (String) defaultValueTypeAndValue[1];
+        defaultValueType = (TypeInfo) defaultValueTypeAndValue[0];
       } else if (childType == HiveParser.TOK_CHECK_CONSTRAINT) {
         checkOrDefaultValue = HiveUtils.getSqlTextWithQuotedIdentifiers(
                 grandChild, tokenRewriteStream, CHECK_CONSTRAINT_PROGRAM);
@@ -275,11 +286,14 @@ public final class ConstraintsUtils {
 
     List<ConstraintInfo> constraintInfos = new ArrayList<>();
     if (columnNames == null) {
-      constraintInfos.add(new ConstraintInfo(null, constraintName, enable, validate, rely, checkOrDefaultValue));
+      constraintInfos.add(
+          new ConstraintInfo(null, constraintName, enable, validate, rely, checkOrDefaultValue, colTypeInfo,
+              defaultValueType));
     } else {
       for (String columnName : columnNames) {
-        constraintInfos.add(new ConstraintInfo(columnName, constraintName, enable, validate, rely,
-            checkOrDefaultValue));
+        constraintInfos.add(
+            new ConstraintInfo(columnName, constraintName, enable, validate, rely, checkOrDefaultValue, colTypeInfo,
+                defaultValueType));
       }
     }
 
@@ -290,10 +304,11 @@ public final class ConstraintsUtils {
 
   /**
    * Validate and get the default value from the AST.
+   *
    * @param node AST node corresponding to default value
    * @return retrieve the default value and return it as string
    */
-  private static String getDefaultValue(ASTNode node, ASTNode typeChild, TokenRewriteStream tokenStream)
+  private static Object[] getDefaultValue(ASTNode node, TokenRewriteStream tokenStream)
       throws SemanticException{
     // first create expression from defaultValueAST
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
@@ -311,24 +326,22 @@ public final class ConstraintsUtils {
           " .Maximum character length allowed is " + DEFAULT_MAX_LEN +" ."));
     }
 
-    // Make sure the default value expression type is exactly same as column's type.
-    TypeInfo defaultValTypeInfo = defaultValExpr.getTypeInfo();
-    TypeInfo colTypeInfo =
-        TypeInfoUtils.getTypeInfoFromTypeString(BaseSemanticAnalyzer.getTypeStringFromAST(typeChild));
-    if (!defaultValTypeInfo.equals(colTypeInfo)) {
-      throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid type: " +
-          defaultValTypeInfo.getTypeName() + " for default value: " + defaultValueText + ". Please make sure that " +
-          "the type is compatible with column type: " + colTypeInfo.getTypeName()));
-    }
-
     // throw an error if default value isn't what hive allows
     if (!isDefaultValueAllowed(defaultValExpr)) {
       throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value: " + defaultValueText +
           ". DEFAULT only allows constant or function expressions"));
     }
-    return defaultValueText;
+    return new Object[]{defaultValExpr.getTypeInfo(), defaultValueText};
   }
 
+  public static void validateDefaultColumnType(TypeInfo colTypeInfo, TypeInfo defaultValTypeInfo,
+      String defaultValueText, boolean isNativeColumnDefaultSupported) throws SemanticException {
+    if (!defaultValTypeInfo.equals(colTypeInfo) && !isNativeColumnDefaultSupported) {
+      throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
+          "Invalid type: " + defaultValTypeInfo.getTypeName() + " for default value: " + defaultValueText
+              + ". Please make sure that " + "the type is compatible with column type: " + colTypeInfo.getTypeName()));
+    }
+  }
 
   private static boolean isDefaultValueAllowed(ExprNodeDesc defaultValExpr) {
     while (FunctionRegistry.isOpCast(defaultValExpr)) {

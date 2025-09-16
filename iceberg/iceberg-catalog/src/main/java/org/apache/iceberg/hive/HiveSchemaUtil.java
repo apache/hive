@@ -20,6 +20,7 @@
 package org.apache.iceberg.hive;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,18 +61,20 @@ public final class HiveSchemaUtil {
    * @return An equivalent Iceberg Schema
    */
   public static Schema convert(List<FieldSchema> fieldSchemas) {
-    return convert(fieldSchemas, false);
+    return convert(fieldSchemas, false, Collections.emptyMap());
   }
 
   /**
    * Converts a Hive schema (list of FieldSchema objects) to an Iceberg schema.
-   * @param fieldSchemas The list of the columns
-   * @param autoConvert If <code>true</code> then TINYINT and SMALLINT is converted to INTEGER and VARCHAR and CHAR is
-   *                    converted to STRING. Otherwise if these types are used in the Hive schema then exception is
-   *                    thrown.
+   *
+   * @param fieldSchemas  The list of the columns
+   * @param autoConvert   If <code>true</code> then TINYINT and SMALLINT is converted to INTEGER and VARCHAR and CHAR is
+   *                      converted to STRING. Otherwise if these types are used in the Hive schema then exception is
+   *                      thrown.
+   * @param defaultValues Default values for columns, if any. The map is from column name to default value.
    * @return An equivalent Iceberg Schema
    */
-  public static Schema convert(List<FieldSchema> fieldSchemas, boolean autoConvert) {
+  public static Schema convert(List<FieldSchema> fieldSchemas, boolean autoConvert, Map<String, String> defaultValues) {
     List<String> names = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
     List<TypeInfo> typeInfos = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
     List<String> comments = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
@@ -81,7 +84,7 @@ public final class HiveSchemaUtil {
       typeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(col.getType()));
       comments.add(col.getComment());
     }
-    return HiveSchemaConverter.convert(names, typeInfos, comments, autoConvert);
+    return HiveSchemaConverter.convert(names, typeInfos, comments, autoConvert, defaultValues);
   }
 
   /**
@@ -105,7 +108,7 @@ public final class HiveSchemaUtil {
    * @return The Iceberg schema
    */
   public static Schema convert(List<String> names, List<TypeInfo> types, List<String> comments) {
-    return HiveSchemaConverter.convert(names, types, comments, false);
+    return HiveSchemaConverter.convert(names, types, comments, false, Collections.emptyMap());
   }
 
   /**
@@ -119,7 +122,7 @@ public final class HiveSchemaUtil {
    * @return The Iceberg schema
    */
   public static Schema convert(List<String> names, List<TypeInfo> types, List<String> comments, boolean autoConvert) {
-    return HiveSchemaConverter.convert(names, types, comments, autoConvert);
+    return HiveSchemaConverter.convert(names, types, comments, autoConvert, Collections.emptyMap());
   }
 
   /**

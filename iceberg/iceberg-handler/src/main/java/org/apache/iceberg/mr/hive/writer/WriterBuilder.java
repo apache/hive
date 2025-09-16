@@ -65,6 +65,7 @@ public class WriterBuilder {
   private TaskAttemptID attemptID;
   private String queryId;
   private Operation operation;
+  private String missingColumns;
 
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
   private static AtomicInteger operationNum = new AtomicInteger(0);
@@ -92,6 +93,11 @@ public class WriterBuilder {
 
   public WriterBuilder queryId(String newQueryId) {
     this.queryId = newQueryId;
+    return this;
+  }
+
+  public WriterBuilder missingColumns(String newMissingColumns) {
+    this.missingColumns = newMissingColumns;
     return this;
   }
 
@@ -136,7 +142,7 @@ public class WriterBuilder {
         case DELETE ->
             new HiveIcebergDeleteWriter(table, rewritableDeletes.get(), writerFactory, deleteFileFactory, context);
         case OTHER ->
-            new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
+            new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context, missingColumns);
         default ->
             // Update and Merge should be split to inserts and deletes
             throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
