@@ -245,10 +245,8 @@ public final class ConstraintsUtils {
         // try to get default value only if this is DEFAULT constraint
         checkOrDefaultValue = getDefaultValue(grandChild, typeChildForDefault, tokenRewriteStream);
       } else if (childType == HiveParser.TOK_CHECK_CONSTRAINT) {
-        UnparseTranslator unparseTranslator = HiveUtils.collectUnescapeIdentifierTranslations(grandChild);
-        unparseTranslator.applyTranslations(tokenRewriteStream, CHECK_CONSTRAINT_PROGRAM);
-        checkOrDefaultValue = tokenRewriteStream.toString(CHECK_CONSTRAINT_PROGRAM, grandChild.getTokenStartIndex(),
-            grandChild.getTokenStopIndex());
+        checkOrDefaultValue = HiveUtils.getSqlTextWithQuotedIdentifiers(
+                grandChild, tokenRewriteStream, CHECK_CONSTRAINT_PROGRAM);
       }
     }
 

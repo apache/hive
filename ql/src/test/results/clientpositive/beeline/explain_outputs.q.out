@@ -139,12 +139,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
+PREHOOK: query: select sum(`t1_n22`.`id`) from `t1_n22` join `t2_n14` on (`t1_n22`.`id`=`t2_n14`.`id`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n22
 PREHOOK: Input: default@t2_n14
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(t1_n22.id) from t1_n22 join t2_n14 on (t1_n22.id=t2_n14.id)
+POSTHOOK: query: select sum(`t1_n22`.`id`) from `t1_n22` join `t2_n14` on (`t1_n22`.`id`=`t2_n14`.`id`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n22
 POSTHOOK: Input: default@t2_n14
