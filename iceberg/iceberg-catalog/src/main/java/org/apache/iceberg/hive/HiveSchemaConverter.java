@@ -143,7 +143,8 @@ class HiveSchemaConverter {
         int listId = id++;
         Type listType = convertType(listTypeInfo.getListElementTypeInfo());
         return Types.ListType.ofOptional(listId, listType);
-      case UNION:
+      case VARIANT:
+        return Types.VariantType.get();
       default:
         throw new IllegalArgumentException("Unknown type " + typeInfo.getCategory());
     }

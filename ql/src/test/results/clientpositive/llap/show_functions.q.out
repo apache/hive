@@ -296,6 +296,7 @@ nullif
 nvl
 octet_length
 or
+parse_json
 parse_url
 parse_url_tuple
 percent_rank
@@ -459,6 +460,7 @@ tan
 tanh
 to_date
 to_epoch_milli
+to_json
 to_unix_timestamp
 to_utc_timestamp
 toarray
@@ -467,6 +469,7 @@ tostruct
 translate
 trim
 trunc
+try_variant_get
 tumbling_window
 typeof
 ucase
@@ -486,6 +489,7 @@ validate_acid_sort_order
 var_pop
 var_samp
 variance
+variant_get
 version
 weekofyear
 when
@@ -931,6 +935,7 @@ nullif
 nvl
 octet_length
 or
+parse_json
 parse_url
 parse_url_tuple
 percent_rank
@@ -1094,6 +1099,7 @@ tan
 tanh
 to_date
 to_epoch_milli
+to_json
 to_unix_timestamp
 to_utc_timestamp
 toarray
@@ -1102,6 +1108,7 @@ tostruct
 translate
 trim
 trunc
+try_variant_get
 tumbling_window
 typeof
 ucase
@@ -1121,6 +1128,7 @@ validate_acid_sort_order
 var_pop
 var_samp
 variance
+variant_get
 version
 weekofyear
 when

@@ -93,6 +93,8 @@ public class serdeConstants {
 
   public static final java.lang.String UNION_TYPE_NAME = "uniontype";
 
+  public static final java.lang.String VARIANT_TYPE_NAME = "variant";
+
   public static final java.lang.String LIST_COLUMNS = "columns";
 
   public static final java.lang.String LIST_COLUMN_TYPES = "columns.types";
