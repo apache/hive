@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
@@ -723,14 +724,6 @@ public class OpProcFactory {
 
           addArgs(sb, columns, lCtx, inpOp, op.getSchema(), windowFunctionDef.getArgs());
 
-        } else /* PartitionedTableFunctionDef */ {
-          // function name
-          sb.append(funcDef.getName()).append("(");
-          addArgs(sb, columns, lCtx, inpOp, funcDef.getRawInputShape().getRr().getRowSchema(), funcDef.getArgs());
-        }
-
-        if (funcDef instanceof WindowTableFunctionDef) {
-          WindowFunctionDef windowFunctionDef = ((WindowTableFunctionDef) funcDef).getWindowFunctions().getFirst();
           windowFrameDef = windowFunctionDef.getWindowFrame();
 
           if (sb.charAt(sb.length() - 2) == ',') {
@@ -738,7 +731,11 @@ public class OpProcFactory {
           }
           sb.append(")");
           sb.append(" over (");
-        } else {
+        } else /* PartitionedTableFunctionDef */ {
+          // function name
+          sb.append(funcDef.getName()).append("(");
+          addArgs(sb, columns, lCtx, inpOp, funcDef.getRawInputShape().getRr().getRowSchema(), funcDef.getArgs());
+
           // matchpath has argument pattern like matchpath(<input expression>, <argument methods: arg1(), arg2()...>)
           if (funcDef.getInput() != null) {
             sb.append("on ").append(funcDef.getInput().getAlias()).append(" ");
@@ -756,7 +753,6 @@ public class OpProcFactory {
 
             sb.delete(sb.length() - 2, sb.length());
           }
-
         }
       }
 
@@ -831,19 +827,11 @@ public class OpProcFactory {
       if (windowFrameDef != null) {
         sb.append(" ").append(windowFrameDef.getWindowType()).append(" between ");
 
-        if (windowFrameDef.getStart().isCurrentRow()) {
-          sb.append("current_row");
-        } else {
-          sb.append(windowFrameDef.getStart().isUnbounded() ? "unbounded" : windowFrameDef.getStart().getAmt() + " preceding");
-        }
+        appendBoundary(windowFrameDef.getStart(), sb, " preceding");
 
         sb.append(" and ");
 
-        if (windowFrameDef.getStart().isCurrentRow()) {
-          sb.append("current_row");
-        } else {
-          sb.append(windowFrameDef.getStart().isUnbounded() ? "unbounded" : windowFrameDef.getStart().getAmt() + " following");
-        }
+        appendBoundary(windowFrameDef.getEnd(), sb, " following");
       }
 
       sb.append(")");
@@ -874,6 +862,14 @@ public class OpProcFactory {
       }
 
       return null;
+    }
+
+    private static void appendBoundary(BoundaryDef boundary, StringBuilder sb, String boundaryText) {
+      if (boundary.isCurrentRow()) {
+        sb.append("current_row");
+      } else {
+        sb.append(boundary.isUnbounded() ? "unbounded" : boundary.getAmt() + boundaryText);
+      }
     }
 
     /*
