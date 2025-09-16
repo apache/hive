@@ -36,3 +36,5 @@ xsi:schemaLocation="[^"]*"
 "This\\{1,2}n..*"
 # ignore long runs of a single character:
 \b([A-Za-z])\g{-1}{3,}\b
+# Skip spell check on URLs
+\b(?i:https?)://\S+

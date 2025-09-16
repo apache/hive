@@ -1,5 +1,4 @@
 AAAAABJRU
-aarry
 abcd
 abcde
 abcdef
@@ -56,7 +55,6 @@ buf
 byoi
 bytearrayinput
 bytebuffer
-bytecode
 byteinfo
 BYTEINT
 byw
@@ -82,7 +80,6 @@ csv
 ctl
 ctor
 ctype
-cwiki
 CYBERMEN
 DALEKS
 daos
@@ -146,7 +143,6 @@ garw
 gdr
 gdw
 gmt
-hackersdelight
 hadoop
 hamcrest
 hashcode
@@ -158,10 +154,8 @@ hcw
 HDFS
 hdoi
 hdw
-HIVEFETCHOUTPUTSERDE
 hiw
 href
-http
 hvc
 hvoi
 iae
@@ -324,7 +318,6 @@ spoi
 sql
 src
 ssoi
-stackoverflow
 sti
 stringify
 stringlist
@@ -366,7 +359,6 @@ TFrozen
 threebytes
 Throwable
 timelabel
-timestamplocal
 TIMESTAMPLOCALTZ
 timestamptz
 timezone
@@ -436,7 +428,6 @@ viyt
 vlong
 voi
 vtype
-wiki
 wkid
 workaround
 writables
@@ -448,6 +439,5 @@ xmlns
 xsi
 yadda
 yes'okay
-yyyy
 YYYYMMDD
 zid
