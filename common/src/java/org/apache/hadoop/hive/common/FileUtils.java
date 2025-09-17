@@ -77,8 +77,6 @@ import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
-
 /**
  * Collection of file manipulation utilities common across Hive.
  */
@@ -520,7 +518,7 @@ public final class FileUtils {
     }
   }
 
-  public static UserGroupInformation getProxyUser(final String user) throws LoginException, IOException {
+  public static UserGroupInformation getProxyUser(final String user) throws IOException {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
     UserGroupInformation proxyUser = null;

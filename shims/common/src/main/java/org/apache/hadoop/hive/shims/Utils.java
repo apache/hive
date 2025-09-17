@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.security.auth.login.LoginException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -46,7 +45,7 @@ public class Utils {
 
   public static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
-  public static UserGroupInformation getUGI() throws LoginException, IOException {
+  public static UserGroupInformation getUGI() throws IOException {
     if (UserGroupInformation.isSecurityEnabled()) {
       return UserGroupInformation.getCurrentUser();
     }

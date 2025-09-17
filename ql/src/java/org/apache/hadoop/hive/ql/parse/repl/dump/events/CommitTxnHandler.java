@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,7 +59,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext,
                               Path dataPath)
-          throws IOException, LoginException, HiveFatalException, SemanticException {
+          throws IOException, HiveFatalException, SemanticException {
     boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     if (copyAtLoad) {
       // encoded filename/checksum of files, write into _files
@@ -74,7 +73,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private void createDumpFile(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
                   List<Partition> qlPtns, List<List<String>> fileListArray)
-          throws IOException, SemanticException, LoginException, HiveFatalException {
+          throws IOException, SemanticException, HiveFatalException {
     if (fileListArray == null || fileListArray.isEmpty()) {
       return;
     }
@@ -102,7 +101,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private void createDumpFileForTable(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
                     List<Partition> qlPtns, List<List<String>> fileListArray)
-          throws IOException, SemanticException, LoginException, HiveFatalException {
+          throws IOException, SemanticException, HiveFatalException {
     Path newPath = HiveUtils.getDumpPath(withinContext.eventRoot, qlMdTable.getDbName(), qlMdTable.getTableName());
     Context context = new Context(withinContext);
     context.setEventRoot(newPath);

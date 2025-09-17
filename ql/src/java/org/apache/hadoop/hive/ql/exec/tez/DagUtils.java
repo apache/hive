@@ -28,8 +28,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
-import javax.security.auth.login.LoginException;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -1059,11 +1057,10 @@ public class DagUtils {
   /**
    * @param conf
    * @return path to destination directory on hdfs
-   * @throws LoginException if we are unable to figure user information
    * @throws IOException when any dfs operation fails.
    */
   @SuppressWarnings("deprecation")
-  public Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
+  public Path getDefaultDestDir(Configuration conf) throws IOException {
     UserGroupInformation ugi = Utils.getUGI();
     String userName = ugi.getShortUserName();
     String userPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USER_INSTALL_DIR);
@@ -1097,10 +1094,9 @@ public class DagUtils {
    * @param conf
    * @return List&lt;LocalResource&gt; local resources to add to execution
    * @throws IOException when hdfs operation fails
-   * @throws LoginException when getDefaultDestDir fails with the same exception
    */
   public List<LocalResource> localizeTempFilesFromConf(
-      String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
+      String hdfsDirPathStr, Configuration conf) throws IOException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ADD_FILES_USE_HDFS_LOCATION)) {
@@ -1233,7 +1229,7 @@ public class DagUtils {
     return tmpResourcesMap;
   }
 
-  public FileStatus getHiveJarDirectory(Configuration conf) throws IOException, LoginException {
+  public FileStatus getHiveJarDirectory(Configuration conf) throws IOException {
     FileStatus fstatus = null;
     String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY, (String)null);
     if (hdfsDirPathStr != null) {
@@ -1612,14 +1608,8 @@ public class DagUtils {
    */
   public Path createTezDir(Path scratchDir, Configuration conf)
       throws IOException {
-    UserGroupInformation ugi;
-    String userName = System.getProperty("user.name");
-    try {
-      ugi = Utils.getUGI();
-      userName = ugi.getShortUserName();
-    } catch (LoginException e) {
-      throw new IOException(e);
-    }
+    UserGroupInformation ugi = Utils.getUGI();
+    String userName = ugi.getShortUserName();
 
     scratchDir = new Path(scratchDir, userName);
 
