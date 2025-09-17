@@ -207,3 +207,12 @@ PREHOOK: Input: default@source_tbl2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@b_v_22
 {"version":"1.0","engine":"tez","database":"default","hash":"a2ba087c41a50a46f93037a78bb65666","queryText":"create view b_v_22 as\nselect *\nfrom (select col_001, row_number() over (partition by src.p1 order by src.col_002, src.col_001) as r_num\n        from source_tbl2 src) v1","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[2,3,4],"targets":[1],"expression":"row_number() over (partition by src.p1 order by src.col_002, src.col_001 ROWS between unbounded and unbounded)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.b_v_22.col_001"},{"id":1,"vertexType":"COLUMN","vertexId":"default.b_v_22.r_num"},{"id":2,"vertexType":"COLUMN","vertexId":"default.source_tbl2.col_001"},{"id":3,"vertexType":"COLUMN","vertexId":"default.source_tbl2.col_002"},{"id":4,"vertexType":"COLUMN","vertexId":"default.source_tbl2.p1"}]}
+PREHOOK: query: create view b_v_23 as
+select *
+from (select col_001, sum(src.col_001) over (partition by src.col_001 order by src.col_001, src.col_001) as r_num
+        from source_tbl2 src) v1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@source_tbl2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b_v_23
+{"version":"1.0","engine":"tez","database":"default","hash":"1e4fbec64101e6d557c95a73fbc4f518","queryText":"create view b_v_23 as\nselect *\nfrom (select col_001, sum(src.col_001) over (partition by src.col_001 order by src.col_001, src.col_001) as r_num\n        from source_tbl2 src) v1","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[2],"targets":[1],"expression":"sum(src.col_001) over (partition by src.col_001 order by src.col_001, src.col_001 RANGE between unbounded and current_row)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.b_v_23.col_001"},{"id":1,"vertexType":"COLUMN","vertexId":"default.b_v_23.r_num"},{"id":2,"vertexType":"COLUMN","vertexId":"default.source_tbl2.col_001"}]}

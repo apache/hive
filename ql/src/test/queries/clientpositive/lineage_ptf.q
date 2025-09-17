@@ -140,3 +140,9 @@ create view b_v_22 as
 select *
 from (select col_001, row_number() over (partition by src.p1 order by src.col_002, src.col_001) as r_num
         from source_tbl2 src) v1;
+
+-- Test for reuse the same column multiple times
+create view b_v_23 as
+select *
+from (select col_001, sum(src.col_001) over (partition by src.col_001 order by src.col_001, src.col_001) as r_num
+        from source_tbl2 src) v1;
