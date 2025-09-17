@@ -599,15 +599,15 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       // into a null value.
       final Multimap<RexNode,RexNode> inLHSExprToRHSNullableExprs = LinkedHashMultimap.create();
       final List<RexNode> operands = new ArrayList<>(RexUtil.flattenAnd(call.getOperands()));
-
-      for (int i = 0; i < operands.size(); i++) {
-        RexNode operand = operands.get(i);
-        if (operand instanceof RexCall && HiveIn.INSTANCE.equals(((RexCall) operand).op)) {
-          RexCall inCall = (RexCall) operand;
-          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
+      final List<RexNode> newOperands = new ArrayList<>(operands.size());
+      int inExpressionCount = 0;
+      int eqExpressionCount = 0;
+      for (RexNode operand : operands) {
+        if (operand instanceof RexCall inCall && HiveIn.INSTANCE.equals(inCall.op)) {
+          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().getFirst())) {
             continue;
           }
-          RexNode ref = inCall.getOperands().get(0);
+          RexNode ref = inCall.getOperands().getFirst();
           visitedRefs.add(ref);
           if (ref.getType().isNullable()) {
             inLHSExprToRHSNullableExprs.put(ref, ref);
@@ -635,8 +635,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               }
             }
           }
-          operands.remove(i);
-          --i;
+          ++inExpressionCount;
         } else if (operand.getKind() == SqlKind.EQUALS) {
           Constraint c = Constraint.of(operand);
           if (c == null || !HiveCalciteUtil.isDeterministic(c.exprNode)) {
@@ -659,14 +658,17 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           } else {
             inLHSExprToRHSExprs.put(c.exprNode, new SimilarRexNodeElement(c.constNode));
           }
-          operands.remove(i);
-          --i;
+          ++eqExpressionCount;
+        } else {
+          newOperands.add(operand);
         }
       }
+      if (inExpressionCount + eqExpressionCount == inLHSExprToRHSExprs.keySet().size()) {
+        // No IN and Equality expressions can be merged, bail out
+        return call;
+      }
       // Create IN clauses
-      final List<RexNode> newOperands = createInClauses(rexBuilder,
-          visitedRefs, inLHSExprToRHSExprs, inLHSExprToRHSNullableExprs);
-      newOperands.addAll(operands);
+      newOperands.addAll(createInClauses(rexBuilder, visitedRefs, inLHSExprToRHSExprs, inLHSExprToRHSNullableExprs));
       // Return node
       return RexUtil.composeConjunction(rexBuilder, newOperands, false);
     }
@@ -734,26 +736,30 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
       // IN clauses need to be combined by keeping all elements
       final List<RexNode> operands = new ArrayList<>(RexUtil.flattenOr(call.getOperands()));
+      final List<RexNode> newOperands = new ArrayList<>(operands.size());
       final Multimap<RexNode,SimilarRexNodeElement> inLHSExprToRHSExprs = LinkedHashMultimap.create();
-      for (int i = 0; i < operands.size(); i++) {
-        RexNode operand = operands.get(i);
-        if (operand instanceof RexCall && HiveIn.INSTANCE.equals(((RexCall) operand).op)) {
-          RexCall inCall = (RexCall) operand;
-          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
+      int inExpressionCount = 0;
+      for (RexNode operand : operands) {
+        if (operand instanceof RexCall inCall && HiveIn.INSTANCE.equals(inCall.op)) {
+          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().getFirst())) {
             continue;
           }
-          RexNode ref = inCall.getOperands().get(0);
+          RexNode ref = inCall.getOperands().getFirst();
           for (int j = 1; j < inCall.getOperands().size(); j++) {
             inLHSExprToRHSExprs.put(ref, new SimilarRexNodeElement(inCall.getOperands().get(j)));
           }
-          operands.remove(i);
-          --i;
+          ++inExpressionCount;
+        } else {
+          newOperands.add(operand);
         }
       }
+      if (inExpressionCount == inLHSExprToRHSExprs.keySet().size()) {
+        // No IN expressions can be merged, bail out
+        return call;
+      }
       // Create IN clauses (fourth parameter is not needed since no expressions were removed)
-      final List<RexNode> newOperands = createInClauses(rexBuilder,
-          inLHSExprToRHSExprs.keySet(), inLHSExprToRHSExprs, null);
-      newOperands.addAll(operands);
+      newOperands.addAll(createInClauses(rexBuilder,
+          inLHSExprToRHSExprs.keySet(), inLHSExprToRHSExprs, null));
       // Return node
       RexNode result = RexUtil.composeDisjunction(rexBuilder, newOperands, false);
       if (!result.getType().equals(call.getType())) {
@@ -782,7 +788,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     private static List<RexNode> createInClauses(RexBuilder rexBuilder, Set<RexNode> visitedRefs,
         Multimap<RexNode, SimilarRexNodeElement> inLHSExprToRHSExprs, Multimap<RexNode,RexNode> inLHSExprToRHSNullableExprs) {
-      final List<RexNode> newExpressions = new ArrayList<>();
+      final List<RexNode> newExpressions = new ArrayList<>(visitedRefs.size());
       for (RexNode ref : visitedRefs) {
         Collection<SimilarRexNodeElement> exprs = inLHSExprToRHSExprs.get(ref);
         if (exprs.isEmpty()) {

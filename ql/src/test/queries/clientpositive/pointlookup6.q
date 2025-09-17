@@ -17,3 +17,12 @@ WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111
 
 SELECT l_table.string_col from l_table, r_table
 WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111', 'BBB222') AND r_table.string_col IN ('AAA111', 'BBB222');
+
+explain cbo
+SELECT * FROM r_table
+WHERE ( (
+         MINUTE(string_col) = 2 OR
+         MINUTE(string_col) = 10
+        )
+        OR (MINUTE(string_col) IS NULL)
+      );
