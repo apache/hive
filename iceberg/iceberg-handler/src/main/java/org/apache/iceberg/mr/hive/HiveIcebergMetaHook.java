@@ -311,7 +311,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       preAlterTableProperties.tableLocation = sd.getLocation();
       preAlterTableProperties.format = sd.getInputFormat();
       preAlterTableProperties.schema =
-          schema(catalogProperties, hmsTable, Collections.emptySet(), Collections.emptyMap());
+          schema(catalogProperties, hmsTable, Collections.emptySet(), Collections.emptyList());
       preAlterTableProperties.partitionKeys = hmsTable.getPartitionKeys();
 
       context.getProperties().put(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE, "true");

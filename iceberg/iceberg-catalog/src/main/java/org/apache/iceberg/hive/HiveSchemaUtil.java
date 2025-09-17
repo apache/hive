@@ -25,16 +25,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.data.GenericRecord;
+import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.DateTimeUtil;
 import org.apache.iceberg.util.Pair;
 
 
@@ -61,20 +65,20 @@ public final class HiveSchemaUtil {
    * @return An equivalent Iceberg Schema
    */
   public static Schema convert(List<FieldSchema> fieldSchemas) {
-    return convert(fieldSchemas, false, Collections.emptyMap());
+    return convert(fieldSchemas, Collections.emptyMap(), false);
   }
 
   /**
    * Converts a Hive schema (list of FieldSchema objects) to an Iceberg schema.
    *
    * @param fieldSchemas  The list of the columns
+   * @param defaultValues Default values for columns, if any. The map is from column name to default value.
    * @param autoConvert   If <code>true</code> then TINYINT and SMALLINT is converted to INTEGER and VARCHAR and CHAR is
    *                      converted to STRING. Otherwise if these types are used in the Hive schema then exception is
    *                      thrown.
-   * @param defaultValues Default values for columns, if any. The map is from column name to default value.
    * @return An equivalent Iceberg Schema
    */
-  public static Schema convert(List<FieldSchema> fieldSchemas, boolean autoConvert, Map<String, String> defaultValues) {
+  public static Schema convert(List<FieldSchema> fieldSchemas, Map<String, String> defaultValues, boolean autoConvert) {
     List<String> names = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
     List<TypeInfo> typeInfos = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
     List<String> comments = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
@@ -331,5 +335,86 @@ public final class HiveSchemaUtil {
       default:
         throw new UnsupportedOperationException(type + " is not supported");
     }
+  }
+
+  public static void setDefault(List<Types.NestedField> fields, Record record, Set<String> missingColumns) {
+    for (Types.NestedField field : fields) {
+      Object fieldValue = record.getField(field.name());
+
+      if (fieldValue == null) {
+        boolean isMissing = missingColumns.contains(field.name());
+
+        if (isMissing) {
+          if (field.type().isStructType()) {
+            // Create struct and apply defaults to all nested fields
+            Record nestedRecord = GenericRecord.create(field.type().asStructType());
+            record.setField(field.name(), nestedRecord);
+            // For nested fields, we consider ALL fields as "missing" to apply defaults
+            setDefaultForNestedStruct(field.type().asStructType().fields(), nestedRecord);
+          } else if (field.writeDefault() != null) {
+            Object defaultValue = convertToWriteType(field.writeDefault(), field.type());
+            record.setField(field.name(), defaultValue);
+          }
+        }
+        // Explicit NULLs remain NULL
+      } else if (field.type().isStructType() && fieldValue instanceof Record) {
+        // For existing structs, apply defaults to any null nested fields
+        setDefaultForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
+      }
+    }
+  }
+
+  // Special method for nested structs that always applies defaults to null fields
+  private static void setDefaultForNestedStruct(List<Types.NestedField> fields, Record record) {
+    for (Types.NestedField field : fields) {
+      Object fieldValue = record.getField(field.name());
+
+      if (fieldValue == null && field.writeDefault() != null) {
+        // Always apply default to null fields in nested structs
+        Object defaultValue = convertToWriteType(field.writeDefault(), field.type());
+        record.setField(field.name(), defaultValue);
+      } else if (field.type().isStructType() && fieldValue instanceof Record) {
+        // Recursively process nested structs
+        setDefaultForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
+      }
+    }
+  }
+
+  private static Object convertToWriteType(Object value, Type type) {
+    if (value == null) {
+      return null;
+    }
+
+    switch (type.typeId()) {
+      case DATE:
+        // Convert days since epoch (Integer) to LocalDate
+        if (value instanceof Integer) {
+          return DateTimeUtil.dateFromDays((Integer) value);
+        }
+        break;
+      case TIMESTAMP:
+        // Convert microseconds since epoch (Long) to LocalDateTime
+        if (value instanceof Long) {
+          return DateTimeUtil.timestampFromMicros((Long) value);
+        }
+        break;
+      case TIMESTAMP_NANO:
+        // Convert nanoseconds since epoch (Long) to LocalDateTime
+        if (value instanceof Long) {
+          return DateTimeUtil.timestampFromNanos((Long) value);
+        }
+        break;
+      case TIME:
+        // Convert microseconds since midnight (Long) to LocalTime
+        if (value instanceof Long) {
+          return DateTimeUtil.timeFromMicros((Long) value);
+        }
+        break;
+      default:
+        // For other types, no conversion needed
+        return value;
+    }
+
+    return value; // fallback
   }
 }

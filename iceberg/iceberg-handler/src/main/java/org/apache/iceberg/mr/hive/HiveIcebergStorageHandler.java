@@ -2211,7 +2211,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
-  public boolean supportsNativeColumnDefault(Map<String, String> tblProps) {
+  public boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
     return IcebergTableUtil.formatVersion(tblProps) >= 3;
   }
 

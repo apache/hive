@@ -74,7 +74,6 @@ import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
-import org.apache.hadoop.hive.ql.parse.TableMask;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -645,7 +644,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
           HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
           if (storageHandler != null) {
             storageHandler.addResourcesForCreateTable(tblProps, conf);
-            isNativeColumnDefaultSupported = storageHandler.supportsNativeColumnDefault(tblProps);
+            isNativeColumnDefaultSupported = storageHandler.supportsDefaultColumnValues(tblProps);
           }
         } catch (HiveException e) {
           throw new RuntimeException(e);

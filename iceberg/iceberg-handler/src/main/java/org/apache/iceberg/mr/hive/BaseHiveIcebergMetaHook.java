@@ -164,10 +164,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
             primaryKeys.stream().map(SQLPrimaryKey::getColumn_name).collect(Collectors.toSet()))
         .orElse(Collections.emptySet());
 
-    Map<String, String> defaultValues = Stream.ofNullable(request.getDefaultConstraints()).flatMap(Collection::stream)
-        .collect(Collectors.toMap(SQLDefaultConstraint::getColumn_name, SQLDefaultConstraint::getDefault_value));
-
-    Schema schema = schema(catalogProperties, hmsTable, identifierFields, defaultValues);
+    Schema schema = schema(catalogProperties, hmsTable, identifierFields, request.getDefaultConstraints());
     PartitionSpec spec = spec(conf, schema, hmsTable);
 
     // If there are partition keys specified remove them from the HMS table and add them to the column list
@@ -309,7 +306,10 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected Schema schema(Properties properties, org.apache.hadoop.hive.metastore.api.Table hmsTable,
-                        Set<String> identifierFields, Map<String, String> defaultValues) {
+      Set<String> identifierFields, List<SQLDefaultConstraint> sqlDefaultConstraints) {
+
+    Map<String, String> defaultValues = Stream.ofNullable(sqlDefaultConstraints).flatMap(Collection::stream)
+        .collect(Collectors.toMap(SQLDefaultConstraint::getColumn_name, SQLDefaultConstraint::getDefault_value));
     boolean autoConversion = conf.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
 
     if (properties.getProperty(InputFormatConfig.TABLE_SCHEMA) != null) {
@@ -319,7 +319,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
       cols.addAll(hmsTable.getPartitionKeys());
     }
-    Schema schema = HiveSchemaUtil.convert(cols, autoConversion, defaultValues);
+    Schema schema = HiveSchemaUtil.convert(cols, defaultValues, autoConversion);
 
     return getSchemaWithIdentifierFields(schema, identifierFields);
   }

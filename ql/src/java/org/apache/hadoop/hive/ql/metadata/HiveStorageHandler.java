@@ -1020,7 +1020,7 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
   }
 
-  default boolean supportsNativeColumnDefault(Map<String, String> tblProps) {
+  default boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
     return false;
   }
 }

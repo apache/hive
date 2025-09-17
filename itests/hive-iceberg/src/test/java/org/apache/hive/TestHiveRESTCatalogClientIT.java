@@ -37,9 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -216,7 +214,7 @@ public class TestHiveRESTCatalogClientIT {
     sd.getSerdeInfo().setParameters(new java.util.HashMap<>());
     table.setSd(sd);
     
-    Schema schema = HiveSchemaUtil.convert(cols, false, Collections.emptyMap());
+    Schema schema = HiveSchemaUtil.convert(cols, Collections.emptyMap(), false);
     PartitionSpec spec = PartitionSpec.builderFor(schema).identity("city").build();
     String specString = PartitionSpecParser.toJson(spec);
     table.setParameters(new java.util.HashMap<>());

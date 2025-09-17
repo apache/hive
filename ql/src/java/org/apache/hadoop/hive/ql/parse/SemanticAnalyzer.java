@@ -824,7 +824,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected Map<String, String> getColNameToDefaultValueMap(Table tbl) throws SemanticException {
     Map<String, String> colNameToDefaultVal = null;
-    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().supportsNativeColumnDefault(tbl.getParameters())) {
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().supportsDefaultColumnValues(tbl.getParameters())) {
       return Collections.emptyMap();
     }
     try {

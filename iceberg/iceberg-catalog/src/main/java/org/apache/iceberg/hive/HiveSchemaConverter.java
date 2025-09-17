@@ -19,11 +19,10 @@
 
 package org.apache.iceberg.hive;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -34,6 +33,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
@@ -60,7 +60,7 @@ class HiveSchemaConverter {
   static Schema convert(List<String> names, List<TypeInfo> typeInfos, List<String> comments, boolean autoConvert,
       Map<String, String> defaultValues) {
     HiveSchemaConverter converter = new HiveSchemaConverter(autoConvert);
-    return new Schema(converter.convertInternal(names, typeInfos, comments, defaultValues));
+    return new Schema(converter.convertInternal(names, typeInfos, defaultValues, comments));
   }
 
   static Type convert(TypeInfo typeInfo, boolean autoConvert) {
@@ -68,8 +68,8 @@ class HiveSchemaConverter {
     return converter.convertType(typeInfo, null);
   }
 
-  List<Types.NestedField> convertInternal(List<String> names, List<TypeInfo> typeInfos, List<String> comments,
-      Map<String, String> defaultValues) {
+  List<Types.NestedField> convertInternal(List<String> names, List<TypeInfo> typeInfos,
+      Map<String, String> defaultValues, List<String> comments) {
     List<Types.NestedField> result = Lists.newArrayListWithExpectedSize(names.size());
     int outerId = id + names.size();
     id = outerId;
@@ -86,7 +86,7 @@ class HiveSchemaConverter {
 
       if (defaultValues.containsKey(columnName)) {
         if (type.isPrimitiveType()) {
-          Object icebergDefaultValue = getDefaultValue(stripQuotes(defaultValues.get(columnName)), type);
+          Object icebergDefaultValue = getDefaultValue(defaultValues.get(columnName), type);
           fieldBuilder.withWriteDefault(Expressions.lit(icebergDefaultValue));
         } else if (!type.isStructType()) {
           throw new UnsupportedOperationException(
@@ -101,8 +101,8 @@ class HiveSchemaConverter {
 
   private static Object getDefaultValue(String defaultValue, Type type) {
     return switch (type.typeId()) {
-      case DATE, TIME, TIMESTAMP, TIMESTAMP_NANO -> Literal.of(defaultValue).to(type).value();
-      default -> Conversions.fromPartitionString(type, defaultValue);
+      case DATE, TIME, TIMESTAMP, TIMESTAMP_NANO -> Literal.of(stripQuotes(defaultValue)).to(type).value();
+      default -> Conversions.fromPartitionString(type, stripQuotes(defaultValue));
     };
   }
 
@@ -162,7 +162,7 @@ class HiveSchemaConverter {
         StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
         List<Types.NestedField> fields =
             convertInternal(structTypeInfo.getAllStructFieldNames(), structTypeInfo.getAllStructFieldTypeInfos(),
-                    Collections.emptyList(), getDefaultValuesMap(defaultValue));
+                getDefaultValuesMap(defaultValue), Collections.emptyList());
         return Types.StructType.of(fields);
       case MAP:
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
@@ -184,13 +184,11 @@ class HiveSchemaConverter {
   }
 
   private Map<String, String> getDefaultValuesMap(String defaultValue) {
-    if (defaultValue == null || defaultValue.isEmpty()) {
+    if (StringUtils.isEmpty(defaultValue)) {
       return Collections.emptyMap();
     }
     // For Struct, the default value is expected to be in key:value format
-    return Arrays.stream(stripQuotes(defaultValue).split(","))
-        .map(s -> s.split(":", 2)) // split into key:value
-        .collect(Collectors.toMap(arr -> arr[0], arr -> arr[1]));
+    return Splitter.on(',').trimResults().withKeyValueSeparator(':').split(stripQuotes(defaultValue));
   }
 
   public static String stripQuotes(String val) {
