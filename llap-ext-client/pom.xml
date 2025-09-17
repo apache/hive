@@ -98,6 +98,10 @@
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-client</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -108,6 +112,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>

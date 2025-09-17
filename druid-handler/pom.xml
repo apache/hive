@@ -107,6 +107,10 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.druid</groupId>
           <artifactId>druid-aws-common</artifactId>
         </exclusion>
@@ -150,6 +154,10 @@
           <!--LGPL licenced library-->
           <groupId>com.google.code.findbugs</groupId>
           <artifactId>annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>
