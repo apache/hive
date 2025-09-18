@@ -404,8 +404,8 @@
     </dependency>
     <dependency>
       <groupId>com.nimbusds</groupId>
-      <artifactId>nimbus-jose-jwt</artifactId>
-      <version>${nimbus-jose-jwt.version}</version>
+      <artifactId>oauth2-oidc-sdk</artifactId>
+      <version>${nimbus-oauth.version}</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
@@ -468,6 +468,16 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>mssqlserver</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-admin-client</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -22,6 +22,8 @@ package org.apache.iceberg.rest.extension;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -41,9 +43,11 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
 
   private final Configuration conf;
   private final JwksServer jwksServer;
+  private final OAuth2AuthorizationServer authorizationServer;
   private final RESTCatalogServer restCatalogServer;
 
-  private HiveRESTCatalogServerExtension(AuthType authType, Class<? extends MetaStoreSchemaInfo> schemaInfoClass) {
+  private HiveRESTCatalogServerExtension(AuthType authType, Class<? extends MetaStoreSchemaInfo> schemaInfoClass,
+      Map<String, String> configurations) {
     this.conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, authType.name());
     if (authType == AuthType.JWT) {
@@ -54,12 +58,26 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     } else {
       jwksServer = null;
     }
+    if (authType == AuthType.OAUTH2) {
+      authorizationServer = new OAuth2AuthorizationServer();
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, "oauth2");
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID, OAuth2AuthorizationServer.HMS_ID);
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET,
+          OAuth2AuthorizationServer.HMS_SECRET);
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_AUDIENCE, OAuth2AuthorizationServer.HMS_ID);
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_FIELD, "email");
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_PATTERN,
+          "(.*)@example.com");
+    } else {
+      authorizationServer = null;
+    }
+    configurations.forEach(conf::set);
     restCatalogServer = new RESTCatalogServer();
     if (schemaInfoClass != null) {
       restCatalogServer.setSchemaInfoClass(schemaInfoClass);
     }
   }
-  
+
   public Configuration getConf() {
     return conf;
   }
@@ -68,6 +86,11 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
   public void beforeAll(ExtensionContext context) throws Exception {
     if (jwksServer != null) {
       jwksServer.start();
+    }
+    if (authorizationServer != null) {
+      authorizationServer.start();
+      LOG.error(authorizationServer.getIssuer());
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_ISSUER, authorizationServer.getIssuer());
     }
     restCatalogServer.start(conf);
   }
@@ -97,6 +120,9 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     if (jwksServer != null) {
       jwksServer.stop();
     }
+    if (authorizationServer != null) {
+      authorizationServer.stop();
+    }
     restCatalogServer.stop();
   }
 
@@ -104,21 +130,39 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     return restCatalogServer.getRestEndpoint();
   }
 
+  public String getOAuth2TokenEndpoint() {
+    return authorizationServer.getTokenEndpoint();
+  }
+
+  public String getOAuth2ClientCredential() {
+    return authorizationServer.getClientCredential();
+  }
+
+  public String getOAuth2AccessToken() {
+    return authorizationServer.getAccessToken();
+  }
+
   public static class Builder {
     private final AuthType authType;
     private Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass;
+    private final Map<String, String> configurations = new HashMap<>();
 
     private Builder(AuthType authType) {
       this.authType = authType;
     }
-    
+
     public Builder addMetaStoreSchemaClassName(Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass) {
       this.metaStoreSchemaClass = metaStoreSchemaClass;
       return this;
     }
 
+    public Builder configure(String key, String value) {
+      configurations.put(key, value);
+      return this;
+    }
+
     public HiveRESTCatalogServerExtension build() {
-      return new HiveRESTCatalogServerExtension(authType, metaStoreSchemaClass);
+      return new HiveRESTCatalogServerExtension(authType, metaStoreSchemaClass, configurations);
     }
   }
 

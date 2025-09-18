@@ -18,6 +18,8 @@
  */
 package org.apache.iceberg.rest;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.servlet.http.HttpServlet;
@@ -100,7 +102,9 @@ public class HMSCatalogFactory {
    */
   private HttpServlet createServlet(Catalog catalog) {
     String authType = MetastoreConf.getVar(configuration, ConfVars.CATALOG_SERVLET_AUTH);
-    ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration);
+    // Iceberg REST client uses "catalog" by default
+    List<String> scopes = Collections.singletonList("catalog");
+    ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
     return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalog)));
   }
 

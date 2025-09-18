@@ -20,23 +20,24 @@ package org.apache.hadoop.hive.metastore.auth.jwt;
 
 import com.google.common.base.Preconditions;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSObject;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
-import com.nimbusds.jose.jwk.AsymmetricJWK;
-import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSAlgorithm.Family;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-import javax.security.sasl.AuthenticationException;
-import org.apache.hadoop.conf.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.security.Key;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import java.net.URL;
 import java.text.ParseException;
-import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import java.util.List;
 
 /**
@@ -46,64 +47,35 @@ import java.util.List;
  * This is cloned from JWTValidator in HS2 so as to NOT have any dependency on HS2 code.
  */
 public class JWTValidator {
-  private static final Logger LOG = LoggerFactory.getLogger(JWTValidator.class.getName());
-  private static final DefaultJWSVerifierFactory JWS_VERIFIER_FACTORY = new DefaultJWSVerifierFactory();
-  private final URLBasedJWKSProvider jwksProvider;
-  public JWTValidator(Configuration conf) throws IOException, ParseException {
-    this.jwksProvider = new URLBasedJWKSProvider(conf);
+  // Accept asymmetric cryptography based algorithms only
+  private static final Set<JWSAlgorithm> ACCEPTABLE_ALGORITHMS = new HashSet<>(Family.SIGNATURE);
+
+  private final ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
+
+  public JWTValidator(Set<JOSEObjectType> acceptableTypes, List<URL> jwksURLs, String expectedIssuer,
+      String expectedAudience, Set<String> requiredClaimNames) {
+    jwtProcessor = new DefaultJWTProcessor<>();
+    jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(acceptableTypes));
+    Preconditions.checkArgument(!jwksURLs.isEmpty());
+    final var keySelector = new JWSVerificationKeySelector<>(ACCEPTABLE_ALGORITHMS, getKeySource(jwksURLs));
+    jwtProcessor.setJWSKeySelector(keySelector);
+    final var expectedClaimsBuilder = new JWTClaimsSet.Builder();
+    if (expectedIssuer != null) {
+      expectedClaimsBuilder.issuer(expectedIssuer);
+    }
+    jwtProcessor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier<>(expectedAudience, expectedClaimsBuilder.build(),
+        requiredClaimNames));
   }
 
-  public String validateJWTAndExtractUser(String signedJwt) throws ParseException, AuthenticationException {
-    Preconditions.checkNotNull(jwksProvider);
+  private JWKSource<SecurityContext> getKeySource(List<URL> jwkURLs) {
+    final var head = jwkURLs.getFirst();
+    final var builder = JWKSourceBuilder.create(head).retrying(true);
+    final var tail = jwkURLs.subList(1, jwkURLs.size());
+    return tail.isEmpty() ? builder.build() : builder.failover(getKeySource(tail)).build();
+  }
+
+  public JWTClaimsSet validateJWT(String signedJwt) throws BadJOSEException, ParseException, JOSEException {
     Preconditions.checkNotNull(signedJwt, "No token found");
-    final SignedJWT parsedJwt = SignedJWT.parse(signedJwt);
-    List<JWK> matchedJWKS = jwksProvider.getJWKs(parsedJwt.getHeader());
-    if (matchedJWKS.isEmpty()) {
-      throw new AuthenticationException("Failed to find matched JWKs with the JWT header: " + parsedJwt.getHeader());
-    }
-
-    // verify signature
-    Exception lastException = null;
-    for (JWK matchedJWK : matchedJWKS) {
-      String keyID = matchedJWK.getKeyID() == null ? "null" : matchedJWK.getKeyID();
-      try {
-        JWSVerifier verifier = getVerifier(parsedJwt.getHeader(), matchedJWK);
-        if (parsedJwt.verify(verifier)) {
-          LOG.debug("Verified JWT {} by JWK {}", parsedJwt.getPayload(), keyID);
-          break;
-        }
-      } catch (Exception e) {
-        lastException = e;
-        LOG.warn("Failed to verify JWT {} by JWK {}", parsedJwt.getPayload(), keyID, e);
-      }
-    }
-    // We use only the last seven characters to let a user can differentiate exceptions for different JWT
-    int startIndex = Math.max(0, signedJwt.length() - 7);
-    String lastSevenChars = signedJwt.substring(startIndex);
-    if (parsedJwt.getState() != JWSObject.State.VERIFIED) {
-      throw new AuthenticationException("Failed to verify the JWT signature (ends with " + lastSevenChars + ")",
-          lastException);
-    }
-
-    // verify claims
-    JWTClaimsSet claimsSet = parsedJwt.getJWTClaimsSet();
-    Date expirationTime = claimsSet.getExpirationTime();
-    if (expirationTime != null) {
-      Date now = new Date();
-      if (now.after(expirationTime)) {
-        LOG.warn("Rejecting an expired JWT: {}", parsedJwt.getPayload());
-        throw new AuthenticationException("JWT (ends with " + lastSevenChars + ") has been expired");
-      }
-    }
-
-    // We assume the subject of claims is the query user
-    return claimsSet.getSubject();
-  }
-
-  private static JWSVerifier getVerifier(JWSHeader header, JWK jwk) throws JOSEException {
-    Preconditions.checkArgument(jwk instanceof AsymmetricJWK,
-        "JWT signature verification with symmetric key is not allowed.");
-    Key key = ((AsymmetricJWK) jwk).toPublicKey();
-    return JWS_VERIFIER_FACTORY.createJWSVerifier(header, key);
+    return jwtProcessor.process(signedJwt, null);
   }
 }

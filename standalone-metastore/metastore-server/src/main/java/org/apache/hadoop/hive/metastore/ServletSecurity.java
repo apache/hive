@@ -17,10 +17,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
+
 import com.google.common.base.Preconditions;
+import java.util.List;
+import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
-import org.apache.hadoop.hive.metastore.auth.jwt.JWTValidator;
+import org.apache.hadoop.hive.metastore.auth.jwt.SimpleJWTAuthenticator;
+import org.apache.hadoop.hive.metastore.auth.oauth2.OAuth2Authenticator;
+import org.apache.hadoop.hive.metastore.auth.oauth2.OAuth2AuthenticatorFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.security.SecurityUtil;
@@ -79,7 +85,7 @@ import java.util.Optional;
  */
 public class ServletSecurity {
   public enum AuthType {
-    NONE, SIMPLE, JWT;
+    NONE, SIMPLE, JWT, OAUTH2;
 
     public static AuthType fromString(String type) {
       return AuthType.valueOf(type.toUpperCase());
@@ -91,12 +97,20 @@ public class ServletSecurity {
   private final boolean isSecurityEnabled;
   private final AuthType authType;
   private final Configuration conf;
-  private JWTValidator jwtValidator = null;
+  private final Function<HttpServletRequest, List<String>> scopeProvider;
+  private SimpleJWTAuthenticator jwtAuthenticator = null;
+  private OAuth2Authenticator oAuth2Authenticator = null;
 
   public ServletSecurity(AuthType authType, Configuration conf) {
+    this(authType, conf, null);
+  }
+
+  public ServletSecurity(AuthType authType, Configuration conf,
+      Function<HttpServletRequest, List<String>> scopeProvider) {
     this.conf = conf;
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.authType = authType;
+    this.scopeProvider = scopeProvider;
   }
 
   /**
@@ -104,9 +118,15 @@ public class ServletSecurity {
    * @throws ServletException if the jwt validator creation throws an exception
    */
   public void init() throws ServletException {
-    if (authType == AuthType.JWT && jwtValidator == null) {
+    if (authType == AuthType.JWT && jwtAuthenticator == null) {
       try {
-        jwtValidator = new JWTValidator(this.conf);
+        jwtAuthenticator = SimpleJWTAuthenticator.create(this.conf);
+      } catch (Exception e) {
+        throw new ServletException("Failed to initialize ServletSecurity.", e);
+      }
+    } else if (authType == AuthType.OAUTH2 && oAuth2Authenticator == null) {
+      try {
+        oAuth2Authenticator = OAuth2AuthenticatorFactory.createAuthenticator(this.conf);
       } catch (Exception e) {
         throw new ServletException("Failed to initialize ServletSecurity.", e);
       }
@@ -210,7 +230,7 @@ public class ServletSecurity {
       String userFromHeader = extractUserName(request, response);
       // Temporary, and useless for now. Here only to allow this to work on an otherwise kerberized
       // server.
-      if (isSecurityEnabled || authType == AuthType.JWT) {
+      if (isSecurityEnabled || authType == AuthType.JWT || authType == AuthType.OAUTH2) {
         LOG.info("Creating proxy user for: {}", userFromHeader);
         clientUgi = UserGroupInformation.createProxyUser(userFromHeader, UserGroupInformation.getLoginUser());
       } else {
@@ -220,7 +240,8 @@ public class ServletSecurity {
         clientUgi = UserGroupInformation.createRemoteUser(userFromHeader);
       }
     } catch (HttpAuthenticationException e) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setStatus(e.getStatusCode());
+      e.getWwwAuthenticateHeader().ifPresent(value -> response.setHeader(WWW_AUTHENTICATE, value));
       response.getWriter().printf("Authentication error: %s", e.getMessage());
       // Also log the error message on server side
       LOG.error("Authentication error: ", e);
@@ -243,31 +264,38 @@ public class ServletSecurity {
 
   private String extractUserName(HttpServletRequest request, HttpServletResponse response)
       throws HttpAuthenticationException {
-    if (authType == AuthType.SIMPLE) {
+    switch (authType) {
+    case NONE:
+      throw new IllegalArgumentException("This method should not be called when auth type is NONE");
+    case SIMPLE:
       String userFromHeader = request.getHeader(X_USER);
       if (userFromHeader == null || userFromHeader.isEmpty()) {
         throw new HttpAuthenticationException("User header " + X_USER + " missing in request");
       }
       return userFromHeader;
+    case JWT:
+      String signedJwt = extractBearerToken(request, response);
+      if (signedJwt == null) {
+        throw new HttpAuthenticationException("Couldn't find bearer token in the auth header in the request");
+      }
+      String user;
+      try {
+        user = jwtAuthenticator.resolveUserName(signedJwt);
+        Preconditions.checkNotNull(user, "JWT needs to contain the user name as subject");
+        Preconditions.checkState(!user.isEmpty(), "User name should not be empty in JWT");
+        LOG.info("Successfully validated and extracted user name {} from JWT in Auth "
+            + "header in the request", user);
+      } catch (Exception e) {
+        throw new HttpAuthenticationException("Failed to validate JWT from Bearer token in "
+            + "Authentication header", e);
+      }
+      return user;
+    case OAUTH2:
+      String accessToken = extractBearerToken(request, response);
+      return oAuth2Authenticator.resolveUserName(accessToken, scopeProvider.apply(request));
+    default:
+      throw new IllegalArgumentException("Unknown auth type: " + authType);
     }
-    // Unreachable in the case of NONE
-    Preconditions.checkState(authType == AuthType.JWT);
-    String signedJwt = extractBearerToken(request, response);
-    if (signedJwt == null) {
-      throw new HttpAuthenticationException("Couldn't find bearer token in the auth header in the request");
-    }
-    String user;
-    try {
-      user = jwtValidator.validateJWTAndExtractUser(signedJwt);
-      Preconditions.checkNotNull(user, "JWT needs to contain the user name as subject");
-      Preconditions.checkState(!user.isEmpty(), "User name should not be empty in JWT");
-      LOG.info("Successfully validated and extracted user name {} from JWT in Auth "
-          + "header in the request", user);
-    } catch (Exception e) {
-      throw new HttpAuthenticationException("Failed to validate JWT from Bearer token in "
-          + "Authentication header", e);
-    }
-    return user;
   }
 
   /**
