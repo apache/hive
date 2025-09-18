@@ -198,6 +198,11 @@ public final class DDLUtils {
     outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 
+  public static void addDbAndTableToOutputs(Database database, Table table, Set<WriteEntity> outputs) {
+    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
+    outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
+  }
+
   public static void setColumnsAndStorePartitionTransformSpecOfTable(
           List<FieldSchema> columns, List<FieldSchema> partitionColumns,
           HiveConf conf, Table tbl) {
