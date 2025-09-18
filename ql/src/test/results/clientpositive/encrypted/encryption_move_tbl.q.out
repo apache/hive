@@ -268,3 +268,7 @@ POSTHOOK: query: DROP DATABASE encrypted_db_outloc
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:encrypted_db_outloc
 POSTHOOK: Output: database:encrypted_db_outloc
+Encryption key deleted: 'key_128'
+Encryption key deleted: 'key_128_2'
+Encryption key deleted: 'key_128_3'
+Encryption key deleted: 'key_128_4'

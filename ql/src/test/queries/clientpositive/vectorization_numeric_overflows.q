@@ -4,7 +4,7 @@ set hive.fetch.task.conversion=none;
 set hive.cbo.enable=false;
 set hive.vectorized.use.checked.expressions=true;
 
---SORT_QUERY_RESULTS
+-- SORT_QUERY_RESULTS
 
 CREATE TABLE test_overflow (
     ctinyint1 TINYINT,

@@ -510,7 +510,6 @@ compaction_queue	cq_commit_time
 compaction_queue	cq_database
 compaction_queue	cq_enqueue_time
 compaction_queue	cq_error_message
-#### A masked pattern was here ####
 compaction_queue	cq_highest_write_id
 compaction_queue	cq_id
 compaction_queue	cq_initiator_id
@@ -542,7 +541,6 @@ compactions	c_enqueue_time
 compactions	c_enqueue_time
 compactions	c_error_message
 compactions	c_error_message
-#### A masked pattern was here ####
 compactions	c_highest_write_id
 compactions	c_highest_write_id
 compactions	c_id
@@ -586,7 +584,6 @@ completed_compactions	cc_database
 completed_compactions	cc_end
 completed_compactions	cc_enqueue_time
 completed_compactions	cc_error_message
-#### A masked pattern was here ####
 completed_compactions	cc_highest_write_id
 completed_compactions	cc_id
 completed_compactions	cc_initiator_id
@@ -623,14 +620,12 @@ db_version	version_comment
 dbs	db_id
 dbs	db_location_uri
 dbs	name
-#### A masked pattern was here ####
 funcs	class_name
 funcs	create_time
 funcs	db_id
 funcs	func_id
 funcs	func_name
 funcs	func_type
-#### A masked pattern was here ####
 global_privs	authorizer
 global_privs	create_time
 global_privs	grant_option
@@ -859,7 +854,6 @@ role_map	principal_type
 role_map	role_grant_id
 role_map	role_id
 roles	create_time
-#### A masked pattern was here ####
 roles	role_id
 roles	role_name
 scheduled_executions	elapsed
@@ -903,7 +897,6 @@ schemata	default_character_set_catalog
 schemata	default_character_set_name
 schemata	default_character_set_schema
 schemata	schema_name
-#### A masked pattern was here ####
 schemata	sql_path
 scr_txn	key
 scr_txn	value
@@ -1026,7 +1019,6 @@ tbls	create_time
 tbls	db_id
 tbls	is_rewrite_enabled
 tbls	last_access_time
-#### A masked pattern was here ####
 tbls	retention
 tbls	sd_id
 tbls	tbl_id

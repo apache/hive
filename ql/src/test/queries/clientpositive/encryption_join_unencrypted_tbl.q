@@ -1,5 +1,5 @@
 --! qt:dataset:src
---SORT_QUERY_RESULTS
+-- SORT_QUERY_RESULTS
 
 DROP TABLE IF EXISTS encrypted_table PURGE;
 CREATE TABLE encrypted_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';

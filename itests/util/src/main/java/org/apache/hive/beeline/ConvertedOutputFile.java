@@ -19,7 +19,7 @@
 package org.apache.hive.beeline;
 
 import org.apache.hadoop.hive.common.io.DigestPrintStream;
-import org.apache.hadoop.hive.common.io.FetchConverter;
+import org.apache.hadoop.hive.common.io.FetchListener;
 import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 
@@ -30,36 +30,36 @@ import java.io.PrintStream;
  * FetchConverters.
  */
 public class ConvertedOutputFile extends OutputFile {
-  private final boolean isActiveFetchConverter;
+  private final boolean isFetchListener;
 
   public ConvertedOutputFile(OutputFile inner, Converter converter) throws Exception {
     super(converter.getConvertedPrintStream(inner.getOut()), inner.getFilename());
-    isActiveFetchConverter = (getOut() instanceof FetchConverter);
+    isFetchListener = (getOut() instanceof FetchListener);
   }
 
   @Override
   boolean isActiveConverter() {
-    return isActiveFetchConverter;
+    return isFetchListener;
   }
 
   @Override
   void fetchStarted() {
-    if (isActiveFetchConverter) {
-      ((FetchConverter) getOut()).fetchStarted();
+    if (isFetchListener) {
+      ((FetchListener) getOut()).fetchStarted();
     }
   }
 
   @Override
   void foundQuery(boolean foundQuery) {
-    if (isActiveFetchConverter) {
-      ((FetchConverter) getOut()).foundQuery(foundQuery);
+    if (isFetchListener) {
+      ((FetchListener) getOut()).foundQuery(foundQuery);
     }
   }
 
   @Override
   void fetchFinished() {
-    if (isActiveFetchConverter) {
-      ((FetchConverter) getOut()).fetchFinished();
+    if (isFetchListener) {
+      ((FetchListener) getOut()).fetchFinished();
     }
   }
 
