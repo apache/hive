@@ -100,8 +100,8 @@ select row_number() over (),t.id,row_number() over (partition by t.id) from ship
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ship_types
 POSTHOOK: Output: default@ships
-POSTHOOK: Lineage: ships.crew_size SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: ships.id SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.crew_size EXPRESSION [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.id EXPRESSION []
 POSTHOOK: Lineage: ships.ship_type_id SIMPLE [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: insert into torpedos
@@ -116,8 +116,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ship_types
 POSTHOOK: Input: default@ships
 POSTHOOK: Output: default@torpedos
-POSTHOOK: Lineage: torpedos.admiral_id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: torpedos.id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.admiral_id EXPRESSION [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.id EXPRESSION []
 POSTHOOK: Lineage: torpedos.ship_id SIMPLE [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: select
     `s`.`id`

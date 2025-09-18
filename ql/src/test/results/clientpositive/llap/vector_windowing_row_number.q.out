@@ -858,16 +858,16 @@ POSTHOOK: Input: default@row_number_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@row_numbers_vectorized
 POSTHOOK: Lineage: row_numbers_vectorized.col SIMPLE [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r1 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r10 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r2 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r3 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r4 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r5 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r6 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r7 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r8 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_vectorized.r9 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r1 EXPRESSION []
+POSTHOOK: Lineage: row_numbers_vectorized.r10 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r2 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r3 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r4 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r5 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r6 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r7 EXPRESSION []
+POSTHOOK: Lineage: row_numbers_vectorized.r8 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), ]
+POSTHOOK: Lineage: row_numbers_vectorized.r9 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), ]
 r1	r2	r3	r4	r5	r6	r7	r8	r9	r10	col
 PREHOOK: query: explain select
         row_number() over() as r1,
@@ -1359,16 +1359,16 @@ POSTHOOK: Input: default@row_number_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@row_numbers_non_vectorized
 POSTHOOK: Lineage: row_numbers_non_vectorized.col SIMPLE [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r1 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r10 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r2 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r3 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r4 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r5 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r6 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r7 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r8 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
-POSTHOOK: Lineage: row_numbers_non_vectorized.r9 SCRIPT [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), (row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r1 EXPRESSION []
+POSTHOOK: Lineage: row_numbers_non_vectorized.r10 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r2 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r3 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r4 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r5 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r6 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:col, type:string, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r7 EXPRESSION []
+POSTHOOK: Lineage: row_numbers_non_vectorized.r8 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), ]
+POSTHOOK: Lineage: row_numbers_non_vectorized.r9 EXPRESSION [(row_number_test)row_number_test.FieldSchema(name:pos, type:int, comment:null), ]
 r1	r2	r3	r4	r5	r6	r7	r8	r9	r10	col
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select exists(
