@@ -337,8 +337,11 @@ public final class HiveSchemaUtil {
     }
   }
 
-  public static void setDefault(List<Types.NestedField> fields, Record record, Set<String> missingColumns) {
-    for (Types.NestedField field : fields) {
+  public static void setDefaultValues(List<Types.NestedField> fields, Record record, Set<String> missingColumns) {
+    // Pre-filter fields to only those that are missing or struct types
+    List<Types.NestedField> relevantFields =
+        fields.stream().filter(field -> missingColumns.contains(field.name()) || field.type().isStructType()).toList();
+    for (Types.NestedField field : relevantFields) {
       Object fieldValue = record.getField(field.name());
 
       if (fieldValue == null) {
@@ -350,7 +353,7 @@ public final class HiveSchemaUtil {
             Record nestedRecord = GenericRecord.create(field.type().asStructType());
             record.setField(field.name(), nestedRecord);
             // For nested fields, we consider ALL fields as "missing" to apply defaults
-            setDefaultForNestedStruct(field.type().asStructType().fields(), nestedRecord);
+            setDefaultValuesForNestedStruct(field.type().asStructType().fields(), nestedRecord);
           } else if (field.writeDefault() != null) {
             Object defaultValue = convertToWriteType(field.writeDefault(), field.type());
             record.setField(field.name(), defaultValue);
@@ -359,13 +362,13 @@ public final class HiveSchemaUtil {
         // Explicit NULLs remain NULL
       } else if (field.type().isStructType() && fieldValue instanceof Record) {
         // For existing structs, apply defaults to any null nested fields
-        setDefaultForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
+        setDefaultValuesForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
       }
     }
   }
 
   // Special method for nested structs that always applies defaults to null fields
-  private static void setDefaultForNestedStruct(List<Types.NestedField> fields, Record record) {
+  private static void setDefaultValuesForNestedStruct(List<Types.NestedField> fields, Record record) {
     for (Types.NestedField field : fields) {
       Object fieldValue = record.getField(field.name());
 
@@ -375,12 +378,12 @@ public final class HiveSchemaUtil {
         record.setField(field.name(), defaultValue);
       } else if (field.type().isStructType() && fieldValue instanceof Record) {
         // Recursively process nested structs
-        setDefaultForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
+        setDefaultValuesForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
       }
     }
   }
 
-  private static Object convertToWriteType(Object value, Type type) {
+  public static Object convertToWriteType(Object value, Type type) {
     if (value == null) {
       return null;
     }
@@ -395,19 +398,10 @@ public final class HiveSchemaUtil {
       case TIMESTAMP:
         // Convert microseconds since epoch (Long) to LocalDateTime
         if (value instanceof Long) {
-          return DateTimeUtil.timestampFromMicros((Long) value);
-        }
-        break;
-      case TIMESTAMP_NANO:
-        // Convert nanoseconds since epoch (Long) to LocalDateTime
-        if (value instanceof Long) {
-          return DateTimeUtil.timestampFromNanos((Long) value);
-        }
-        break;
-      case TIME:
-        // Convert microseconds since midnight (Long) to LocalTime
-        if (value instanceof Long) {
-          return DateTimeUtil.timeFromMicros((Long) value);
+          Types.TimestampType timestampType = (Types.TimestampType) type;
+          return timestampType.shouldAdjustToUTC() ?
+              DateTimeUtil.timestamptzFromMicros((Long) value) :
+              DateTimeUtil.timestampFromMicros((Long) value);
         }
         break;
       default:

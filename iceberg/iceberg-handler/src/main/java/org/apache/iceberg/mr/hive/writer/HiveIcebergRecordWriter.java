@@ -49,7 +49,7 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    HiveSchemaUtil.setDefault(specs.get(currentSpecId).schema().asStruct().fields(), record, missingColumns);
+    HiveSchemaUtil.setDefaultValues(specs.get(currentSpecId).schema().asStruct().fields(), record, missingColumns);
 
     writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
   }

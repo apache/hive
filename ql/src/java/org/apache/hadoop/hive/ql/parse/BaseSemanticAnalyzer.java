@@ -865,7 +865,7 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode ast, boolean lowerCase, TokenRewriteStream tokenRewriteStream,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-      List<ConstraintsUtils.ConstraintInfo> defaultConstraintInfo, List<SQLCheckConstraint> checkConstraints,
+      List<ConstraintsUtils.ConstraintInfo> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
       Configuration conf) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<>();
     Tree parent = ast.getParent();
@@ -942,7 +942,7 @@ public abstract class BaseSemanticAnalyzer {
                   checkConstraints, typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_DEFAULT_VALUE:
-              defaultConstraintInfo.addAll(
+              defaultConstraints.addAll(
                   ConstraintsUtils.processDefaultConstraints(constraintChild, ImmutableList.of(col.getName()),
                       typeChild, tokenRewriteStream));
               break;

@@ -27,11 +27,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
-import org.apache.iceberg.util.DateTimeUtil;
 
 public class IcebergInternalRecordWrapper implements Record, StructLike {
 
@@ -137,11 +137,9 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   private static Function<Object, Object> converter(Type type) {
     switch (type.typeId()) {
       case TIMESTAMP:
-        return timestamp -> ((Types.TimestampType) type).shouldAdjustToUTC() ?
-            DateTimeUtil.timestamptzFromMicros((Long) timestamp) :
-            DateTimeUtil.timestampFromMicros((Long) timestamp);
+        return timestamp -> HiveSchemaUtil.convertToWriteType(timestamp, type);
       case DATE:
-        return date -> DateTimeUtil.dateFromDays((Integer) date);
+        return date -> HiveSchemaUtil.convertToWriteType(date, type);
       case STRUCT:
         IcebergInternalRecordWrapper wrapper =
             new IcebergInternalRecordWrapper(type.asStructType());

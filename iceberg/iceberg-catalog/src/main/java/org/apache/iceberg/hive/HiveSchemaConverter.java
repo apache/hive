@@ -183,7 +183,7 @@ class HiveSchemaConverter {
     }
   }
 
-  private Map<String, String> getDefaultValuesMap(String defaultValue) {
+  private static Map<String, String> getDefaultValuesMap(String defaultValue) {
     if (StringUtils.isEmpty(defaultValue)) {
       return Collections.emptyMap();
     }
