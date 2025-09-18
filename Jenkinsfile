@@ -117,6 +117,7 @@ def sonarAnalysis(args) {
       -Dsonar.organization=apache \
       -Dsonar.projectKey=apache_hive \
       -Dsonar.host.url=https://sonarcloud.io \
+      -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml \
       """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
 
       // Sonar scanner runs in a separate JVM so JAVA_OPTS (notably heap size)
@@ -191,6 +192,15 @@ def jobWrappers(closure) {
   } finally {
     setPrLabel(finalLabel)
   }
+}
+
+def checkstyle() {
+  sh '''#!/bin/bash -e
+set -x
+sw java 21 && . /etc/profile.d/java.sh
+export MAVEN_OPTS="-Xmx6G"
+mvn checkstyle:checkstyle -Pitests
+'''
 }
 
 def saveWS() {
@@ -342,12 +352,18 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
               stage('Prepare') {
                   loadWS();
               }
+              stage('Checkstyle') {
+                  checkstyle()
+              }
               stage('Sonar') {
                   sonarAnalysis("-Dsonar.branch.name=${BRANCH_NAME}")
               }
           } else if(env.CHANGE_ID) {
               stage('Prepare') {
                   loadWS();
+              }
+              stage('Checkstyle') {
+                  checkstyle()
               }
               stage('Sonar') {
                   sonarAnalysis("""-Dsonar.pullrequest.github.repository=apache/hive \
