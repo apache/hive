@@ -313,8 +313,8 @@ public class QTestUtil {
     String query = FileUtils.readFileToString(qf, StandardCharsets.UTF_8);
     inputFile = qf;
     inputContent = query;
-    qTestResultProcessor.init(query);
     qOutProcessor.initMasks(query);
+    qTestResultProcessor.init(query, qOutProcessor);
   }
 
   public final File getInputFile() {
