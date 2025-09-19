@@ -1,0 +1,50 @@
+PREHOOK: query: CREATE DATABASE testdb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: CREATE DATABASE testdb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+testdb
+#### A masked pattern was here ####
+PREHOOK: type: CREATECATALOG
+PREHOOK: Output: catalog:testcat
+PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+POSTHOOK: type: CREATECATALOG
+POSTHOOK: Output: catalog:testcat
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: SHOW CATALOGS
+PREHOOK: type: SHOWCATALOGS
+POSTHOOK: query: SHOW CATALOGS
+POSTHOOK: type: SHOWCATALOGS
+hive
+testcat
+PREHOOK: query: SET CATALOG testcat
+PREHOOK: type: SWITCHCATALOG
+PREHOOK: Input: catalog:testcat
+POSTHOOK: query: SET CATALOG testcat
+POSTHOOK: type: SWITCHCATALOG
+POSTHOOK: Input: catalog:testcat
+PREHOOK: query: CREATE DATABASE testdb_new
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb_new
+POSTHOOK: query: CREATE DATABASE testdb_new
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb_new
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+testdb_new
+PREHOOK: query: USE testcat.testdb_new
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:testdb_new
+POSTHOOK: query: USE testcat.testdb_new
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:testdb_new

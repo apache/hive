@@ -1198,6 +1198,10 @@ public class Table implements Serializable {
     return this.tTable.getCatName();
   }
 
+  public void setCatalogName(String catalogName) {
+    this.tTable.setCatName(catalogName);
+  }
+
   public void setOutdatedForRewriting(Boolean validForRewritingMaterializedView) {
     this.outdatedForRewritingMaterializedView = validForRewritingMaterializedView;
   }

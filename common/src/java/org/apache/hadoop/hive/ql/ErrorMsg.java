@@ -468,7 +468,7 @@ public enum ErrorMsg {
   RESOURCE_PLAN_ALREADY_EXISTS(10417, "Resource plan {0} already exists", true),
   RESOURCE_PLAN_NOT_EXISTS(10418, "Resource plan {0} does not exist", true),
   INCOMPATIBLE_STRUCT(10419, "Incompatible structs.", true),
-  OBJECTNAME_CONTAINS_DOT(10420, "Table or database name may not contain dot(.) character", true),
+  OBJECTNAME_CONTAINS_DOT(10420, "Catalog or table or database name may not contain dot(.) character", true),
   WITHIN_GROUP_NOT_ALLOWED(10421,
           "Not an ordered-set aggregate function: {0}. WITHIN GROUP clause is not allowed.", true),
   WITHIN_GROUP_PARAMETER_MISMATCH(10422,

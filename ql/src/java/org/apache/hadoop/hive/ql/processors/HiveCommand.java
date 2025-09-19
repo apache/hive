@@ -86,6 +86,8 @@ public enum HiveCommand {
       } else if (command.length > 1 && "show".equalsIgnoreCase(command[0]) &&
           "processlist".equalsIgnoreCase(command[1])) {
         return PROCESSLIST;
+      } else if(command.length > 1 && "set".equalsIgnoreCase(command[0]) && "catalog".equalsIgnoreCase(command[1])) {
+        return null;// set catalog catalog_name should be a SQLOperation instead of a HiveCommandOperation
       } else if (COMMANDS.contains(cmd)) {
         HiveCommand hiveCommand = HiveCommand.valueOf(cmd);
         if (findOnlyForTesting == hiveCommand.isOnlyForTesting()) {

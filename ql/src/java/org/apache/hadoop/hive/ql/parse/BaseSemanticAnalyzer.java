@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -59,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -419,6 +421,24 @@ public abstract class BaseSemanticAnalyzer {
     } catch (UnsupportedEncodingException e) {
       throw new SemanticException(e);
     }
+  }
+
+  public static Pair<String, String> getCatDbNamePair(ASTNode dbNameNode) throws SemanticException {
+    if (dbNameNode.getChildCount() == 2) {
+      final String catName = unescapeIdentifier(dbNameNode.getChild(0).getText());
+      final String dbName = unescapeIdentifier(dbNameNode.getChild(1).getText());
+      if (catName.contains(".") || dbName.contains(".")) {
+        throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), dbNameNode));
+      }
+      return Pair.of(catName, dbName);
+    }
+    final String dbName = unescapeIdentifier(dbNameNode.getChild(0).getText());
+    if (dbName.contains(".")) {
+      throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), dbNameNode));
+    }
+    return Pair.of(null, dbName);
   }
 
   /**
@@ -1913,10 +1933,30 @@ public abstract class BaseSemanticAnalyzer {
     return getDatabase(dbName, true);
   }
 
+  /**
+   * TODO. Once we confirm that no compatibility has been broken, we can remove these non-catalog APIs
+   * @deprecated Replaced by
+   *     {@link BaseSemanticAnalyzer#getDatabase(String catalogName, String dbName, boolean throwException)}
+   * @return the database if existed.
+   */
   protected Database getDatabase(String dbName, boolean throwException) throws SemanticException {
     Database database;
     try {
       database = db.getDatabase(dbName);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+    if (database == null && throwException) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
+    }
+    return database;
+  }
+
+  protected Database getDatabase(String catalogName, String dbName, boolean throwException) throws SemanticException {
+    Database database;
+    try {
+      catalogName = Objects.requireNonNullElse(catalogName, SessionState.get().getCurrentCatalog());
+      database = db.getDatabase(catalogName, dbName);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }

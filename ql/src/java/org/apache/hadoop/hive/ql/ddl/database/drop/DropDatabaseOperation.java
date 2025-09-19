@@ -52,12 +52,12 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
 
       if (LlapHiveUtils.isLlapMode(context.getConf())) {
         ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
-        llapEvictRequestBuilder.addDb(dbName);
+        llapEvictRequestBuilder.addDb(dbName); //TODO add catalog for the cache
         ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
       }
       // Unregister the functions as well
       if (desc.isCasdade()) {
-        FunctionRegistry.unregisterPermanentFunctions(dbName);
+        FunctionRegistry.unregisterPermanentFunctions(dbName); //TODO add catalog for the cache
       }
     } catch (NoSuchObjectException ex) {
       throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, desc.getDatabaseName());
