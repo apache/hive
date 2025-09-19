@@ -378,6 +378,7 @@ TOK_DESCCATALOG;
 TOK_CATALOGLOCATION;
 TOK_CATALOGCOMMENT;
 TOK_ALTERCATALOG_LOCATION;
+TOK_SWITCHCATALOG;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
@@ -1011,6 +1012,7 @@ ddlStatement
 @after { popMsg(state); }
     : createCatalogStatement
     | dropCatalogStatement
+    | switchCatalogStatement
     | createDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
@@ -1151,6 +1153,13 @@ dropCatalogStatement
     -> ^(TOK_DROPCATALOG identifier ifExists?)
     ;
 
+switchCatalogStatement
+@init { pushMsg("switch catalog statement", state); }
+@after { popMsg(state); }
+    : KW_SET KW_CATALOG identifier
+    -> ^(TOK_SWITCHCATALOG identifier)
+    ;
+
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
 @after { popMsg(state); }
@@ -1210,8 +1219,8 @@ dbConnectorName
 switchDatabaseStatement
 @init { pushMsg("switch database statement", state); }
 @after { popMsg(state); }
-    : KW_USE identifier
-    -> ^(TOK_SWITCHDATABASE identifier)
+    : KW_USE databaseName
+    -> ^(TOK_SWITCHDATABASE databaseName)
     ;
 
 dropDatabaseStatement
