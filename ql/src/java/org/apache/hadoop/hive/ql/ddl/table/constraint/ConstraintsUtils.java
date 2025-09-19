@@ -253,7 +253,7 @@ public final class ConstraintsUtils {
       } else if (childType == HiveParser.TOK_DEFAULT_VALUE) {
         // try to get default value only if this is DEFAULT constraint
         colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(BaseSemanticAnalyzer.getTypeStringFromAST(typeChildForDefault));
-        Pair<TypeInfo, String> defaultValueTypeAndValue = getDefaultValue(grandChild, tokenRewriteStream);
+        Pair<TypeInfo, String> defaultValueTypeAndValue = getDefaultValueAndType(grandChild, tokenRewriteStream);
         defaultValueType = defaultValueTypeAndValue.getKey();
         checkOrDefaultValue = defaultValueTypeAndValue.getValue();
       } else if (childType == HiveParser.TOK_CHECK_CONSTRAINT) {
@@ -309,7 +309,7 @@ public final class ConstraintsUtils {
    * @param node AST node corresponding to default value
    * @return retrieve the default value and return it as string
    */
-  private static Pair<TypeInfo, String> getDefaultValue(ASTNode node, TokenRewriteStream tokenStream)
+  private static Pair<TypeInfo, String> getDefaultValueAndType(ASTNode node, TokenRewriteStream tokenStream)
       throws SemanticException{
     // first create expression from defaultValueAST
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);

@@ -337,11 +337,8 @@ public final class HiveSchemaUtil {
     }
   }
 
-  public static void setDefaultValues(List<Types.NestedField> fields, Record record, Set<String> missingColumns) {
-    // Pre-filter fields to only those that are missing or struct types
-    List<Types.NestedField> relevantFields =
-        fields.stream().filter(field -> missingColumns.contains(field.name()) || field.type().isStructType()).toList();
-    for (Types.NestedField field : relevantFields) {
+  public static void setDefaultValues(Record record, List<Types.NestedField> fields, Set<String> missingColumns) {
+    for (Types.NestedField field : fields) {
       Object fieldValue = record.getField(field.name());
 
       if (fieldValue == null) {
@@ -353,7 +350,7 @@ public final class HiveSchemaUtil {
             Record nestedRecord = GenericRecord.create(field.type().asStructType());
             record.setField(field.name(), nestedRecord);
             // For nested fields, we consider ALL fields as "missing" to apply defaults
-            setDefaultValuesForNestedStruct(field.type().asStructType().fields(), nestedRecord);
+            setDefaultValuesForNestedStruct(nestedRecord, field.type().asStructType().fields());
           } else if (field.writeDefault() != null) {
             Object defaultValue = convertToWriteType(field.writeDefault(), field.type());
             record.setField(field.name(), defaultValue);
@@ -362,13 +359,13 @@ public final class HiveSchemaUtil {
         // Explicit NULLs remain NULL
       } else if (field.type().isStructType() && fieldValue instanceof Record) {
         // For existing structs, apply defaults to any null nested fields
-        setDefaultValuesForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
+        setDefaultValuesForNestedStruct((Record) fieldValue, field.type().asStructType().fields());
       }
     }
   }
 
   // Special method for nested structs that always applies defaults to null fields
-  private static void setDefaultValuesForNestedStruct(List<Types.NestedField> fields, Record record) {
+  private static void setDefaultValuesForNestedStruct(Record record, List<Types.NestedField> fields) {
     for (Types.NestedField field : fields) {
       Object fieldValue = record.getField(field.name());
 
@@ -378,7 +375,7 @@ public final class HiveSchemaUtil {
         record.setField(field.name(), defaultValue);
       } else if (field.type().isStructType() && fieldValue instanceof Record) {
         // Recursively process nested structs
-        setDefaultValuesForNestedStruct(field.type().asStructType().fields(), (Record) fieldValue);
+        setDefaultValuesForNestedStruct((Record) fieldValue, field.type().asStructType().fields());
       }
     }
   }
