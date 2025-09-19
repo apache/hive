@@ -222,6 +222,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -667,6 +668,7 @@ public class Hive implements AutoCloseable {
   public void createDatabase(Database db, boolean ifNotExist)
       throws AlreadyExistsException, HiveException {
     try {
+      db.setCatalogName(SessionState.get().getCurrentCatalog());
       getMSC().createDatabase(db);
     } catch (AlreadyExistsException e) {
       if (!ifNotExist) {
@@ -735,7 +737,7 @@ public class Hive implements AutoCloseable {
       .map(HiveTxnManager::getCurrentTxnId).orElse(0L);
     
     DropDatabaseRequest req = new DropDatabaseRequest();
-    req.setCatalogName(getDefaultCatalog(conf));
+    req.setCatalogName(SessionState.get().getCurrentCatalog());
     req.setName(desc.getDatabaseName());
     req.setIgnoreUnknownDb(desc.getIfExists());
     req.setDeleteData(desc.isDeleteData());
@@ -1428,7 +1430,8 @@ public class Hive implements AutoCloseable {
   }
 
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
-   createTable(tbl, ifNotExists, null, null, null, null,
+    tbl.setCatalogName(Objects.requireNonNullElse(tbl.getCatName(), SessionState.get().getCurrentCatalog()));
+    createTable(tbl, ifNotExists, null, null, null, null,
                null, null);
  }
 
@@ -1463,6 +1466,7 @@ public class Hive implements AutoCloseable {
     long txnId = Optional.ofNullable(SessionState.get())
       .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
     table.getTTable().setTxnId(txnId);
+    table.setCatalogName(Objects.requireNonNullElse(table.getCatName(), SessionState.get().getCurrentCatalog()));
 
     dropTable(table.getTTable(), !tableWithSuffix, true, ifPurge);
   }
@@ -1978,15 +1982,15 @@ public class Hive implements AutoCloseable {
       List<String> result;
       if (type != null) {
         if (pattern != null) {
-          result = getMSC().getTables(dbName, pattern, type);
+          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, pattern, type);
         } else {
-          result = getMSC().getTables(dbName, ".*", type);
+          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, ".*", type);
         }
       } else {
         if (pattern != null) {
-          result = getMSC().getTables(dbName, pattern);
+          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, pattern);
         } else {
-          result = getMSC().getTables(dbName, ".*");
+          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, ".*");
         }
       }
       return result;
@@ -2445,7 +2449,7 @@ public class Hive implements AutoCloseable {
    */
   public List<String> getAllDatabases() throws HiveException {
     try {
-      return getMSC().getAllDatabases();
+      return getMSC().getAllDatabases(SessionState.get().getCurrentCatalog());
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -2551,7 +2555,7 @@ public class Hive implements AutoCloseable {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE);
     try {
-      return getMSC().getDatabase(dbName);
+      return getMSC().getDatabase(SessionState.get().getCurrentCatalog(), dbName);
     } catch (NoSuchObjectException e) {
       return null;
     } catch (Exception e) {

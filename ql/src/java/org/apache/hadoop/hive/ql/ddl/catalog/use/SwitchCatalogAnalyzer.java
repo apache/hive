@@ -16,38 +16,38 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.database.use;
+package org.apache.hadoop.hive.ql.ddl.catalog.use;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Analyzer for database switching commands.
+ * Analyzer for catalog switching commands.
  */
-@DDLType(types = HiveParser.TOK_SWITCHDATABASE)
-public class SwitchDatabaseAnalyzer extends BaseSemanticAnalyzer {
-  public SwitchDatabaseAnalyzer(QueryState queryState) throws SemanticException {
-    super(queryState);
-  }
+@DDLSemanticAnalyzerFactory.DDLType(types = HiveParser.TOK_SWITCHCATALOG)
+public class SwitchCatalogAnalyzer extends BaseSemanticAnalyzer {
+    public SwitchCatalogAnalyzer(QueryState queryState) throws SemanticException {
+        super(queryState);
+    }
 
-  @Override
-  public void analyzeInternal(ASTNode root) throws SemanticException {
-    Pair<String, String> catDbNamePair = getCatDbNamePair((ASTNode) root.getChild(0));
-    Database database = getDatabase(catDbNamePair.getLeft(), catDbNamePair.getRight(), true);
-    ReadEntity readEntity = new ReadEntity(database);
-    readEntity.noLockNeeded();
-    inputs.add(readEntity);
+    @Override
+    public void analyzeInternal(ASTNode root) throws SemanticException {
+        String catlogName = unescapeIdentifier(root.getChild(0).getText());
 
-    SwitchDatabaseDesc desc = new SwitchDatabaseDesc(catDbNamePair.getRight());
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-  }
+        Catalog catalog = getCatalog(catlogName);
+        ReadEntity readEntity = new ReadEntity(catalog);
+        readEntity.noLockNeeded();
+        inputs.add(readEntity);
+
+        SwitchCatalogDesc desc = new SwitchCatalogDesc(catlogName);
+        rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    }
 }
