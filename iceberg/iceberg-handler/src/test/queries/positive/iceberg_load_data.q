@@ -84,3 +84,19 @@ LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE I
 ice_parquet_partitioned PARTITION (pcol='200');
 
 select * from ice_parquet_partitioned order by intcol;
+
+create external table ice_parquet_multi_partitioned (
+    strcol string,
+    intcol integer
+) partitioned by (pcol1 string, pcol2 string)
+stored by iceberg;
+
+LOAD DATA LOCAL INPATH '../../data/files/parquet_multi_partition/pcol1=x/pcol2=y' INTO TABLE
+ice_parquet_multi_partitioned PARTITION (pcol1='x', pcol2='y');
+
+select * from ice_parquet_multi_partitioned order by pcol1, pcol2;
+
+LOAD DATA LOCAL INPATH '../../data/files/parquet_multi_partition/pcol1=x/pcol2=z' OVERWRITE INTO TABLE
+ice_parquet_multi_partitioned PARTITION (pcol1='x', pcol2='z');
+
+select * from ice_parquet_multi_partitioned order by pcol1, pcol2;

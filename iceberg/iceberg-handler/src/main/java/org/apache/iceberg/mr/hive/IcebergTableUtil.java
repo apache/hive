@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.ZoneId;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -491,20 +490,17 @@ public class IcebergTableUtil {
       String partColName = entry.getKey();
       if (partitionFieldMap.containsKey(partColName)) {
         PartitionField partitionField = partitionFieldMap.get(partColName);
-        Type resultType = partitionField.transform().getResultType(table.schema()
-            .findField(partitionField.sourceId()).type());
-        Object value = Conversions.fromPartitionString(resultType, entry.getValue());
-        TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
-        Iterable<?> iterable = () -> Collections.singletonList(value).iterator();
-        if (TransformSpec.TransformType.IDENTITY == transformType) {
-          Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
+        if (partitionField.transform().isIdentity()) {
+          final Type partKeyType = table.schema().findField(partitionField.sourceId()).type();
+          final Object partKeyVal = Conversions.fromPartitionString(partKeyType, entry.getValue());
+          Expression boundPredicate = Expressions.equal(partColName, partKeyVal);
           finalExp = Expressions.and(finalExp, boundPredicate);
         } else {
           throw new SemanticException(
-              String.format("Partition transforms are not supported via truncate operation: %s", partColName));
+              String.format("Partition transforms are not supported here: %s", partColName));
         }
       } else {
-        throw new SemanticException(String.format("No partition column/transform by the name: %s", partColName));
+        throw new SemanticException(String.format("No partition column by the name: %s", partColName));
       }
     }
     return finalExp;
