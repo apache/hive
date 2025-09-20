@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -645,5 +646,45 @@ class MetastoreDirectSqlUtils {
     } else {
       throw new RuntimeException(e);
     }
+  }
+
+  public static Object sum(Object first, Object second) {
+    if (first == null) {
+      return second;
+    }
+    if (second == null) {
+      return first;
+    }
+    return (new BigDecimal(first.toString())).add(new BigDecimal(second.toString()));
+  }
+
+  public static Object divide(Object dividend, Object divisor) {
+    if (dividend == null || divisor == null) {
+      return null;
+    }
+
+    BigDecimal divisorVal = new BigDecimal(divisor.toString());
+    if (divisorVal.equals(new BigDecimal("0"))) return null;
+    return (new BigDecimal(dividend.toString())).divide(divisorVal, MathContext.DECIMAL64);
+  }
+
+  public static Object min(Object first, Object second) {
+    if (first == null) {
+      return second;
+    }
+    if (second == null) {
+      return first;
+    }
+    return (new BigDecimal(first.toString())).min(new BigDecimal(second.toString()));
+  }
+
+  public static Object max(Object first, Object second) {
+    if (first == null) {
+      return second;
+    }
+    if (second == null) {
+      return first;
+    }
+    return (new BigDecimal(first.toString())).max(new BigDecimal(second.toString()));
   }
 }
