@@ -47,12 +47,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @RunWith(Parameterized.class)
-public class TestIcebergRESTCatalogLlapLocalCliDriver {
+public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(
-      org.apache.hadoop.hive.cli.TestIcebergRESTCatalogLlapLocalCliDriver.class);
+      TestIcebergRESTCatalogHMSLlapLocalCliDriver.class);
   private static final String CATALOG_NAME = "ice01";
-  private static final CliAdapter adapter = new CliConfigs.TestIcebergRESTCatalogLlapLocalCliDriver().getCliAdapter();
+  private static final CliAdapter adapter = new CliConfigs.TestIcebergRESTCatalogHMSLlapLocalCliDriver().getCliAdapter();
   
   private final String name;
   private final File qfile;
@@ -74,7 +74,7 @@ public class TestIcebergRESTCatalogLlapLocalCliDriver {
     return adapter.getParameters();
   }
 
-  public TestIcebergRESTCatalogLlapLocalCliDriver(String name, File qfile) {
+  public TestIcebergRESTCatalogHMSLlapLocalCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }
