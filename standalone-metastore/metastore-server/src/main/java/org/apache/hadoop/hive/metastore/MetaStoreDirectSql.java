@@ -1880,14 +1880,8 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, colNames, new Batchable<String, ColumnStatisticsObj>() {
       @Override
       public List<ColumnStatisticsObj> run(final List<String> inputColNames) throws MetaException {
-        return Batchable.runBatched(batchSize, partNames, new Batchable<String, ColumnStatisticsObj>() {
-          @Override
-          public List<ColumnStatisticsObj> run(List<String> inputPartNames) throws MetaException {
-            return columnStatisticsObjForPartitionsBatch(catName, dbName, tableName, inputPartNames,
-                inputColNames, engine, areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner,
-                enableBitVector, enableKll);
-          }
-        });
+        return columnStatisticsObjForPartitionsBatch(catName, dbName, tableName, partNames, inputColNames, engine,
+            areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
       }
     });
   }
@@ -1936,8 +1930,15 @@ class MetaStoreDirectSql {
       return aggrStatsUseJava(catName, dbName, tableName, partNames, colNames, engine, areAllPartsFound,
           useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
     } else {
-      return aggrStatsUseDB(catName, dbName, tableName, partNames, colNames, engine, areAllPartsFound,
-          useDensityFunctionForNDVEstimation, ndvTuner);
+      return Batchable.runBatched(batchSize, partNames, new Batchable<String, ColumnStatisticsObj>() {
+        @Override
+        public List<ColumnStatisticsObj> run(List<String> inputPartNames)
+            throws MetaException {
+          return aggrStatsUseDB(catName, dbName, tableName, inputPartNames, colNames, engine, areAllPartsFound,
+              useDensityFunctionForNDVEstimation, ndvTuner);
+        }
+      });
+
     }
   }
 
