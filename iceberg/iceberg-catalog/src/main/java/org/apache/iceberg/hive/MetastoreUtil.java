@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.hive;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -157,6 +159,7 @@ public class MetastoreUtil {
     result.setSerdeInfo(getHiveSerdeInfo());
     result.setLocation(table.location());
     result.setParameters(Maps.newHashMap());
+    result.setSkewedInfo(new SkewedInfo(Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()));
     return result;
   }
 
