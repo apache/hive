@@ -1,0 +1,51 @@
+PREHOOK: query: create table tbl_x (a int, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: create table tbl_x (a int, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_x
+PREHOOK: query: insert into tbl_x values (1, 'Prince')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: insert into tbl_x values (1, 'Prince')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_x
+POSTHOOK: Lineage: tbl_x.a SCRIPT []
+POSTHOOK: Lineage: tbl_x.b SCRIPT []
+PREHOOK: query: insert into tbl_x values (2, 'John')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: insert into tbl_x values (2, 'John')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_x
+POSTHOOK: Lineage: tbl_x.a SCRIPT []
+POSTHOOK: Lineage: tbl_x.b SCRIPT []
+PREHOOK: query: create view vw_x (b) as (select a from tbl_x)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@tbl_x
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vw_x
+POSTHOOK: query: create view vw_x (b) as (select a from tbl_x)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@tbl_x
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vw_x
+POSTHOOK: Lineage: vw_x.b SIMPLE [(tbl_x)tbl_x.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select * from vw_x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_x
+PREHOOK: Input: default@vw_x
+#### A masked pattern was here ####
+POSTHOOK: query: select * from vw_x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_x
+POSTHOOK: Input: default@vw_x
+#### A masked pattern was here ####
+1
+2
