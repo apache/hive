@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -866,7 +865,7 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode ast, boolean lowerCase, TokenRewriteStream tokenRewriteStream,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
+      List<ConstraintsUtils.ConstraintInfo> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
       Configuration conf) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<>();
     Tree parent = ast.getParent();
@@ -943,8 +942,9 @@ public abstract class BaseSemanticAnalyzer {
                   checkConstraints, typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_DEFAULT_VALUE:
-              ConstraintsUtils.processDefaultConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
-                  defaultConstraints, typeChild, tokenRewriteStream);
+              defaultConstraints.addAll(
+                  ConstraintsUtils.processDefaultConstraints(constraintChild, ImmutableList.of(col.getName()),
+                      typeChild, tokenRewriteStream));
               break;
             case HiveParser.TOK_NOT_NULL:
               ConstraintsUtils.processNotNullConstraints(tName, constraintChild, ImmutableList.of(col.getName()),

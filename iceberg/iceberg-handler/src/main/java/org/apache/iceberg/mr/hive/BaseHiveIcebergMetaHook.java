@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +29,14 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
@@ -161,7 +164,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
             primaryKeys.stream().map(SQLPrimaryKey::getColumn_name).collect(Collectors.toSet()))
         .orElse(Collections.emptySet());
 
-    Schema schema = schema(catalogProperties, hmsTable, identifierFields);
+    Schema schema = schema(catalogProperties, hmsTable, identifierFields, request.getDefaultConstraints());
     PartitionSpec spec = spec(conf, schema, hmsTable);
 
     // If there are partition keys specified remove them from the HMS table and add them to the column list
@@ -303,7 +306,10 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected Schema schema(Properties properties, org.apache.hadoop.hive.metastore.api.Table hmsTable,
-                        Set<String> identifierFields) {
+      Set<String> identifierFields, List<SQLDefaultConstraint> sqlDefaultConstraints) {
+
+    Map<String, String> defaultValues = Stream.ofNullable(sqlDefaultConstraints).flatMap(Collection::stream)
+        .collect(Collectors.toMap(SQLDefaultConstraint::getColumn_name, SQLDefaultConstraint::getDefault_value));
     boolean autoConversion = conf.getBoolean(InputFormatConfig.SCHEMA_AUTO_CONVERSION, false);
 
     if (properties.getProperty(InputFormatConfig.TABLE_SCHEMA) != null) {
@@ -313,7 +319,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
       cols.addAll(hmsTable.getPartitionKeys());
     }
-    Schema schema = HiveSchemaUtil.convert(cols, autoConversion);
+    Schema schema = HiveSchemaUtil.convert(cols, defaultValues, autoConversion);
 
     return getSchemaWithIdentifierFields(schema, identifierFields);
   }

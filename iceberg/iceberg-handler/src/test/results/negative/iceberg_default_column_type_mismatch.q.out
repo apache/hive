@@ -1,0 +1,10 @@
+PREHOOK: query: CREATE TABLE t3 (
+  id INT,
+  age INT DEFAULT 'twenty five'
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.NumberFormatException: For input string: "twenty five"
