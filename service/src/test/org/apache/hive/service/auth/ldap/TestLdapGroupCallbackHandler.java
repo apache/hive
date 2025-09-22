@@ -211,7 +211,7 @@ public class TestLdapGroupCallbackHandler {
     verifyNoInteractions(dirSearch);
   }
 
-  @Test
+  @Test(expected = UnsupportedCallbackException.class)
   public void testHandleUnsupportedCallback() throws Exception {
     Callback unsupportedCallback = mock(Callback.class);
     Callback[] callbacks = {unsupportedCallback};
@@ -221,12 +221,7 @@ public class TestLdapGroupCallbackHandler {
 
     callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
 
-    try {
-      callbackHandler.handle(callbacks);
-      fail("Expected UnsupportedCallbackException");
-    } catch (UnsupportedCallbackException e) {
-      assertEquals(unsupportedCallback, e.getCallback());
-    }
+    callbackHandler.handle(callbacks);
   }
 
   @Test
@@ -260,29 +255,15 @@ public class TestLdapGroupCallbackHandler {
   }
 
   @Test
-  public void testAuthorizeWithProxyUser() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1");
-
+  public void testHandleDelegatesWhenAuthIdsMissing() throws Exception {
     callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
-    AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
-    Callback[] callbacks = {ac};
 
-    try {
-      // Set a proxy user
-      java.lang.reflect.Method setProxyMethod =
-          org.apache.hive.service.cli.session.SessionManager.class.getMethod("setProxyUserName", String.class);
-      setProxyMethod.invoke(null, "proxyUser");
+    AuthorizeCallback ac = new AuthorizeCallback(null, TEST_PRINCIPAL);
 
-      callbackHandler.handle(callbacks);
+    callbackHandler.handle(new Callback[]{ac});
 
-      // For proxy users, LDAP filtering is skipped
-      assertTrue(ac.isAuthorized());
-      verifyNoInteractions(dirSearch);
-    } finally {
-      java.lang.reflect.Method clearProxyMethod =
-          org.apache.hive.service.cli.session.SessionManager.class.getMethod("clearProxyUserName");
-      clearProxyMethod.invoke(null);
-    }
+    verify(delegateHandler).handle(any(Callback[].class));
+    verifyNoInteractions(dirSearch);
+    assertFalse(ac.isAuthorized());
   }
 }

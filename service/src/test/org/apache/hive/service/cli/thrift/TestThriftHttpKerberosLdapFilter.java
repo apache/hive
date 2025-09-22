@@ -24,6 +24,7 @@ import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
 import org.apache.hive.service.auth.ldap.DirSearch;
 import org.apache.hive.service.auth.ldap.DirSearchFactory;
 import org.apache.hive.service.auth.ldap.Filter;
+import org.apache.hive.service.auth.ldap.LdapGroupCallbackHandler;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSName;
@@ -189,13 +190,21 @@ public class TestThriftHttpKerberosLdapFilter {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1");
 
+    String userDn = "uid=user,dc=example,dc=com";
+    String groupDn = "cn=group1,dc=example,dc=com";
+
+    when(dirSearch.findUserDn(TEST_USER)).thenReturn(userDn);
+    when(dirSearch.findGroupsForUser(eq(userDn))).thenReturn(Collections.singletonList(groupDn));
+
     try {
       org.apache.hive.service.cli.session.SessionManager.setProxyUserName("proxyUser");
 
       String username = authHandler.run();
 
       assertEquals(TEST_USER, username);
-      verifyNoInteractions(dirSearch);
+      verify(dirSearchFactory).getInstance(eq(hiveConf), eq("bindUser"), eq("bindPassword"));
+      verify(dirSearch, times(2)).findUserDn(TEST_USER);
+      verify(dirSearch).findGroupsForUser(eq(userDn));
     } finally {
       org.apache.hive.service.cli.session.SessionManager.clearProxyUserName();
     }
@@ -256,11 +265,6 @@ public class TestThriftHttpKerberosLdapFilter {
           return;
         }
 
-        String proxyUser = org.apache.hive.service.cli.session.SessionManager.getProxyUserName();
-        if (proxyUser != null && !proxyUser.isEmpty()) {
-          return;
-        }
-
         // Use the static filter resolution
         Filter filter = LdapAuthenticationProviderImpl.resolveFilter(hiveConf);
         if (filter == null) {
@@ -296,25 +300,13 @@ public class TestThriftHttpKerberosLdapFilter {
         }
 
         String principal = srcName.toString();
-        String shortName = getPrincipalWithoutRealmAndHost(principal);
+        String shortName = LdapGroupCallbackHandler.extractUserName(principal);
         enforceLdapFilters(shortName);
 
         return shortName;
       } catch (GSSException e) {
         throw new HttpAuthenticationException("Kerberos authentication failed", e);
       }
-    }
-
-    protected String getPrincipalWithoutRealmAndHost(String principal) {
-      int idx = principal.indexOf('@');
-      if (idx > 0) {
-        principal = principal.substring(0, idx);
-      }
-      idx = principal.indexOf('/');
-      if (idx > 0) {
-        principal = principal.substring(0, idx);
-      }
-      return principal;
     }
   }
 }

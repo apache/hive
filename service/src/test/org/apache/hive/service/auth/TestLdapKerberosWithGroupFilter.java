@@ -28,6 +28,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -236,8 +237,7 @@ public class TestLdapKerberosWithGroupFilter {
     AuthorizeCallback ac1 = new AuthorizeCallback(USER1_PRINCIPAL, USER1_PRINCIPAL);
     AuthorizeCallback ac2 = new AuthorizeCallback(USER2_PRINCIPAL, USER2_PRINCIPAL);
 
-    callbackHandler.handle(new Callback[]{ac1});
-    callbackHandler.handle(new Callback[]{ac2});
+    callbackHandler.handle(new Callback[]{ac1, ac2});
 
     // Both users should be authorized since group check is disabled
     assertTrue(ac1.isAuthorized());
@@ -245,34 +245,6 @@ public class TestLdapKerberosWithGroupFilter {
 
     // Ensure no LDAP interactions occurred
     verifyNoInteractions(dirSearch);
-  }
-
-  @Test
-  public void testKerberosAuthWithProxyUser() throws Exception {
-    // Enable LDAP group check
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, GROUP1_NAME);
-
-    try {
-      // Set a proxy user
-      java.lang.reflect.Method setProxyMethod =
-          org.apache.hive.service.cli.session.SessionManager.class.getMethod("setProxyUserName", String.class);
-      setProxyMethod.invoke(null, "proxyUser");
-
-      LdapGroupCallbackHandler callbackHandler = new LdapGroupCallbackHandler(
-          conf, dirSearchFactory, delegateHandler);
-
-      AuthorizeCallback ac = new AuthorizeCallback(USER2_PRINCIPAL, USER2_PRINCIPAL);
-      callbackHandler.handle(new Callback[]{ac});
-
-      // For proxy users, LDAP filtering should be skipped
-      assertTrue(ac.isAuthorized());
-      verifyNoInteractions(dirSearch);
-    } finally {
-      java.lang.reflect.Method clearProxyMethod =
-          org.apache.hive.service.cli.session.SessionManager.class.getMethod("clearProxyUserName");
-      clearProxyMethod.invoke(null);
-    }
   }
 
   @Test
@@ -308,5 +280,33 @@ public class TestLdapKerberosWithGroupFilter {
     assertNotNull("Filter should be resolved", filter);
 
     filter.apply(dirSearch, USER2_ID);
+  }
+
+  @Test
+  public void testKerberosAuthWithMixedAuthorizeCallbacks() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, GROUP1_NAME);
+
+    String userDn = "uid=user1,dc=example,dc=com";
+    String groupDn = "cn=group1,dc=example,dc=com";
+
+    when(dirSearch.findUserDn(USER1_ID)).thenReturn(userDn);
+    when(dirSearch.findGroupsForUser(userDn)).thenReturn(Collections.singletonList(groupDn));
+
+    LdapGroupCallbackHandler callbackHandler = new LdapGroupCallbackHandler(
+        conf, dirSearchFactory, delegateHandler);
+
+    AuthorizeCallback authorized = new AuthorizeCallback(USER1_PRINCIPAL, USER1_PRINCIPAL);
+    AuthorizeCallback delegated = new AuthorizeCallback(USER1_PRINCIPAL, USER2_PRINCIPAL);
+
+    Callback[] callbacks = {authorized, delegated};
+    callbackHandler.handle(callbacks);
+
+    assertTrue("Matching IDs should be authorized", authorized.isAuthorized());
+    ArgumentCaptor<Callback[]> captor = ArgumentCaptor.forClass(Callback[].class);
+    verify(delegateHandler).handle(captor.capture());
+    Callback[] delegatedCallbacks = captor.getValue();
+    assertEquals(1, delegatedCallbacks.length);
+    assertSame(delegated, delegatedCallbacks[0]);
   }
 }

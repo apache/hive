@@ -17,11 +17,11 @@
  */
 package org.apache.hive.service.auth.ldap;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
-import org.apache.hive.service.cli.session.SessionManager;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,17 +75,15 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
         String authenticationID = ac.getAuthenticationID();
         String authorizationID = ac.getAuthorizationID();
 
-        if (!authenticationID.equals(authorizationID)) {
-          LOG.debug("Delegating authorization for different auth IDs");
+        if (StringUtils.isBlank(authenticationID) || StringUtils.isBlank(authorizationID)) {
+          LOG.debug("Missing authentication or authorization ID; delegating callback");
           unhandledCallbacks.add(callback);
           continue;
         }
 
-        // Skip LDAP check for proxy users.
-        String proxyUser = SessionManager.getProxyUserName();
-        if (proxyUser != null && !proxyUser.isEmpty()) {
-          LOG.debug("Skipping LDAP filters for proxy user authorization");
-          ac.setAuthorized(true);
+        if (!authenticationID.equals(authorizationID)) {
+          LOG.debug("Delegating authorization for different auth IDs");
+          unhandledCallbacks.add(callback);
           continue;
         }
 
@@ -140,7 +138,8 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
     }
   }
 
-  private String extractUserName(@NotNull String principal) {
+  @VisibleForTesting
+  public static String extractUserName(@NotNull String principal) {
     int idx = principal.indexOf('@');
     if (idx > 0) {
       principal = principal.substring(0, idx);
