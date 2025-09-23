@@ -43,8 +43,11 @@ public class ReadDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
 
   @Override
   public HiveMetaStoreAuthzInfo getAuthzContext() {
-    HiveAuthzContext authzContext = buildAuthzContext();
-    HiveMetaStoreAuthzInfo ret = new HiveMetaStoreAuthzInfo(preEventContext, HiveOperationType.SHOWDATABASES, getInputHObjs(), getOutputHObjs(), COMMAND_STR, authzContext);
+    List<HivePrivilegeObject> inputHObjs = getInputHObjs();
+    List<HivePrivilegeObject> outputHObjs = getOutputHObjs();
+    HiveAuthzContext authzContext = buildAuthzContext(COMMAND_STR);
+    HiveMetaStoreAuthzInfo ret = new HiveMetaStoreAuthzInfo(preEventContext, HiveOperationType.SHOWDATABASES,
+        inputHObjs, outputHObjs, COMMAND_STR, authzContext);
     LOG.debug("ReadDatabaseEvent.getAuthzContext(): authzContext={}", authzContext);
     return ret;
   }

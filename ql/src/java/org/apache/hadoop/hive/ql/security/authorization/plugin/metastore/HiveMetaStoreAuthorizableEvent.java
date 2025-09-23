@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +44,17 @@ public abstract class HiveMetaStoreAuthorizableEvent {
     this.preEventContext = preEventContext;
   }
 
-  protected HiveAuthzContext buildAuthzContext() {
+  protected HiveAuthzContext buildAuthzContext(String commandString) {
     HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
+
+    if (commandString != null) {
+      builder.setCommandString(commandString);
+    }
+
+    builder.setForwardedAddresses(new ArrayList<>());
+
+    String ipAddress = HMSHandler.getIPAddress();
+    builder.setUserIpAddress(ipAddress);
 
     Map<String, Object> clientConfig = HiveMetaStoreAuthorizer.getClientConfig();
     if (clientConfig != null) {
@@ -51,6 +62,10 @@ public abstract class HiveMetaStoreAuthorizableEvent {
     }
 
     return builder.build();
+  }
+
+  protected HiveAuthzContext buildAuthzContext() {
+    return buildAuthzContext(null);
   }
 
   public abstract HiveMetaStoreAuthzInfo getAuthzContext();
