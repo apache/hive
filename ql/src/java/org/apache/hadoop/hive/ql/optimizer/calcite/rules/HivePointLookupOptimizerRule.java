@@ -604,64 +604,63 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       int eqExpressionCount = 0;
       for (RexNode operand : operands) {
         if (operand instanceof RexCall inCall && HiveIn.INSTANCE.equals(inCall.op)) {
-          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().getFirst())) {
+          RexNode ref = inCall.getOperands().getFirst();
+          if (HiveCalciteUtil.isDeterministic(ref)) {
+            visitedRefs.add(ref);
+            if (ref.getType().isNullable()) {
+              inLHSExprToRHSNullableExprs.put(ref, ref);
+            }
+            if (inLHSExprToRHSExprs.containsKey(ref)) {
+              Set<SimilarRexNodeElement> expressions = Sets.newHashSet();
+              for (int j = 1; j < inCall.getOperands().size(); j++) {
+                RexNode constNode = inCall.getOperands().get(j);
+                expressions.add(new SimilarRexNodeElement(constNode));
+                if (constNode.getType().isNullable()) {
+                  inLHSExprToRHSNullableExprs.put(ref, constNode);
+                }
+              }
+              Collection<SimilarRexNodeElement> knownConstants = inLHSExprToRHSExprs.get(ref);
+              if (!shareSameType(knownConstants, expressions)) {
+                return call;
+              }
+              knownConstants.retainAll(expressions);
+            } else {
+              for (int j = 1; j < inCall.getOperands().size(); j++) {
+                RexNode constNode = inCall.getOperands().get(j);
+                inLHSExprToRHSExprs.put(ref, new SimilarRexNodeElement(constNode));
+                if (constNode.getType().isNullable()) {
+                  inLHSExprToRHSNullableExprs.put(ref, constNode);
+                }
+              }
+            }
+            ++inExpressionCount;
             continue;
           }
-          RexNode ref = inCall.getOperands().getFirst();
-          visitedRefs.add(ref);
-          if (ref.getType().isNullable()) {
-            inLHSExprToRHSNullableExprs.put(ref, ref);
-          }
-          if (inLHSExprToRHSExprs.containsKey(ref)) {
-            Set<SimilarRexNodeElement> expressions = Sets.newHashSet();
-            for (int j = 1; j < inCall.getOperands().size(); j++) {
-              RexNode constNode = inCall.getOperands().get(j);
-              expressions.add(new SimilarRexNodeElement(constNode));
-              if (constNode.getType().isNullable()) {
-                inLHSExprToRHSNullableExprs.put(ref, constNode);
-              }
-            }
-            Collection<SimilarRexNodeElement> knownConstants = inLHSExprToRHSExprs.get(ref);
-            if (!shareSameType(knownConstants, expressions)) {
-              return call;
-            }
-            knownConstants.retainAll(expressions);
-          } else {
-            for (int j = 1; j < inCall.getOperands().size(); j++) {
-              RexNode constNode = inCall.getOperands().get(j);
-              inLHSExprToRHSExprs.put(ref, new SimilarRexNodeElement(constNode));
-              if (constNode.getType().isNullable()) {
-                inLHSExprToRHSNullableExprs.put(ref, constNode);
-              }
-            }
-          }
-          ++inExpressionCount;
         } else if (operand.getKind() == SqlKind.EQUALS) {
           Constraint c = Constraint.of(operand);
-          if (c == null || !HiveCalciteUtil.isDeterministic(c.exprNode)) {
+          if (c != null && HiveCalciteUtil.isDeterministic(c.exprNode)) {
+            visitedRefs.add(c.exprNode);
+            if (c.exprNode.getType().isNullable()) {
+              inLHSExprToRHSNullableExprs.put(c.exprNode, c.exprNode);
+            }
+            if (c.constNode.getType().isNullable()) {
+              inLHSExprToRHSNullableExprs.put(c.exprNode, c.constNode);
+            }
+            if (inLHSExprToRHSExprs.containsKey(c.exprNode)) {
+              Collection<SimilarRexNodeElement> knownConstants = inLHSExprToRHSExprs.get(c.exprNode);
+              Collection<SimilarRexNodeElement> nextConstant = Collections.singleton(new SimilarRexNodeElement(c.constNode));
+              if (!shareSameType(knownConstants, nextConstant)) {
+                return call;
+              }
+              knownConstants.retainAll(nextConstant);
+            } else {
+              inLHSExprToRHSExprs.put(c.exprNode, new SimilarRexNodeElement(c.constNode));
+            }
+            ++eqExpressionCount;
             continue;
           }
-          visitedRefs.add(c.exprNode);
-          if (c.exprNode.getType().isNullable()) {
-            inLHSExprToRHSNullableExprs.put(c.exprNode, c.exprNode);
-          }
-          if (c.constNode.getType().isNullable()) {
-            inLHSExprToRHSNullableExprs.put(c.exprNode, c.constNode);
-          }
-          if (inLHSExprToRHSExprs.containsKey(c.exprNode)) {
-            Collection<SimilarRexNodeElement> knownConstants = inLHSExprToRHSExprs.get(c.exprNode);
-            Collection<SimilarRexNodeElement> nextConstant = Collections.singleton(new SimilarRexNodeElement(c.constNode));
-            if (!shareSameType(knownConstants, nextConstant)) {
-              return call;
-            }
-            knownConstants.retainAll(nextConstant);
-          } else {
-            inLHSExprToRHSExprs.put(c.exprNode, new SimilarRexNodeElement(c.constNode));
-          }
-          ++eqExpressionCount;
-        } else {
-          newOperands.add(operand);
         }
+        newOperands.add(operand);
       }
       if (inExpressionCount + eqExpressionCount == inLHSExprToRHSExprs.keySet().size()) {
         // No IN and Equality expressions can be merged, bail out
@@ -737,29 +736,27 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       // IN clauses need to be combined by keeping all elements
       final List<RexNode> operands = new ArrayList<>(RexUtil.flattenOr(call.getOperands()));
       final List<RexNode> newOperands = new ArrayList<>(operands.size());
-      final Multimap<RexNode,SimilarRexNodeElement> inLHSExprToRHSExprs = LinkedHashMultimap.create();
+      final Multimap<RexNode, SimilarRexNodeElement> inLHSExprToRHSExprs = LinkedHashMultimap.create();
       int inExpressionCount = 0;
       for (RexNode operand : operands) {
         if (operand instanceof RexCall inCall && HiveIn.INSTANCE.equals(inCall.op)) {
-          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().getFirst())) {
+          RexNode ref = inCall.getOperands().getFirst();
+          if (HiveCalciteUtil.isDeterministic(ref)) {
+            for (int j = 1; j < inCall.getOperands().size(); j++) {
+              inLHSExprToRHSExprs.put(ref, new SimilarRexNodeElement(inCall.getOperands().get(j)));
+            }
+            ++inExpressionCount;
             continue;
           }
-          RexNode ref = inCall.getOperands().getFirst();
-          for (int j = 1; j < inCall.getOperands().size(); j++) {
-            inLHSExprToRHSExprs.put(ref, new SimilarRexNodeElement(inCall.getOperands().get(j)));
-          }
-          ++inExpressionCount;
-        } else {
-          newOperands.add(operand);
         }
+        newOperands.add(operand);
       }
       if (inExpressionCount == inLHSExprToRHSExprs.keySet().size()) {
         // No IN expressions can be merged, bail out
         return call;
       }
       // Create IN clauses (fourth parameter is not needed since no expressions were removed)
-      newOperands.addAll(createInClauses(rexBuilder,
-          inLHSExprToRHSExprs.keySet(), inLHSExprToRHSExprs, null));
+      newOperands.addAll(createInClauses(rexBuilder, inLHSExprToRHSExprs.keySet(), inLHSExprToRHSExprs, null));
       // Return node
       RexNode result = RexUtil.composeDisjunction(rexBuilder, newOperands, false);
       if (!result.getType().equals(call.getType())) {

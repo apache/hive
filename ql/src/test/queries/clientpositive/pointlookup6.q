@@ -20,9 +20,8 @@ WHERE r_table.string_col = l_table.string_col AND l_table.string_col IN ('AAA111
 
 explain cbo
 SELECT * FROM r_table
-WHERE ( (
-         MINUTE(string_col) = 2 OR
-         MINUTE(string_col) = 10
-        )
-        OR (MINUTE(string_col) IS NULL)
+WHERE (
+        MINUTE(string_col) = 2 OR
+        MINUTE(string_col) = 10 OR
+        MINUTE(string_col) IS NULL
       );

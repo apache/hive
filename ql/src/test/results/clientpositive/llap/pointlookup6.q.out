@@ -79,22 +79,20 @@ POSTHOOK: Input: default@r_table
 AAA111
 PREHOOK: query: explain cbo
 SELECT * FROM r_table
-WHERE ( (
-         MINUTE(string_col) = 2 OR
-         MINUTE(string_col) = 10
-        )
-        OR (MINUTE(string_col) IS NULL)
+WHERE (
+        MINUTE(string_col) = 2 OR
+        MINUTE(string_col) = 10 OR
+        MINUTE(string_col) IS NULL
       )
 PREHOOK: type: QUERY
 PREHOOK: Input: default@r_table
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 SELECT * FROM r_table
-WHERE ( (
-         MINUTE(string_col) = 2 OR
-         MINUTE(string_col) = 10
-        )
-        OR (MINUTE(string_col) IS NULL)
+WHERE (
+        MINUTE(string_col) = 2 OR
+        MINUTE(string_col) = 10 OR
+        MINUTE(string_col) IS NULL
       )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@r_table
