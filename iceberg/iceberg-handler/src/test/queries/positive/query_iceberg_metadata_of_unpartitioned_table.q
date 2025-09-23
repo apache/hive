@@ -1,7 +1,7 @@
 -- Mask the file size values as it can have slight variability, causing test flakiness
 --! qt:replace:/("file_size_in_bytes":)\d+/$1#Masked#/
 --! qt:replace:/("total-files-size":)\d+/$1#Masked#/
---! qt:replace:/((ORC|PARQUET|AVRO)\s+\d+\s+)\d+/$1#Masked#/
+--! qt:replace:/^((?:[^\t]+\t){2})(ORC|PARQUET|AVRO)/$1#Masked#/
 
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
