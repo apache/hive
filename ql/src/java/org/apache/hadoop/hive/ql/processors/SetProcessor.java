@@ -67,7 +67,11 @@ public class SetProcessor implements CommandProcessor {
           "hive.metastore.initial.metadata.count.enabled",
           "hive.cli.pretty.output.num.cols",
           "hive.debug.localtask",
-          "hive.timedout.txn.reaper.start"
+          "hive.timedout.txn.reaper.start",
+          "hive.repl.dumpdir.ttl",
+          "hive.repl.dumpdir.clean.freq",
+          "hive.llap.io.vrb.queue.limit.base",
+          "hive.llap.external.splits.order.by.force.single.split"
           );
   // Allow the user to set the ORC properties without getting an error.
   private static final Set<String> allowOrcConfigs = new HashSet<>();
@@ -241,14 +245,6 @@ public class SetProcessor implements CommandProcessor {
     String result = null;
     HiveConf conf = ss.getConf();
 
-    String removedHiveConfigsList = conf.getVar(HiveConf.ConfVars.HIVE_IGNORE_REMOVED_CONFIGS_LIST);
-    if (removedHiveConfigsList != null && !removedHiveConfigsList.isEmpty()) {
-      for (String entry : removedHiveConfigsList.split(",")) {
-        if (!removedHiveConfigs.contains(entry.trim())) {
-          removedHiveConfigs.add(entry.trim());
-        }
-      }
-    }
     if (removedHiveConfigs.contains(key)) {
       // do not do anything. do not throw any error, just silently return
       result = HiveConf.generateRemovedWarning();

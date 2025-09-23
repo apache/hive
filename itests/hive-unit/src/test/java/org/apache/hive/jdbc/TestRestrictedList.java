@@ -70,7 +70,6 @@ public class TestRestrictedList {
 
     // Add the parameter here if it cannot change at runtime
     addToExpectedRestrictedMap("hive.conf.restricted.list");
-    addToExpectedRestrictedMap("hive.ignore.removed.configs.list");
     addToExpectedRestrictedMap("hive.security.authenticator.manager");
     addToExpectedRestrictedMap("hive.security.authorization.manager");
     addToExpectedRestrictedMap("hive.security.metastore.authorization.manager");
