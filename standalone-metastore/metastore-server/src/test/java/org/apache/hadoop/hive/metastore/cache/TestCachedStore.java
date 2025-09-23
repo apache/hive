@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataIns
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -357,7 +358,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       Partition p = createPartition(salesTable, partitionValue);
       objectStore.addPartition(p);
       String pName = FileUtils.makePartName(Collections.singletonList(soldDateCol.getName()), partitionValue,
-          salesTable.getParameters(), conf);
+          MetaStoreUtils.getDefaultPartitionName(salesTable.getParameters(), conf));
       partNames.add(pName);
 
       ColumnStatistics stats = createColumnStatistics(pStat.getValue(), salesTable, soldDateCol, pName);
@@ -2078,8 +2079,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
         Partition ptn = createPartition(table, partVals);
         ptn.setCatName(DEFAULT_CATALOG_NAME);
         ptns.add(ptn);
-        ptnNames.add(FileUtils.makePartName(partColNames, partVals, table.getParameters(),
-            MetastoreConf.newMetastoreConf()));
+        ptnNames.add(FileUtils.makePartName(partColNames, partVals,
+            MetaStoreUtils.getDefaultPartitionName(table.getParameters(), MetastoreConf.newMetastoreConf())));
       }
     }
     return new PartitionObjectsAndNames(ptns, ptnNames);

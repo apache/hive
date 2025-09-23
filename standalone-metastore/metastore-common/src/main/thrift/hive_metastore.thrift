@@ -1260,7 +1260,7 @@ struct LockComponent {
     6: optional DataOperationType operationType = DataOperationType.UNSET,
     7: optional bool isTransactional = false,
     8: optional bool isDynamicPartitionWrite = false,
-    9: optional map<string,string> tableParams
+    9: optional string defaultPartitionName
 }
 
 struct LockRequest {

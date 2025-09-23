@@ -528,8 +528,8 @@ public class Warehouse {
     }
   }
 
-  public static String escapePathName(String path, Map<String, String> tableParams, Configuration conf) {
-    return FileUtils.escapePathName(path, tableParams, conf);
+  public static String escapePathName(String path, String defaultPartitionName) {
+    return FileUtils.escapePathName(path, defaultPartitionName);
   }
 
   private static String unescapePathName(String path) {
@@ -574,9 +574,9 @@ public class Warehouse {
       if (i > 0) {
         suffixBuf.append(Path.SEPARATOR);
       }
-      suffixBuf.append(escapePathName(e.getKey(), tableParams, conf));
+      suffixBuf.append(escapePathName(e.getKey(), MetaStoreUtils.getDefaultPartitionName(tableParams, conf)));
       suffixBuf.append('=');
-      suffixBuf.append(escapePathName(e.getValue(), tableParams, conf));
+      suffixBuf.append(escapePathName(e.getValue(), MetaStoreUtils.getDefaultPartitionName(tableParams, conf)));
       i++;
     }
 
@@ -900,7 +900,8 @@ public class Warehouse {
     for (FieldSchema col: partCols) {
       colNames.add(col.getName());
     }
-    return FileUtils.makePartName(colNames, vals, defaultStr, tableParams, conf);
+    return FileUtils.makePartName(colNames, vals, defaultStr,
+        MetaStoreUtils.getDefaultPartitionName(tableParams, conf));
   }
 
   public static List<String> getPartValuesFromPartName(String partName)

@@ -3160,7 +3160,8 @@ public class ObjectStore implements RawStore, Configurable {
         for (MFieldSchema col: schemas) {
           colNames.add(col.getName());
         }
-        String partName = FileUtils.makePartName(colNames, part.getValues(), part.getTable().getParameters(), conf);
+        String partName = FileUtils.makePartName(colNames, part.getValues(),
+            MetaStoreUtils.getDefaultPartitionName(part.getTable().getParameters(), conf));
 
         List<MPartitionPrivilege> partGrants = listPartitionGrants(
             part.getTable().getDatabase().getCatalogName(),

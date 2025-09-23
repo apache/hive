@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -290,7 +291,7 @@ public abstract class CompactorTest {
             .setOperationType(DataOperationType.INSERT)
             .setDbName(t.getDbName())
             .setTableName(t.getTableName())
-            .setTableParams(t.getParameters())
+            .setDefaultPartitionName(PartitionUtils.getDefaultPartitionName(t.getParameters(), conf))
             .setIsTransactional(true);
     if (p != null) {
       lockCompBuilder.setPartitionName(t.getPartitionKeys().get(0).getName() + "=" + p.getValues().get(0));

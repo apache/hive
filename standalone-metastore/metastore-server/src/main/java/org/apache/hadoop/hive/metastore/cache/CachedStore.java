@@ -572,8 +572,8 @@ public class CachedStore implements RawStore, Configurable {
                     partCols.add(fs.getName());
                     partVals.add(defaultPartitionValue);
                   }
-                  String defaultPartitionName = FileUtils.makePartName(partCols, partVals, table.getParameters(),
-                      rawStore.getConf());
+                  String defaultPartitionName = FileUtils.makePartName(partCols, partVals,
+                      MetaStoreUtils.getDefaultPartitionName(table.getParameters(), rawStore.getConf()));
                   partNames.remove(defaultPartitionName);
                   Deadline.startTimer("getAggrPartitionColumnStatistics");
                   aggrStatsAllButDefaultPartition =
@@ -1013,8 +1013,8 @@ public class CachedStore implements RawStore, Configurable {
             partCols.add(fs.getName());
             partVals.add(defaultPartitionValue);
           }
-          String defaultPartitionName = FileUtils.makePartName(partCols, partVals, table.getParameters(),
-              rawStore.getConf());
+          String defaultPartitionName = FileUtils.makePartName(partCols, partVals,
+              MetaStoreUtils.getDefaultPartitionName(table.getParameters(), rawStore.getConf()));
           partNames.remove(defaultPartitionName);
           Deadline.startTimer("getAggregateStatsForAllPartitionsExceptDefault");
           AggrStats aggrStatsAllButDefaultPartition =

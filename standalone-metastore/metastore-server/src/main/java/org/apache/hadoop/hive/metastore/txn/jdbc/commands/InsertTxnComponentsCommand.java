@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.sql.Types;
@@ -108,7 +109,8 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
 
       String dbName = StringUtils.lowerCase(lc.getDbname());
       String tblName = StringUtils.lowerCase(lc.getTablename());
-      String partName = TxnUtils.normalizePartitionCase(lc.getPartitionname(), lc.isSetTableParams() ? lc.getTableParams() : null, conf);
+      String partName = TxnUtils.normalizePartitionCase(lc.getPartitionname(),
+          lc.isSetDefaultPartitionName() ? lc.getDefaultPartitionName() : MetaStoreUtils.getDefaultPartitionName(null, conf));
       OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
       Pair<String, String> writeIdKey = getWriteIdKey.apply(lc);
 

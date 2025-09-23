@@ -59,10 +59,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.FileUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.*;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
@@ -307,10 +304,10 @@ public abstract class TestHiveMetaStore {
       }
       assertTrue(foundPart);
 
-      String partName = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12", tbl.getParameters(), conf) + "/hr=14";
-      String part2Name = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12", tbl.getParameters(), conf) + "/hr=15";
-      String part3Name = "ds=" + FileUtils.escapePathName("2008-07-02 14:13:12", tbl.getParameters(), conf) + "/hr=15";
-      String part4Name = "ds=" + FileUtils.escapePathName("2008-07-03 14:13:12", tbl.getParameters(), conf) + "/hr=151";
+      String partName = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12", MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)) + "/hr=14";
+      String part2Name = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12", MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)) + "/hr=15";
+      String part3Name = "ds=" + FileUtils.escapePathName("2008-07-02 14:13:12", MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)) + "/hr=15";
+      String part4Name = "ds=" + FileUtils.escapePathName("2008-07-03 14:13:12", MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)) + "/hr=151";
 
       part_get = client.getPartition(dbName, tblName, partName);
       assertTrue("Partitions are not the same", part.equals(part_get));

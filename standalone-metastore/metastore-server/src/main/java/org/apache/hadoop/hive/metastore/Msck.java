@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -209,7 +210,8 @@ public class Msck {
                 throw new MetastoreException(ex);
               }
               for (String val : vals) {
-                String escapedPath = FileUtils.escapePathName(val, table.getParameters(), conf);
+                String escapedPath = FileUtils.escapePathName(val,
+                    MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
                 assert escapedPath != null;
                 if (escapedPath.equals(val)) {
                   continue;
@@ -425,7 +427,7 @@ public class Msck {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
       .setDbName(dbName)
       .setTableName(tableName)
-      .setTableParams(tableParams)
+      .setDefaultPartitionName(MetaStoreUtils.getDefaultPartitionName(tableParams, conf))
       .setIsTransactional(true)
       .setExclusive()
       // WriteType is DDL_EXCLUSIVE for MSCK REPAIR so we need NO_TXN. Refer AcidUtils.makeLockComponents
@@ -519,9 +521,10 @@ public class Msck {
       if (i > 0) {
         suffixBuf.append(" AND ");
       }
-      suffixBuf.append(Warehouse.escapePathName(e.getKey(), tableParams, conf));
+      suffixBuf.append(Warehouse.escapePathName(e.getKey(), MetaStoreUtils.getDefaultPartitionName(tableParams, conf)));
       suffixBuf.append('=');
-      suffixBuf.append("'").append(Warehouse.escapePathName(e.getValue(), tableParams, conf)).append("'");
+      suffixBuf.append("'").append(Warehouse.escapePathName(e.getValue(),
+          MetaStoreUtils.getDefaultPartitionName(tableParams, conf))).append("'");
       i++;
     }
     suffixBuf.append(")");
