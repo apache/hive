@@ -228,16 +228,16 @@ class CompactionRequest
                 case 6:
                     if ($ftype == TType::MAP) {
                         $this->properties = array();
-                        $_size825 = 0;
-                        $_ktype826 = 0;
-                        $_vtype827 = 0;
-                        $xfer += $input->readMapBegin($_ktype826, $_vtype827, $_size825);
-                        for ($_i829 = 0; $_i829 < $_size825; ++$_i829) {
-                            $key830 = '';
-                            $val831 = '';
-                            $xfer += $input->readString($key830);
-                            $xfer += $input->readString($val831);
-                            $this->properties[$key830] = $val831;
+                        $_size816 = 0;
+                        $_ktype817 = 0;
+                        $_vtype818 = 0;
+                        $xfer += $input->readMapBegin($_ktype817, $_vtype818, $_size816);
+                        for ($_i820 = 0; $_i820 < $_size816; ++$_i820) {
+                            $key821 = '';
+                            $val822 = '';
+                            $xfer += $input->readString($key821);
+                            $xfer += $input->readString($val822);
+                            $this->properties[$key821] = $val822;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -324,9 +324,9 @@ class CompactionRequest
             }
             $xfer += $output->writeFieldBegin('properties', TType::MAP, 6);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
-            foreach ($this->properties as $kiter832 => $viter833) {
-                $xfer += $output->writeString($kiter832);
-                $xfer += $output->writeString($viter833);
+            foreach ($this->properties as $kiter823 => $viter824) {
+                $xfer += $output->writeString($kiter823);
+                $xfer += $output->writeString($viter824);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

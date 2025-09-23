@@ -105,11 +105,11 @@ public class LockComponentBuilder {
 
   /**
    * Set the table name.
-   * @param tableName table name
+   * @param defaultPartitionName default partition name for the table
    * @return reference to this builder
    */
-  public LockComponentBuilder setTableParams(Map<String, String> tableParams) {
-    component.setTableParams(tableParams);
+  public LockComponentBuilder setDefaultPartitionName(String defaultPartitionName) {
+    component.setDefaultPartitionName(defaultPartitionName);
     return this;
   }
 

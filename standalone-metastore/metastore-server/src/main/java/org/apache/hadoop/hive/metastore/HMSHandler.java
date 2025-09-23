@@ -5335,7 +5335,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
         firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
         if (colNames != null) {
-          partNames.add(FileUtils.makePartName(colNames, part.getValues(), tbl.getParameters(), conf));
+          partNames.add(FileUtils.makePartName(colNames, part.getValues(),
+              MetaStoreUtils.getDefaultPartitionName( tbl.getParameters(), conf)));
         }
         if (tableDataShouldBeDeleted) {
           if (MetaStoreUtils.isArchived(part)) {
