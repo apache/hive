@@ -23,6 +23,7 @@ import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
 import org.apache.hive.service.auth.ldap.DirSearch;
 import org.apache.hive.service.auth.ldap.DirSearchFactory;
+import org.apache.hive.service.auth.ldap.KerberosLdapFilterEnforcer;
 import org.apache.hive.service.auth.ldap.Filter;
 import org.apache.hive.service.auth.ldap.LdapGroupCallbackHandler;
 import org.ietf.jgss.GSSContext;
@@ -248,6 +249,7 @@ public class TestThriftHttpKerberosLdapFilter {
   private class TestableKerberosAuthHandler {
     private final HiveConf hiveConf;
     private final DirSearchFactory mockDirSearchFactory;
+    private final KerberosLdapFilterEnforcer filterEnforcer = KerberosLdapFilterEnforcer.INSTANCE;
 
     public TestableKerberosAuthHandler(HiveConf hiveConf,
                                        DirSearchFactory dirSearchFactory) {
@@ -271,15 +273,7 @@ public class TestThriftHttpKerberosLdapFilter {
           throw new HttpAuthenticationException("LDAP filters not configured");
         }
 
-        String bindDN = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER);
-        String bindPassword = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD);
-
-        if (bindDN == null || bindDN.isEmpty() || bindPassword == null || bindPassword.isEmpty()) {
-          throw new HttpAuthenticationException("LDAP bind credentials not configured");
-        }
-
-        DirSearch dirSearch = mockDirSearchFactory.getInstance(hiveConf, bindDN, bindPassword);
-        filter.apply(dirSearch, shortName);
+        filterEnforcer.enforce(hiveConf, mockDirSearchFactory, filter, shortName, null, true);
 
       } catch (AuthenticationException ae) {
         throw new HttpAuthenticationException("LDAP filter check failed for user " + shortName, ae);

@@ -115,9 +115,11 @@ public abstract class HadoopThriftAuthBridge {
     return new Server(keytabFile, principalConf, clientConf);
   }
 
-  public Server createServer(String keytabFile, String principalConf, String clientConf, CallbackHandler callbackHandler)
-    throws TTransportException {
-    return new Server(keytabFile, principalConf, clientConf, callbackHandler);
+  public Server createServer(String keytabFile, String principalConf, String clientConf,
+      CallbackHandler callbackHandler) throws TTransportException {
+    Server server = new Server(keytabFile, principalConf, clientConf);
+    server.setCallbackHandler(callbackHandler);
+    return server;
   }
 
 
@@ -380,14 +382,12 @@ public abstract class HadoopThriftAuthBridge {
       }
     }
 
-    public Server(String keytabFile, String principalConf, String clientConf, CallbackHandler callbackHandler)
-            throws TTransportException {
-      this(keytabFile, principalConf, clientConf);
-      this.callbackHandler = callbackHandler;
-    }
-
     public void setSecretManager(DelegationTokenSecretManager secretManager) {
       this.secretManager = secretManager;
+    }
+
+    public void setCallbackHandler(CallbackHandler callbackHandler) {
+      this.callbackHandler = callbackHandler;
     }
 
     /**

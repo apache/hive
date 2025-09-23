@@ -230,9 +230,6 @@ public class TestLdapGroupCallbackHandler {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERFILTER, TEST_USER);
 
-    // When USERFILTER is set, UserSearchFilterFactory is activated which calls findUserDn
-    when(dirSearch.findUserDn(TEST_USER)).thenReturn("uid=user,dc=example,dc=com");
-
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     Callback unsupportedCallback = mock(Callback.class);
     Callback[] callbacks = {ac, unsupportedCallback};
@@ -247,10 +244,9 @@ public class TestLdapGroupCallbackHandler {
       fail("Expected UnsupportedCallbackException");
     } catch (UnsupportedCallbackException e) {
       assertEquals(unsupportedCallback, e.getCallback());
-      // AuthorizeCallback should have been processed
-      assertTrue(ac.isAuthorized());
-      verify(dirSearchFactory).getInstance(eq(conf), eq("bindUser"), eq("bindPassword"));
-      verify(dirSearch).findUserDn(TEST_USER);
+      assertFalse(ac.isAuthorized());
+      verify(delegateHandler).handle(any(Callback[].class));
+      verifyNoInteractions(dirSearch);
     }
   }
 

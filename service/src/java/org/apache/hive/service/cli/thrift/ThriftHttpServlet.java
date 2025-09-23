@@ -69,6 +69,7 @@ import org.apache.hive.service.auth.ldap.Filter;
 import org.apache.hive.service.auth.ldap.FilterFactory;
 import org.apache.hive.service.auth.ldap.GroupFilterFactory;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
+import org.apache.hive.service.auth.ldap.KerberosLdapFilterEnforcer;
 import org.apache.hive.service.auth.ldap.LdapSearchFactory;
 import org.apache.hive.service.auth.ldap.UserGroupSearchFilterFactory;
 import org.apache.hive.service.auth.HttpAuthService;
@@ -483,6 +484,8 @@ public class ThriftHttpServlet extends TServlet {
   class HttpKerberosServerAction implements PrivilegedExceptionAction<String> {
     HttpServletRequest request;
     UserGroupInformation serviceUGI;
+    private final DirSearchFactory dirSearchFactory = new LdapSearchFactory();
+    private final KerberosLdapFilterEnforcer filterEnforcer = KerberosLdapFilterEnforcer.INSTANCE;
 
     HttpKerberosServerAction(HttpServletRequest request,
         UserGroupInformation serviceUGI) {
@@ -573,28 +576,9 @@ public class ThriftHttpServlet extends TServlet {
         throw new HttpAuthenticationException("LDAP filters not configured");
       }
 
-      String bindDN = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER);
-      String bindPassword = null;
       try {
-        char[] rawPassword = hiveConf.getPassword(
-            HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD.varname);
-        bindPassword = (rawPassword == null) ? null : new String(rawPassword);
-      } catch (IOException e) {
-        LOG.error("Failed to retrieve LDAP bind password", e);
-      }
-
-      if (StringUtils.isBlank(bindDN) || StringUtils.isBlank(bindPassword)) {
-        LOG.error("LDAP bind DN or password is not configured");
-        throw new HttpAuthenticationException("LDAP bind credentials not configured");
-      }
-
-      try {
-        DirSearchFactory factory = new LdapSearchFactory();
-        DirSearch dirSearch = factory.getInstance(hiveConf, bindDN, bindPassword);
-
-        filter.apply(dirSearch, shortName);
+        filterEnforcer.enforce(hiveConf, dirSearchFactory, filter, shortName, null, true);
         LOG.debug("User {} passed LDAP filter validation", shortName);
-
       } catch (AuthenticationException e) {
         LOG.warn("User {} failed LDAP filter: {}", shortName, e.getMessage());
         throw new HttpAuthenticationException("LDAP filter check failed for user " + shortName, e);
@@ -710,5 +694,3 @@ public class ThriftHttpServlet extends TServlet {
   }
 
 }
-
-

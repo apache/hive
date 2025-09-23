@@ -32,8 +32,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.AuthorizeCallback;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Callback handler that enforces LDAP filters on Kerberos-authenticated users.
@@ -49,11 +47,14 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
   private final DirSearchFactory dirSearchFactory;
   private final Filter filter;
 
+  private final KerberosLdapFilterEnforcer filterEnforcer = KerberosLdapFilterEnforcer.INSTANCE;
+
   public LdapGroupCallbackHandler(HiveConf conf) {
     this(conf, new LdapSearchFactory(), new SaslRpcServer.SaslGssCallbackHandler());
   }
 
-  public LdapGroupCallbackHandler(HiveConf conf, DirSearchFactory dirSearchFactory, CallbackHandler delegateHandler) {
+  @VisibleForTesting
+  LdapGroupCallbackHandler(HiveConf conf, DirSearchFactory dirSearchFactory, CallbackHandler delegateHandler) {
     this.conf = conf;
     this.delegateHandler = delegateHandler;
     this.dirSearchFactory = dirSearchFactory;
@@ -65,44 +66,43 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
     }
   }
 
+  @VisibleForTesting
+  public static LdapGroupCallbackHandler createForTesting(HiveConf conf, DirSearchFactory dirSearchFactory,
+      CallbackHandler delegateHandler) {
+    return new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+  }
+
   @Override
   public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-    List<Callback> unhandledCallbacks = new ArrayList<>();
+    delegateHandler.handle(callbacks);
 
     for (Callback callback : callbacks) {
-      if (callback instanceof AuthorizeCallback) {
-        AuthorizeCallback ac = (AuthorizeCallback) callback;
-        String authenticationID = ac.getAuthenticationID();
-        String authorizationID = ac.getAuthorizationID();
-
-        if (StringUtils.isBlank(authenticationID) || StringUtils.isBlank(authorizationID)) {
-          LOG.debug("Missing authentication or authorization ID; delegating callback");
-          unhandledCallbacks.add(callback);
-          continue;
-        }
-
-        if (!authenticationID.equals(authorizationID)) {
-          LOG.debug("Delegating authorization for different auth IDs");
-          unhandledCallbacks.add(callback);
-          continue;
-        }
-
-        // If group check is not enabled or no filter configured, authorize immediately.
-        if (!enableLdapGroupCheck || filter == null) {
-          ac.setAuthorized(true);
-          continue;
-        }
-
-        String user = extractUserName(authenticationID);
-        boolean authorized = applyLdapFilter(user);
-        ac.setAuthorized(authorized);
-      } else {
-        unhandledCallbacks.add(callback);
+      if (!(callback instanceof AuthorizeCallback)) {
+        continue;
       }
-    }
 
-    if (!unhandledCallbacks.isEmpty()) {
-      delegateHandler.handle(unhandledCallbacks.toArray(new Callback[0]));
+      AuthorizeCallback ac = (AuthorizeCallback) callback;
+      String authenticationID = ac.getAuthenticationID();
+      String authorizationID = ac.getAuthorizationID();
+
+      if (StringUtils.isBlank(authenticationID) || StringUtils.isBlank(authorizationID)) {
+        LOG.debug("Missing authentication or authorization ID; skipping LDAP filter");
+        continue;
+      }
+
+      if (!authenticationID.equals(authorizationID)) {
+        LOG.debug("Skipping LDAP filter for mismatched auth IDs");
+        continue;
+      }
+
+      if (!enableLdapGroupCheck || filter == null) {
+        ac.setAuthorized(true);
+        continue;
+      }
+
+      String user = extractUserName(authenticationID);
+      boolean authorized = applyLdapFilter(user);
+      ac.setAuthorized(authorized);
     }
   }
 
@@ -114,40 +114,22 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
    */
   private boolean applyLdapFilter(String user) {
     try {
-      String bindDN = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER);
-      char[] rawPassword = conf.getPassword(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD.varname);
-      String bindPassword = (rawPassword == null) ? null : new String(rawPassword);
-
-      if (StringUtils.isBlank(bindDN) || StringUtils.isBlank(bindPassword)) {
-        LOG.error("LDAP bind DN or password is not configured");
-        return false;
-      }
-
-      DirSearch dirSearch = this.dirSearchFactory.getInstance(conf, bindDN, bindPassword);
-
-      filter.apply(dirSearch, user);
+      filterEnforcer.enforce(conf, dirSearchFactory, filter, user, null, false);
       LOG.debug("User {} passed LDAP filter validation", user);
       return true;
-
-    } catch (AuthenticationException e) {
-      LOG.warn("User {} failed LDAP filter validation: {}", user, e.getMessage());
-      return false;
     } catch (Exception e) {
-      LOG.error("Error applying LDAP filter for user {}", user, e);
+      if (e instanceof AuthenticationException) {
+        LOG.warn("User {} failed LDAP filter validation: {}", user, e.getMessage());
+      } else {
+        LOG.error("Error applying LDAP filter for user {}", user, e);
+      }
       return false;
     }
   }
 
   @VisibleForTesting
   public static String extractUserName(@NotNull String principal) {
-    int idx = principal.indexOf('@');
-    if (idx > 0) {
-      principal = principal.substring(0, idx);
-    }
-    idx = principal.indexOf('/');
-    if (idx > 0) {
-      principal = principal.substring(0, idx);
-    }
-    return principal;
+    String[] parts = SaslRpcServer.splitKerberosName(principal);
+    return parts.length > 0 ? parts[0] : principal;
   }
 }

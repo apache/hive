@@ -106,7 +106,7 @@ public class TestLdapKerberosWithGroupFilter {
     when(dirSearch.findGroupsForUser(eq(userDn))).thenReturn(Collections.singletonList(groupDn));
 
     // Create the callback handler with our test configuration
-    LdapGroupCallbackHandler callbackHandler = new LdapGroupCallbackHandler(
+    LdapGroupCallbackHandler callbackHandler = LdapGroupCallbackHandler.createForTesting(
         conf, dirSearchFactory, delegateHandler);
 
     // Create an AuthorizeCallback as would be done by Kerberos authentication
@@ -135,7 +135,7 @@ public class TestLdapKerberosWithGroupFilter {
     when(dirSearch.findUserDn(USER2_ID)).thenReturn(userDn);
     when(dirSearch.findGroupsForUser(eq(userDn))).thenReturn(Collections.singletonList(wrongGroupDn));
 
-    LdapGroupCallbackHandler callbackHandler = new LdapGroupCallbackHandler(
+    LdapGroupCallbackHandler callbackHandler = LdapGroupCallbackHandler.createForTesting(
         conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(USER2_PRINCIPAL, USER2_PRINCIPAL);
@@ -159,7 +159,7 @@ public class TestLdapKerberosWithGroupFilter {
     when(dirSearch.findGroupsForUser("uid=user1,dc=example,dc=com")).thenReturn(
         Collections.singletonList("cn=group1,dc=example,dc=com"));
 
-    LdapGroupCallbackHandler callbackHandler1 = new LdapGroupCallbackHandler(
+    LdapGroupCallbackHandler callbackHandler1 = LdapGroupCallbackHandler.createForTesting(
         conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac1 = new AuthorizeCallback(USER1_PRINCIPAL, USER1_PRINCIPAL);
@@ -177,7 +177,7 @@ public class TestLdapKerberosWithGroupFilter {
     when(dirSearchFactory.getInstance(any(HiveConf.class), anyString(), anyString()))
         .thenReturn(dirSearch);
 
-    LdapGroupCallbackHandler callbackHandler2 = new LdapGroupCallbackHandler(
+    LdapGroupCallbackHandler callbackHandler2 = LdapGroupCallbackHandler.createForTesting(
         conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac2 = new AuthorizeCallback(USER2_PRINCIPAL, USER2_PRINCIPAL);
@@ -212,7 +212,7 @@ public class TestLdapKerberosWithGroupFilter {
         eq(groupBaseDn)))
         .thenReturn(Collections.singletonList("cn=group1,ou=groups,dc=example,dc=com"));
 
-    LdapGroupCallbackHandler callbackHandler = new LdapGroupCallbackHandler(
+    LdapGroupCallbackHandler callbackHandler = LdapGroupCallbackHandler.createForTesting(
         conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(USER1_PRINCIPAL, USER1_PRINCIPAL);
@@ -231,7 +231,7 @@ public class TestLdapKerberosWithGroupFilter {
     // Even if a group filter is set, it should be ignored
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, GROUP1_NAME);
 
-    LdapGroupCallbackHandler callbackHandler = new LdapGroupCallbackHandler(
+    LdapGroupCallbackHandler callbackHandler = LdapGroupCallbackHandler.createForTesting(
         conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac1 = new AuthorizeCallback(USER1_PRINCIPAL, USER1_PRINCIPAL);
@@ -293,7 +293,7 @@ public class TestLdapKerberosWithGroupFilter {
     when(dirSearch.findUserDn(USER1_ID)).thenReturn(userDn);
     when(dirSearch.findGroupsForUser(userDn)).thenReturn(Collections.singletonList(groupDn));
 
-    LdapGroupCallbackHandler callbackHandler = new LdapGroupCallbackHandler(
+    LdapGroupCallbackHandler callbackHandler = LdapGroupCallbackHandler.createForTesting(
         conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback authorized = new AuthorizeCallback(USER1_PRINCIPAL, USER1_PRINCIPAL);
