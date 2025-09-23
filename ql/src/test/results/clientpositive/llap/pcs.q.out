@@ -526,7 +526,7 @@ FROM `default`.`pcs_t1`
 WHERE `key` IN (1, 2) AND `ds` IN ('2000-04-08', '2000-04-09')) AS `t0`
 INNER JOIN (SELECT `key`, `ds`
 FROM `default`.`pcs_t1`
-WHERE `ds` IN ('2000-04-08', '2000-04-09')) AS `t2` ON (`t0`.`key`, `t0`.`ds`, `t2`.`ds`) IN ((1, '2000-04-08', '2000-04-09'), (2, '2000-04-09', '2000-04-08')) AND `t0`.`ds` = `t2`.`ds`
+WHERE `ds` IN ('2000-04-08', '2000-04-09')) AS `t2` ON `t0`.`ds` = `t2`.`ds` AND (`t0`.`key`, `t0`.`ds`, `t2`.`ds`) IN ((1, '2000-04-08', '2000-04-09'), (2, '2000-04-09', '2000-04-08'))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
