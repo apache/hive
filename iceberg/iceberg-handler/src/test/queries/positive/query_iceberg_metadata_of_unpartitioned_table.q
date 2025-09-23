@@ -2,6 +2,7 @@
 --! qt:replace:/("file_size_in_bytes":)\d+/$1#Masked#/
 --! qt:replace:/("total-files-size":)\d+/$1#Masked#/
 --! qt:replace:/^((?:[^\t]+\t){2})(ORC|PARQUET|AVRO)/$1#Masked#/
+--! qt:replace:/^((?:[^\t]+\t){5})\d+(\t.*)$/$1#Masked#$2/
 
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
