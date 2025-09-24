@@ -104,6 +104,10 @@
       <version>2.5</version>
       <exclusions>
         <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.velocity</groupId>
           <artifactId>velocity-tools</artifactId>
         </exclusion>

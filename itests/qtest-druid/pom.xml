@@ -47,6 +47,10 @@
       <version>${druid.version}</version>
       <exclusions>
         <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
           <artifactId>jersey-server</artifactId>
           <groupId>com.sun.jersey</groupId>
         </exclusion>
@@ -69,6 +73,10 @@
       <artifactId>druid-services</artifactId>
       <version>${druid.version}</version>
       <exclusions>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
         <exclusion>
           <artifactId>jersey-server</artifactId>
           <groupId>com.sun.jersey</groupId>

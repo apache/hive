@@ -1718,6 +1718,13 @@
                 </bannedDependencies>
                 <bannedDependencies>
                   <excludes>
+                    <exclude>commons-lang:commons-lang</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>Banned commons-lang:commons-lang dependency/transitive dependency was found!</message>
+                </bannedDependencies>
+                <bannedDependencies>
+                  <excludes>
                     <!-- Move to SLF4J -->
                     <exclude>commons-logging:commons-logging</exclude>
                     <exclude>ch.qos.reload4j:reload4j</exclude>

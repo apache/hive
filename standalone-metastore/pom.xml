@@ -583,6 +583,36 @@
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>enforce-banned-dependencies</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <bannedDependencies>
+                    <excludes>
+                      <!--LGPL licenced library-->
+                      <exclude>com.google.code.findbugs:annotations</exclude>
+                    </excludes>
+                  </bannedDependencies>
+                  <bannedDependencies>
+                    <excludes>
+                      <exclude>commons-lang:commons-lang</exclude>
+                    </excludes>
+                    <searchTransitive>true</searchTransitive>
+                    <message>Banned commons-lang:commons-lang dependency/transitive dependency was found!</message>
+                  </bannedDependencies>
+                </rules>
+                <fail>true</fail>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>

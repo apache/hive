@@ -129,6 +129,10 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -396,6 +400,10 @@
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-client</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -406,6 +414,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -423,6 +435,10 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -432,6 +448,12 @@
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-mapreduce</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -441,6 +463,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -457,6 +483,12 @@
       <artifactId>hadoop-yarn-server-tests</artifactId>
       <scope>test</scope>
       <classifier>tests</classifier>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -558,6 +590,13 @@
             </goals>
             <configuration>
               <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>commons-lang:commons-lang</exclude>
+                  </excludes>
+                  <searchTransitive>true</searchTransitive>
+                  <message>Banned commons-lang:commons-lang dependency/transitive dependency was found!</message>
+                </bannedDependencies>
                 <bannedDependencies>
                   <excludes>
                     <exclude>org.junit.jupiter:junit-jupiter</exclude>
