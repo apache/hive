@@ -59,7 +59,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     boolean isSoftDelete = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
     String catalogName = catDbNamePair.getLeft();
-    if (getCatalog(catalogName) == null) {
+    if (catalogName != null && getCatalog(catalogName) == null) {
       throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);
     }
     String databaseName = catDbNamePair.getRight();
