@@ -736,7 +736,7 @@ POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_pruned`
-WHERE `ds` = '2008-04-08' AND `key` IN (2, 3)
+WHERE `key` IN (2, 3) AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -750,13 +750,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((ds = '2008-04-08') and (key) IN (2, 3)) (type: boolean)
+                  filterExpr: ((key) IN (2, 3) and (ds = '2008-04-08')) (type: boolean)
                   buckets included: [4,6,] of 16
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((ds = '2008-04-08') and (key) IN (2, 3)) (type: boolean)
+                    predicate: ((key) IN (2, 3) and (ds = '2008-04-08')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), '2008-04-08' (type: string)
@@ -807,7 +807,7 @@ POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_pruned`
-WHERE `ds` = '2008-04-08' AND `value` = 'One' AND `key` IN (2, 3)
+WHERE `key` IN (2, 3) AND `ds` = '2008-04-08' AND `value` = 'One'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -821,13 +821,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((ds = '2008-04-08') and (value = 'One') and (key) IN (2, 3)) (type: boolean)
+                  filterExpr: ((key) IN (2, 3) and (ds = '2008-04-08') and (value = 'One')) (type: boolean)
                   buckets included: [4,6,] of 16
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((ds = '2008-04-08') and (value = 'One') and (key) IN (2, 3)) (type: boolean)
+                    predicate: ((key) IN (2, 3) and (ds = '2008-04-08') and (value = 'One')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), 'One' (type: string), '2008-04-08' (type: string)
@@ -878,7 +878,7 @@ POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_pruned`
-WHERE `value` = 'One' AND `ds` = '2008-04-08' AND `key` IN (2, 3)
+WHERE `value` = 'One' AND `key` IN (2, 3) AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -892,13 +892,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((value = 'One') and (ds = '2008-04-08') and (key) IN (2, 3)) (type: boolean)
+                  filterExpr: ((value = 'One') and (key) IN (2, 3) and (ds = '2008-04-08')) (type: boolean)
                   buckets included: [4,6,] of 16
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((value = 'One') and (ds = '2008-04-08') and (key) IN (2, 3)) (type: boolean)
+                    predicate: ((value = 'One') and (key) IN (2, 3) and (ds = '2008-04-08')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), 'One' (type: string), '2008-04-08' (type: string)
@@ -949,7 +949,7 @@ POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_pruned`
-WHERE `ds` = '2008-04-08' AND `key` IN (1, 2)
+WHERE `key` IN (1, 2) AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -963,13 +963,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((ds = '2008-04-08') and (key) IN (1, 2)) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) and (ds = '2008-04-08')) (type: boolean)
                   buckets included: [4,13,] of 16
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((ds = '2008-04-08') and (key) IN (1, 2)) (type: boolean)
+                    predicate: ((key) IN (1, 2) and (ds = '2008-04-08')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), '2008-04-08' (type: string)
@@ -1020,7 +1020,7 @@ POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, CAST('One' AS STRING) AS `value`, CAST('2008-04-08' AS STRING) AS `ds`
 FROM `default`.`srcbucket_pruned`
-WHERE `value` = 'One' AND `ds` = '2008-04-08' AND `key` IN (1, 2)
+WHERE `key` IN (1, 2) AND `value` = 'One' AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1034,13 +1034,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcbucket_pruned
-                  filterExpr: ((value = 'One') and (ds = '2008-04-08') and (key) IN (1, 2)) (type: boolean)
+                  filterExpr: ((key) IN (1, 2) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
                   buckets included: [4,13,] of 16
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((value = 'One') and (ds = '2008-04-08') and (key) IN (1, 2)) (type: boolean)
+                    predicate: ((key) IN (1, 2) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), 'One' (type: string), '2008-04-08' (type: string)
