@@ -1133,6 +1133,7 @@ public class AcidUtils {
      * overlapping writeId boundaries.  The sort order helps figure out the "best" set of files
      * to use to get data.
      * This sorts "wider" delta before "narrower" i.e. delta_5_20 sorts before delta_5_10 (and delta_11_20)
+     * In case of same min writeID, max writeID & statement ID, it sorts in the descending order of visibilityTxnID
      */
     @Override
     public int compareTo(ParsedDeltaLight parsedDelta) {
@@ -1161,6 +1162,13 @@ public class AcidUtils {
         }
         else {
           return 1;
+        }
+      }
+      else if (visibilityTxnId != parsedDelta.visibilityTxnId) {
+        if (visibilityTxnId < parsedDelta.visibilityTxnId) {
+          return 1;
+        } else {
+          return -1;
         }
       }
       else {
@@ -1452,7 +1460,8 @@ public class AcidUtils {
       }
       else if (prev != null && next.maxWriteId == prev.maxWriteId
                   && next.minWriteId == prev.minWriteId
-                  && next.statementId == prev.statementId) {
+                  && next.statementId == prev.statementId
+                  && (next.isDeleteDelta || prev.isDeleteDelta)) {
         // The 'next' parsedDelta may have everything equal to the 'prev' parsedDelta, except
         // the path. This may happen when we have split update and we have two types of delta
         // directories- 'delta_x_y' and 'delete_delta_x_y' for the SAME txn range.
