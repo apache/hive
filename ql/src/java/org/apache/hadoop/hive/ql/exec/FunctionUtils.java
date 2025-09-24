@@ -142,6 +142,22 @@ public final class FunctionUtils {
   }
 
   /**
+   * Retrieves the display name of a UDF (User Defined Function) from its class
+   * by inspecting the `@Description` annotation.
+   *
+   * @param udfClass The class of the UDF to inspect.
+   * @return The name of the UDF as specified in the `name` field of the `@Description` annotation,
+   *         or `null` if the annotation is not present.
+   */
+  public static String getFuncNameFromClass(Class<?> udfClass) {
+    if (udfClass.isAnnotationPresent(Description.class)) {
+      Description description = udfClass.getAnnotation(Description.class);
+      return description.name();
+    }
+    return null;
+  }
+
+  /**
    * Function type, for permanent functions.
    * Currently just JAVA, though we could support Groovy later on.
    */
