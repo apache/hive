@@ -1880,8 +1880,9 @@ class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, colNames, new Batchable<String, ColumnStatisticsObj>() {
       @Override
       public List<ColumnStatisticsObj> run(final List<String> inputColNames) throws MetaException {
-        return columnStatisticsObjForPartitionsBatch(catName, dbName, tableName, partNames, inputColNames, engine,
-            areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
+        /** Should be called with the list short enough to not trip up Oracle/etc. */
+        return aggrStatsUseJava(catName, dbName, tableName, partNames, inputColNames, engine, areAllPartsFound,
+            useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
       }
     });
   }
@@ -1918,16 +1919,6 @@ class MetaStoreDirectSql {
       }
     }
     return colStatsForDB;
-  }
-
-  /** Should be called with the list short enough to not trip up Oracle/etc. */
-  private List<ColumnStatisticsObj> columnStatisticsObjForPartitionsBatch(String catName, String dbName,
-      String tableName, List<String> partNames, List<String> colNames, String engine,
-      boolean areAllPartsFound, boolean useDensityFunctionForNDVEstimation, double ndvTuner,
-      boolean enableBitVector, boolean enableKll)
-      throws MetaException {
-      return aggrStatsUseJava(catName, dbName, tableName, partNames, colNames, engine, areAllPartsFound,
-          useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
   }
 
   private List<ColumnStatisticsObj> aggrStatsUseJava(String catName, String dbName, String tableName,
