@@ -27,4 +27,4 @@ for line in sys.stdin.readlines():
     dict[line] = 1
 for key in dict:
   x = dict[key]
-  print str(x).strip()+'\t'+re.sub('\t','_',key.strip())
+  print(str(x).strip()+'\t'+re.sub('\t','_',key.strip()))

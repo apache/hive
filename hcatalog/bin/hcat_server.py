@@ -26,9 +26,9 @@ from time import strftime
 
 sleepTime = 3
 def print_usage():
-  print "Usage: %s [--config confdir] COMMAND" % (sys.argv[0])
-  print "  start Start HCatalog Server"
-  print "  stop Stop HCatalog Server"
+  print("Usage: %s [--config confdir] COMMAND" % (sys.argv[0]))
+  print("  start Start HCatalog Server")
+  print("  stop Stop HCatalog Server")
 
 def start_hcat():
   global sleepTime
@@ -97,7 +97,7 @@ def start_hcat():
   windowsTmpFile = os.path.join(os.environ['HCAT_LOG_DIR'], "windows.tmp")
   child = subprocess.Popen([command, "--service", "metastore"], stdout=outfd, stderr=errfd)
   pid = child.pid
-  print "Started metastore server init, testing if initialized correctly..."
+  print("Started metastore server init, testing if initialized correctly...")
   time.sleep(sleepTime)
   try:
     if os.name == "posix":
@@ -111,9 +111,9 @@ def start_hcat():
     pidFileDesc = open(pidFile, 'w')
     pidFileDesc.write(str(pid))
     pidFileDesc.close()
-    print "Metastore initialized successfully"
+    print("Metastore initialized successfully")
   except Exception as inst:
-    print inst
+    print(inst)
     sys.exit("Metastore startup failed, see %s" % (errFile))
 
   return

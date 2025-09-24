@@ -36,4 +36,4 @@ for line in sys.stdin:
 
 text = ' '.join( list )
 text = text[0:10] + "..." + text[-10:]
-print '[[%s]]\t[[%s]]' % (title, text)
+print('[[%s]]\t[[%s]]' % (title, text))
