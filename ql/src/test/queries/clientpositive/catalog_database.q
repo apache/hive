@@ -1,6 +1,3 @@
-set hive.mapred.mode=nonstrict;
-set hive.support.concurrency = true;
-
 -- CREATE DATABASE in default catalog 'hive'
 CREATE DATABASE testdb;
 
@@ -26,3 +23,10 @@ SHOW DATABASES;
 
 -- Switch database by catalog.db pattern
 USE testcat.testdb_new;
+
+-- Drop database by catalog.db pattern
+DROP DATABASE testcat.testdb_new;
+
+-- Check databases in catalog 'testcat',
+-- The list of databases in the catalog 'hive' should only contain the default.
+SHOW DATABASES;

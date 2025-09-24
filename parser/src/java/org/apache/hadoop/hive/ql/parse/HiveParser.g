@@ -1230,8 +1230,8 @@ switchDatabaseStatement
 dropDatabaseStatement
 @init { pushMsg("drop database statement", state); }
 @after { popMsg(state); }
-    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? identifier restrictOrCascade?
-    -> ^(TOK_DROPDATABASE identifier ifExists? restrictOrCascade?)
+    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? databaseName restrictOrCascade?
+    -> ^(TOK_DROPDATABASE databaseName ifExists? restrictOrCascade?)
     ;
 
 databaseComment

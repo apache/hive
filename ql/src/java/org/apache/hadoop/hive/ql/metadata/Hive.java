@@ -725,7 +725,7 @@ public class Hive implements AutoCloseable {
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
-    dropDatabase(new DropDatabaseDesc(name, ignoreUnknownDb, cascade, deleteData));
+    dropDatabase(new DropDatabaseDesc(getDefaultCatalog(conf) ,name, ignoreUnknownDb, cascade, deleteData)); //TODO check the actual catalog
   }
 
   public void dropDatabase(DropDatabaseDesc desc) 
@@ -737,7 +737,7 @@ public class Hive implements AutoCloseable {
       .map(HiveTxnManager::getCurrentTxnId).orElse(0L);
     
     DropDatabaseRequest req = new DropDatabaseRequest();
-    req.setCatalogName(SessionState.get().getCurrentCatalog());
+    req.setCatalogName(Objects.requireNonNullElse(desc.getCatalogName(), SessionState.get().getCurrentCatalog()));
     req.setName(desc.getDatabaseName());
     req.setIgnoreUnknownDb(desc.getIfExists());
     req.setDeleteData(desc.isDeleteData());
@@ -1873,6 +1873,17 @@ public class Hive implements AutoCloseable {
   }
 
   /**
+   * Get all tables for the specified database.
+   * @param catName
+   * @param dbName
+   * @return List of all tables
+   * @throws HiveException
+   */
+  public List<Table> getAllTableObjects(String catName, String dbName) throws HiveException {
+    return getTableObjects(catName, dbName, ".*", null);
+  }
+
+  /**
    * Get all materialized view names for the specified database.
    * @param dbName
    * @return List of materialized view table names
@@ -1912,6 +1923,16 @@ public class Hive implements AutoCloseable {
             return new Table(table);
           }
         }
+      );
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<Table> getTableObjects(String catName, String dbName, String pattern, TableType tableType) throws HiveException {
+    try {
+      return Lists.transform(getMSC().getTables(catName, dbName, getTablesByType(catName, dbName, pattern, tableType), null),
+              Table::new
       );
     } catch (Exception e) {
       throw new HiveException(e);
@@ -1991,6 +2012,52 @@ public class Hive implements AutoCloseable {
           result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, pattern);
         } else {
           result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, ".*");
+        }
+      }
+      return result;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    } finally {
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE, "HS2-cache");
+    }
+  }
+
+  /**
+   * Returns all existing tables of a type (VIRTUAL_VIEW|EXTERNAL_TABLE|MANAGED_TABLE) from the specified
+   * database which match the given pattern. The matching occurs as per Java regular expressions.
+   * @param catName catalog name to find the tables in. if null, uses the current catalog in this session.
+   * @param dbName Database name to find the tables in. if null, uses the current database in this session.
+   * @param pattern A pattern to match for the table names.If null, returns all names from this DB.
+   * @param type The type of tables to return. VIRTUAL_VIEWS for views. If null, returns all tables and views.
+   * @return list of table names that match the pattern.
+   * @throws HiveException
+   */
+  public List<String> getTablesByType(String catName, String dbName, String pattern, TableType type)
+          throws HiveException {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
+
+    if (catName == null) {
+      dbName = SessionState.get().getCurrentCatalog();
+    }
+
+    if (dbName == null) {
+      dbName = SessionState.get().getCurrentDatabase();
+    }
+
+    try {
+      List<String> result;
+      if (type != null) {
+        if (pattern != null) {
+          result = getMSC().getTables(catName, dbName, pattern, type);
+        } else {
+          result = getMSC().getTables(catName, dbName, ".*", type);
+        }
+      } else {
+        if (pattern != null) {
+          result = getMSC().getTables(catName, dbName, pattern);
+        } else {
+          result = getMSC().getTables(catName, dbName, ".*");
         }
       }
       return result;
@@ -6460,6 +6527,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
       GetFunctionsRequest request = new GetFunctionsRequest(dbName);
       request.setPattern(pattern);
       request.setCatalogName(getDefaultCatalog(conf));
+      request.setReturnNames(false);
+      return getMSC().getFunctionsRequest(request).getFunctions();
+    } catch (TException te) {
+      throw new HiveException(te);
+    }
+  }
+
+  public List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws HiveException {
+    try {
+      GetFunctionsRequest request = new GetFunctionsRequest(dbName);
+      request.setPattern(pattern);
+      request.setCatalogName(Objects.requireNonNullElse(catName, SessionState.get().getCurrentCatalog()));
       request.setReturnNames(false);
       return getMSC().getFunctionsRequest(request).getFunctions();
     } catch (TException te) {

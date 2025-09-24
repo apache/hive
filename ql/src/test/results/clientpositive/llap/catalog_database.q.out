@@ -48,3 +48,16 @@ PREHOOK: Input: database:testdb_new
 POSTHOOK: query: USE testcat.testdb_new
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:testdb_new
+PREHOOK: query: DROP DATABASE testcat.testdb_new
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb_new
+PREHOOK: Output: database:testdb_new
+POSTHOOK: query: DROP DATABASE testcat.testdb_new
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb_new
+POSTHOOK: Output: database:testdb_new
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
