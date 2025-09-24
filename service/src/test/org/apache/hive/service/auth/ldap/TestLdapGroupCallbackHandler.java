@@ -60,6 +60,21 @@ public class TestLdapGroupCallbackHandler {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, "bindPassword");
     when(dirSearchFactory.getInstance(any(HiveConf.class), anyString(), anyString()))
         .thenReturn(dirSearch);
+    doAnswer(invocation -> {
+      Object[] args = invocation.getArguments();
+      if (args.length > 0 && args[0] instanceof Callback[]) {
+        Callback[] callbackArray = (Callback[]) args[0];
+        for (Callback callback : callbackArray) {
+          if (callback instanceof AuthorizeCallback) {
+            AuthorizeCallback authorizeCallback = (AuthorizeCallback) callback;
+            String authId = authorizeCallback.getAuthenticationID();
+            String authzId = authorizeCallback.getAuthorizationID();
+            authorizeCallback.setAuthorized(authId != null && authId.equals(authzId));
+          }
+        }
+      }
+      return null;
+    }).when(delegateHandler).handle(any(Callback[].class));
   }
 
   @Test
@@ -67,7 +82,7 @@ public class TestLdapGroupCallbackHandler {
     // Disable LDAP filter check
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, false);
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     callbackHandler.handle(new Callback[]{ac});
@@ -103,7 +118,7 @@ public class TestLdapGroupCallbackHandler {
         eq(groupBaseDn)))
         .thenReturn(Collections.singletonList("cn=group1,ou=groups,dc=example,dc=com"));
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     callbackHandler.handle(new Callback[]{ac});
@@ -127,7 +142,7 @@ public class TestLdapGroupCallbackHandler {
     when(dirSearch.executeCustomQuery(eq(customQuery)))
         .thenReturn(Collections.singletonList("uid=" + TEST_USER + ",dc=example,dc=com"));
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     callbackHandler.handle(new Callback[]{ac});
@@ -151,7 +166,7 @@ public class TestLdapGroupCallbackHandler {
     when(dirSearch.findGroupsForUser(eq(userDn)))
         .thenReturn(Collections.singletonList(wrongGroupDn));
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     callbackHandler.handle(new Callback[]{ac});
@@ -168,7 +183,7 @@ public class TestLdapGroupCallbackHandler {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
     // No filters configured - resolveFilter will return null
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     callbackHandler.handle(new Callback[]{ac});
@@ -186,7 +201,7 @@ public class TestLdapGroupCallbackHandler {
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, authorizationId);
     Callback[] callbacks = {ac};
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
     callbackHandler.handle(callbacks);
 
     // Since authentication and authorization IDs differ, the handler should delegate
@@ -201,7 +216,7 @@ public class TestLdapGroupCallbackHandler {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1");
     conf.unset(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER.varname);
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     callbackHandler.handle(new Callback[]{ac});
@@ -219,7 +234,7 @@ public class TestLdapGroupCallbackHandler {
     doThrow(new UnsupportedCallbackException(unsupportedCallback))
         .when(delegateHandler).handle(any(Callback[].class));
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     callbackHandler.handle(callbacks);
   }
@@ -237,7 +252,7 @@ public class TestLdapGroupCallbackHandler {
     doThrow(new UnsupportedCallbackException(unsupportedCallback))
         .when(delegateHandler).handle(any(Callback[].class));
 
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     try {
       callbackHandler.handle(callbacks);
@@ -252,7 +267,7 @@ public class TestLdapGroupCallbackHandler {
 
   @Test
   public void testHandleDelegatesWhenAuthIdsMissing() throws Exception {
-    callbackHandler = new LdapGroupCallbackHandler(conf, dirSearchFactory, delegateHandler);
+    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
 
     AuthorizeCallback ac = new AuthorizeCallback(null, TEST_PRINCIPAL);
 

@@ -20,12 +20,9 @@ package org.apache.hive.service.cli.thrift;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HttpAuthenticationException;
-import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
 import org.apache.hive.service.auth.ldap.DirSearch;
 import org.apache.hive.service.auth.ldap.DirSearchFactory;
 import org.apache.hive.service.auth.ldap.KerberosLdapFilterEnforcer;
-import org.apache.hive.service.auth.ldap.Filter;
-import org.apache.hive.service.auth.ldap.LdapGroupCallbackHandler;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSName;
@@ -36,7 +33,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.security.sasl.AuthenticationException;
-
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -86,7 +82,10 @@ public class TestThriftHttpKerberosLdapFilter {
     // Mock DirSearchFactory
     when(dirSearchFactory.getInstance(any(HiveConf.class), anyString(), anyString())).thenReturn(dirSearch);
 
-    // Create a testable auth handler with mocked components
+    authHandler = null;
+  }
+
+  private void createAuthHandler() {
     authHandler = new TestableKerberosAuthHandler(hiveConf, dirSearchFactory);
   }
 
@@ -95,6 +94,7 @@ public class TestThriftHttpKerberosLdapFilter {
     // Disable filters
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, false);
 
+    createAuthHandler();
     // Run authentication
     String username = authHandler.run();
 
@@ -113,6 +113,7 @@ public class TestThriftHttpKerberosLdapFilter {
     when(dirSearch.findUserDn(TEST_USER)).thenReturn(userDn);
     when(dirSearch.findGroupsForUser(eq(userDn))).thenReturn(Collections.singletonList(groupDn));
 
+    createAuthHandler();
     String username = authHandler.run();
     assertEquals(TEST_USER, username);
 
@@ -132,6 +133,7 @@ public class TestThriftHttpKerberosLdapFilter {
     when(dirSearch.findUserDn(TEST_USER)).thenReturn(userDn);
     when(dirSearch.findGroupsForUser(eq(userDn))).thenReturn(Collections.singletonList(wrongGroupDn));
 
+    createAuthHandler();
     authHandler.run();
   }
 
@@ -158,6 +160,7 @@ public class TestThriftHttpKerberosLdapFilter {
         eq(groupBaseDn)))
         .thenReturn(Collections.singletonList("cn=group1,ou=groups,dc=example,dc=com"));
 
+    createAuthHandler();
     String username = authHandler.run();
     assertEquals(TEST_USER, username);
 
@@ -171,6 +174,7 @@ public class TestThriftHttpKerberosLdapFilter {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
     // No filters configured - resolveFilter will return null
 
+    createAuthHandler();
     authHandler.run();
   }
 
@@ -181,6 +185,7 @@ public class TestThriftHttpKerberosLdapFilter {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1");
     hiveConf.unset(ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER.varname);
 
+    createAuthHandler();
     // Run authentication - should throw exception
     authHandler.run();
   }
@@ -200,6 +205,7 @@ public class TestThriftHttpKerberosLdapFilter {
     try {
       org.apache.hive.service.cli.session.SessionManager.setProxyUserName("proxyUser");
 
+      createAuthHandler();
       String username = authHandler.run();
 
       assertEquals(TEST_USER, username);
@@ -221,6 +227,7 @@ public class TestThriftHttpKerberosLdapFilter {
     when(dirSearchFactory.getInstance(any(), anyString(), anyString()))
         .thenThrow(new AuthenticationException("LDAP connection failed"));
 
+    createAuthHandler();
     // Run authentication - should throw exception
     authHandler.run();
   }
@@ -230,6 +237,7 @@ public class TestThriftHttpKerberosLdapFilter {
     // Configure GSSContext to throw exception
     when(gssContext.getSrcName()).thenThrow(new GSSException(GSSException.FAILURE));
 
+    createAuthHandler();
     // Run authentication - should throw exception
     authHandler.run();
   }
@@ -239,6 +247,7 @@ public class TestThriftHttpKerberosLdapFilter {
     // Configure GSSContext to return null name
     when(gssContext.getSrcName()).thenReturn(null);
 
+    createAuthHandler();
     // Run authentication - should throw exception
     authHandler.run();
   }
@@ -249,34 +258,31 @@ public class TestThriftHttpKerberosLdapFilter {
   private class TestableKerberosAuthHandler {
     private final HiveConf hiveConf;
     private final DirSearchFactory mockDirSearchFactory;
-    private final KerberosLdapFilterEnforcer filterEnforcer = KerberosLdapFilterEnforcer.INSTANCE;
+    private final KerberosLdapFilterEnforcer filterEnforcer;
 
     public TestableKerberosAuthHandler(HiveConf hiveConf,
                                        DirSearchFactory dirSearchFactory) {
       this.hiveConf = hiveConf;
       this.mockDirSearchFactory = dirSearchFactory;
+      this.filterEnforcer = new KerberosLdapFilterEnforcer(hiveConf, dirSearchFactory);
     }
 
-    private void enforceLdapFilters(String shortName) throws HttpAuthenticationException {
-      // Implementation that uses LdapAuthenticationProviderImpl.resolveFilter
-      try {
-        boolean enableGroupCheck = hiveConf.getBoolVar(
-            HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
+    private void enforceLdapFilters(String principal) throws HttpAuthenticationException {
+      // Implementation that delegates to KerberosLdapFilterEnforcer
+      boolean enableGroupCheck = hiveConf.getBoolVar(
+          HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
 
-        if (!enableGroupCheck) {
-          return;
-        }
+      if (!enableGroupCheck) {
+        return;
+      }
 
-        // Use the static filter resolution
-        Filter filter = LdapAuthenticationProviderImpl.resolveFilter(hiveConf);
-        if (filter == null) {
-          throw new HttpAuthenticationException("LDAP filters not configured");
-        }
+      if (!filterEnforcer.isFilterConfigured()) {
+        throw new HttpAuthenticationException("LDAP filters not configured");
+      }
 
-        filterEnforcer.enforce(hiveConf, mockDirSearchFactory, filter, shortName, null, true);
-
-      } catch (AuthenticationException ae) {
-        throw new HttpAuthenticationException("LDAP filter check failed for user " + shortName, ae);
+      boolean authorized = filterEnforcer.applyLdapFilter(principal);
+      if (!authorized) {
+        throw new HttpAuthenticationException("LDAP filter check failed for user " + principal);
       }
     }
 
@@ -294,8 +300,8 @@ public class TestThriftHttpKerberosLdapFilter {
         }
 
         String principal = srcName.toString();
-        String shortName = LdapGroupCallbackHandler.extractUserName(principal);
-        enforceLdapFilters(shortName);
+        String shortName = KerberosLdapFilterEnforcer.extractUserName(principal);
+        enforceLdapFilters(principal);
 
         return shortName;
       } catch (GSSException e) {

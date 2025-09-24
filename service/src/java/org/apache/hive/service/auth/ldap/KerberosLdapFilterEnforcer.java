@@ -17,56 +17,69 @@
  */
 package org.apache.hive.service.auth.ldap;
 
-import java.io.IOException;
-
-import javax.security.sasl.AuthenticationException;
-
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.security.SaslRpcServer;
+import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.security.sasl.AuthenticationException;
+import java.io.IOException;
 
 /**
- * Singleton helper that applies configured LDAP filters for Kerberos-authenticated users.
+ * Helper that encapsulates LDAP filter resolution and enforcement for Kerberos-authenticated users.
  */
 public final class KerberosLdapFilterEnforcer {
+  private static final Logger LOG = LoggerFactory.getLogger(KerberosLdapFilterEnforcer.class);
 
-  public static final KerberosLdapFilterEnforcer INSTANCE = new KerberosLdapFilterEnforcer();
+  private final HiveConf conf;
+  private final DirSearchFactory dirSearchFactory;
+  private final boolean enableLdapGroupCheck;
+  private final Filter filter;
 
-  private KerberosLdapFilterEnforcer() {
+  public KerberosLdapFilterEnforcer(HiveConf conf, DirSearchFactory dirSearchFactory) {
+    this.conf = conf;
+    this.dirSearchFactory = dirSearchFactory;
+    this.enableLdapGroupCheck = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
+    this.filter = enableLdapGroupCheck ? LdapAuthenticationProviderImpl.resolveFilter(conf) : null;
+
+    if (enableLdapGroupCheck && filter == null) {
+      LOG.warn("LDAP group check enabled but no filters configured");
+    }
   }
 
   /**
-   * Apply the configured LDAP {@link Filter} for a Kerberos-authenticated user.
+   * Applies configured LDAP filters to authenticate a user principal.
    *
-   * @param conf Hive configuration
-   * @param factory factory used to obtain directory search clients
-   * @param filter resolved LDAP filter
-   * @param user short user name extracted from Kerberos principal
-   * @param existingDirSearch optional existing directory client to reuse
-   * @param failOnMissingFilter whether lack of configured filter should be treated as failure
-   * @return the directory client that was used. Callers should retain it if they want to reuse it.
-   * @throws AuthenticationException if the filter check fails or configuration is invalid
+   * @param principal Kerberos principal to validate
+   * @return {@code true} if the principal passes all configured filters; {@code false} otherwise
    */
-  public DirSearch enforce(HiveConf conf, DirSearchFactory factory, Filter filter, String user,
-      DirSearch existingDirSearch, boolean failOnMissingFilter) throws AuthenticationException {
-    if (filter == null) {
-      if (failOnMissingFilter) {
-        throw new AuthenticationException("LDAP filters not configured");
-      }
-      return existingDirSearch;
+  public boolean applyLdapFilter(String principal) {
+    if (!enableLdapGroupCheck || filter == null) {
+      return true;
     }
 
-    DirSearch dirSearch = existingDirSearch != null ? existingDirSearch : createDirSearch(conf, factory);
-    try {
+    String user = extractUserName(principal);
+    try (DirSearch dirSearch = createDirSearch()) {
       filter.apply(dirSearch, user);
-      return dirSearch;
+      LOG.debug("Principal {} passed LDAP filter validation", principal);
+      return true;
     } catch (AuthenticationException e) {
-      throw e;
+      LOG.warn("Principal {} failed LDAP filter validation: {}", principal, e.getMessage());
+      return false;
     } catch (Exception e) {
-      throw new AuthenticationException("Error applying LDAP filter for user " + user, e);
+      LOG.error("Error applying LDAP filter for principal {}", principal, e);
+      return false;
     }
   }
 
-  private DirSearch createDirSearch(HiveConf conf, DirSearchFactory factory) throws AuthenticationException {
+  public boolean isFilterConfigured() {
+    return enableLdapGroupCheck && filter != null;
+  }
+
+  private DirSearch createDirSearch() throws AuthenticationException {
     String bindDN = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER);
     char[] passwordChars;
     try {
@@ -80,6 +93,12 @@ public final class KerberosLdapFilterEnforcer {
       throw new AuthenticationException("LDAP bind credentials not configured");
     }
 
-    return factory.getInstance(conf, bindDN, bindPassword);
+    return dirSearchFactory.getInstance(conf, bindDN, bindPassword);
+  }
+
+  @VisibleForTesting
+  public static String extractUserName(String principal) {
+    String[] parts = SaslRpcServer.splitKerberosName(principal);
+    return parts.length > 0 ? parts[0] : principal;
   }
 }

@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.sasl.AuthenticationException;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -58,7 +57,6 @@ import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
-import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.jwt.JWTValidator;
@@ -485,7 +483,8 @@ public class ThriftHttpServlet extends TServlet {
     HttpServletRequest request;
     UserGroupInformation serviceUGI;
     private final DirSearchFactory dirSearchFactory = new LdapSearchFactory();
-    private final KerberosLdapFilterEnforcer filterEnforcer = KerberosLdapFilterEnforcer.INSTANCE;
+    private final KerberosLdapFilterEnforcer filterEnforcer =
+        new KerberosLdapFilterEnforcer(hiveConf, dirSearchFactory);
 
     HttpKerberosServerAction(HttpServletRequest request,
         UserGroupInformation serviceUGI) {
@@ -529,9 +528,10 @@ public class ThriftHttpServlet extends TServlet {
               "unable to establish context with the service ticket " +
               "provided by the client.");
         } else {
-          String shortName = getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString());
+          String principal = gssContext.getSrcName().toString();
+          String shortName = getPrincipalWithoutRealmAndHost(principal);
           LOG.debug("Kerberos authentication successful");
-          enforceLdapFilters(shortName);
+          enforceLdapFilters(principal);
           return shortName;
         }
       } catch (GSSException e) {
@@ -556,33 +556,24 @@ public class ThriftHttpServlet extends TServlet {
       }
     }
 
-    private void enforceLdapFilters(String shortName) throws HttpAuthenticationException {
+    private void enforceLdapFilters(String principal) throws HttpAuthenticationException {
       boolean enableGroupCheck = hiveConf.getBoolVar(
           HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
       if (!enableGroupCheck) {
         LOG.debug("No LDAP group check is enabled; skipping.");
         return;
       }
-      // Check if this is a proxy user - we don't apply LDAP filters to proxy users
-      String proxyUser = SessionManager.getProxyUserName();
-      if (proxyUser != null && !proxyUser.isEmpty()) {
-        LOG.debug("Skipping LDAP filters for proxy user authentication");
-        return;
-      }
-
-      Filter filter = LdapAuthenticationProviderImpl.resolveFilter(hiveConf);
-      if (filter == null) {
+      if (!filterEnforcer.isFilterConfigured()) {
         LOG.warn("LDAP group check enabled but no filters configured");
         throw new HttpAuthenticationException("LDAP filters not configured");
       }
 
-      try {
-        filterEnforcer.enforce(hiveConf, dirSearchFactory, filter, shortName, null, true);
-        LOG.debug("User {} passed LDAP filter validation", shortName);
-      } catch (AuthenticationException e) {
-        LOG.warn("User {} failed LDAP filter: {}", shortName, e.getMessage());
-        throw new HttpAuthenticationException("LDAP filter check failed for user " + shortName, e);
+      boolean authorized = filterEnforcer.applyLdapFilter(principal);
+      if (!authorized) {
+        LOG.warn("User {} failed LDAP filter", principal);
+        throw new HttpAuthenticationException("LDAP filter check failed for user " + principal);
       }
+      LOG.debug("User {} passed LDAP filter validation", principal);
     }
 
     private String getPrincipalWithoutRealm(String fullPrincipal)

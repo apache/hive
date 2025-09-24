@@ -20,15 +20,12 @@ package org.apache.hive.service.auth.ldap;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.SaslRpcServer;
-import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.AuthorizeCallback;
 import java.io.IOException;
 
@@ -40,29 +37,17 @@ import java.io.IOException;
 public class LdapGroupCallbackHandler implements CallbackHandler {
   private static final Logger LOG = LoggerFactory.getLogger(LdapGroupCallbackHandler.class);
 
-  private final HiveConf conf;
-  private final boolean enableLdapGroupCheck;
   private final CallbackHandler delegateHandler;
-  private final DirSearchFactory dirSearchFactory;
-  private final Filter filter;
-
-  private final KerberosLdapFilterEnforcer filterEnforcer = KerberosLdapFilterEnforcer.INSTANCE;
+  private final KerberosLdapFilterEnforcer filterEnforcer;
 
   public LdapGroupCallbackHandler(HiveConf conf) {
     this(conf, new LdapSearchFactory(), new SaslRpcServer.SaslGssCallbackHandler());
   }
 
   @VisibleForTesting
-  LdapGroupCallbackHandler(HiveConf conf, DirSearchFactory dirSearchFactory, CallbackHandler delegateHandler) {
-    this.conf = conf;
+  private LdapGroupCallbackHandler(HiveConf conf, DirSearchFactory dirSearchFactory, CallbackHandler delegateHandler) {
     this.delegateHandler = delegateHandler;
-    this.dirSearchFactory = dirSearchFactory;
-    this.enableLdapGroupCheck = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
-    this.filter = enableLdapGroupCheck ? LdapAuthenticationProviderImpl.resolveFilter(conf) : null;
-
-    if (enableLdapGroupCheck && filter == null) {
-      LOG.warn("LDAP group check enabled but no filters configured");
-    }
+    this.filterEnforcer = new KerberosLdapFilterEnforcer(conf, dirSearchFactory);
   }
 
   @VisibleForTesting
@@ -89,40 +74,8 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
 
       String authenticationID = ac.getAuthenticationID();
 
-      boolean authorized = applyLdapFilter(authenticationID);
+      boolean authorized = filterEnforcer.applyLdapFilter(authenticationID);
       ac.setAuthorized(authorized);
     }
-  }
-
-  /**
-   * Applies configured LDAP filters to authenticate a user.
-   *
-   * @param user the username to validate
-   * @return true if the user passes all configured filters, false otherwise
-   */
-  private boolean applyLdapFilter(String principal) {
-    if (!enableLdapGroupCheck || filter == null) {
-      return true;
-    }
-
-    String user = extractUserName(principal);
-    try {
-      filterEnforcer.enforce(conf, dirSearchFactory, filter, user, null, false);
-      LOG.debug("Principal {} passed LDAP filter validation", principal);
-      return true;
-    } catch (Exception e) {
-      if (e instanceof AuthenticationException) {
-        LOG.warn("Principal {} failed LDAP filter validation: {}", principal, e.getMessage());
-      } else {
-        LOG.error("Error applying LDAP filter for principal {}", principal, e);
-      }
-      return false;
-    }
-  }
-
-  @VisibleForTesting
-  public static String extractUserName(@NotNull String principal) {
-    String[] parts = SaslRpcServer.splitKerberosName(principal);
-    return parts.length > 0 ? parts[0] : principal;
   }
 }

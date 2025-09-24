@@ -86,6 +86,21 @@ public class TestLdapKerberosWithGroupFilter {
     // Set up the default mock behavior
     when(dirSearchFactory.getInstance(any(HiveConf.class), anyString(), anyString()))
         .thenReturn(dirSearch);
+
+    doAnswer(invocation -> {
+      Object[] args = invocation.getArguments();
+      if (args.length > 0 && args[0] instanceof Callback[]) {
+        for (Callback callback : (Callback[]) args[0]) {
+          if (callback instanceof AuthorizeCallback) {
+            AuthorizeCallback authorizeCallback = (AuthorizeCallback) callback;
+            String authId = authorizeCallback.getAuthenticationID();
+            String authzId = authorizeCallback.getAuthorizationID();
+            authorizeCallback.setAuthorized(authId != null && authId.equals(authzId));
+          }
+        }
+      }
+      return null;
+    }).when(delegateHandler).handle(any(Callback[].class));
   }
 
   @After
@@ -306,7 +321,9 @@ public class TestLdapKerberosWithGroupFilter {
     ArgumentCaptor<Callback[]> captor = ArgumentCaptor.forClass(Callback[].class);
     verify(delegateHandler).handle(captor.capture());
     Callback[] delegatedCallbacks = captor.getValue();
-    assertEquals(1, delegatedCallbacks.length);
-    assertSame(delegated, delegatedCallbacks[0]);
+    assertEquals(2, delegatedCallbacks.length);
+    assertSame(authorized, delegatedCallbacks[0]);
+    assertSame(delegated, delegatedCallbacks[1]);
+    assertFalse("Delegated callback should remain unauthorized", delegated.isAuthorized());
   }
 }
