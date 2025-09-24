@@ -150,7 +150,7 @@ public class LoadDatabase {
 
   private Task<?> createDbTask(Database dbObj) throws MetaException {
     // note that we do not set location - for repl load, we want that auto-created.
-    CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(),
+    CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getCatalogName(), dbObj.getName(), dbObj.getDescription(),
             getDbLocation(dbObj), getDbManagedLocation(dbObj), false, updateDbProps(dbObj, context.dumpDirectory));
     // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
     // db.
