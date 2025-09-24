@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -79,6 +80,7 @@ import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
+import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -4917,15 +4919,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
-          if (relNode instanceof HiveProject) {
-            if (this.viewProjectToTableSchema == null) {
-              this.viewProjectToTableSchema = new LinkedHashMap<>();
-            }
-            viewProjectToTableSchema.put((HiveProject) relNode, qb.getViewToTabSchema().get(subqAlias));
-          } else {
-            throw new SemanticException("View " + subqAlias + " is corresponding to "
-                + relNode.toString() + ", rather than a HiveProject.");
+          HiveProject project = switch (Objects.requireNonNull(relNode)) {
+            case HiveProject hiveProject -> hiveProject;
+            case SingleRel singleRel when singleRel.getInput() instanceof HiveProject hiveProject -> hiveProject;
+            default -> throw new SemanticException("View " + subqAlias + " is corresponding to "
+                + relNode + ", rather than a HiveProject or a SingleRel with HiveProject as its child.");
+          };
+          if (this.viewProjectToTableSchema == null) {
+            this.viewProjectToTableSchema = new LinkedHashMap<>();
           }
+          viewProjectToTableSchema.put(project, qb.getViewToTabSchema().get(subqAlias));
         }
       }
 
