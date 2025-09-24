@@ -1165,7 +1165,7 @@ createDatabaseStatement
 @after { popMsg(state); }
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
-        name=identifier
+        name=databaseName
         databaseComment?
         dbLocation?
         dbManagedLocation?
@@ -1174,7 +1174,7 @@ createDatabaseStatement
 
     | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
-        name=identifier
+        name=databaseName
         databaseComment?
         dbConnectorName
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?

@@ -24,40 +24,48 @@ POSTHOOK: query: SHOW CATALOGS
 POSTHOOK: type: SHOWCATALOGS
 hive
 testcat
+PREHOOK: query: CREATE DATABASE testcat.testdb_1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb_1
+POSTHOOK: query: CREATE DATABASE testcat.testdb_1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb_1
 PREHOOK: query: SET CATALOG testcat
 PREHOOK: type: SWITCHCATALOG
 PREHOOK: Input: catalog:testcat
 POSTHOOK: query: SET CATALOG testcat
 POSTHOOK: type: SWITCHCATALOG
 POSTHOOK: Input: catalog:testcat
-PREHOOK: query: CREATE DATABASE testdb_new
+PREHOOK: query: CREATE DATABASE testdb_2
 PREHOOK: type: CREATEDATABASE
-PREHOOK: Output: database:testdb_new
-POSTHOOK: query: CREATE DATABASE testdb_new
+PREHOOK: Output: database:testdb_2
+POSTHOOK: query: CREATE DATABASE testdb_2
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Output: database:testdb_new
+POSTHOOK: Output: database:testdb_2
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-testdb_new
-PREHOOK: query: USE testcat.testdb_new
+testdb_1
+testdb_2
+PREHOOK: query: USE testcat.testdb_1
 PREHOOK: type: SWITCHDATABASE
-PREHOOK: Input: database:testdb_new
-POSTHOOK: query: USE testcat.testdb_new
+PREHOOK: Input: database:testdb_1
+POSTHOOK: query: USE testcat.testdb_1
 POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Input: database:testdb_new
-PREHOOK: query: DROP DATABASE testcat.testdb_new
+POSTHOOK: Input: database:testdb_1
+PREHOOK: query: DROP DATABASE testcat.testdb_1
 PREHOOK: type: DROPDATABASE
-PREHOOK: Input: database:testdb_new
-PREHOOK: Output: database:testdb_new
-POSTHOOK: query: DROP DATABASE testcat.testdb_new
+PREHOOK: Input: database:testdb_1
+PREHOOK: Output: database:testdb_1
+POSTHOOK: query: DROP DATABASE testcat.testdb_1
 POSTHOOK: type: DROPDATABASE
-POSTHOOK: Input: database:testdb_new
-POSTHOOK: Output: database:testdb_new
+POSTHOOK: Input: database:testdb_1
+POSTHOOK: Output: database:testdb_1
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
+testdb_2

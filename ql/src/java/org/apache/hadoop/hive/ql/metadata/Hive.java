@@ -668,7 +668,7 @@ public class Hive implements AutoCloseable {
   public void createDatabase(Database db, boolean ifNotExist)
       throws AlreadyExistsException, HiveException {
     try {
-      db.setCatalogName(SessionState.get().getCurrentCatalog());
+      db.setCatalogName(Objects.requireNonNullElse(db.getCatalogName(), SessionState.get().getCurrentCatalog()));
       getMSC().createDatabase(db);
     } catch (AlreadyExistsException e) {
       if (!ifNotExist) {
@@ -725,7 +725,7 @@ public class Hive implements AutoCloseable {
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
-    dropDatabase(new DropDatabaseDesc(getDefaultCatalog(conf) ,name, ignoreUnknownDb, cascade, deleteData)); //TODO check the actual catalog
+    dropDatabase(new DropDatabaseDesc(getDefaultCatalog(conf) ,name, ignoreUnknownDb, cascade, deleteData)); // TODO catalog. check the actual catalog
   }
 
   public void dropDatabase(DropDatabaseDesc desc) 
