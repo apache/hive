@@ -47,6 +47,7 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
   public int execute() throws HiveException {
     Database database = new Database(desc.getName(), desc.getComment(), desc.getLocationUri(),
         desc.getDatabaseProperties());
+    database.setCatalogName(desc.getCatalogName());
     database.setOwnerName(SessionState.getUserFromAuthenticator());
     database.setOwnerType(PrincipalType.USER);
     database.setType(desc.getDatabaseType());
@@ -55,12 +56,12 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
         if (desc.getManagedLocationUri() != null) {
           database.setManagedLocationUri(desc.getManagedLocationUri());
         }
-        makeLocationQualified(database); // TODO add catalog prefix for db location
+        makeLocationQualified(database); // TODO catalog. Add catalog prefix for location
         if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
           throw new HiveException("Managed and external locations for database cannot be the same");
         }
       } else if (desc.getDatabaseType() == DatabaseType.REMOTE) {
-        makeLocationQualified(database); // TODO add catalog prefix for db location
+        makeLocationQualified(database); // TODO catalog. Add catalog prefix for location
         database.setConnector_name(desc.getConnectorName());
         database.setRemote_dbname(desc.getRemoteDbName());
       } else { // should never be here
