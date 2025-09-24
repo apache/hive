@@ -18,7 +18,6 @@
 package org.apache.hive.service.auth.ldap;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hive.service.auth.LdapAuthenticationProviderImpl;
@@ -82,26 +81,15 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
       }
 
       AuthorizeCallback ac = (AuthorizeCallback) callback;
+
+      if (!ac.isAuthorized()) {
+        LOG.debug("Delegate callback rejected {}; skipping LDAP filter", ac.getAuthenticationID());
+        continue;
+      }
+
       String authenticationID = ac.getAuthenticationID();
-      String authorizationID = ac.getAuthorizationID();
 
-      if (StringUtils.isBlank(authenticationID) || StringUtils.isBlank(authorizationID)) {
-        LOG.debug("Missing authentication or authorization ID; skipping LDAP filter");
-        continue;
-      }
-
-      if (!authenticationID.equals(authorizationID)) {
-        LOG.debug("Skipping LDAP filter for mismatched auth IDs");
-        continue;
-      }
-
-      if (!enableLdapGroupCheck || filter == null) {
-        ac.setAuthorized(true);
-        continue;
-      }
-
-      String user = extractUserName(authenticationID);
-      boolean authorized = applyLdapFilter(user);
+      boolean authorized = applyLdapFilter(authenticationID);
       ac.setAuthorized(authorized);
     }
   }
@@ -112,16 +100,21 @@ public class LdapGroupCallbackHandler implements CallbackHandler {
    * @param user the username to validate
    * @return true if the user passes all configured filters, false otherwise
    */
-  private boolean applyLdapFilter(String user) {
+  private boolean applyLdapFilter(String principal) {
+    if (!enableLdapGroupCheck || filter == null) {
+      return true;
+    }
+
+    String user = extractUserName(principal);
     try {
       filterEnforcer.enforce(conf, dirSearchFactory, filter, user, null, false);
-      LOG.debug("User {} passed LDAP filter validation", user);
+      LOG.debug("Principal {} passed LDAP filter validation", principal);
       return true;
     } catch (Exception e) {
       if (e instanceof AuthenticationException) {
-        LOG.warn("User {} failed LDAP filter validation: {}", user, e.getMessage());
+        LOG.warn("Principal {} failed LDAP filter validation: {}", principal, e.getMessage());
       } else {
-        LOG.error("Error applying LDAP filter for user {}", user, e);
+        LOG.error("Error applying LDAP filter for principal {}", principal, e);
       }
       return false;
     }
