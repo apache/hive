@@ -40,10 +40,11 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
   @Override
   public int execute() throws HiveException {
     try {
+      String catName = desc.getCatalogName();
       String dbName = desc.getDatabaseName();
       ReplicationSpec replicationSpec = desc.getReplicationSpec();
       if (replicationSpec.isInReplicationScope()) {
-        Database database = context.getDb().getDatabase(dbName);
+        Database database = context.getDb().getDatabase(catName, dbName);
         if (database == null || !replicationSpec.allowEventReplacementInto(database.getParameters())) {
           return 0;
         }
