@@ -20,7 +20,7 @@ import sys
 import re
 dict = {}
 for line in sys.stdin.readlines():
-  if dict.has_key(line):
+  if line in dict:
     x = dict[line]
     dict[line] = x + 1
   else:
