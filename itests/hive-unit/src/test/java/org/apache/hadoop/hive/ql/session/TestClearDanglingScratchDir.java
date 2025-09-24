@@ -72,8 +72,14 @@ public class TestClearDanglingScratchDir {
 
     // Need to make sure deleting in correct FS
     FileSystem fs = customScratchDir.getFileSystem(new Configuration());
-    fs.delete(customScratchDir, true);
-    fs.delete(customLocalTmpDir, true);
+
+    if (customScratchDir != null) {
+      fs.delete(customScratchDir, true);
+    }
+
+    if (customLocalTmpDir != null) {
+      fs.delete(customLocalTmpDir, true);
+    }
   }
 
   public void redirectStdOutErr() {
@@ -205,5 +211,37 @@ public class TestClearDanglingScratchDir {
             + "' does not exist, should have not been removed!", fs.exists(localPipeOutFileNotRemove));
     Assert.assertTrue("Local .pipeout file '" + localPipeOutFileFailRemove
             + "' does not exist, should have not been removed!", fs.exists(localPipeOutFileFailRemove));
+  }
+
+  /**
+   * Unit test for ClearDanglingScratchDir.isWithinGracePeriod().
+   */
+  @Test
+  public void testGracePeriodPreventsRemoval() throws Exception {
+    // Configuration
+    HiveConf conf = new HiveConfForTest(getClass());
+    conf.set("fs.default.name", "file:///");
+    String tmpDir = System.getProperty("test.tmp.dir");
+    conf.set("hive.exec.scratchdir", tmpDir + "/scratch-grace-test");
+    conf.set(String.valueOf(HiveConf.ConfVars.HIVE_SCRATCH_DIR_CLEANUP_GRACE_PERIOD), "1h");
+
+    // Simulating session dir and its inuse.lck file to make it eligible for removal normally
+    FileSystem fs = FileSystem.get(conf);
+    FsPermission allPermissions = new FsPermission((short)00777);
+    customScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
+    Path rootDir = new Path(customScratchDir, "user");
+    Path hdfsDir = new Path(rootDir, "hdfs");
+    Path sessionDir = new Path(hdfsDir, "session1");
+    Utilities.createDirsWithPermission(conf, sessionDir, allPermissions, true);
+    Path sessionLock = new Path(sessionDir + "/inuse.lck");
+    fs.create(sessionLock);
+
+    // Initialize cleaner and run the full cleanup logic
+    ClearDanglingScratchDir cleaner = new ClearDanglingScratchDir(false, true, true,
+            rootDir.toString(), conf);
+    cleaner.run();
+
+    // The directory should NOT be removed because it is within grace period
+    Assert.assertTrue("Directory should still exist due to grace period.", fs.exists(sessionDir));
   }
 }
