@@ -113,10 +113,11 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     String expandedText = ctx.getTokenRewriteStream().toString(select.getTokenStartIndex(), select.getTokenStopIndex());
 
     if (imposedSchema != null) {
-      boolean isBracketAvailable = false;
       String trimmedExpandedText = expandedText.trim();
-      if (trimmedExpandedText.startsWith("(") && trimmedExpandedText.endsWith(")")) {
-        isBracketAvailable = true;
+      while (trimmedExpandedText.startsWith("(") && trimmedExpandedText.endsWith(")")) {
+        trimmedExpandedText = trimmedExpandedText.substring(1, trimmedExpandedText.length() - 1);
+        expandedText = trimmedExpandedText;
+        trimmedExpandedText = trimmedExpandedText.trim();
       }
       // Merge the names from the imposed schema into the types from the derived schema.
       StringBuilder sb = new StringBuilder();
@@ -141,14 +142,9 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
         // We don't currently allow imposition of a type
         fieldSchema.setComment(imposedSchema.get(i).getComment());
       }
-      sb.append(" FROM ");
-      if (!isBracketAvailable) {
-        sb.append("(");
-      }
+      sb.append(" FROM (");
       sb.append(expandedText);
-      if (!isBracketAvailable) {
-        sb.append(") ");
-      }
+      sb.append(") ");
       sb.append(HiveUtils.unparseIdentifier(viewName.getTable(), conf));
 
       expandedText = sb.toString();
