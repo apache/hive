@@ -646,4 +646,52 @@ class MetastoreDirectSqlUtils {
       throw new RuntimeException(e);
     }
   }
+
+  public static Object sum(Object a, Object b, int type)
+      throws MetaException {
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+    return (type == 0) ? MetastoreDirectSqlUtils.extractSqlDouble(a) + MetastoreDirectSqlUtils.extractSqlDouble(b)
+        : MetastoreDirectSqlUtils.extractSqlLong(a) + MetastoreDirectSqlUtils.extractSqlLong(b);
+  }
+
+  public static Object divide(Object a, Object b, int type)
+      throws MetaException {
+    if (a == null || b == null || (type == 0 && MetastoreDirectSqlUtils.extractSqlDouble(b) == 0)
+        || MetastoreDirectSqlUtils.extractSqlDouble(b) == 0) {
+      return null;
+    }
+    return (type == 0) ? MetastoreDirectSqlUtils.extractSqlDouble(a) / MetastoreDirectSqlUtils.extractSqlDouble(b)
+        : MetastoreDirectSqlUtils.extractSqlLong(a) / MetastoreDirectSqlUtils.extractSqlLong(b);
+  }
+
+  public static Object min(Object a, Object b, int type)
+      throws MetaException {
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+    return (type == 0) ? Math.min(MetastoreDirectSqlUtils.extractSqlDouble(a),
+        MetastoreDirectSqlUtils.extractSqlDouble(b))
+        : Math.min(MetastoreDirectSqlUtils.extractSqlLong(a), MetastoreDirectSqlUtils.extractSqlLong(b));
+  }
+
+  public static Object max(Object a, Object b, int type)
+      throws MetaException {
+    if (a == null) {
+      return b;
+    }
+    if (b == null) {
+      return a;
+    }
+    return (type == 0) ? Math.max(MetastoreDirectSqlUtils.extractSqlDouble(a),
+        MetastoreDirectSqlUtils.extractSqlDouble(b))
+        : Math.max(MetastoreDirectSqlUtils.extractSqlLong(a), MetastoreDirectSqlUtils.extractSqlLong(b));
+  }
 }
