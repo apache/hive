@@ -51,6 +51,7 @@ public abstract class HiveMetaStoreAuthorizableEvent {
       builder.setCommandString(commandString);
     }
 
+    // TODO: refer to SessionManager/HiveSessionImpl for details on getting ipAddress and forwardedAddresses
     builder.setForwardedAddresses(new ArrayList<>());
 
     String ipAddress = HMSHandler.getIPAddress();
