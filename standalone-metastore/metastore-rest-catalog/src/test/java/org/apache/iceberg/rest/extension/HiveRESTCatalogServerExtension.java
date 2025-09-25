@@ -89,7 +89,7 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     }
     if (authorizationServer != null) {
       authorizationServer.start();
-      LOG.error(authorizationServer.getIssuer());
+      LOG.info("An authorization server {} started", authorizationServer.getIssuer());
       MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_ISSUER, authorizationServer.getIssuer());
     }
     restCatalogServer.start(conf);

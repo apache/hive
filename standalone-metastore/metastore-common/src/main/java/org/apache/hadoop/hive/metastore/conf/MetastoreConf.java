@@ -1878,7 +1878,8 @@ public class MetastoreConf {
     ),
     CATALOG_SERVLET_AUTH_OAUTH2_ISSUER("metastore.catalog.servlet.auth.oauth2.issuer",
         "hive.metastore.catalog.servlet.auth.oauth2.issuer", "",
-        "The issuer(iss)'s URI. This is required when you use metastore.catalog.servlet.auth=oauth2"
+        "The authorization server's identifier, which is a URL. This is required when you use " +
+        "metastore.catalog.servlet.auth=oauth2"
     ),
     CATALOG_SERVLET_AUTH_OAUTH2_VALIDATION_METHOD("metastore.catalog.servlet.auth.oauth2.validation.method",
         "hive.metastore.catalog.servlet.auth.oauth2.validation.method", "jwt",
@@ -1891,13 +1892,13 @@ public class MetastoreConf {
         "The acceptable name in the audience(aud) claim.  This is required when you use " +
         "metastore.catalog.servlet.auth=oauth2"
     ),
-    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID("metastore.catalog.servlet.auth.oauth2.client.id",
-        "hive.metastore.catalog.servlet.auth.oauth2.client.id", "",
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID("metastore.catalog.servlet.auth.oauth2.client-id",
+        "hive.metastore.catalog.servlet.auth.oauth2.client-id", "",
         "The client ID of HMS as a resource server. This is required to use " +
         "metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
     ),
-    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET("metastore.catalog.servlet.auth.oauth2.client.secret",
-        "hive.metastore.catalog.servlet.auth.oauth2.client.secret", "",
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET("metastore.catalog.servlet.auth.oauth2.client-secret",
+        "hive.metastore.catalog.servlet.auth.oauth2.client-secret", "",
         "The client secret of HMS as a resource server. This is required to use " +
         "metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
     ),
