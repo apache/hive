@@ -276,10 +276,6 @@ public class TestThriftHttpKerberosLdapFilter {
         return;
       }
 
-      if (!filterEnforcer.isFilterConfigured()) {
-        throw new HttpAuthenticationException("LDAP filters not configured");
-      }
-
       boolean authorized = filterEnforcer.applyLdapFilter(principal);
       if (!authorized) {
         throw new HttpAuthenticationException("LDAP filter check failed for user " + principal);

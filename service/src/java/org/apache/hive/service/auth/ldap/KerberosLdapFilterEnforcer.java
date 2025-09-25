@@ -57,8 +57,12 @@ public final class KerberosLdapFilterEnforcer {
    * @return {@code true} if the principal passes all configured filters; {@code false} otherwise
    */
   public boolean applyLdapFilter(String principal) {
-    if (!enableLdapGroupCheck || filter == null) {
+    if (!enableLdapGroupCheck) {
       return true;
+    }
+    if (filter == null) {
+      LOG.warn("LDAP group check enabled but no filters configured");
+      return false;
     }
 
     String user = extractUserName(principal);
@@ -66,11 +70,8 @@ public final class KerberosLdapFilterEnforcer {
       filter.apply(dirSearch, user);
       LOG.debug("Principal {} passed LDAP filter validation", principal);
       return true;
-    } catch (AuthenticationException e) {
-      LOG.warn("Principal {} failed LDAP filter validation: {}", principal, e.getMessage());
-      return false;
     } catch (Exception e) {
-      LOG.error("Error applying LDAP filter for principal {}", principal, e);
+      LOG.warn("Principal {} failed LDAP filter validation", principal, e);
       return false;
     }
   }

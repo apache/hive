@@ -60,16 +60,10 @@ import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.jwt.JWTValidator;
-import org.apache.hive.service.auth.ldap.CustomQueryFilterFactory;
-import org.apache.hive.service.auth.ldap.DirSearch;
 import org.apache.hive.service.auth.ldap.DirSearchFactory;
-import org.apache.hive.service.auth.ldap.Filter;
-import org.apache.hive.service.auth.ldap.FilterFactory;
-import org.apache.hive.service.auth.ldap.GroupFilterFactory;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.apache.hive.service.auth.ldap.KerberosLdapFilterEnforcer;
 import org.apache.hive.service.auth.ldap.LdapSearchFactory;
-import org.apache.hive.service.auth.ldap.UserGroupSearchFilterFactory;
 import org.apache.hive.service.auth.HttpAuthService;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
 import org.apache.hive.service.auth.saml.HiveSamlRelayStateStore;
@@ -531,7 +525,15 @@ public class ThriftHttpServlet extends TServlet {
           String principal = gssContext.getSrcName().toString();
           String shortName = getPrincipalWithoutRealmAndHost(principal);
           LOG.debug("Kerberos authentication successful");
-          enforceLdapFilters(principal);
+          if (hiveConf.getBoolVar(
+              HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS)) {
+            boolean authorized = filterEnforcer.applyLdapFilter(principal);
+            if (!authorized) {
+              LOG.warn("User {} failed LDAP filter", principal);
+              throw new HttpAuthenticationException("LDAP filter check failed for user " + principal);
+            }
+            LOG.debug("User {} passed LDAP filter validation", principal);
+          }
           return shortName;
         }
       } catch (GSSException e) {
@@ -555,27 +557,6 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
     }
-
-    private void enforceLdapFilters(String principal) throws HttpAuthenticationException {
-      boolean enableGroupCheck = hiveConf.getBoolVar(
-          HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
-      if (!enableGroupCheck) {
-        LOG.debug("No LDAP group check is enabled; skipping.");
-        return;
-      }
-      if (!filterEnforcer.isFilterConfigured()) {
-        LOG.warn("LDAP group check enabled but no filters configured");
-        throw new HttpAuthenticationException("LDAP filters not configured");
-      }
-
-      boolean authorized = filterEnforcer.applyLdapFilter(principal);
-      if (!authorized) {
-        LOG.warn("User {} failed LDAP filter", principal);
-        throw new HttpAuthenticationException("LDAP filter check failed for user " + principal);
-      }
-      LOG.debug("User {} passed LDAP filter validation", principal);
-    }
-
     private String getPrincipalWithoutRealm(String fullPrincipal)
         throws HttpAuthenticationException {
       KerberosNameShim fullKerberosName;
