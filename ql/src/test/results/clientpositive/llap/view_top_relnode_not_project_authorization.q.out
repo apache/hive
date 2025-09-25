@@ -21,12 +21,12 @@ PREHOOK: query: explain cbo select * from vw_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@vw_t1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain cbo select * from vw_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vw_t1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(fetch=[5])
   HiveProject(username=[$0])
@@ -37,9 +37,9 @@ PREHOOK: query: select * from vw_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@vw_t1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from vw_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vw_t1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
