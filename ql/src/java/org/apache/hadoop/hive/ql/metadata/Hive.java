@@ -2601,6 +2601,7 @@ public class Hive implements AutoCloseable {
   }
 
   /**
+   * @deprecated please use {@link #databaseExists(String, String)}}
    * Query metadata to see if a database with the given name already exists.
    *
    * @param dbName
@@ -2613,6 +2614,19 @@ public class Hive implements AutoCloseable {
   }
 
   /**
+   * Query metadata to see if a database with the given name already exists.
+   *
+   * @param catName
+   * @param dbName
+   * @return true if a database with the given name already exists, false if
+   *         does not exist.
+   * @throws HiveException
+   */
+  public boolean databaseExists(String catName, String dbName) throws HiveException {
+    return getDatabase(catName, dbName) != null;
+  }
+
+  /**
    * Get the database by name.
    * @param dbName the name of the database.
    * @return a Database object if this database exists, null otherwise.
@@ -2622,7 +2636,7 @@ public class Hive implements AutoCloseable {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE);
     try {
-      return getMSC().getDatabase(SessionState.get().getCurrentCatalog(), dbName);
+      return getMSC().getDatabase(dbName);
     } catch (NoSuchObjectException e) {
       return null;
     } catch (Exception e) {
@@ -2643,6 +2657,7 @@ public class Hive implements AutoCloseable {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2);
     try {
+      catName = Objects.requireNonNullElse(catName, SessionState.get().getCurrentCatalog());
       return getMSC().getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) {
       return null;
