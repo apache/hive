@@ -1165,11 +1165,7 @@ public class AcidUtils {
         }
       }
       else if (visibilityTxnId != parsedDelta.visibilityTxnId) {
-        if (visibilityTxnId < parsedDelta.visibilityTxnId) {
-          return 1;
-        } else {
-          return -1;
-        }
+        return visibilityTxnId < parsedDelta.visibilityTxnId ? 1 : -1;
       }
       else {
         return path.compareTo(parsedDelta.path);
