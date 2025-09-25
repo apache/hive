@@ -802,6 +802,7 @@ public class QTestUtil {
       if (proc != null) {
         try {
           CommandProcessorResponse response = proc.run(commandArgs.trim());
+          SessionState.get().out.flush();
           return response;
         } catch (CommandProcessorException e) {
           SessionState.getConsole().printError(e.toString(),

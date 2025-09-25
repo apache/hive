@@ -77,6 +77,9 @@ public class LambdaFetchConverter extends FetchConverter {
   @Override
   public void fetchFinished() {
     super.fetchFinished();
+    if(innerIsFetchConverter) {
+      ((FetchConverter)inner).fetchFinished();
+    }
   }
 }
 
