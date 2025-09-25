@@ -47,7 +47,7 @@ public class SwitchDatabaseAnalyzer extends BaseSemanticAnalyzer {
     readEntity.noLockNeeded();
     inputs.add(readEntity);
 
-    SwitchDatabaseDesc desc = new SwitchDatabaseDesc(catDbNamePair.getRight());
+    SwitchDatabaseDesc desc = new SwitchDatabaseDesc(catDbNamePair.getLeft(), catDbNamePair.getRight());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

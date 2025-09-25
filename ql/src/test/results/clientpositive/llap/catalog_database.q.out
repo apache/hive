@@ -36,6 +36,36 @@ PREHOOK: Input: catalog:testcat
 POSTHOOK: query: SET CATALOG testcat
 POSTHOOK: type: SWITCHCATALOG
 POSTHOOK: Input: catalog:testcat
+PREHOOK: query: select current_catalog()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select current_catalog()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+testcat
+PREHOOK: query: USE hive.default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE hive.default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: select current_catalog()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select current_catalog()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hive
+PREHOOK: query: SET CATALOG testcat
+PREHOOK: type: SWITCHCATALOG
+PREHOOK: Input: catalog:testcat
+POSTHOOK: query: SET CATALOG testcat
+POSTHOOK: type: SWITCHCATALOG
+POSTHOOK: Input: catalog:testcat
 PREHOOK: query: CREATE DATABASE testdb_2
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:testdb_2
