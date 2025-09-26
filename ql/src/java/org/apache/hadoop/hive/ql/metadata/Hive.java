@@ -2038,7 +2038,7 @@ public class Hive implements AutoCloseable {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
 
     if (catName == null) {
-      dbName = SessionState.get().getCurrentCatalog();
+      catName = SessionState.get().getCurrentCatalog();
     }
 
     if (dbName == null) {
