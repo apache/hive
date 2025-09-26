@@ -218,7 +218,6 @@ POSTHOOK: Input: default@logs
 + . /fluentd-utils.sh
 + return
 + start_fluentd
-#### A masked pattern was here ####
 ++ set -x
 PREHOOK: query: CREATE EXTERNAL TABLE logs2(
 facility STRING,
@@ -501,7 +500,6 @@ POSTHOOK: Input: default@logs
 + . /fluentd-utils.sh
 + return
 + start_fluentd
-#### A masked pattern was here ####
 ++ set -x
 PREHOOK: query: drop table logs
 PREHOOK: type: DROPTABLE
