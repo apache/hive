@@ -59,6 +59,7 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.data.TableMigrationUtil;
 import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hadoop.HadoopFileIO;
@@ -71,8 +72,6 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.iceberg.types.Conversions;
-import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,11 +170,9 @@ public class HiveTableUtil {
       if (isOverwrite) {
         DeleteFiles delete = transaction.newDelete();
         if (partitionSpec != null) {
-          for (Map.Entry<String, String> part : partitionSpec.entrySet()) {
-            final Type partKeyType = icebergTbl.schema().findType(part.getKey());
-            final Object partKeyVal = Conversions.fromPartitionString(partKeyType, part.getValue());
-            delete.deleteFromRowFilter(Expressions.equal(part.getKey(), partKeyVal));
-          }
+          Expression partitionExpr =
+              IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTbl, partitionSpec, true);
+          delete.deleteFromRowFilter(partitionExpr);
         } else {
           delete.deleteFromRowFilter(Expressions.alwaysTrue());
         }
