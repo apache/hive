@@ -43,6 +43,10 @@
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>jline</groupId>
+          <artifactId>jline</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
