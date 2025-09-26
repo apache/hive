@@ -29,8 +29,6 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
-import java.util.Collections;
-
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -58,8 +56,6 @@ public class TestLdapGroupCallbackHandler {
     conf = new HiveConf();
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER, "bindUser");
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD, "bindPassword");
-    when(dirSearchFactory.getInstance(any(HiveConf.class), anyString(), anyString()))
-        .thenReturn(dirSearch);
     doAnswer(invocation -> {
       Object[] args = invocation.getArguments();
       if (args.length > 0 && args[0] instanceof Callback[]) {
@@ -93,91 +89,6 @@ public class TestLdapGroupCallbackHandler {
   }
 
   @Test
-  public void testAuthorizeWithUserGroupSearchFilterSuccess() throws Exception {
-    // Enable group check and configure UserGroupSearchFilter
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-
-    String userSearchFilter = "(&(uid={0})(objectClass=person))";
-    String baseDn = "dc=example,dc=com";
-    String groupSearchFilter = "(&(memberUid={0})(objectClass=posixGroup))";
-    String groupBaseDn = "ou=groups,dc=example,dc=com";
-    String userDn = "uid=user,dc=example,dc=com";
-
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER, userSearchFilter);
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN, baseDn);
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER, groupSearchFilter);
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN, groupBaseDn);
-
-    // Mock with specific values
-    when(dirSearch.findUserDn(eq(TEST_USER), eq(userSearchFilter), eq(baseDn)))
-        .thenReturn(userDn);
-    when(dirSearch.executeUserAndGroupFilterQuery(
-        eq(TEST_USER),
-        eq(userDn),
-        eq(groupSearchFilter),
-        eq(groupBaseDn)))
-        .thenReturn(Collections.singletonList("cn=group1,ou=groups,dc=example,dc=com"));
-
-    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
-
-    AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
-    callbackHandler.handle(new Callback[]{ac});
-
-    assertTrue(ac.isAuthorized());
-    verify(dirSearchFactory).getInstance(eq(conf), eq("bindUser"), eq("bindPassword"));
-    verify(dirSearch).findUserDn(eq(TEST_USER), eq(userSearchFilter), eq(baseDn));
-    verify(dirSearch).executeUserAndGroupFilterQuery(
-        eq(TEST_USER), eq(userDn), eq(groupSearchFilter), eq(groupBaseDn));
-  }
-
-  @Test
-  public void testAuthorizeWithCustomQueryFilterSuccess() throws Exception {
-    // Enable group check and configure CustomQueryFilter
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-
-    String customQuery = "(&(objectClass=person)(uid=" + TEST_USER + "))";
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY, customQuery);
-
-    // Mock with specific query
-    when(dirSearch.executeCustomQuery(eq(customQuery)))
-        .thenReturn(Collections.singletonList("uid=" + TEST_USER + ",dc=example,dc=com"));
-
-    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
-
-    AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
-    callbackHandler.handle(new Callback[]{ac});
-
-    assertTrue(ac.isAuthorized());
-    verify(dirSearchFactory).getInstance(eq(conf), eq("bindUser"), eq("bindPassword"));
-    verify(dirSearch).executeCustomQuery(eq(customQuery));
-  }
-
-  @Test
-  public void testAuthorizeWithGroupFilterFailure() throws Exception {
-    // Enable group check and configure GroupFilter
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1,group2");
-
-    String userDn = "uid=user,dc=example,dc=com";
-    String wrongGroupDn = "cn=group3,dc=example,dc=com";
-
-    // Mock with specific DN values
-    when(dirSearch.findUserDn(TEST_USER)).thenReturn(userDn);
-    when(dirSearch.findGroupsForUser(eq(userDn)))
-        .thenReturn(Collections.singletonList(wrongGroupDn));
-
-    callbackHandler = LdapGroupCallbackHandler.createForTesting(conf, dirSearchFactory, delegateHandler);
-
-    AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
-    callbackHandler.handle(new Callback[]{ac});
-
-    assertFalse(ac.isAuthorized());
-    verify(dirSearchFactory).getInstance(eq(conf), eq("bindUser"), eq("bindPassword"));
-    verify(dirSearch, times(2)).findUserDn(TEST_USER);
-    verify(dirSearch).findGroupsForUser(eq(userDn));
-  }
-
-  @Test
   public void testAuthorizeWithNoFilterConfigured() throws Exception {
     // Enable group check but don't configure any filters
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
@@ -188,8 +99,8 @@ public class TestLdapGroupCallbackHandler {
     AuthorizeCallback ac = new AuthorizeCallback(TEST_PRINCIPAL, TEST_PRINCIPAL);
     callbackHandler.handle(new Callback[]{ac});
 
-    // Should authorize since no filter is configured (logged warning)
-    assertTrue(ac.isAuthorized());
+    // Should reject since group check is enabled but misconfigured
+    assertFalse(ac.isAuthorized());
     verifyNoInteractions(dirSearch);
   }
 

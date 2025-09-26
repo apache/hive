@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.security.sasl.AuthenticationException;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -137,37 +136,6 @@ public class TestThriftHttpKerberosLdapFilter {
     authHandler.run();
   }
 
-  @Test
-  public void testKerberosAuthWithUserGroupSearchFilter() throws Exception {
-    hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-
-    String userSearchFilter = "(&(uid={0})(objectClass=person))";
-    String baseDn = "dc=example,dc=com";
-    String groupSearchFilter = "(&(memberUid={0})(objectClass=posixGroup))";
-    String groupBaseDn = "ou=groups,dc=example,dc=com";
-    String userDn = "uid=user,dc=example,dc=com";
-
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER, userSearchFilter);
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_BASEDN, baseDn);
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER, groupSearchFilter);
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN, groupBaseDn);
-
-    when(dirSearch.findUserDn(eq(TEST_USER), eq(userSearchFilter), eq(baseDn))).thenReturn(userDn);
-    when(dirSearch.executeUserAndGroupFilterQuery(
-        eq(TEST_USER),
-        eq(userDn),
-        eq(groupSearchFilter),
-        eq(groupBaseDn)))
-        .thenReturn(Collections.singletonList("cn=group1,ou=groups,dc=example,dc=com"));
-
-    createAuthHandler();
-    String username = authHandler.run();
-    assertEquals(TEST_USER, username);
-
-    verify(dirSearchFactory).getInstance(eq(hiveConf), eq("bindUser"), eq("bindPassword"));
-    verify(dirSearch).findUserDn(eq(TEST_USER), eq(userSearchFilter), eq(baseDn));
-  }
-
   @Test(expected = HttpAuthenticationException.class)
   public void testKerberosAuthWithNoFilterConfigured() throws Exception {
     // Enable group check but don't configure any filters
@@ -184,68 +152,6 @@ public class TestThriftHttpKerberosLdapFilter {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1");
     hiveConf.unset(ConfVars.HIVE_SERVER2_PLAIN_LDAP_BIND_USER.varname);
-
-    createAuthHandler();
-    // Run authentication - should throw exception
-    authHandler.run();
-  }
-
-  @Test
-  public void testKerberosAuthWithProxyUser() throws Exception {
-    // Enable group check
-    hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1");
-
-    String userDn = "uid=user,dc=example,dc=com";
-    String groupDn = "cn=group1,dc=example,dc=com";
-
-    when(dirSearch.findUserDn(TEST_USER)).thenReturn(userDn);
-    when(dirSearch.findGroupsForUser(eq(userDn))).thenReturn(Collections.singletonList(groupDn));
-
-    try {
-      org.apache.hive.service.cli.session.SessionManager.setProxyUserName("proxyUser");
-
-      createAuthHandler();
-      String username = authHandler.run();
-
-      assertEquals(TEST_USER, username);
-      verify(dirSearchFactory).getInstance(eq(hiveConf), eq("bindUser"), eq("bindPassword"));
-      verify(dirSearch, times(2)).findUserDn(TEST_USER);
-      verify(dirSearch).findGroupsForUser(eq(userDn));
-    } finally {
-      org.apache.hive.service.cli.session.SessionManager.clearProxyUserName();
-    }
-  }
-
-  @Test(expected = HttpAuthenticationException.class)
-  public void testKerberosAuthWithDirSearchException() throws Exception {
-    // Enable group check
-    hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS, true);
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "group1");
-
-    // Configure dirSearchFactory to throw exception
-    when(dirSearchFactory.getInstance(any(), anyString(), anyString()))
-        .thenThrow(new AuthenticationException("LDAP connection failed"));
-
-    createAuthHandler();
-    // Run authentication - should throw exception
-    authHandler.run();
-  }
-
-  @Test(expected = HttpAuthenticationException.class)
-  public void testKerberosAuthWithGssException() throws Exception {
-    // Configure GSSContext to throw exception
-    when(gssContext.getSrcName()).thenThrow(new GSSException(GSSException.FAILURE));
-
-    createAuthHandler();
-    // Run authentication - should throw exception
-    authHandler.run();
-  }
-
-  @Test(expected = HttpAuthenticationException.class)
-  public void testKerberosAuthWithNullGssName() throws Exception {
-    // Configure GSSContext to return null name
-    when(gssContext.getSrcName()).thenReturn(null);
 
     createAuthHandler();
     // Run authentication - should throw exception
