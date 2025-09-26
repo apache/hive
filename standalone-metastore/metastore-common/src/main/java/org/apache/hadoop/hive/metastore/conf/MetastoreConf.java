@@ -1881,26 +1881,26 @@ public class MetastoreConf {
         "The authorization server's identifier, which is a URL. This is required when you use " +
         "metastore.catalog.servlet.auth=oauth2"
     ),
+    CATALOG_SERVLET_AUTH_OAUTH2_AUDIENCE("metastore.catalog.servlet.auth.oauth2.audience",
+        "hive.metastore.catalog.servlet.auth.oauth2.audience", "",
+        "The acceptable name in the audience(aud) claim. This is required when you use " +
+        "metastore.catalog.servlet.auth=oauth2"
+    ),
     CATALOG_SERVLET_AUTH_OAUTH2_VALIDATION_METHOD("metastore.catalog.servlet.auth.oauth2.validation.method",
         "hive.metastore.catalog.servlet.auth.oauth2.validation.method", "jwt",
         new StringSetValidator("jwt", "introspection"),
         "How to evaluate an access token. When your authorization server issues opaque tokens or you need " +
         "to consider additional security requirements such as token revocations, use introspection."
     ),
-    CATALOG_SERVLET_AUTH_OAUTH2_AUDIENCE("metastore.catalog.servlet.auth.oauth2.audience",
-        "hive.metastore.catalog.servlet.auth.oauth2.audience", "",
-        "The acceptable name in the audience(aud) claim.  This is required when you use " +
-        "metastore.catalog.servlet.auth=oauth2"
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID("metastore.catalog.servlet.auth.oauth2.client.id",
+        "hive.metastore.catalog.servlet.auth.oauth2.client.id", "",
+        "The client ID to authenticate HMS, as a resource server, to the introspection endpoint. This is required to " +
+        "use metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
     ),
-    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID("metastore.catalog.servlet.auth.oauth2.client-id",
-        "hive.metastore.catalog.servlet.auth.oauth2.client-id", "",
-        "The client ID of HMS as a resource server. This is required to use " +
-        "metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
-    ),
-    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET("metastore.catalog.servlet.auth.oauth2.client-secret",
-        "hive.metastore.catalog.servlet.auth.oauth2.client-secret", "",
-        "The client secret of HMS as a resource server. This is required to use " +
-        "metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET("metastore.catalog.servlet.auth.oauth2.client.secret",
+        "hive.metastore.catalog.servlet.auth.oauth2.client.secret", "",
+        "The client secret to authenticate HMS, as a resource server, to the introspection endpoint. This is " +
+        "required to use metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
     ),
     CATALOG_SERVLET_AUTH_OAUTH2_INTROSPECTION_CACHE_EXPIRY(
         "metastore.catalog.servlet.auth.oauth2.introspection.cache.expiry",
