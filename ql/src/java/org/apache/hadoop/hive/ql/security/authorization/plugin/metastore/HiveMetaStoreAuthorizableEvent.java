@@ -65,10 +65,6 @@ public abstract class HiveMetaStoreAuthorizableEvent {
     return builder.build();
   }
 
-  protected HiveAuthzContext buildAuthzContext() {
-    return buildAuthzContext(null);
-  }
-
   public abstract HiveMetaStoreAuthzInfo getAuthzContext();
 
   protected String getSdLocation(StorageDescriptor sd) {
