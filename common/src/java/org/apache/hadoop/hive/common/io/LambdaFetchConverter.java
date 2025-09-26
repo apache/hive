@@ -55,8 +55,8 @@ public class LambdaFetchConverter extends FetchConverter {
   }
 
   @Override
-  protected void process(String out) {
-    inner.println(lambda.apply(out));
+  protected void process(String str) {
+    inner.println(lambda.apply(str));
   }
 
   @Override
@@ -76,10 +76,11 @@ public class LambdaFetchConverter extends FetchConverter {
 
   @Override
   public void fetchFinished() {
-    super.fetchFinished();
     if(innerIsFetchConverter) {
       ((FetchConverter)inner).fetchFinished();
     }
+    super.flush();
+    fetchStarted = false;
   }
 }
 
