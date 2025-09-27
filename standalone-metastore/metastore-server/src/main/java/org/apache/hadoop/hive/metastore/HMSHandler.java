@@ -1799,21 +1799,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             new Path(dbFinal.getManagedLocationUri()) : wh.getDatabaseManagedPath(dbFinal);
         if (req.isDeleteManagedDir()) {
           try {
-            Boolean deleted = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>)
-              () -> wh.deleteDir(path, true, dbFinal));
-            if (!deleted) {
-              LOG.error("Failed to delete database's managed warehouse directory: " + path);
-            }
+            UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Void>) () -> {
+              wh.deleteDir(path, true, dbFinal);
+              return null;
+            });
           } catch (Exception e) {
             LOG.error("Failed to delete database's managed warehouse directory: " + path + " " + e.getMessage());
           }
         }
         try {
-          Boolean deleted = UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Boolean>) 
-              () -> wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal));
-          if (!deleted) {
-            LOG.error("Failed to delete database external warehouse directory " + db.getLocationUri());
-          }
+          UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Void>) () -> {
+            wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal);
+            return null;
+          });
         } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
           LOG.error("Failed to delete the database external warehouse directory: " + db.getLocationUri() + " " + e
             .getMessage());

@@ -71,14 +71,14 @@ public class FileUtils {
     }
   };
 
-  public static boolean deleteDir(FileSystem fs, Path f, boolean ifPurge, Configuration conf)
+  public static void deleteDir(FileSystem fs, Path f, boolean ifPurge, Configuration conf)
       throws IOException {
     if (!fs.exists(f)) {
-      LOG.warn("The path to delete does not exist: " + f);
-      return true;
+      LOG.warn("The path to delete does not exist: {}", f);
+      return;
     }
     if (!ifPurge && moveToTrash(fs, f, conf)) {
-      return true;
+      return;
     }
     try {
       // for whatever failure reason including that trash has lower encryption zone
@@ -94,7 +94,6 @@ public class FileUtils {
       // retry delete after attempting to delete replication related snapshots
       fs.delete(f, true);
     }
-    return true;
   }
 
   /**
@@ -104,16 +103,16 @@ public class FileUtils {
    * @param conf configuration object
    * @return true if move successful
    */
-  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf) {
-    LOG.debug("moving  " + f + " to trash");
+  private static boolean moveToTrash(FileSystem fs, Path f, Configuration conf) {
+    LOG.debug("moving {} to trash", f);
     try {
       boolean result = Trash.moveToAppropriateTrash(fs, f, conf);
       if (result) {
-        LOG.trace("Moved to trash: " + f);
+        LOG.trace("Moved to trash: {}", f);
         return true;
       }
     } catch (IOException ioe) {
-      LOG.warn("Failed to move path to trash: " + f, ioe);
+      LOG.warn("Failed to move path to trash: {}", f, ioe);
     }
     return false;
   }
