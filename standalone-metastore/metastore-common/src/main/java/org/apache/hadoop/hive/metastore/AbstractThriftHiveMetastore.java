@@ -63,7 +63,7 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     }
 
     @Override
-    public GetCatalogsResponse get_catalogs() throws MetaException, TException {
+    public GetCatalogsResponse get_catalogs(GetCatalogRequest catalogPattern) throws MetaException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 

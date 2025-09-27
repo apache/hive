@@ -68,7 +68,7 @@ public class TestIcebergHouseKeeperService {
   public void testIcebergTableFetched() throws Exception {
     createIcebergTable("iceberg_table");
 
-    TableFetcher tableFetcher = IcebergTableUtil.getTableFetcher(db.getMSC(), null, "default", "*");
+    TableFetcher tableFetcher = IcebergTableUtil.getTableFetcher(db.getMSC(), "*", "default", "*");
 
     int maxBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     Iterator<org.apache.hadoop.hive.metastore.api.Table> tables = tableFetcher.getTables(maxBatchSize).iterator();
@@ -82,7 +82,7 @@ public class TestIcebergHouseKeeperService {
   public void testExpireSnapshotsByServiceRun() throws Exception {
     String tableName = "iceberg_table_snapshot_expiry_e2e_test";
     createIcebergTable(tableName);
-    IcebergHouseKeeperService service = getServiceForTable("default", tableName);
+    IcebergHouseKeeperService service = getServiceForTable("hive", "default", tableName);
 
     GetTableRequest request = new GetTableRequest("default", tableName);
     org.apache.iceberg.Table icebergTable = IcebergTableUtil.getTable(conf, db.getMSC().getTable(request));
@@ -128,9 +128,10 @@ public class TestIcebergHouseKeeperService {
    * @param tableName to be cleaned up
    * @return IcebergHouseKeeperService
    */
-  private IcebergHouseKeeperService getServiceForTable(String dbName, String tableName) {
+  private IcebergHouseKeeperService getServiceForTable(String catalogName, String dbName, String tableName) {
     IcebergHouseKeeperService service = new IcebergHouseKeeperService();
     HiveConf serviceConf = new HiveConf(conf);
+    serviceConf.set("hive.metastore.iceberg.table.expiry.catalog.pattern", catalogName);
     serviceConf.set("hive.metastore.iceberg.table.expiry.database.pattern", dbName);
     serviceConf.set("hive.metastore.iceberg.table.expiry.table.pattern", tableName);
     service.setConf(serviceConf);
