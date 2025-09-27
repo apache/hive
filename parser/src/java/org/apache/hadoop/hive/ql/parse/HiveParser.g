@@ -378,6 +378,7 @@ TOK_DESCCATALOG;
 TOK_CATALOGLOCATION;
 TOK_CATALOGCOMMENT;
 TOK_ALTERCATALOG_LOCATION;
+TOK_SWITCHCATALOG;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
@@ -1011,6 +1012,7 @@ ddlStatement
 @after { popMsg(state); }
     : createCatalogStatement
     | dropCatalogStatement
+    | switchCatalogStatement
     | createDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
@@ -1151,12 +1153,19 @@ dropCatalogStatement
     -> ^(TOK_DROPCATALOG identifier ifExists?)
     ;
 
+switchCatalogStatement
+@init { pushMsg("switch catalog statement", state); }
+@after { popMsg(state); }
+    : KW_SET KW_CATALOG identifier
+    -> ^(TOK_SWITCHCATALOG identifier)
+    ;
+
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
 @after { popMsg(state); }
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
-        name=identifier
+        name=databaseName
         databaseComment?
         dbLocation?
         dbManagedLocation?
@@ -1165,7 +1174,7 @@ createDatabaseStatement
 
     | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
-        name=identifier
+        name=databaseName
         databaseComment?
         dbConnectorName
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
@@ -1210,15 +1219,15 @@ dbConnectorName
 switchDatabaseStatement
 @init { pushMsg("switch database statement", state); }
 @after { popMsg(state); }
-    : KW_USE identifier
-    -> ^(TOK_SWITCHDATABASE identifier)
+    : KW_USE databaseName
+    -> ^(TOK_SWITCHDATABASE databaseName)
     ;
 
 dropDatabaseStatement
 @init { pushMsg("drop database statement", state); }
 @after { popMsg(state); }
-    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? identifier restrictOrCascade?
-    -> ^(TOK_DROPDATABASE identifier ifExists? restrictOrCascade?)
+    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? databaseName restrictOrCascade?
+    -> ^(TOK_DROPDATABASE databaseName ifExists? restrictOrCascade?)
     ;
 
 databaseComment
