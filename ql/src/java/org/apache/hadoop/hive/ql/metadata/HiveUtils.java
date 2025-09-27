@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.Quotation;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -59,6 +60,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHive
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * General collection of helper functions.
@@ -542,5 +545,11 @@ public final class HiveUtils {
       return (refParts[0] + "." + refParts[1]).toLowerCase() + "." + refParts[2];
     }
     return refName.toLowerCase();
+  }
+
+  public static String getCurrentCatalogOrDefault(Configuration conf) {
+    return SessionState.get() != null ?
+            SessionState.get().getCurrentCatalog() :
+            getDefaultCatalog(conf);
   }
 }
