@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -739,13 +737,11 @@ public class GenericUDTFGetSplits extends GenericUDTF {
    * @return LocalResource corresponding to the localized hive exec resource.
    * @throws IOException
    *           when any file system related call fails.
-   * @throws LoginException
-   *           when we are unable to determine the user.
    * @throws URISyntaxException
    *           when current jar location cannot be determined.
    */
   private LocalResource createJarLocalResource(String localJarPath,
-      DagUtils utils, Configuration conf) throws IOException, LoginException,
+      DagUtils utils, Configuration conf) throws IOException,
       IllegalArgumentException, FileNotFoundException {
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
     assert destDirStatus != null;
