@@ -1,8 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[sum($0)], agg#1=[sum($1)], agg#2=[sum($2)])
   HiveProject($f0=[CAST(CASE(AND(IS NULL($2), IS NOT NULL($0)), 1, 0)):INTEGER], $f1=[CAST(CASE(AND(IS NULL($0), IS NOT NULL($2)), 1, 0)):INTEGER], $f2=[CAST(CASE(AND(IS NOT NULL($0), IS NOT NULL($2)), 1, 0)):INTEGER])

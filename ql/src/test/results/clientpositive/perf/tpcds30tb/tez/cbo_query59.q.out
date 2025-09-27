@@ -1,13 +1,3 @@
-CTE Suggestion:
-HiveProject($f0=[$4], $f1=[$0], $f2=[CASE($5, $1, null:DECIMAL(7, 2))], $f3=[CASE($6, $1, null:DECIMAL(7, 2))], $f4=[CASE($7, $1, null:DECIMAL(7, 2))], $f5=[CASE($8, $1, null:DECIMAL(7, 2))], $f6=[CASE($9, $1, null:DECIMAL(7, 2))], $f7=[CASE($10, $1, null:DECIMAL(7, 2))], $f8=[CASE($11, $1, null:DECIMAL(7, 2))])
-  HiveJoin(condition=[=($3, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
-      HiveFilter(condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])
-        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
-    HiveProject(d_date_sk=[$0], d_week_seq=[$4], EXPR$0=[=($14, _UTF-16LE'Sunday   ')], EXPR$1=[=($14, _UTF-16LE'Monday   ')], EXPR$2=[=($14, _UTF-16LE'Tuesday  ')], EXPR$3=[=($14, _UTF-16LE'Wednesday')], EXPR$4=[=($14, _UTF-16LE'Thursday ')], EXPR$5=[=($14, _UTF-16LE'Friday   ')], EXPR$6=[=($14, _UTF-16LE'Saturday ')])
-      HiveFilter(condition=[IS NOT NULL($4)])
-        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
   HiveProject(s_store_name1=[$2], s_store_id1=[$1], d_week_seq1=[$5], _o__c3=[/($7, $17)], _o__c4=[/($8, $18)], _o__c5=[/($9, $9)], _o__c6=[/($10, $19)], _o__c7=[/($11, $20)], _o__c8=[/($12, $21)], _o__c9=[/($13, $22)])

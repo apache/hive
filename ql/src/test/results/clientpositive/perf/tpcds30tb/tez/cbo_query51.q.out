@@ -1,8 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date_sk=[$0], d_date=[$2])
-  HiveFilter(condition=[BETWEEN(false, $3, 1212, 1223)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(item_sk=[$0], d_date=[$1], web_sales=[$2], store_sales=[$3], max_window_0=[$4], max_window_1=[$5])

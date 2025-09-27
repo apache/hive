@@ -1,23 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date=[$0])
-  HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(d_date=[$2], d_week_seq=[$4])
-        HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($2))])
-          HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-      HiveFilter(condition=[sq_count_check($0)])
-        HiveAggregate(group=[{}], cnt=[COUNT()])
-          HiveFilter(condition=[=($2, 1998-02-19)])
-            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-    HiveProject(d_week_seq=[$4])
-      HiveFilter(condition=[AND(=($2, 1998-02-19), IS NOT NULL($4))])
-        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-HiveProject(d_date_sk=[$0], d_date=[$2])
-  HiveFilter(condition=[IS NOT NULL($2)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])

@@ -1,33 +1,3 @@
-CTE Suggestion:
-HiveProject(cs_item_sk=[$14], cs_order_number=[$16], cs_quantity=[$17], cs_ext_sales_price=[$22], cs_sold_date_sk=[$33])
-  HiveFilter(condition=[IS NOT NULL($33)])
-    HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
-
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[=($6, 2001)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[=($6, 2002)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-HiveProject(i_item_sk=[$0], i_brand_id=[$7], i_class_id=[$9], i_category_id=[$11], i_manufact_id=[$13])
-  HiveFilter(condition=[AND(=($12, _UTF-16LE'Sports                                            '), IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11), IS NOT NULL($13))])
-    HiveTableScan(table=[[default, item]], table:alias=[item])
-
-CTE Suggestion:
-HiveProject(ss_item_sk=[$1], ss_ticket_number=[$8], ss_quantity=[$9], ss_ext_sales_price=[$14], ss_sold_date_sk=[$22])
-  HiveFilter(condition=[IS NOT NULL($22)])
-    HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
-
-CTE Suggestion:
-HiveProject(ws_item_sk=[$2], ws_order_number=[$16], ws_quantity=[$17], ws_ext_sales_price=[$22], ws_sold_date_sk=[$33])
-  HiveFilter(condition=[IS NOT NULL($33)])
-    HiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
-
 CBO PLAN:
 HiveProject(prev_year=[CAST(2001):INTEGER], year=[CAST(2002):INTEGER], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], i_manufact_id=[$3], prev_yr_cnt=[$4], curr_yr_cnt=[$5], sales_cnt_diff=[$6], sales_amt_diff=[$7])
   HiveSortLimit(sort0=[$6], dir0=[ASC], fetch=[100])
