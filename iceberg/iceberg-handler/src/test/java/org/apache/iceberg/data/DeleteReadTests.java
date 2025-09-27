@@ -19,8 +19,8 @@
 
 package org.apache.iceberg.data;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import org.apache.iceberg.DataFile;
@@ -38,12 +38,11 @@ import org.apache.iceberg.util.CharSequenceSet;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.StructLikeSet;
 import org.apache.iceberg.util.StructProjection;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,8 +58,8 @@ public abstract class DeleteReadTests {
       .bucket("data", 16)
       .build();
 
-  @Rule
-  public TemporaryFolder temp = new TemporaryFolder();
+  @TempDir
+  public Path temp;
 
   private String tableName = null;
   private Table table = null;
@@ -73,7 +72,7 @@ public abstract class DeleteReadTests {
     this.formatVersion = formatVersion;
   }
 
-  @Before
+  @BeforeEach
   public void writeTestDataFile() throws IOException {
     this.tableName = "test";
     this.table = createTable(tableName, SCHEMA, SPEC);
@@ -89,14 +88,15 @@ public abstract class DeleteReadTests {
     records.add(record.copy("id", 121, "data", "f"));
     records.add(record.copy("id", 122, "data", "g"));
 
-    this.dataFile = FileHelpers.writeDataFile(table, Files.localOutput(temp.newFile()), Row.of(0), records);
+    this.dataFile = FileHelpers.writeDataFile(table,
+        Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), records);
 
     table.newAppend()
         .appendFile(dataFile)
         .commit();
   }
 
-  @After
+  @AfterEach
   public void cleanup() throws IOException {
     dropTable("test");
   }
@@ -142,8 +142,8 @@ public abstract class DeleteReadTests {
         dataDelete.copy("data", "g") // id = 122
     );
 
-    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, deleteRowSchema);
+    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(table,
+        Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), dataDeletes, deleteRowSchema);
 
     table.newRowDelta()
         .addDeletes(eqDeletes)
@@ -152,7 +152,7 @@ public abstract class DeleteReadTests {
     StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
+    Assertions.assertEquals(expected, actual, "Table should contain expected rows");
   }
 
   @Test
@@ -165,8 +165,8 @@ public abstract class DeleteReadTests {
         dataDelete.copy("data", "g") // id = 122
     );
 
-    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, deleteRowSchema);
+    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(table,
+        Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), dataDeletes, deleteRowSchema);
 
     table.newRowDelta()
         .addDeletes(eqDeletes)
@@ -176,10 +176,11 @@ public abstract class DeleteReadTests {
     StructLikeSet actual = rowSet(tableName, table, "id");
 
     if (expectPruned()) {
-      Assert.assertEquals("Table should contain expected rows", expected, actual);
+      Assertions.assertEquals(expected, actual, "Table should contain expected rows");
     } else {
       // data is added by the reader to apply the eq deletes, use StructProjection to remove it from comparison
-      Assert.assertEquals("Table should contain expected rows", expected, selectColumns(actual, "id"));
+      Assertions.assertEquals(expected, selectColumns(actual, "id"),
+          "Table should contain expected rows");
     }
   }
 
@@ -189,7 +190,8 @@ public abstract class DeleteReadTests {
     GenericRecord record = GenericRecord.create(table.schema());
     records.add(record.copy("id", 144, "data", "a"));
 
-    this.dataFile = FileHelpers.writeDataFile(table, Files.localOutput(temp.newFile()), Row.of(0), records);
+    this.dataFile = FileHelpers.writeDataFile(table,
+        Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), records);
 
     table.newAppend()
         .appendFile(dataFile)
@@ -203,8 +205,8 @@ public abstract class DeleteReadTests {
         dataDelete.copy("data", "g") // id = 122
     );
 
-    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, deleteRowSchema);
+    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(table,
+        Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), dataDeletes, deleteRowSchema);
 
     table.newRowDelta()
         .addDeletes(eqDeletes)
@@ -213,7 +215,7 @@ public abstract class DeleteReadTests {
     StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122, 144);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
+    Assertions.assertEquals(expected, actual, "Table should contain expected rows");
   }
 
   @Test
@@ -227,7 +229,7 @@ public abstract class DeleteReadTests {
     Pair<DeleteFile, CharSequenceSet> posDeletes =
             FileHelpers.writeDeleteFile(
                     table,
-                    Files.localOutput(File.createTempFile("junit", null, temp.getRoot())),
+                    Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()),
                     Row.of(0),
                     deletes,
                     formatVersion);
@@ -240,7 +242,7 @@ public abstract class DeleteReadTests {
     StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
+    Assertions.assertEquals(expected, actual, "Table should contain expected rows");
   }
 
   @Test
@@ -257,7 +259,7 @@ public abstract class DeleteReadTests {
     DeleteFile eqDeletes =
             FileHelpers.writeDeleteFile(
                     table,
-                    Files.localOutput(File.createTempFile("junit", null, temp.getRoot())),
+                    Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()),
                     Row.of(0),
                     dataDeletes,
                     dataSchema);
@@ -271,7 +273,7 @@ public abstract class DeleteReadTests {
     Pair<DeleteFile, CharSequenceSet> posDeletes =
             FileHelpers.writeDeleteFile(
                     table,
-                    Files.localOutput(File.createTempFile("junit", null, temp.getRoot())),
+                    Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()),
                     Row.of(0),
                     deletes,
                     formatVersion);
@@ -300,8 +302,8 @@ public abstract class DeleteReadTests {
         dataDelete.copy("data", "g") // id = 122
     );
 
-    DeleteFile dataEqDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, dataSchema);
+    DeleteFile dataEqDeletes = FileHelpers.writeDeleteFile(table,
+        Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), dataDeletes, dataSchema);
 
     Schema idSchema = table.schema().select("id");
     Record idDelete = GenericRecord.create(idSchema);
@@ -311,7 +313,7 @@ public abstract class DeleteReadTests {
     );
 
     DeleteFile idEqDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), idDeletes, idSchema);
+        table, Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), idDeletes, idSchema);
 
     table.newRowDelta()
         .addDeletes(dataEqDeletes)
@@ -321,7 +323,7 @@ public abstract class DeleteReadTests {
     StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 121, 122);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
+    Assertions.assertEquals(expected, actual, "Table should contain expected rows");
   }
 
   @Test
@@ -334,7 +336,7 @@ public abstract class DeleteReadTests {
     // add a new data file with a record where data is null
     Record record = GenericRecord.create(table.schema());
     DataFile dataFileWithNull = FileHelpers.writeDataFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0),
+        table, Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0),
         Lists.newArrayList(record.copy("id", 131, "data", null)));
 
     table.newAppend()
@@ -348,8 +350,8 @@ public abstract class DeleteReadTests {
         dataDelete.copy("data", null) // id = 131
     );
 
-    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(
-        table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, dataSchema);
+    DeleteFile eqDeletes = FileHelpers.writeDeleteFile(table,
+        Files.localOutput(temp.resolve("junit" + System.nanoTime()).toFile()), Row.of(0), dataDeletes, dataSchema);
 
     table.newRowDelta()
         .addDeletes(eqDeletes)
@@ -358,7 +360,7 @@ public abstract class DeleteReadTests {
     StructLikeSet expected = rowSetWithoutIds(table, records, 131);
     StructLikeSet actual = rowSet(tableName, table, "*");
 
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
+    Assertions.assertEquals(expected, actual, "Table should contain expected rows");
   }
 
   private StructLikeSet selectColumns(StructLikeSet rows, String... columns) {
