@@ -485,6 +485,7 @@ unhex
 unix_timestamp
 upper
 uuid
+uuid_v7
 validate_acid_sort_order
 var_pop
 var_samp
@@ -1124,6 +1125,7 @@ unhex
 unix_timestamp
 upper
 uuid
+uuid_v7
 validate_acid_sort_order
 var_pop
 var_samp
