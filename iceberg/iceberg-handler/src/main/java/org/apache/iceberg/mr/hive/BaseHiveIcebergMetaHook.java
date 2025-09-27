@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZorderFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
@@ -217,30 +219,72 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
+  /**
+   *  Persists the table's write sort order based on the HMS property 'default-sort-order'
+   *  that is populated by the DDL layer.
+   *
+   * Behaviour:
+   * - If the JSON represents Z-order, we remove DEFAULT_SORT_ORDER
+   *   as Iceberg does not have Z-order support in its spec.
+   *   So, we persist Z-order metadata in 'sort.order' and 'sort.columns' to be used by Hive Writer.
+   * - Otherwise, the JSON is a list of SortFields; we convert it to Iceberg
+   *   SortOrder JSON and keep it in DEFAULT_SORT_ORDER for Iceberg to use it.
+   */
   private void setSortOrder(org.apache.hadoop.hive.metastore.api.Table hmsTable, Schema schema,
       Properties properties) {
-    String sortOderJSONString = hmsTable.getParameters().get(TableProperties.DEFAULT_SORT_ORDER);
-    SortFields sortFields = null;
-    if (!Strings.isNullOrEmpty(sortOderJSONString)) {
+    String sortOrderJSONString = hmsTable.getParameters().get(TableProperties.DEFAULT_SORT_ORDER);
+    if (!Strings.isNullOrEmpty(sortOrderJSONString)) {
       try {
-        sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOderJSONString, SortFields.class);
+        if (isZOrderJSON(sortOrderJSONString)) {
+          properties.remove(TableProperties.DEFAULT_SORT_ORDER);
+          ZorderFields zorderFields = JSON_OBJECT_MAPPER.reader().readValue(sortOrderJSONString, ZorderFields.class);
+          if (zorderFields != null && !zorderFields.getZOrderFields().isEmpty()) {
+            setZOrderSortOrder(zorderFields, properties);
+          }
+        } else {
+          SortFields sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOrderJSONString, SortFields.class);
+          if (sortFields != null && !sortFields.getSortFields().isEmpty()) {
+            SortOrder.Builder sortOrderBuilder = SortOrder.builderFor(schema);
+            sortFields.getSortFields().forEach(fieldDesc -> {
+              NullOrder nullOrder = fieldDesc.getNullOrdering() == NullOrdering.NULLS_FIRST ?
+                      NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
+              SortDirection sortDirection = fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
+                      SortDirection.ASC : SortDirection.DESC;
+              sortOrderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
+            });
+            properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOrderBuilder.build()));
+          }
+        }
       } catch (Exception e) {
-        LOG.warn("Can not read write order json: {}", sortOderJSONString, e);
-        return;
-      }
-      if (sortFields != null && !sortFields.getSortFields().isEmpty()) {
-        SortOrder.Builder sortOderBuilder = SortOrder.builderFor(schema);
-        sortFields.getSortFields().forEach(fieldDesc -> {
-          NullOrder nullOrder = fieldDesc.getNullOrdering() == NullOrdering.NULLS_FIRST ?
-              NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
-          SortDirection sortDirection = fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
-              SortDirection.ASC : SortDirection.DESC;
-          sortOderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
-        });
-        properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOderBuilder.build()));
+        LOG.warn("Can not read write order json: {}", sortOrderJSONString, e);
       }
     }
   }
+
+  /**
+   * Configures the Z-order sort order metadata in the given properties
+   * based on the specified Z-order fields.
+   *
+   * @param zOrderFields the ZorderFields containing columns for Z-order sorting
+   * @param properties the Properties object to store sort order metadata
+   */
+  private void setZOrderSortOrder(ZorderFields zOrderFields, Properties properties) {
+    List<String> columnNames = zOrderFields.getZOrderFields().stream()
+            .map(ZOrderFieldDesc::getColumnName)
+            .collect(Collectors.toList());
+
+    LOG.info("Setting Z-order sort order for columns: {}", columnNames);
+
+    properties.put("sort.order", "ZORDER");
+    properties.put("sort.columns", String.join(",", columnNames));
+
+    LOG.info("Z-order sort order configured for Iceberg table with columns: {}", columnNames);
+  }
+
+  private boolean isZOrderJSON(String jsonString) {
+    return jsonString.contains("zorderFields");
+  }
+
 
   @Override
   public void rollbackCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
