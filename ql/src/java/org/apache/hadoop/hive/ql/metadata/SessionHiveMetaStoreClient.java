@@ -1062,7 +1062,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         HdfsUtils.HadoopFileStatus status = HdfsUtils.HadoopFileStatus.createInstance(conf, fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-        FileUtils.moveToTrash(fs, location, conf, isSkipTrash);
+        org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, location, isSkipTrash, conf);
         fs.mkdirs(location);
         HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
       } else {
@@ -2215,9 +2215,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       Path path = getWh().getDnsPath(new Path(location));
       try {
         do {
-          if (!getWh().deleteDir(path, true, purgeData, false)) {
-            throw new MetaException("Unable to delete partition at " + location);
-          }
+          getWh().deleteDir(path, true, purgeData, false);
           path = path.getParent();
         } while (getWh().isEmptyDir(path));
       } catch (IOException e) {

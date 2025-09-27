@@ -71,41 +71,19 @@ public class FileUtils {
     }
   };
 
-  /**
-   * Move a particular file or directory to the trash.
-   * @param fs FileSystem to use
-   * @param f path of file or directory to move to trash.
-   * @param conf configuration object
-   * @return true if move successful
-   * @throws IOException
-   */
-  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean purge)
+  public static void deleteDir(FileSystem fs, Path f, boolean ifPurge, Configuration conf)
       throws IOException {
-    LOG.debug("deleting  " + f);
-    boolean result;
+    if (!fs.exists(f)) {
+      LOG.warn("The path to delete does not exist: {}", f);
+      return;
+    }
+    if (!ifPurge && moveToTrash(fs, f, conf)) {
+      return;
+    }
     try {
-      if (!fs.exists(f)) {
-        LOG.warn("The path to moveToTrash does not exist: " + f);
-        return true;
-      }
-      if (purge) {
-        LOG.debug("purge is set to true. Not moving to Trash " + f);
-      } else {
-        result = Trash.moveToAppropriateTrash(fs, f, conf);
-        if (result) {
-          LOG.trace("Moved to trash: " + f);
-          return true;
-        }
-      }
-    } catch (IOException ioe) {
       // for whatever failure reason including that trash has lower encryption zone
       // retry with force delete
-      LOG.warn(ioe.getMessage() + "; Force to delete it.");
-    }
-
-    try {
-      result = fs.delete(f, true);
-
+      fs.delete(f, true);
     } catch (RemoteException | SnapshotException se) {
       // If this is snapshot exception or the cause is snapshot replication from HDFS, could be the case where the
       // snapshots were created by replication, so in that case attempt to delete the replication related snapshots,
@@ -114,12 +92,29 @@ public class FileUtils {
           .contains("Snapshot"))
         deleteReplRelatedSnapshots(fs, f);
       // retry delete after attempting to delete replication related snapshots
-      result = fs.delete(f, true);
+      fs.delete(f, true);
     }
-    if (!result) {
-      LOG.error("Failed to delete " + f);
+  }
+
+  /**
+   * Move a particular file or directory to the trash.
+   * @param fs FileSystem to use
+   * @param f path of file or directory to move to trash.
+   * @param conf configuration object
+   * @return true if move successful
+   */
+  private static boolean moveToTrash(FileSystem fs, Path f, Configuration conf) {
+    LOG.debug("moving {} to trash", f);
+    try {
+      boolean result = Trash.moveToAppropriateTrash(fs, f, conf);
+      if (result) {
+        LOG.trace("Moved to trash: {}", f);
+        return true;
+      }
+    } catch (IOException ioe) {
+      LOG.warn("Failed to move path to trash: {}", f, ioe);
     }
-    return result;
+    return false;
   }
 
   /**
