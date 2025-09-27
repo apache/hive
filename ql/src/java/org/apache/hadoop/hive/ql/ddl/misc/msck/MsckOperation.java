@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.misc.msck;
 import static org.apache.hadoop.hive.metastore.Msck.getProxyClass;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -75,7 +78,25 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),
           desc.getFilterExp(), desc.getResFile(), desc.isRepairPartitions(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
-      return msck.repair(msckInfo);
+      int result = msck.repair(msckInfo);
+      Map<String, String> smallFilesStats = msckInfo.getSmallFilesStats();
+      if (smallFilesStats != null && !smallFilesStats.isEmpty()) {
+        // keep the small files information in the logs
+        List<String> logInfo = smallFilesStats.entrySet().stream()
+                .map(entry -> String.format(
+                        "This table/partition average file size is less than Hive average file size.%n The partition name is %s. %s",
+                        entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+        LOG.info("There are small files exist.\n{}", String.join("\n", logInfo));
+        // print out the small files information on console to end users
+        SessionState ss = SessionState.get();
+        if (ss != null && ss.getConsole() != null) {
+          ss.getConsole().printInfo("[MSCK] Small files detected.");
+          ss.getConsole().printInfo(""); // add a blank line for separation
+          logInfo.forEach(line -> ss.getConsole().printInfo("[MSCK] " + line));
+        }
+      }
+      return result;
     } catch (MetaException | MetastoreException e) {
       LOG.error("Unable to create msck instance.", e);
       throw e;
@@ -84,4 +105,5 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
       return 1;
     }
   }
+
 }
