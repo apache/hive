@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 -- CREATE DATABASE in default catalog 'hive'
 CREATE DATABASE testdb;
 
