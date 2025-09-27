@@ -71,6 +71,10 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
       FunctionUtils.addFunctionResources(resources);
 
       Class<?> udfClass = getUdfClass();
+      if (!validateIfBlockedUDF(udfClass)) {
+        return 1;
+      }
+
       FunctionInfo registered = FunctionRegistry.registerTemporaryUDF(desc.getName(), udfClass, resources);
       if (registered != null) {
         return 0;
@@ -79,8 +83,9 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
             "FAILED: Class " + desc.getClassName() + " does not implement UDF, GenericUDF, or UDAF");
         return 1;
       }
-    } catch (HiveException e) {
-      context.getConsole().printError("FAILED: " + e.toString());
+    }
+      catch (HiveException e) {
+      context.getConsole().printError("FAILED: Create function: " + e.toString());
       LOG.info("create function: ", e);
       return 1;
     } catch (ClassNotFoundException e) {
@@ -90,6 +95,23 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
     }
   }
 
+  /**
+   * Validates if the function being created is from blacklisted UDF.
+   *
+   * @return `true` if the UDF is valid and not blocked, `false` otherwise.
+   */
+  private boolean validateIfBlockedUDF(Class<?> udfClass) {
+    try {
+      // Function creation with blocked UDFs will fail with SemanticException here
+      FunctionRegistry.getFunctionInfo(FunctionUtils.getFuncNameFromClass(udfClass));
+      return true;
+    } catch (SemanticException e) {
+      // Log and print error if the UDF is blocked
+      context.getConsole().printError("FAILED: Create function: " + e.toString());
+      LOG.info("create function: ", e);
+      return false;
+    }
+  }
   private Class<?> getUdfClass() throws ClassNotFoundException {
     // get the session specified class loader from SessionState
     ClassLoader classLoader = Utilities.getSessionSpecifiedClassLoader();
@@ -120,7 +142,6 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
     if (!addToMetastoreSuccess) {
       return 1;
     }
-
     return 0;
   }
 
@@ -172,8 +193,15 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
     HiveConf oldConf = SessionState.get().getConf();
     try {
       SessionState.get().setConf(context.getConf());
+      if (!validateIfBlockedUDF(getUdfClass())) {
+        return false;
+      }
       registered = FunctionRegistry.registerPermanentFunction(registeredName, desc.getClassName(), true,
           FunctionUtils.toFunctionResource(desc.getResources()));
+    } catch (ClassNotFoundException e) {
+      context.getConsole().printError("FAILED: Class " + desc.getClassName() + " not found");
+      LOG.info("create function: ", e);
+      return false;
     } catch (RuntimeException ex) {
       Throwable t = ex;
       while (t.getCause() != null) {
