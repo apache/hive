@@ -44,7 +44,7 @@ public class RESTCatalogServer {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf,
         true, false, false, false);
   }
-  
+
   public void setSchemaInfoClass(Class<? extends MetaStoreSchemaInfo> schemaInfoClass) {
     this.schemaInfoClass = schemaInfoClass;
   }
