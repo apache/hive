@@ -113,6 +113,12 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     String expandedText = ctx.getTokenRewriteStream().toString(select.getTokenStartIndex(), select.getTokenStopIndex());
 
     if (imposedSchema != null) {
+      String trimmedExpandedText = expandedText.trim();
+      while (trimmedExpandedText.startsWith("(") && trimmedExpandedText.endsWith(")")) {
+        trimmedExpandedText = trimmedExpandedText.substring(1, trimmedExpandedText.length() - 1);
+        expandedText = trimmedExpandedText;
+        trimmedExpandedText = trimmedExpandedText.trim();
+      }
       // Merge the names from the imposed schema into the types from the derived schema.
       StringBuilder sb = new StringBuilder();
       sb.append("SELECT ");
