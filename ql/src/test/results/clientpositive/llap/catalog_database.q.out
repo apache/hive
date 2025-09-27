@@ -13,11 +13,10 @@ testdb
 #### A masked pattern was here ####
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:testcat
-PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATECATALOG
 POSTHOOK: Output: catalog:testcat
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: SHOW CATALOGS
 PREHOOK: type: SHOWCATALOGS
 POSTHOOK: query: SHOW CATALOGS
@@ -39,11 +38,11 @@ POSTHOOK: Input: catalog:testcat
 PREHOOK: query: select current_catalog()
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select current_catalog()
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 testcat
 PREHOOK: query: USE hive.default
 PREHOOK: type: SWITCHDATABASE
@@ -54,11 +53,11 @@ POSTHOOK: Input: database:default
 PREHOOK: query: select current_catalog()
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select current_catalog()
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 hive
 PREHOOK: query: SET CATALOG testcat
 PREHOOK: type: SWITCHCATALOG

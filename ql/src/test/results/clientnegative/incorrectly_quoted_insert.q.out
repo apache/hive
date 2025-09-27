@@ -26,4 +26,4 @@ POSTHOOK: query: create table t2(id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tdb
 POSTHOOK: Output: tdb@t2
-FAILED: SemanticException Line 2:20 Table or database name may not contain dot(.) character 'tdb.t1'
+FAILED: SemanticException Line 2:20 Catalog or table or database name may not contain dot(.) character 'tdb.t1'
