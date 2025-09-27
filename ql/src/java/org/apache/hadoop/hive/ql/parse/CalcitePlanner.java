@@ -50,9 +50,6 @@ import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnion;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.adapter.jdbc.JdbcTable;
-import org.apache.calcite.config.CalciteConnectionConfig;
-import org.apache.calcite.config.CalciteConnectionConfigImpl;
-import org.apache.calcite.config.CalciteConnectionProperty;
 import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
@@ -168,7 +165,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggester;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionSuggesterFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
@@ -185,7 +181,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTran
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RemoveInfrequentCteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
@@ -195,8 +190,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
@@ -263,7 +256,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteToDataSketchesRules;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortLimitRemoveRule;
@@ -345,7 +337,6 @@ import java.math.BigDecimal;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -358,7 +349,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -367,6 +357,7 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import static java.util.Arrays.asList;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
@@ -516,34 +507,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf) {
-    return createPlanner(conf, EmptyStatsSource.INSTANCE, false);
-  }
-
-  private static RelOptPlanner createPlanner(
-      HiveConf conf, StatsSource statsSource, boolean isExplainPlan) {
-    final Double maxSplitSize = (double) HiveConf.getLongVar(
-            conf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE);
-    final Double maxMemory = (double) HiveConf.getLongVar(
-            conf, HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
-    HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
-    HiveRulesRegistry registry = new HiveRulesRegistry();
-    Properties calciteConfigProperties = new Properties();
-    calciteConfigProperties.setProperty(
-        CalciteConnectionProperty.TIME_ZONE.camelName(),
-        conf.getLocalTimeZone().getId());
-    calciteConfigProperties.setProperty(
-        CalciteConnectionProperty.MATERIALIZATIONS_ENABLED.camelName(),
-        Boolean.FALSE.toString());
-    CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
-    boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS);
-    boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
-        HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
-    HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, isExplainPlan),
-        statsSource);
-    RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
-    planner.addListener(new RuleEventLogger());
-    return planner;
+    return HiveRelOptUtil.createPlanner(conf, EmptyStatsSource.INSTANCE, false);
   }
 
   @Override
@@ -1332,6 +1296,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
+
     return optimizedOptiqPlan;
   }
 
@@ -1616,7 +1581,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      RelOptPlanner planner = createPlanner(conf, statsSource, ctx.isExplainPlan());
+      RelOptPlanner planner = HiveRelOptUtil.createPlanner(conf, statsSource, ctx.isExplainPlan());
       final RexBuilder rexBuilder = new RexBuilder(new HiveTypeFactory());
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
@@ -1759,11 +1724,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
+      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER);
+
       return calcitePlan;
     }
 
     private RelNode applySearchExpandTransforms(RelNode basePlan, RelMetadataProvider mdProvider,
-        RexExecutor executor) {
+                                                RexExecutor executor) {
       HepProgramBuilder searchProgram = new HepProgramBuilder();
       searchProgram.addRuleCollection(ImmutableList.of(HiveSearchRules.FILTER_SEARCH_EXPAND,
           HiveSearchRules.PROJECT_SEARCH_EXPAND,
@@ -3150,7 +3117,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               metrics.add(field.getName());
             }
 
-            List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+            List<Interval> intervals = asList(DruidTable.DEFAULT_INTERVAL);
             rowType = dtFactory.createStructType(druidColTypes, druidColNames);
             DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
                 dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,

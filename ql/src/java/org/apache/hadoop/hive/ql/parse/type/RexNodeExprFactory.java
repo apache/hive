@@ -617,6 +617,26 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
           operands);
     }
     RelDataType finalType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
+
+    // Make exact literals for float/double when the value is constant
+    // to avoid printing in scientific notation. This helps while
+    // deserializing the json plan.
+    switch (finalType.getSqlTypeName()) {
+      case FLOAT, DOUBLE -> {
+        switch (constantValue) {
+          case Integer i -> {
+            return rexBuilder.makeExactLiteral(new BigDecimal(i), finalType);
+          }
+          case BigDecimal bigDecimal -> {
+            return rexBuilder.makeExactLiteral(bigDecimal, finalType);
+          }
+          case null, default -> {
+            return rexBuilder.makeLiteral(constantValue, finalType, false);
+          }
+        }
+      }
+    }
+    
     boolean allowCast = finalType.getFamily() == SqlTypeFamily.CHARACTER;
     return rexBuilder.makeLiteral(constantValue, finalType, allowCast);
   }
