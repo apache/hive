@@ -144,12 +144,11 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
           if (NetUtils.isLocalAddress(inetAddress)) {
             InetSocketAddress socketAddress = new InetSocketAddress(0);
             socketAddress = NetUtils.getConnectAddress(socketAddress);
-            LOG.info("Adding host identified as local: " + host + " as "
-                + socketAddress.getHostName());
+            LOG.info("Adding host identified as local: {} as {}", host, socketAddress.getHostName());
             host = socketAddress.getHostName();
           }
         } catch (UnknownHostException e) {
-          LOG.warn("Ignoring resolution issues for host: " + host, e);
+          LOG.warn("Ignoring resolution issues for host: {}", host, e);
         }
       }
       this.host = host;

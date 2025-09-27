@@ -111,7 +111,8 @@ public class HiveClientCache {
     this.timeout = timeout;
     this.enableStats = enableStats;
 
-    LOG.info("Initializing cache: eviction-timeout=" + timeout + " initial-capacity=" + initialCapacity + " maximum-capacity=" + maxCapacity);
+    LOG.info("Initializing cache: eviction-timeout={} initial-capacity={} maximum-capacity={}",
+            timeout, initialCapacity, maxCapacity);
 
     CacheBuilder builder = CacheBuilder.newBuilder()
       .initialCapacity(initialCapacity)
@@ -156,7 +157,7 @@ public class HiveClientCache {
           ICacheableMetaStoreClient hiveMetaStoreClient = notification.getValue();
           if (hiveMetaStoreClient != null) {
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Evicting client: " + Integer.toHexString(System.identityHashCode(hiveMetaStoreClient)));
+              LOG.debug("Evicting client: {}", Integer.toHexString(System.identityHashCode(hiveMetaStoreClient)));
             }
 
             // TODO: This global lock may not be necessary as all concurrent methods in ICacheableMetaStoreClient
@@ -230,7 +231,7 @@ public class HiveClientCache {
     }
 
     if (this.enableStats) {
-      LOG.info("Cache statistics after shutdown: size=" + hiveCache.size() + " " + hiveCache.stats());
+      LOG.info("Cache statistics after shutdown: size={} {}", hiveCache.size(), hiveCache.stats());
     }
   }
 
@@ -239,7 +240,7 @@ public class HiveClientCache {
     hiveCache.cleanUp();
 
     if (enableStats) {
-      LOG.info("Cache statistics after cleanup: size=" + hiveCache.size() + " " + hiveCache.stats());
+      LOG.info("Cache statistics after cleanup: size={} {}", hiveCache.size(), hiveCache.stats());
     }
   }
 
@@ -415,7 +416,7 @@ public class HiveClientCache {
     public synchronized void acquire() {
       users.incrementAndGet();
       if (users.get() > 1) {
-        LOG.warn("Unexpected increment of user count beyond one: " + users.get() + " " + this);
+        LOG.warn("Unexpected increment of user count beyond one: {} {}", users.get(), this);
       }
     }
 
@@ -426,7 +427,7 @@ public class HiveClientCache {
       if (users.get() > 0) {
         users.decrementAndGet();
       } else {
-        LOG.warn("Unexpected attempt to decrement user count of zero: " + users.get() + " " + this);
+        LOG.warn("Unexpected attempt to decrement user count of zero: {} {}", users.get(), this);
       }
     }
 
@@ -436,7 +437,7 @@ public class HiveClientCache {
      */
     public synchronized void setExpiredFromCache() {
       if (users.get() != 0) {
-        LOG.warn("Evicted client has non-zero user count: " + users.get());
+        LOG.warn("Evicted client has non-zero user count: {}", users.get());
       }
 
       expiredFromCache = true;
@@ -487,7 +488,7 @@ public class HiveClientCache {
      */
     public synchronized void tearDownIfUnused() {
       if (users.get() != 0) {
-        LOG.warn("Non-zero user count preventing client tear down: users=" + users.get() + " expired=" + expiredFromCache);
+        LOG.warn("Non-zero user count preventing client tear down: users={} expired={}", users.get(), expiredFromCache);
       }
 
       if (users.get() == 0 && expiredFromCache) {
@@ -523,7 +524,7 @@ public class HiveClientCache {
     @Override
     protected void finalize() throws Throwable {
       if (users.get() != 0) {
-        LOG.warn("Closing client with non-zero user count: users=" + users.get() + " expired=" + expiredFromCache);
+        LOG.warn("Closing client with non-zero user count: users={} expired={}", users.get(), expiredFromCache);
       }
 
       try {

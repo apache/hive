@@ -532,10 +532,8 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
         new ThreadFactoryBuilder().setNameFormat("RequestManagerExecutor").build());
     this.requestManagerExecutor = MoreExecutors.listeningDecorator(localExecutor);
 
-    LOG.info("Setting up AsyncPbRpcProxy with" +
-        "numThreads=" + numThreads +
-        "retryTime(millis)=" + connectionTimeoutMs +
-        "retrySleep(millis)=" + retrySleepMs);
+    LOG.info("Setting up AsyncPbRpcProxy with numThreads={} retryTime(millis)={} retrySleep(millis)={}",
+            numThreads, connectionTimeoutMs, retrySleepMs);
   }
 
   protected void setToken(Token<TokenType> newToken) throws IOException {

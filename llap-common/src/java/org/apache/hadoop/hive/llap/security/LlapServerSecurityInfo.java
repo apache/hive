@@ -33,7 +33,7 @@ public class LlapServerSecurityInfo extends SecurityInfo {
 
   @Override
   public KerberosInfo getKerberosInfo(Class<?> protocol, Configuration conf) {
-    LOG.debug("Trying to get KerberosInfo for " + protocol);
+    LOG.debug("Trying to get KerberosInfo for {}", protocol);
     if (!LlapProtocolBlockingPB.class.isAssignableFrom(protocol)
         && !LlapManagementProtocolPB.class.isAssignableFrom(protocol)) return null;
     return new KerberosInfo() {

@@ -302,7 +302,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       // even under connection or session interruption (will automatically handle retries)
       znode = new PersistentNode(zooKeeperClient, CreateMode.EPHEMERAL_SEQUENTIAL, false,
           workersPath + "/" + workerNodePrefix, encoder.toBytes(srv));
-    
+
       // start the creation of znodes
       znode.start();
 
@@ -415,7 +415,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     List<ACL> acls = zooKeeperClient.getACL().forPath(pathToCheck);
     if (acls == null || acls.isEmpty()) {
       // Can there be no ACLs? There's some access (to get ACLs), so assume it means free for all.
-      LOG.warn("No ACLs on "  + pathToCheck + "; setting up ACLs. " + disableMessage);
+      LOG.warn("No ACLs on {}; setting up ACLs. {}", pathToCheck, disableMessage);
       setUpAcls(pathToCheck);
       return;
     }
@@ -426,8 +426,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       if ((acl.getPerms() & ~ZooDefs.Perms.READ) == 0 || currentUser.equals(acl.getId())) {
         continue; // Read permission/no permissions, or the expected user.
       }
-      LOG.warn("The ACL " + acl + " is unnacceptable for " + pathToCheck
-        + "; setting up ACLs. " + disableMessage);
+      LOG.warn("The ACL {} is unnacceptable for {}; setting up ACLs. {}", acl, pathToCheck, disableMessage);
       setUpAcls(pathToCheck);
       return;
     }
@@ -507,8 +506,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
           }
         }
       } catch (IOException e) {
-        LOG.error("Unable to decode data for zkpath: {}." +
-            " Ignoring from current instances list..", childData.getPath());
+        LOG.error("Unable to decode data for zkpath: {}. Ignoring from current instances list..", childData.getPath());
       }
     }
   }
@@ -588,7 +586,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     Set<InstanceType> byHost = nodeToInstanceCache.get(host);
     byHost = (byHost == null) ? Sets.newHashSet() : byHost;
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Returning " + byHost.size() + " hosts for locality allocation on " + host);
+      LOG.debug("Returning {} hosts for locality allocation on {}", byHost.size(), host);
     }
     return byHost;
   }
@@ -614,8 +612,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       ServiceRecord srv = encoder.fromBytes(event.getData().getPath(), data);
       return createServiceInstance(srv);
     } catch (IOException e) {
-      LOG.error("Unable to decode data for zknode: {}." +
-          " Dropping notification of type: {}", childData.getPath(), event.getType());
+      LOG.error("Unable to decode data for zknode: {}. Dropping notification of type: {}",
+              childData.getPath(), event.getType());
       return null;
     }
   }
@@ -714,7 +712,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     try {
       return Integer.parseInt(ephSeqVersionStr);
     } catch (NumberFormatException e) {
-      LOG.error("Cannot parse " + ephSeqVersionStr + " from " + nodeName, e);
+      LOG.error("Cannot parse {} from {}", ephSeqVersionStr, nodeName, e);
       throw e;
     }
   }

@@ -457,7 +457,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       if (or != null) return or;
       if (isNeeded(name)) {
         if (LlapIoImpl.LOG.isTraceEnabled()) {
-          LlapIoImpl.LOG.trace("Creating cache receiver for " + name);
+          LlapIoImpl.LOG.trace("Creating cache receiver for {}", name);
         }
         CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, name, bufferFactory, isStopped);
         or = cor;
@@ -469,7 +469,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         list.add(cor);
       } else {
         if (LlapIoImpl.LOG.isTraceEnabled()) {
-          LlapIoImpl.LOG.trace("Creating null receiver for " + name);
+          LlapIoImpl.LOG.trace("Creating null receiver for {}", name);
         }
         or = new NullOutputReceiver(name);
       }
@@ -503,8 +503,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       List<ColumnEncoding> allEnc = footer.getColumnsList();
       OrcProto.StripeInformation si = dirEntry.build();
       if (LlapIoImpl.LOG.isTraceEnabled()) {
-        LlapIoImpl.LOG.trace(("Finalizing stripe " + footer.build() + " => " + si)
-            .replace('\n', ' '));
+        LlapIoImpl.LOG.trace("Finalizing stripe {} => {}", footer.build(), si);
       }
       if (doesSourceHaveIncludes) {
         currentStripe.encodings = new ArrayList<>(writerIncludes.length);
@@ -544,7 +543,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         if (doesSourceHaveIncludes && colIx > 0) {
           int newColIx = getSparseOrcIndexFromDenseDest(colIx);
           if (LlapIoImpl.LOG.isTraceEnabled()) {
-            LlapIoImpl.LOG.trace("Mapping the ORC writer column " + colIx + " to " + newColIx);
+            LlapIoImpl.LOG.trace("Mapping the ORC writer column {} to {}", colIx, newColIx);
           }
           colIx = newColIx;
         }
@@ -655,7 +654,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     public void output(ByteBuffer buffer) throws IOException {
       // TODO: avoid put() by working directly in OutStream?
       if (LlapIoImpl.LOG.isTraceEnabled()) {
-        LlapIoImpl.LOG.trace(name + " receiving a buffer of size " + buffer.remaining());
+        LlapIoImpl.LOG.trace("{} receiving a buffer of size {}", name, buffer.remaining());
       }
       int size = buffer.remaining();
       ByteBuffer bb = null;
@@ -1009,7 +1008,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       metadata.setRowCount(cacheRowCount);
     }
     if (LlapIoImpl.LOG.isTraceEnabled()) {
-      LlapIoImpl.LOG.trace("Derived stripe metadata for this split is " + metadata);
+      LlapIoImpl.LOG.trace("Derived stripe metadata for this split is {}", metadata);
     }
     consumer.setStripeMetadata(metadata);
 
@@ -1029,7 +1028,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           CacheWriter.CacheStreamData stream = iter.next();
           if (stream.isSuppressed) {
             if (LlapIoImpl.LOG.isTraceEnabled()) {
-              LlapIoImpl.LOG.trace("Removing a suppressed stream " + stream.name);
+              LlapIoImpl.LOG.trace("Removing a suppressed stream {}", stream.name);
             }
             iter.remove();
             discardUncachedBuffers(stream.data);
@@ -1109,7 +1108,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       if (splitIncludes[colIx]) {
         List<ColumnVector> vectors = diskData.getVectors(vectorsIx++);
         if (LlapIoImpl.LOG.isTraceEnabled()) {
-          LlapIoImpl.LOG.trace("Processing vectors for column " + colIx + ": " + vectors);
+          LlapIoImpl.LOG.trace("Processing vectors for column {}: {}", colIx, vectors);
         }
         ecb.initColumnWithVectors(colIx, vectors);
       } else {
@@ -1141,7 +1140,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         CacheWriter.CacheStreamData stream = iter.next();
         if (stream.isSuppressed) {
           if (LlapIoImpl.LOG.isTraceEnabled()) {
-            LlapIoImpl.LOG.trace("Removing a suppressed stream " + stream.name);
+            LlapIoImpl.LOG.trace("Removing a suppressed stream {}", stream.name);
           }
           iter.remove();
           discardUncachedBuffers(stream.data);
@@ -1211,8 +1210,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     // The column has been obtained from cache.
     LlapSerDeDataBuffer[][] colData = cacheBuffers[colIx];
     if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
-      LlapIoImpl.CACHE_LOGGER.trace("Processing cache data for column " + colIx + ": "
-          + SerDeLowLevelCacheImpl.toString(colData));
+      LlapIoImpl.CACHE_LOGGER.trace("Processing cache data for column {}: {}", colIx, SerDeLowLevelCacheImpl.toString(colData));
     }
     for (int streamIx = 0; streamIx < colData.length; ++streamIx) {
       if (colData[streamIx] == null) continue;

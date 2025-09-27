@@ -122,7 +122,7 @@ public final class GroupFilterFactory implements FilterFactory {
           groupDns.add(groupDn);
         } catch (NamingException e) {
           LOG.warn("Cannot find DN for group", e);
-          LOG.debug("Cannot find DN for group " + groupId, e);
+          LOG.debug("Cannot find DN for group {}", groupId, e);
         }
       }
 

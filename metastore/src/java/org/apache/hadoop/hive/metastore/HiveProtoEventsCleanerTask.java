@@ -117,7 +117,7 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
    * Finds the expired date partitioned events directory based on TTL and delete them.
    */
   private void cleanupDir(Path eventsBasePath) {
-    LOG.debug("Trying to delete expired proto events from " + eventsBasePath);
+    LOG.debug("Trying to delete expired proto events from {}", eventsBasePath);
     try {
       FileSystem fs = FileSystem.get(eventsBasePath.toUri(), conf);
       if (!fs.exists(eventsBasePath)) {
@@ -127,14 +127,14 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
       for (FileStatus dir : statuses) {
         try {
           deleteDirByOwner(fs, dir);
-          LOG.info("Deleted expired proto events dir: " + dir.getPath());
+          LOG.info("Deleted expired proto events dir: {}", dir.getPath());
         } catch (IOException ioe) {
           // Log error and continue to delete other expired dirs.
-          LOG.error("Error deleting expired proto events dir " + dir.getPath(), ioe);
+          LOG.error("Error deleting expired proto events dir {}", dir.getPath(), ioe);
         }
       }
     } catch (IOException e) {
-      LOG.error("Error while trying to delete expired proto events from " + eventsBasePath, e);
+      LOG.error("Error while trying to delete expired proto events from {}", eventsBasePath, e);
     }
   }
 
@@ -146,7 +146,7 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
     if (owner.equals(System.getProperty("user.name"))) {
       fs.delete(eventsDir.getPath(), true);
     } else {
-      LOG.info("Deleting " + eventsDir.getPath() + " as user " + owner);
+      LOG.info("Deleting {} as user {}", eventsDir.getPath(), owner);
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(owner,
               UserGroupInformation.getLoginUser());
       try {
@@ -161,7 +161,7 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
           }
         });
       } catch (InterruptedException ie) {
-        LOG.error("Could not delete " + eventsDir.getPath() + " for UGI: " + ugi, ie);
+        LOG.error("Could not delete {} for UGI: {}", eventsDir.getPath(), ugi, ie);
       }
     }
   }

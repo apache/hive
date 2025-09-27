@@ -975,15 +975,15 @@ public final class FileUtils {
    */
   public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean purge)
       throws IOException {
-    LOG.debug("deleting  " + f);
+    LOG.debug("Deleting {}", f);
     boolean result = false;
     try {
       if(purge) {
-        LOG.debug("purge is set to true. Not moving to Trash " + f);
+        LOG.debug("Purge is set to true. Not moving to Trash {}", f);
       } else {
         result = Trash.moveToAppropriateTrash(fs, f, conf);
         if (result) {
-          LOG.trace("Moved to trash: " + f);
+          LOG.trace("Moved to trash: {}", f);
           return true;
         }
       }
