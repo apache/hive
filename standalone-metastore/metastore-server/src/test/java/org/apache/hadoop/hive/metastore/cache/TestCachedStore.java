@@ -28,12 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.Deadline;
-import org.apache.hadoop.hive.metastore.HMSHandler;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -42,6 +37,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataIns
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -361,7 +357,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       List<String> partitionValue = Collections.singletonList(pStat.getKey());
       Partition p = createPartition(salesTable, partitionValue);
       objectStore.addPartition(p);
-      String pName = FileUtils.makePartName(Collections.singletonList(soldDateCol.getName()), partitionValue);
+      String pName = FileUtils.makePartName(Collections.singletonList(soldDateCol.getName()), partitionValue,
+          MetaStoreUtils.getDefaultPartitionName(salesTable.getParameters(), conf));
       partNames.add(pName);
 
       ColumnStatistics stats = createColumnStatistics(pStat.getValue(), salesTable, soldDateCol, pName);
@@ -1029,9 +1026,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(100, aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls());
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName, CacheUtils.HIVE_ENGINE);
+        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1, tbl.getParameters(), conf), partVals1, colName, CacheUtils.HIVE_ENGINE);
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2), partVals2, colName, CacheUtils.HIVE_ENGINE);
+        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2, tbl.getParameters(), conf), partVals2, colName, CacheUtils.HIVE_ENGINE);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals1);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals2);
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName());
@@ -2082,7 +2079,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
         Partition ptn = createPartition(table, partVals);
         ptn.setCatName(DEFAULT_CATALOG_NAME);
         ptns.add(ptn);
-        ptnNames.add(FileUtils.makePartName(partColNames, partVals));
+        ptnNames.add(FileUtils.makePartName(partColNames, partVals,
+            MetaStoreUtils.getDefaultPartitionName(table.getParameters(), MetastoreConf.newMetastoreConf())));
       }
     }
     return new PartitionObjectsAndNames(ptns, ptnNames);

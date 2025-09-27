@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockType;
 
+import java.util.Map;
+
 /**
  * A builder for {@link LockComponent}s
  */
@@ -98,6 +100,16 @@ public class LockComponentBuilder {
   public LockComponentBuilder setTableName(String tableName) {
     component.setTablename(tableName);
     tableNameSet = true;
+    return this;
+  }
+
+  /**
+   * Set the table name.
+   * @param defaultPartitionName default partition name for the table
+   * @return reference to this builder
+   */
+  public LockComponentBuilder setDefaultPartitionName(String defaultPartitionName) {
+    component.setDefaultPartitionName(defaultPartitionName);
     return this;
   }
 

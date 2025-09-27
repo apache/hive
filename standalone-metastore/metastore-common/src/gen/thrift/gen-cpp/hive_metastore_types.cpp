@@ -26058,6 +26058,11 @@ void LockComponent::__set_isDynamicPartitionWrite(const bool val) {
   this->isDynamicPartitionWrite = val;
 __isset.isDynamicPartitionWrite = true;
 }
+
+void LockComponent::__set_defaultPartitionName(const std::string& val) {
+  this->defaultPartitionName = val;
+__isset.defaultPartitionName = true;
+}
 std::ostream& operator<<(std::ostream& out, const LockComponent& obj)
 {
   obj.printTo(out);
@@ -26159,6 +26164,14 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->defaultPartitionName);
+          this->__isset.defaultPartitionName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -26219,6 +26232,11 @@ uint32_t LockComponent::write(::apache::thrift::protocol::TProtocol* oprot) cons
     xfer += oprot->writeBool(this->isDynamicPartitionWrite);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.defaultPartitionName) {
+    xfer += oprot->writeFieldBegin("defaultPartitionName", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->defaultPartitionName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -26234,6 +26252,7 @@ void swap(LockComponent &a, LockComponent &b) {
   swap(a.operationType, b.operationType);
   swap(a.isTransactional, b.isTransactional);
   swap(a.isDynamicPartitionWrite, b.isDynamicPartitionWrite);
+  swap(a.defaultPartitionName, b.defaultPartitionName);
   swap(a.__isset, b.__isset);
 }
 
@@ -26246,6 +26265,7 @@ LockComponent::LockComponent(const LockComponent& other984) {
   operationType = other984.operationType;
   isTransactional = other984.isTransactional;
   isDynamicPartitionWrite = other984.isDynamicPartitionWrite;
+  defaultPartitionName = other984.defaultPartitionName;
   __isset = other984.__isset;
 }
 LockComponent& LockComponent::operator=(const LockComponent& other985) {
@@ -26257,6 +26277,7 @@ LockComponent& LockComponent::operator=(const LockComponent& other985) {
   operationType = other985.operationType;
   isTransactional = other985.isTransactional;
   isDynamicPartitionWrite = other985.isDynamicPartitionWrite;
+  defaultPartitionName = other985.defaultPartitionName;
   __isset = other985.__isset;
   return *this;
 }
@@ -26271,6 +26292,7 @@ void LockComponent::printTo(std::ostream& out) const {
   out << ", " << "operationType="; (__isset.operationType ? (out << to_string(operationType)) : (out << "<null>"));
   out << ", " << "isTransactional="; (__isset.isTransactional ? (out << to_string(isTransactional)) : (out << "<null>"));
   out << ", " << "isDynamicPartitionWrite="; (__isset.isDynamicPartitionWrite ? (out << to_string(isDynamicPartitionWrite)) : (out << "<null>"));
+  out << ", " << "defaultPartitionName="; (__isset.defaultPartitionName ? (out << to_string(defaultPartitionName)) : (out << "<null>"));
   out << ")";
 }
 

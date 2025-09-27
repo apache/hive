@@ -123,7 +123,8 @@ public class HiveTableUtil {
           Partition partition = partitionIterator.next();
           Callable<Void> task = () -> {
             Path partitionPath = new Path(partition.getSd().getLocation());
-            String partitionName = Warehouse.makePartName(partitionKeys, partition.getValues());
+            String partitionName = Warehouse.makePartName(partitionKeys, partition.getValues(),
+                icebergTable.properties(), conf);
             Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partitionName);
             RemoteIterator<LocatedFileStatus> iterator = getFilesIterator(partitionPath, conf);
             List<DataFile> dataFiles =

@@ -83,6 +83,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultPartitionName;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 // TODO filter->expr
@@ -545,7 +546,8 @@ public class CachedStore implements RawStore, Configurable {
                 cacheObjects.setPartitions(partitions);
                 List<String> partNames = new ArrayList<>(partitions.size());
                 for (Partition p : partitions) {
-                  partNames.add(Warehouse.makePartName(table.getPartitionKeys(), p.getValues()));
+                  partNames.add(Warehouse.makePartName(table.getPartitionKeys(), p.getValues(), table.getParameters(),
+                      rawStore.getConf()));
                 }
                 if (!partNames.isEmpty()) {
                   // Get partition column stats for this table
@@ -563,15 +565,15 @@ public class CachedStore implements RawStore, Configurable {
                   // Remove default partition from partition names and get aggregate
                   // stats again
                   List<FieldSchema> partKeys = table.getPartitionKeys();
-                  String defaultPartitionValue =
-                      MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+                  String defaultPartitionValue = getDefaultPartitionName(table.getParameters(), rawStore.getConf());
                   List<String> partCols = new ArrayList<>();
                   List<String> partVals = new ArrayList<>();
                   for (FieldSchema fs : partKeys) {
                     partCols.add(fs.getName());
                     partVals.add(defaultPartitionValue);
                   }
-                  String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
+                  String defaultPartitionName = FileUtils.makePartName(partCols, partVals,
+                      MetaStoreUtils.getDefaultPartitionName(table.getParameters(), rawStore.getConf()));
                   partNames.remove(defaultPartitionName);
                   Deadline.startTimer("getAggrPartitionColumnStatistics");
                   aggrStatsAllButDefaultPartition =
@@ -1004,14 +1006,15 @@ public class CachedStore implements RawStore, Configurable {
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
           List<FieldSchema> partKeys = table.getPartitionKeys();
-          String defaultPartitionValue = MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+          String defaultPartitionValue = getDefaultPartitionName(table.getParameters(), rawStore.getConf());
           List<String> partCols = new ArrayList<String>();
           List<String> partVals = new ArrayList<String>();
           for (FieldSchema fs : partKeys) {
             partCols.add(fs.getName());
             partVals.add(defaultPartitionValue);
           }
-          String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
+          String defaultPartitionName = FileUtils.makePartName(partCols, partVals,
+              MetaStoreUtils.getDefaultPartitionName(table.getParameters(), rawStore.getConf()));
           partNames.remove(defaultPartitionName);
           Deadline.startTimer("getAggregateStatsForAllPartitionsExceptDefault");
           AggrStats aggrStatsAllButDefaultPartition =
@@ -1437,17 +1440,17 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public boolean doesPartitionExist(String catName, String dbName, String tblName, List<FieldSchema> partKeys,
-      List<String> partVals) throws MetaException, NoSuchObjectException {
+      List<String> partVals, Map<String, String> tableParams) throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
-      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, partVals);
+      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, partVals, tableParams);
     }
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (tbl == null) {
       // The table containing the partition is not yet loaded in cache
-      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, partVals);
+      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, partVals, tableParams);
     }
     return sharedCache.existPartitionFromCache(catName, dbName, tblName, partVals);
   }
@@ -1658,7 +1661,8 @@ public class CachedStore implements RawStore, Configurable {
     int count = 0;
     for (Partition part : sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts)) {
       if (maxParts == -1 || count < maxParts) {
-        partitionNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues()));
+        partitionNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues(), tbl.getParameters(),
+            rawStore.getConf()));
       }
     }
     return partitionNames;
@@ -1723,10 +1727,11 @@ public class CachedStore implements RawStore, Configurable {
         StringUtils.normalizeIdentifier(table.getDbName()), StringUtils.normalizeIdentifier(table.getTableName()),
         maxParts);
     for (Partition part : parts) {
-      result.add(Warehouse.makePartName(table.getPartitionKeys(), part.getValues()));
+      result.add(Warehouse.makePartName(table.getPartitionKeys(), part.getValues(), table.getParameters(),
+          rawStore.getConf()));
     }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
-      defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+      defaultPartName = getDefaultPartitionName(table.getParameters(), getConf());
     }
     return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr, defaultPartName, result);
   }
@@ -1785,13 +1790,13 @@ public class CachedStore implements RawStore, Configurable {
     if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
       return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
     }
-    String defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
     List<String> partNames = new LinkedList<>();
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null) {
       // The table is not yet loaded in cache
       return rawStore.getNumPartitionsByExpr(catName, dbName, tblName, expr);
     }
+    String defaultPartName = getDefaultPartitionName(table.getParameters(), getConf());
     getPartitionNamesPrunedByExprNoTxn(table, expr, defaultPartName, Short.MAX_VALUE, partNames, sharedCache);
     return partNames.size();
   }
@@ -1985,7 +1990,8 @@ public class CachedStore implements RawStore, Configurable {
     }
     Partition p = sharedCache.getPartitionFromCache(catName, dbName, tblName, partVals);
     if (p != null) {
-      String partName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
+      String partName = Warehouse.makePartName(table.getPartitionKeys(), partVals, table.getParameters(),
+          rawStore.getConf());
       PrincipalPrivilegeSet privs = getPartitionPrivilegeSet(catName, dbName, tblName, partName, userName, groupNames);
       p.setPrivileges(privs);
     } else {
@@ -2012,7 +2018,8 @@ public class CachedStore implements RawStore, Configurable {
     List<Partition> allPartitions = sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts);
     int count = 0;
     for (Partition part : allPartitions) {
-      String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(), table.getParameters(),
+          rawStore.getConf());
       if (partName.matches(partNameMatcher) && (maxParts == -1 || count < maxParts)) {
         partitionNames.add(partName);
         count++;
@@ -2049,7 +2056,8 @@ public class CachedStore implements RawStore, Configurable {
     List<Partition> allPartitions = sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts);
     int count = 0;
     for (Partition part : allPartitions) {
-      String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(), table.getParameters(),
+          rawStore.getConf());
       if ((partNameMatcher == null || partName.matches(partNameMatcher)) && (maxParts == -1 || count < maxParts)) {
         PrincipalPrivilegeSet privs =
             getPartitionPrivilegeSet(catName, dbName, tblName, partName, args.getUserName(), args.getGroupNames());
@@ -2074,7 +2082,7 @@ public class CachedStore implements RawStore, Configurable {
     // or a regex of the form ".*"
     // This works because the "=" and "/" separating key names and partition key/values
     // are not escaped.
-    String partNameMatcher = Warehouse.makePartName(partCols, partSpecs, ".*");
+    String partNameMatcher = Warehouse.makePartName(partCols, partSpecs, ".*", table.getParameters(), conf);
     // add ".*" to the regex to match anything else afterwards the partial spec.
     if (partSpecs.size() < numPartKeys) {
       partNameMatcher += ".*";
@@ -2434,7 +2442,7 @@ public class CachedStore implements RawStore, Configurable {
       }
       type = StatsType.ALL;
     } else if (partNames.size() == (allPartNames.size() - 1)) {
-      String defaultPartitionName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+      String defaultPartitionName = getDefaultPartitionName(table.getParameters(), getConf());
       if (!partNames.contains(defaultPartitionName)) {
         colStats = sharedCache.getAggrStatsFromCache(catName, dbName, tblName, colNames, StatsType.ALLBUTDEFAULT);
         if (colStats != null) {

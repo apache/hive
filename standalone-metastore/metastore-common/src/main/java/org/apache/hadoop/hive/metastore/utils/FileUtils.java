@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -288,8 +289,8 @@ public class FileUtils {
     return c < charToEscape.size() && charToEscape.get(c);
   }
 
-  public static String escapePathName(String path) {
-    return escapePathName(path, null);
+  public static String escapePathName(String path, String defaultPartitionName) {
+    return escapePathName(path, null, defaultPartitionName);
   }
 
   /**
@@ -299,15 +300,15 @@ public class FileUtils {
    *          The default name for the path, if the given path is empty or null.
    * @return An escaped path name.
    */
-  public static String escapePathName(String path, String defaultPath) {
+  public static String escapePathName(String path, String defaultPath, String defaultPartitionName) {
 
     // __HIVE_DEFAULT_NULL__ is the system default value for null and empty string.
     // TODO: we should allow user to specify default partition or HDFS file location.
     if (path == null || path.length() == 0) {
       if (defaultPath == null) {
         //previously, when path is empty or null and no default path is specified,
-        // __HIVE_DEFAULT_PARTITION__ was the return value for escapePathName
-        return "__HIVE_DEFAULT_PARTITION__";
+        // defaultPartitionName was the return value for escapePathName
+        return defaultPartitionName;
       } else {
         return defaultPath;
       }
@@ -435,8 +436,8 @@ public class FileUtils {
     }
   }
 
-  public static String makePartName(List<String> partCols, List<String> vals) {
-    return makePartName(partCols, vals, null);
+  public static String makePartName(List<String> partCols, List<String> vals, String defaultPartitionName) {
+    return makePartName(partCols, vals, null, defaultPartitionName);
   }
 
   /**
@@ -448,15 +449,15 @@ public class FileUtils {
    * @return An escaped, valid partition name.
    */
   public static String makePartName(List<String> partCols, List<String> vals,
-                                    String defaultStr) {
+      String defaultStr, String defaultPartitionName) {
     StringBuilder name = new StringBuilder();
     for (int i = 0; i < partCols.size(); i++) {
       if (i > 0) {
         name.append(Path.SEPARATOR);
       }
-      name.append(escapePathName((partCols.get(i)).toLowerCase(), defaultStr));
+      name.append(escapePathName((partCols.get(i)).toLowerCase(), defaultStr, defaultPartitionName));
       name.append('=');
-      name.append(escapePathName(vals.get(i), defaultStr));
+      name.append(escapePathName(vals.get(i), defaultStr, defaultPartitionName));
     }
     return name.toString();
   }

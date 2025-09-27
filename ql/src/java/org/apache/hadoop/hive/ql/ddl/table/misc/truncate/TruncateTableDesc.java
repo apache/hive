@@ -76,6 +76,10 @@ public class TruncateTableDesc implements DDLDescWithWriteId, Serializable {
     return tableName.getNotEmptyDbTable();
   }
 
+  public TableName getTableNameObject() {
+    return tableName;
+  }
+
   @Override
   public String getFullTableName() {
     return tableName.getNotEmptyDbTable();

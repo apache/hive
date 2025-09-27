@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc.commands;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
@@ -24,6 +25,7 @@ import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class AddWriteIdsToTxnToWriteIdCommand implements ParameterizedBatchCommand<Object[]> {
@@ -46,7 +48,7 @@ public class AddWriteIdsToTxnToWriteIdCommand implements ParameterizedBatchComma
   }
 
   @Override
-  public List<Object[]> getQueryParameters() {
+  public List<Object[]> getQueryParameters(Configuration conf) {
     return params;
   }
 

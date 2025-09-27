@@ -73,7 +73,8 @@ public class ReloadEvent extends ListenerEvent {
                 this.ptns = new ArrayList<>();
                 List<String> part_names = new ArrayList<>();
                 for(List<String> partVal : partVals) {
-                    part_names.add(Warehouse.makePartName(this.tableObj.getPartitionKeys(), partVal));
+                    part_names.add(Warehouse.makePartName(this.tableObj.getPartitionKeys(), partVal,
+                        this.tableObj.getParameters(), handler.getConf()));
                 }
                 GetPartitionsByNamesRequest partitionsReq = new GetPartitionsByNamesRequest(
                     MetaStoreUtils.prependNotNullCatToDbName(catName, db), table);

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -123,9 +124,10 @@ public class FSTableEvent implements TableEvent {
       throws SemanticException {
     List<AlterTableAddPartitionDesc> descs = new ArrayList<>();
     //TODO: if partitions are loaded lazily via the iterator then we will have to avoid conversion of everything here as it defeats the purpose.
+    Map<String, String> tableParams = metadata.getTable().getParameters();
     for (Partition partition : metadata.getPartitions()) {
       // TODO: this should ideally not create AddPartitionDesc per partition
-      AlterTableAddPartitionDesc partsDesc = addPartitionDesc(fromPathMetadata, tblDesc, partition);
+      AlterTableAddPartitionDesc partsDesc = addPartitionDesc(fromPathMetadata, tblDesc, partition, tableParams);
       descs.add(partsDesc);
     }
     return descs;
@@ -137,7 +139,8 @@ public class FSTableEvent implements TableEvent {
     List<String> partitions = new ArrayList<>();
     try {
       for (Partition partition : metadata.getPartitions()) {
-        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues());
+        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(), tblDesc.getTblProps(),
+            hiveConf);
         partitions.add(partName);
       }
     } catch (MetaException e) {
@@ -146,8 +149,8 @@ public class FSTableEvent implements TableEvent {
     return partitions;
   }
 
-  private AlterTableAddPartitionDesc addPartitionDesc(Path fromPath, ImportTableDesc tblDesc, Partition partition)
-      throws SemanticException {
+  private AlterTableAddPartitionDesc addPartitionDesc(Path fromPath, ImportTableDesc tblDesc, Partition partition,
+      Map<String, String> tableParams) throws SemanticException {
     try {
       Map<String, String> partitionSpec = EximUtil.makePartSpec(tblDesc.getPartCols(), partition.getValues());
 
@@ -158,7 +161,9 @@ public class FSTableEvent implements TableEvent {
          * this is required for file listing of all files in a partition for managed table as described in
          * {@link org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator}
          */
-        location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString();
+        location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(),
+            tableParams, hiveConf)).
+            toString();
       }
 
       ColumnStatistics columnStatistics = null;

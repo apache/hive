@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.thrift.TException;
@@ -108,7 +109,8 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     try {
       if (conn.isPartitionedTable() && !conn.isDynamicPartitioning()) {
         List<FieldSchema> partKeys = conn.getTable().getPartitionKeys();
-        partNameForLock = Warehouse.makePartName(partKeys, conn.getStaticPartitionValues());
+        partNameForLock = Warehouse.makePartName(partKeys, conn.getStaticPartitionValues(),
+            conn.getTable().getParameters(), conn.getConf());
       }
       this.conn = conn;
       this.username = conn.getUsername();
@@ -445,6 +447,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
         .setDbName(conn.getDatabase())
         .setTableName(conn.getTable().getTableName())
+        .setDefaultPartitionName(PartitionUtils.getDefaultPartitionName(conn.getTable().getParameters(), conn.getConf()))
         .setSharedRead()
         .setOperationType(DataOperationType.INSERT);
 

@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.metastore.txn.entities.CompactionState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
@@ -2934,6 +2935,7 @@ public class AcidUtils {
           }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
+          compBuilder.setDefaultPartitionName(PartitionUtils.getDefaultPartitionName(t.getParameters(), conf));
           break;
 
         case PARTITION:
@@ -2945,6 +2947,7 @@ public class AcidUtils {
           }
           compBuilder.setDbName(t.getDbName());
           compBuilder.setTableName(t.getTableName());
+          compBuilder.setDefaultPartitionName(PartitionUtils.getDefaultPartitionName(t.getParameters(), conf));
           break;
 
         default:
@@ -2993,6 +2996,7 @@ public class AcidUtils {
         t = output.getTable();
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
+        compBuilder.setDefaultPartitionName(PartitionUtils.getDefaultPartitionName(t.getParameters(), conf));
         break;
 
       case PARTITION:
@@ -3000,6 +3004,7 @@ public class AcidUtils {
         t = output.getPartition().getTable();
         compBuilder.setDbName(t.getDbName());
         compBuilder.setTableName(t.getTableName());
+        compBuilder.setDefaultPartitionName(PartitionUtils.getDefaultPartitionName(t.getParameters(), conf));
         break;
 
       default:
@@ -3417,11 +3422,12 @@ public class AcidUtils {
     }
   }
 
-  public static String getPartitionName(Map<String, String> partitionSpec) throws SemanticException {
+  public static String getPartitionName(Map<String, String> partitionSpec, Map<String, String> tableParams,
+      Configuration conf) throws SemanticException {
     String partitionName = null;
     if (partitionSpec != null) {
       try {
-        partitionName = Warehouse.makePartName(partitionSpec, false);
+        partitionName = Warehouse.makePartName(partitionSpec, false, tableParams, conf);
       } catch (MetaException e) {
         throw new SemanticException("partition " + partitionSpec.toString() + " not found");
       }

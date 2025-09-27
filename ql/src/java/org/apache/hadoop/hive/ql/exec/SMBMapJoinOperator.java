@@ -259,7 +259,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
         for (Map.Entry<String, MergeQueue> entry : aliasToMergeQueue.entrySet()) {
           String alias = entry.getKey();
           MergeQueue mergeQueue = entry.getValue();
-          setUpFetchContexts(alias, mergeQueue);
+          setUpFetchContexts(alias, mergeQueue, hconf);
         }
         firstFetchHappened = false;
         inputFileChanged = false;
@@ -524,7 +524,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
   }
 
-  private void setUpFetchContexts(String alias, MergeQueue mergeQueue) throws HiveException {
+  private void setUpFetchContexts(String alias, MergeQueue mergeQueue, Configuration conf) throws HiveException {
     mergeQueue.clearFetchContext();
 
     Path currentInputPath = getExecContext().getCurrentInputPath();
@@ -533,7 +533,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt.getBucketMatcherClass();
     BucketMatcher bucketMatcher = ReflectionUtil.newInstance(bucketMatcherCls, null);
 
-    getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString()));
+    getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString(), conf));
     LOG.info("set task id: " + getExecContext().getFileId());
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
@@ -600,7 +600,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       for (Map.Entry<String, MergeQueue> entry : aliasToMergeQueue.entrySet()) {
         String alias = entry.getKey();
         MergeQueue mergeQueue = entry.getValue();
-        setUpFetchContexts(alias, mergeQueue);
+        setUpFetchContexts(alias, mergeQueue, hconf);
       }
       firstFetchHappened = true;
       for (byte pos = 0; pos < order.length; pos++) {

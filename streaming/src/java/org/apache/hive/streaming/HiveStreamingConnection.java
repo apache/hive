@@ -443,10 +443,12 @@ public class HiveStreamingConnection implements StreamingConnection {
     try {
       Map<String, String> partSpec = Warehouse.makeSpecFromValues(tableObject.getPartitionKeys(), partitionValues);
 
-      Path location = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec));
+      Path location = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec,
+          tableObject.getParameters(), conf));
       location = new Path(Utilities.getQualifiedPath(conf, location));
       partLocation = location.toString();
-      partName = Warehouse.makePartName(tableObject.getPartitionKeys(), partitionValues);
+      partName = Warehouse.makePartName(tableObject.getPartitionKeys(), partitionValues, tableObject.getParameters(),
+          conf);
       Partition partition =
           org.apache.hadoop.hive.ql.metadata.Partition.createMetaPartitionObject(tableObject, partSpec, location);
 
