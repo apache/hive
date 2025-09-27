@@ -18,10 +18,15 @@
 #
 import sys
 
-for i in xrange(50):
-   for j in xrange(5):
-      for k in xrange(20022):      
-         print 20000 * i + k
+try:
+  range
+except NameError:
+  range=xrange
+
+for i in range(50):
+   for j in range(5):
+      for k in range(20022):
+         print(20000 * i + k)
 
 for line in sys.stdin:
   pass

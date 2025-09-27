@@ -140,16 +140,16 @@ else:
 
 
 if debug == 1:
-  print "Would run:"
-  print "exec " + str(cmd)
-  print " with HADOOP_CLASSPATH set to %s" % (os.environ['HADOOP_CLASSPATH'])
+  print("Would run:")
+  print("exec " + str(cmd))
+  print(" with HADOOP_CLASSPATH set to %s" % (os.environ['HADOOP_CLASSPATH']))
   try:
-    print " and HADOOP_OPTS set to %s" % (os.environ['HADOOP_OPTS'])
+    print(" and HADOOP_OPTS set to %s" % (os.environ['HADOOP_OPTS']))
   except:
     pass
 else:
   if dumpClasspath == 1:
-    print os.environ['HADOOP_CLASSPATH']
+    print(os.environ['HADOOP_CLASSPATH'])
   else:
     if os.name == "posix":
       retval = subprocess.call(cmd)
