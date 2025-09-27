@@ -222,7 +222,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -668,7 +667,9 @@ public class Hive implements AutoCloseable {
   public void createDatabase(Database db, boolean ifNotExist)
       throws AlreadyExistsException, HiveException {
     try {
-      db.setCatalogName(Objects.requireNonNullElse(db.getCatalogName(), SessionState.get().getCurrentCatalog()));
+      if (db.getCatalogName() == null) {
+        db.setCatalogName(HiveUtils.getCurrentCatalogOrDefault(conf));
+      }
       getMSC().createDatabase(db);
     } catch (AlreadyExistsException e) {
       if (!ifNotExist) {
@@ -737,7 +738,7 @@ public class Hive implements AutoCloseable {
       .map(HiveTxnManager::getCurrentTxnId).orElse(0L);
     
     DropDatabaseRequest req = new DropDatabaseRequest();
-    req.setCatalogName(Objects.requireNonNullElse(desc.getCatalogName(), SessionState.get().getCurrentCatalog()));
+    req.setCatalogName(Optional.ofNullable(desc.getCatalogName()).orElse(HiveUtils.getCurrentCatalogOrDefault(conf)));
     req.setName(desc.getDatabaseName());
     req.setIgnoreUnknownDb(desc.getIfExists());
     req.setDeleteData(desc.isDeleteData());
@@ -1430,7 +1431,9 @@ public class Hive implements AutoCloseable {
   }
 
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
-    tbl.setCatalogName(Objects.requireNonNullElse(tbl.getCatName(), SessionState.get().getCurrentCatalog()));
+    if (tbl.getCatalogName() == null) {
+      tbl.setCatalogName(HiveUtils.getCurrentCatalogOrDefault(conf));
+    }
     createTable(tbl, ifNotExists, null, null, null, null,
                null, null);
  }
@@ -1466,7 +1469,9 @@ public class Hive implements AutoCloseable {
     long txnId = Optional.ofNullable(SessionState.get())
       .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
     table.getTTable().setTxnId(txnId);
-    table.setCatalogName(Objects.requireNonNullElse(table.getCatName(), SessionState.get().getCurrentCatalog()));
+    if (table.getCatName() == null) {
+      table.setCatalogName(HiveUtils.getCurrentCatalogOrDefault(conf));
+    }
 
     dropTable(table.getTTable(), !tableWithSuffix, true, ifPurge);
   }
@@ -2003,15 +2008,15 @@ public class Hive implements AutoCloseable {
       List<String> result;
       if (type != null) {
         if (pattern != null) {
-          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, pattern, type);
+          result = getMSC().getTables(dbName, pattern, type);
         } else {
-          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, ".*", type);
+          result = getMSC().getTables(dbName, ".*", type);
         }
       } else {
         if (pattern != null) {
-          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, pattern);
+          result = getMSC().getTables(dbName, pattern);
         } else {
-          result = getMSC().getTables(SessionState.get().getCurrentCatalog(), dbName, ".*");
+          result = getMSC().getTables(dbName, ".*");
         }
       }
       return result;
@@ -2038,7 +2043,7 @@ public class Hive implements AutoCloseable {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
 
     if (catName == null) {
-      catName = SessionState.get().getCurrentCatalog();
+      catName = HiveUtils.getCurrentCatalogOrDefault(conf);
     }
 
     if (dbName == null) {
@@ -2516,7 +2521,7 @@ public class Hive implements AutoCloseable {
    */
   public List<String> getAllDatabases() throws HiveException {
     try {
-      return getMSC().getAllDatabases(SessionState.get().getCurrentCatalog());
+      return getMSC().getAllDatabases(HiveUtils.getCurrentCatalogOrDefault(conf));
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -2657,7 +2662,9 @@ public class Hive implements AutoCloseable {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2);
     try {
-      catName = Objects.requireNonNullElse(catName, SessionState.get().getCurrentCatalog());
+      if (catName == null) {
+        catName = HiveUtils.getCurrentCatalogOrDefault(conf);
+      }
       return getMSC().getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) {
       return null;
@@ -6553,7 +6560,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       GetFunctionsRequest request = new GetFunctionsRequest(dbName);
       request.setPattern(pattern);
-      request.setCatalogName(Objects.requireNonNullElse(catName, SessionState.get().getCurrentCatalog()));
+      request.setCatalogName(Optional.ofNullable(catName).orElse(HiveUtils.getCurrentCatalogOrDefault(conf)));
       request.setReturnNames(false);
       return getMSC().getFunctionsRequest(request).getFunctions();
     } catch (TException te) {
