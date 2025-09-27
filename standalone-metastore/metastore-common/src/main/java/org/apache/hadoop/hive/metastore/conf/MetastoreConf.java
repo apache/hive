@@ -1824,6 +1824,12 @@ public class MetastoreConf {
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
+    HIVE_METACONF_OVERLAY(
+        "hive.metastore.conf.overlay",
+        "hive.metastore.conf.overlay",
+        "fs.s3a.endpoint, fs.s3a.security.credential.provider.path",
+        "The list of configurations that needs to be overlayed to HiveMetasStore on client connection"),
+
     // External RDBMS support
     USE_CUSTOM_RDBMS("metastore.use.custom.database.product",
         "hive.metastore.use.custom.database.product", false,
