@@ -192,24 +192,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
 #Masked#	2023-07-20 00:00:00.0 US/Pacific	AAA_1
-#Masked#0	2024-07-21 00:00:00.0 US/Pacific	AAA_2
-#Masked#1	2024-08-22 00:00:00.0 US/Pacific	AAA_1
-#Masked#2	2024-08-23 00:00:00.0 US/Pacific	AAA_2
-#Masked#3	2024-08-24 00:00:00.0 US/Pacific	AAA_1
-#Masked#4	2024-08-25 00:00:00.0 US/Pacific	AAA_2
-#Masked#5	2024-09-24 00:00:00.0 US/Pacific	AAA_1
-#Masked#6	2024-09-25 00:00:00.0 US/Pacific	AAA_2
-#Masked#7	2024-07-01 00:00:00.0 US/Pacific	BBB_1
-#Masked#8	2024-07-02 00:00:00.0 US/Pacific	BBB_2
-#Masked#9	2024-07-03 00:00:00.0 US/Pacific	BBB_1
 #Masked#	2023-07-21 00:00:00.0 US/Pacific	AAA_2
-#Masked#0	2024-07-04 00:00:00.0 US/Pacific	BBB_2
-#Masked#1	2024-08-03 00:00:00.0 US/Pacific	BBB_1
-#Masked#2	2024-08-04 00:00:00.0 US/Pacific	BBB_2
-#Masked#3	2024-08-05 00:00:00.0 US/Pacific	BBB_1
-#Masked#4	2024-08-06 00:00:00.0 US/Pacific	BBB_2
-#Masked#5	2024-09-05 00:00:00.0 US/Pacific	BBB_1
-#Masked#6	2024-09-06 00:00:00.0 US/Pacific	BBB_2
 #Masked#	2023-07-23 00:00:00.0 US/Pacific	AAA_1
 #Masked#	2023-07-24 00:00:00.0 US/Pacific	AAA_2
 #Masked#	2023-08-04 00:00:00.0 US/Pacific	BBB_1
@@ -217,6 +200,23 @@ POSTHOOK: Input: default@ice_orc
 #Masked#	2023-08-06 00:00:00.0 US/Pacific	BBB_1
 #Masked#	2023-08-27 00:00:00.0 US/Pacific	BBB_2
 #Masked#	2024-07-20 00:00:00.0 US/Pacific	AAA_1
+#Masked#0	2024-07-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#0	2024-07-21 00:00:00.0 US/Pacific	AAA_2
+#Masked#1	2024-08-03 00:00:00.0 US/Pacific	BBB_1
+#Masked#1	2024-08-22 00:00:00.0 US/Pacific	AAA_1
+#Masked#2	2024-08-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#2	2024-08-23 00:00:00.0 US/Pacific	AAA_2
+#Masked#3	2024-08-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#3	2024-08-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#4	2024-08-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#4	2024-08-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#5	2024-09-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#5	2024-09-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#6	2024-09-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#6	2024-09-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#7	2024-07-01 00:00:00.0 US/Pacific	BBB_1
+#Masked#8	2024-07-02 00:00:00.0 US/Pacific	BBB_2
+#Masked#9	2024-07-03 00:00:00.0 US/Pacific	BBB_1
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_orc
@@ -297,24 +297,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 #### A masked pattern was here ####
 #Masked#	2023-07-20 00:00:00.0 US/Pacific	AAA_1
-#Masked#0	2024-07-21 00:00:00.0 US/Pacific	AAA_2
-#Masked#1	2024-08-22 00:00:00.0 US/Pacific	AAA_1
-#Masked#2	2024-08-23 00:00:00.0 US/Pacific	AAA_2
-#Masked#3	2024-08-24 00:00:00.0 US/Pacific	AAA_1
-#Masked#4	2024-08-25 00:00:00.0 US/Pacific	AAA_2
-#Masked#5	2024-09-24 00:00:00.0 US/Pacific	AAA_1
-#Masked#6	2024-09-25 00:00:00.0 US/Pacific	AAA_2
-#Masked#7	2024-07-01 00:00:00.0 US/Pacific	BBB_1
-#Masked#8	2024-07-02 00:00:00.0 US/Pacific	BBB_2
-#Masked#9	2024-07-03 00:00:00.0 US/Pacific	BBB_1
 #Masked#	2023-07-21 00:00:00.0 US/Pacific	AAA_2
-#Masked#0	2024-07-04 00:00:00.0 US/Pacific	BBB_2
-#Masked#1	2024-08-03 00:00:00.0 US/Pacific	BBB_1
-#Masked#2	2024-08-04 00:00:00.0 US/Pacific	BBB_2
-#Masked#3	2024-08-05 00:00:00.0 US/Pacific	BBB_1
-#Masked#4	2024-08-06 00:00:00.0 US/Pacific	BBB_2
-#Masked#5	2024-09-05 00:00:00.0 US/Pacific	BBB_1
-#Masked#6	2024-09-06 00:00:00.0 US/Pacific	BBB_2
 #Masked#	2023-07-23 00:00:00.0 US/Pacific	AAA_1
 #Masked#	2023-07-24 00:00:00.0 US/Pacific	AAA_2
 #Masked#	2023-08-04 00:00:00.0 US/Pacific	BBB_1
@@ -322,6 +305,23 @@ POSTHOOK: Input: default@ice_orc
 #Masked#	2023-08-06 00:00:00.0 US/Pacific	BBB_1
 #Masked#	2023-08-27 00:00:00.0 US/Pacific	BBB_2
 #Masked#	2024-07-20 00:00:00.0 US/Pacific	AAA_1
+#Masked#0	2024-07-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#0	2024-07-21 00:00:00.0 US/Pacific	AAA_2
+#Masked#1	2024-08-03 00:00:00.0 US/Pacific	BBB_1
+#Masked#1	2024-08-22 00:00:00.0 US/Pacific	AAA_1
+#Masked#2	2024-08-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#2	2024-08-23 00:00:00.0 US/Pacific	AAA_2
+#Masked#3	2024-08-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#3	2024-08-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#4	2024-08-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#4	2024-08-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#5	2024-09-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#5	2024-09-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#6	2024-09-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#6	2024-09-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#7	2024-07-01 00:00:00.0 US/Pacific	BBB_1
+#Masked#8	2024-07-02 00:00:00.0 US/Pacific	BBB_2
+#Masked#9	2024-07-03 00:00:00.0 US/Pacific	BBB_1
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_orc

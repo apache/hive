@@ -19,59 +19,57 @@
 package org.apache.hadoop.hive.common.io;
 
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.function.UnaryOperator;
 
-public abstract class FetchConverter extends SessionStream implements FetchListener {
+/**
+ * Applies a function to the processed lines, before passing it to the wrapped output stream.
+ */
+public class TransformingFetchConverter extends SessionStream implements FetchListener {
 
-  protected volatile boolean queryfound;
-  protected volatile boolean fetchStarted;
+  private final UnaryOperator<String> transformation;
 
-  public FetchConverter(OutputStream out, boolean autoFlush, String encoding)
+  private final PrintStream inner;
+  private final boolean innerIsFetchConverter;
+
+  public TransformingFetchConverter(OutputStream out, boolean autoFlush, String encoding, UnaryOperator<String> transformation)
       throws UnsupportedEncodingException {
     super(out, autoFlush, encoding);
-  }
-
-  public void foundQuery(boolean queryfound) {
-    this.queryfound = queryfound;
-  }
-
-  public void fetchStarted() {
-    fetchStarted = true;
+    inner = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out);
+    innerIsFetchConverter = out instanceof FetchListener;
+    this.transformation = transformation;
   }
 
   @Override
-  public void println(String out) {
-    if (byPass()) {
-      printDirect(out);
-    } else {
-      process(out);
+  public void foundQuery(boolean queryfound) {
+    if(innerIsFetchConverter) {
+      ((FetchListener)inner).foundQuery(queryfound);
     }
   }
 
-  protected final void printDirect(String out) {
-    super.println(out);
+  @Override
+  public void fetchStarted() {
+    if(innerIsFetchConverter) {
+      ((FetchListener)inner).fetchStarted();
+    }
   }
 
-  protected final boolean byPass() {
-    return !queryfound || !fetchStarted;
+  public void println(String str) {
+    inner.println(transformation.apply(str));
   }
-
-  protected abstract void process(String out);
-
-  protected abstract void processFinal();
 
   @Override
   public void flush() {
-    if (byPass()) {
-      super.flush();
-    }
+    super.flush();
   }
 
+  @Override
   public void fetchFinished() {
-    if (!byPass()) {
-      processFinal();
+    if(innerIsFetchConverter) {
+      ((FetchListener)inner).fetchFinished();
     }
     super.flush();
-    fetchStarted = false;
   }
 }
+

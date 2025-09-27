@@ -1,6 +1,6 @@
 --! qt:dataset:src
 set hive.stats.column.autogather=false;
---SORT_QUERY_RESULTS
+-- SORT_QUERY_RESULTS
 
 -- Java JCE must be installed in order to hava a key length of 256 bits
 DROP TABLE IF EXISTS table_key_1 PURGE;
