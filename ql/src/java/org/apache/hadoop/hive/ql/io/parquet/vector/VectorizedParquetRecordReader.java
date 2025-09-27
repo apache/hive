@@ -519,20 +519,18 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     int depth) throws IOException {
     List<ColumnDescriptor> descriptors =
       getAllColumnDescriptorByType(depth, type, columnDescriptors);
+    if (!fileSchema.getColumns().contains(descriptors.get(0))) {
+      return new VectorizedDummyColumnReader();
+    }
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {
         throw new RuntimeException(
           "Failed to find related Parquet column descriptor with type " + type);
       }
-      if (fileSchema.getColumns().contains(descriptors.get(0))) {
         return new VectorizedPrimitiveColumnReader(descriptors.get(0),
             pages.getPageReader(descriptors.get(0)), skipTimestampConversion, writerTimezone, skipProlepticConversion,
             legacyConversionEnabled, type, typeInfo);
-      } else {
-        // Support for schema evolution
-        return new VectorizedDummyColumnReader();
-      }
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
       List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
