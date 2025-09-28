@@ -49,3 +49,6 @@ DESC CATALOG EXTENDED test_cat;
 -- ALTER PROPERTIES.
 -- TODO catalog. Check the catalog's properties after we implement 'desc formatted' or 'show create catalog'.
 ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2');
+
+-- DROP catalog at the end
+DROP CATALOG  test_cat;

@@ -46,3 +46,12 @@ DROP DATABASE testcat.testdb_1;
 -- The list of databases in the catalog 'testcat' should contain default and testdb_2.
 SHOW DATABASES;
 
+
+-- DROP CATALOG at the end. Need to drop all non-default databases first.
+DROP DATABASE testcat.testdb_2;
+DROP CATALOG testcat;
+
+-- Switch back to the clean default hive catalog at the end.
+DROP DATABASE hive.testdb;
+SET CATALOG hive;
+

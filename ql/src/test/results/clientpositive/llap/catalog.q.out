@@ -121,4 +121,11 @@ PREHOOK: type: ALTERCATALOG_PROPERTIES
 PREHOOK: Output: catalog:test_cat
 POSTHOOK: query: ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2')
 POSTHOOK: type: ALTERCATALOG_PROPERTIES
+PREHOOK: query: DROP CATALOG  test_cat
+PREHOOK: type: DROPCATALOG
+PREHOOK: Input: catalog:test_cat
+PREHOOK: Output: catalog:test_cat
+POSTHOOK: query: DROP CATALOG  test_cat
+POSTHOOK: type: DROPCATALOG
+POSTHOOK: Input: catalog:test_cat
 POSTHOOK: Output: catalog:test_cat
