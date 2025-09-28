@@ -98,3 +98,33 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 testdb_2
+PREHOOK: query: DROP DATABASE testcat.testdb_2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb_2
+PREHOOK: Output: database:testdb_2
+POSTHOOK: query: DROP DATABASE testcat.testdb_2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb_2
+POSTHOOK: Output: database:testdb_2
+PREHOOK: query: DROP CATALOG testcat
+PREHOOK: type: DROPCATALOG
+PREHOOK: Input: catalog:testcat
+PREHOOK: Output: catalog:testcat
+POSTHOOK: query: DROP CATALOG testcat
+POSTHOOK: type: DROPCATALOG
+POSTHOOK: Input: catalog:testcat
+POSTHOOK: Output: catalog:testcat
+PREHOOK: query: DROP DATABASE hive.testdb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb
+PREHOOK: Output: database:testdb
+POSTHOOK: query: DROP DATABASE hive.testdb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb
+POSTHOOK: Output: database:testdb
+PREHOOK: query: SET CATALOG hive
+PREHOOK: type: SWITCHCATALOG
+PREHOOK: Input: catalog:hive
+POSTHOOK: query: SET CATALOG hive
+POSTHOOK: type: SWITCHCATALOG
+POSTHOOK: Input: catalog:hive
