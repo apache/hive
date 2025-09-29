@@ -98,6 +98,20 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 testdb_2
+PREHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:testdb_2
+testcat	testdb_2		location/in/test		hive_test_user	USER		
+PREHOOK: query: DESCRIBE DATABASE EXTENDED testcat.testdb_2
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: DESCRIBE DATABASE EXTENDED testcat.testdb_2
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:testdb_2
+testcat	testdb_2		location/in/test		hive_test_user	USER		
 PREHOOK: query: DROP DATABASE testcat.testdb_2
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:testdb_2
