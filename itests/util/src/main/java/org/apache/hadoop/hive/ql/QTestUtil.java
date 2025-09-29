@@ -52,11 +52,11 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.SessionStream;
+import org.apache.hadoop.hive.common.io.TransformingFetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
@@ -314,7 +314,7 @@ public class QTestUtil {
     inputFile = qf;
     inputContent = query;
     qOutProcessor.initMasks(query);
-    qTestResultProcessor.init(query, qOutProcessor);
+    qTestResultProcessor.init(query);
   }
 
   public final File getInputFile() {
@@ -658,9 +658,23 @@ public class QTestUtil {
 
     qTestResultProcessor.setOutputs(ss, fo);
 
+    ss.out = new TransformingFetchConverter(ss.out, false, "UTF-8", line -> {
+      notifyOutputLine(line);
+      if(qOutProcessor != null) {
+        // ensure that the masking is done before the sorting of the query results
+        return qOutProcessor.processLine(line).get();
+      }
+      return line;
+    });
+
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
     ss.setIsQtestLogging(true);
+  }
+
+  /** Lets the implementor know that a new line has been produced in the output */
+  protected void notifyOutputLine(String line) {
+    // by default do nothing
   }
 
   public CliSessionState startSessionState(boolean canReuseSession) throws IOException {

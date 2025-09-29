@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.io.DigestPrintStream;
-import org.apache.hadoop.hive.common.io.TransformingFetchConverter;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
@@ -47,7 +46,6 @@ import org.apache.hive.common.util.StreamPrinter;
  */
 public class QTestResultProcessor {
   private static final String SORT_SUFFIX = ".sorted";
-  private QOutProcessor qOutProcessor;
 
   private enum Operation {
     /***/
@@ -76,8 +74,7 @@ public class QTestResultProcessor {
    */
   private final Set<Operation> operations = new HashSet<>();
 
-  public void init(String query, QOutProcessor qOutProcessor) {
-    this.qOutProcessor = qOutProcessor;
+  public void init(String query) {
     operations.clear();
     for (Operation op : Operation.values()) {
       if (op.existsIn(query)) {
@@ -96,21 +93,16 @@ public class QTestResultProcessor {
     // specified below. This ensures the behavior remains the same as before this
     // refactoring.
     // It would be better to throw an error than silently pick one and ignore the
-    // rest but it is out of the scope of the current change.
-    SessionStream printStream;
+    // rest but it is out of the scope of the current change. 
     if (operations.contains(Operation.SORT)) {
-      printStream = new SortPrintStream(fo, "UTF-8");
+      ss.out = new SortPrintStream(fo, "UTF-8");
     } else if (operations.contains(Operation.HASH)) {
-      printStream = new DigestPrintStream(fo, "UTF-8");
+      ss.out = new DigestPrintStream(fo, "UTF-8");
     } else if (operations.contains(Operation.SORT_N_HASH)) {
-      printStream = new SortAndDigestPrintStream(fo, "UTF-8");
+      ss.out = new SortAndDigestPrintStream(fo, "UTF-8");
     } else {
-      printStream = new SessionStream(fo, true, "UTF-8");
+      ss.out = new SessionStream(fo, true, "UTF-8");
     }
-    if (qOutProcessor != null) {
-      printStream = new TransformingFetchConverter(printStream, false, "UTF-8", line -> qOutProcessor.processLine(line).get());
-    }
-    ss.out = printStream;
   }
 
   public boolean canReuseSession() {

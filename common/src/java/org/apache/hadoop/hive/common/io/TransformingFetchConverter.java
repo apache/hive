@@ -41,6 +41,10 @@ public class TransformingFetchConverter extends SessionStream implements FetchLi
     this.transformation = transformation;
   }
 
+  public void println(String str) {
+    inner.println(transformation.apply(str));
+  }
+
   @Override
   public void foundQuery(boolean queryfound) {
     if(innerIsFetchConverter) {
@@ -53,10 +57,6 @@ public class TransformingFetchConverter extends SessionStream implements FetchLi
     if(innerIsFetchConverter) {
       ((FetchListener)inner).fetchStarted();
     }
-  }
-
-  public void println(String str) {
-    inner.println(transformation.apply(str));
   }
 
   @Override
