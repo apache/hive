@@ -519,6 +519,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     int depth) throws IOException {
     List<ColumnDescriptor> descriptors =
       getAllColumnDescriptorByType(depth, type, columnDescriptors);
+    // Support for schema evolution
     if (!fileSchema.getColumns().contains(descriptors.get(0))) {
       return new VectorizedDummyColumnReader();
     }
