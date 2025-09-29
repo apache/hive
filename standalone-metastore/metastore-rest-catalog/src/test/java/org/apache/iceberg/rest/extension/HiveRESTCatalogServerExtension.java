@@ -43,8 +43,8 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
   private final JwksServer jwksServer;
   private final RESTCatalogServer restCatalogServer;
 
-  private HiveRESTCatalogServerExtension(AuthType authType, Class<? extends MetaStoreSchemaInfo> schemaInfoClass) {
-    this.conf = MetastoreConf.newMetastoreConf();
+  private HiveRESTCatalogServerExtension(AuthType authType, Configuration configuration, Class<? extends MetaStoreSchemaInfo> schemaInfoClass) {
+    this.conf = configuration == null ? MetastoreConf.newMetastoreConf() : configuration;
     MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, authType.name());
     if (authType == AuthType.JWT) {
       jwksServer = new JwksServer();
@@ -58,10 +58,6 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     if (schemaInfoClass != null) {
       restCatalogServer.setSchemaInfoClass(schemaInfoClass);
     }
-  }
-  
-  public Configuration getConf() {
-    return conf;
   }
 
   @Override
@@ -106,19 +102,23 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
 
   public static class Builder {
     private final AuthType authType;
-    private Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass;
+    private Class<? extends MetaStoreSchemaInfo> schemaInfoClass;
+
+    public Builder addMetaStoreSchemaClassName(Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass) {
+      this.schemaInfoClass = metaStoreSchemaClass;
+      return this;
+    }
 
     private Builder(AuthType authType) {
       this.authType = authType;
     }
-    
-    public Builder addMetaStoreSchemaClassName(Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass) {
-      this.metaStoreSchemaClass = metaStoreSchemaClass;
-      return this;
-    }
 
     public HiveRESTCatalogServerExtension build() {
-      return new HiveRESTCatalogServerExtension(authType, metaStoreSchemaClass);
+      return new HiveRESTCatalogServerExtension(authType, null, null);
+    }
+
+    public HiveRESTCatalogServerExtension build(Configuration configuration) {
+      return new HiveRESTCatalogServerExtension(authType, configuration, schemaInfoClass );
     }
   }
 
