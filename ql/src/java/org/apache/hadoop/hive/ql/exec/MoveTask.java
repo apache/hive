@@ -687,7 +687,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
     }
     Map<Path, Utilities.PartitionDetails> dps = Utilities.getFullDPSpecs(conf, dpCtx, dynamicPartitionSpecs,
-        table.getParameters());
+        MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = Time.monotonicNow();
@@ -969,7 +969,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                                queryPlan.getQueryStr(),
                                conf);
 
-    HiveLockObject lock = new HiveLockObject(baseTable, lockData, conf);
+    HiveLockObject lock = new HiveLockObject(baseTable, lockData,
+        MetaStoreUtils.getDefaultPartitionName(baseTable.getParameters(), conf));
 
     for (HiveLockObj hiveLockObj : lockObjects) {
       if (Arrays.equals(hiveLockObj.getObj().getPaths(), lock.getPaths())) {

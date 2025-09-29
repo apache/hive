@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -244,7 +245,7 @@ public class EmbeddedLockManager implements HiveLockManager {
         return null;
       }
       if (names.length == 2) {
-        return new HiveLockObject(tab, data, conf);
+        return new HiveLockObject(tab, data, MetaStoreUtils.getDefaultPartitionName(tab.getParameters(), conf));
       }
       Map<String, String> partSpec = new HashMap<String, String>();
       for (int indx = 2; indx < names.length; indx++) {
@@ -263,7 +264,8 @@ public class EmbeddedLockManager implements HiveLockManager {
         return new HiveLockObject(new DummyPartition(tab, null, partSpec), data);
       }
 
-      return new HiveLockObject(partn, data, conf);
+      return new HiveLockObject(partn, data,
+          MetaStoreUtils.getDefaultPartitionName(partn.getTable().getParameters(), conf));
     } catch (Exception e) {
       throw new LockException(e);
     }

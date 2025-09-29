@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -444,11 +445,11 @@ public class HiveStreamingConnection implements StreamingConnection {
       Map<String, String> partSpec = Warehouse.makeSpecFromValues(tableObject.getPartitionKeys(), partitionValues);
 
       Path location = new Path(tableObject.getDataLocation(), Warehouse.makePartPath(partSpec,
-          tableObject.getParameters(), conf));
+          MetaStoreUtils.getDefaultPartitionName(tableObject.getParameters(), conf)));
       location = new Path(Utilities.getQualifiedPath(conf, location));
       partLocation = location.toString();
-      partName = Warehouse.makePartName(tableObject.getPartitionKeys(), partitionValues, tableObject.getParameters(),
-          conf);
+      partName = Warehouse.makePartName(tableObject.getPartitionKeys(), partitionValues,
+          MetaStoreUtils.getDefaultPartitionName(tableObject.getParameters(), conf));
       Partition partition =
           org.apache.hadoop.hive.ql.metadata.Partition.createMetaPartitionObject(tableObject, partSpec, location);
 

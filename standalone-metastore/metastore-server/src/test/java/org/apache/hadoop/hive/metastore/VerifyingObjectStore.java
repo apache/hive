@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.model.MTable;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -135,7 +136,8 @@ public class VerifyingObjectStore extends ObjectStore {
       List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
-        partNames.add(Warehouse.makePartName(partCols, partVal, table.getParameters(), conf));
+        partNames.add(Warehouse.makePartName(partCols, partVal,
+            MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf)));
       }
       List<Partition> oldParts = getPartitionsByNames(catName, dbName, tblName, partNames);
       if (oldParts.size() != partNames.size()) {

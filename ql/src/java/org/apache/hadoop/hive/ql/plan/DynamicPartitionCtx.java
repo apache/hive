@@ -103,14 +103,14 @@ public class DynamicPartitionCtx implements Serializable {
     this.customSortNullOrder = new LinkedList<>();
   }
 
-  public DynamicPartitionCtx(Map<String, String> partSpec,
-      int maxParts, Map<String, String> tableParams, Configuration conf) throws SemanticException {
+  public DynamicPartitionCtx(Map<String, String> partSpec, int maxParts, String defaultPartitionName)
+      throws SemanticException {
     this.partSpec = partSpec;
     this.spNames = new ArrayList<>();
     this.dpNames = new ArrayList<>();
     this.numBuckets = 0;
     this.maxPartsPerNode = maxParts;
-    this.defaultPartName = PartitionUtils.getDefaultPartitionName(tableParams, conf);
+    this.defaultPartName = defaultPartitionName;
 
     for (Map.Entry<String, String> me: partSpec.entrySet()) {
       if (me.getValue() == null) {
@@ -122,7 +122,7 @@ public class DynamicPartitionCtx implements Serializable {
     this.numDPCols = dpNames.size();
     this.numSPCols = spNames.size();
     if (this.numSPCols > 0) {
-      this.spPath = Warehouse.makeDynamicPartName(partSpec, tableParams, conf);
+      this.spPath = Warehouse.makeDynamicPartName(partSpec, defaultPartitionName);
     } else {
       this.spPath = null;
     }

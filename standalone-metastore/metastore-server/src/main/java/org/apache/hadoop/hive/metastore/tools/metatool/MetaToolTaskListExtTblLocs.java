@@ -114,7 +114,8 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
             }
             else {
               partLocation = partLocation + Path.SEPARATOR +
-                      Warehouse.makePartName(Warehouse.makeSpecFromName(partitionName), false, t.getParameters(), conf);
+                      Warehouse.makePartName(Warehouse.makeSpecFromName(partitionName), false,
+                          MetaStoreUtils.getDefaultPartitionName(t.getParameters(), conf));
               Path partPath = new Path(partLocation);
               long partDataSize = getDataSize(partPath, conf);
               if (isPathWithinSubtree(partPath, defaultDbExtPath)) {

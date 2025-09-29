@@ -2882,7 +2882,7 @@ public final class Utilities {
    * corresponding to these dynamic partitions.
    */
   public static Map<Path, PartitionDetails> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
-      Map<String, List<Path>> dynamicPartitionSpecs, Map<String, String> tableParams) throws HiveException {
+      Map<String, List<Path>> dynamicPartitionSpecs, String defaultPartitionName) throws HiveException {
 
     try {
       Path loadPath = dpCtx.getRootPath();
@@ -2917,7 +2917,7 @@ public final class Utilities {
       for (Map.Entry<Path, Optional<List<Path>>> partEntry : allPartition.entrySet()) {
         Path partPath = partEntry.getKey();
         Map<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
-        String staticParts =  Warehouse.makeDynamicPartName(partSpec, tableParams, conf);
+        String staticParts =  Warehouse.makeDynamicPartName(partSpec, defaultPartitionName);
         Path computedPath = partPath;
         if (!staticParts.isEmpty() ) {
           computedPath = new Path(new Path(partPath.getParent(), staticParts), partPath.getName());

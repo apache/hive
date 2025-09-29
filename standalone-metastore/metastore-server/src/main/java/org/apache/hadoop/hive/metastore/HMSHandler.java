@@ -4065,7 +4065,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       part.setSd(tbl.getSd().deepCopy());
       partLocation = new Path(tbl.getSd().getLocation(), Warehouse
-          .makePartName(tbl.getPartitionKeys(), part_vals, tbl.getParameters(), conf));
+          .makePartName(tbl.getPartitionKeys(), part_vals,
+              MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)));
       part.getSd().setLocation(partLocation.toString());
 
       Partition old_part;
@@ -4324,7 +4325,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // folders are submitted. This way we can be sure that no partition and no partition
         // folder will be created if the list contains an invalid partition.
         validatePartition(part, catName, tblName, dbName, partsToAdd);
-        nameToPart.put(Warehouse.makePartName(partitionKeys, part.getValues(), tbl.getParameters(), conf), part);
+        nameToPart.put(Warehouse.makePartName(partitionKeys, part.getValues(),
+            MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)), part);
       }
 
       List<Partition> existedParts =
@@ -4332,7 +4334,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(new ArrayList<>(nameToPart.keySet())).build());
       List<String> existedPartNames = new ArrayList<>();
       for (Partition part : existedParts) {
-        String partName = Warehouse.makePartName(partitionKeys, part.getValues(), tbl.getParameters(), conf);
+        String partName = Warehouse.makePartName(partitionKeys, part.getValues(),
+            MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
         existedPartNames.add(partName);
         existingParts.add(nameToPart.remove(partName));
       }
@@ -4730,7 +4733,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // a physical table partition (not a view)
       if (tbl.getSd().getLocation() != null) {
         partLocation = new Path(tbl.getSd().getLocation(), Warehouse
-            .makePartName(tbl.getPartitionKeys(), part.getValues(), tbl.getParameters(), conf));
+            .makePartName(tbl.getPartitionKeys(), part.getValues(),
+                MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)));
       }
     } else {
       if (tbl.getSd().getLocation() == null) {
@@ -4930,9 +4934,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           " Their partitions cannot be exchanged.");
     }
     Path sourcePath = new Path(sourceTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent, sourceTable.getParameters(), conf));
+        Warehouse.makePartName(partitionKeysPresent, partValsPresent,
+            MetaStoreUtils.getDefaultPartitionName(sourceTable.getParameters(), conf)));
     Path destPath = new Path(destinationTable.getSd().getLocation(),
-        Warehouse.makePartName(partitionKeysPresent, partValsPresent, destinationTable.getParameters(), conf));
+        Warehouse.makePartName(partitionKeysPresent, partValsPresent,
+            MetaStoreUtils.getDefaultPartitionName(destinationTable.getParameters(), conf)));
     List<Partition> destPartitions = new ArrayList<>();
 
     Map<String, String> transactionalListenerResponsesForAddPartition = Collections.emptyMap();
@@ -4946,7 +4952,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       for (Partition partition : partitionsToExchange) {
         String partToExchangeName =
             Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues(),
-                destinationTable.getParameters(), conf);
+                MetaStoreUtils.getDefaultPartitionName(destinationTable.getParameters(), conf));
         if (destPartitionNames.contains(partToExchangeName)) {
           throw new MetaException("The partition " + partToExchangeName
               + " already exists in the table " + destTableName);
@@ -4968,13 +4974,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         destPartition.setTableName(destinationTable.getTableName());
         Path destPartitionPath = new Path(destinationTable.getSd().getLocation(),
             Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues(),
-                destinationTable.getParameters(), conf));
+                MetaStoreUtils.getDefaultPartitionName(destinationTable.getParameters(), conf)));
         destPartition.getSd().setLocation(destPartitionPath.toString());
         ms.addPartition(destPartition);
         destPartitions.add(destPartition);
         ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
-            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues(), sourceTable.getParameters(),
-                conf));
+            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues(),
+                MetaStoreUtils.getDefaultPartitionName(sourceTable.getParameters(), conf)));
       }
       Path destParentPath = destPath.getParent();
       if (!wh.isDir(destParentPath)) {
@@ -5100,7 +5106,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
 
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals, tbl.getParameters(), conf);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals,
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
       ms.dropPartition(catName, db_name, tbl_name, partName);
 
       if (!transactionalListeners.isEmpty()) {
@@ -7737,8 +7744,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // Since each partition may have stats collected for different set of columns, we
         // request them separately.
         for (Partition part: ret) {
-          String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(), table.getParameters(),
-              conf);
+          String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(),
+              MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
           List<ColumnStatistics> partColStatsList =
               getMS().getPartitionColumnStatistics(parsedCatName, parsedDbName, tblName,
                   Collections.singletonList(partName),
@@ -7855,7 +7862,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         Table table = get_table_core(catName, hiveObject.getDbName(), hiveObject
             .getObjectName());
         partName = Warehouse
-            .makePartName(table.getPartitionKeys(), partValue, table.getParameters(), conf);
+            .makePartName(table.getPartitionKeys(), partValue,
+                MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
       } catch (NoSuchObjectException e) {
         throw new MetaException(e.getMessage());
       }
@@ -8291,7 +8299,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return getMS().listPrincipalPartitionColumnGrantsAll(principalName, principalType);
       }
       Table tbl = get_table_core(catName, dbName, tableName);
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues, tbl.getParameters(), conf);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues,
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
       if (principalName == null) {
         return getMS().listPartitionColumnGrantsAll(catName, dbName, tableName, partName, columnName);
       }
@@ -8350,7 +8359,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return getMS().listPrincipalPartitionGrantsAll(principalName, principalType);
       }
       Table tbl = get_table_core(catName, dbName, tableName);
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues, tbl.getParameters(), conf);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues,
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
       if (principalName == null) {
         return getMS().listPartitionGrantsAll(catName, dbName, tableName, partName);
       }
@@ -9205,7 +9215,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.
     if (ptnObj != null) {
       partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals(),
-          tableObj.getParameters(), conf);
+          MetaStoreUtils.getDefaultPartitionName(tableObj.getParameters(), conf));
     }
     AcidWriteEvent event = new AcidWriteEvent(partition, tableObj, ptnObj, rqst);
     getTxnHandler().addWriteNotificationLog(event);
@@ -9257,7 +9267,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // partitioned table
       for (WriteNotificationLogRequest rqst : batchRequest.getRequestList()) {
         String partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals(),
-            tableObj.getParameters(), conf);
+            MetaStoreUtils.getDefaultPartitionName(tableObj.getParameters(), conf));
         partNameList.add(partition);
         // This is used to ignore those request for which the partition does not exists.
         rqstMap.put(partition, rqst);
@@ -9277,7 +9287,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       WriteNotificationLogRequest request;
       if (partObject != null) {
         partition = Warehouse.makePartName(tableObj.getPartitionKeys(), partObject.getValues(),
-            tableObj.getParameters(), conf);
+            MetaStoreUtils.getDefaultPartitionName(tableObj.getParameters(), conf));
         request = rqstMap.get(partition);
       } else {
         // for non partitioned table, we can get serially from the list.

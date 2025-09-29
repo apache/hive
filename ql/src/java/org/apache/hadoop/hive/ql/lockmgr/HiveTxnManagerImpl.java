@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.unlock.UnlockDatabaseDesc;
@@ -105,7 +106,8 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
             conf);
 
     if (partSpec == null) {
-      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData, conf), mode, true);
+      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData,
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)), mode, true);
       if (lck == null) {
         return 1;
       }
@@ -117,7 +119,8 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
       throw new HiveException("Partition " + partSpec + " for table " +
           tabName + " does not exist");
     }
-    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData, conf), mode, true);
+    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData,
+        MetaStoreUtils.getDefaultPartitionName(par.getTable().getParameters(), conf)), mode, true);
     if (lck == null) {
       return 1;
     }

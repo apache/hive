@@ -4320,7 +4320,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     List<Partition> partList = primary.getAllPartitions(primaryDbName, tableNamepart);
     for (Partition part : partList) {
       Table tbl = primary.getTable(primaryDbName, tableNamepart);
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues(), tbl.getParameters(), conf);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
       runCompaction(primaryDbName, tableNamepart, partName, CompactionType.MAJOR);
     }
 
@@ -4377,7 +4378,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     List<Partition> partList = primary.getAllPartitions(primaryDbName, tableNamepart);
     for (Partition part : partList) {
       Table tbl = primary.getTable(primaryDbName, tableNamepart);
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues(), tbl.getParameters(), conf);
+      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
       runCompaction(primaryDbName, tableNamepart, partName, CompactionType.MINOR);
     }
     List<String> withClause = Arrays.asList(

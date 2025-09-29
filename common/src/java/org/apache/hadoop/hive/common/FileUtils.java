@@ -160,9 +160,8 @@ public final class FileUtils {
     // prevent instantiation
   }
 
-  public static String makePartName(List<String> partCols, List<String> vals, Map<String, String> tableParams,
-      Configuration conf) {
-    return makePartName(partCols, vals, null, tableParams, conf);
+  public static String makePartName(List<String> partCols, List<String> vals, String defaultPartitionName) {
+    return makePartName(partCols, vals, null, defaultPartitionName);
   }
 
   /**
@@ -174,15 +173,15 @@ public final class FileUtils {
    * @return An escaped, valid partition name.
    */
   public static String makePartName(List<String> partCols, List<String> vals,
-      String defaultStr, Map<String, String> tableParams, Configuration conf) {
+      String defaultStr, String defaultPartitionName) {
     StringBuilder name = new StringBuilder();
     for (int i = 0; i < partCols.size(); i++) {
       if (i > 0) {
         name.append(Path.SEPARATOR);
       }
-      name.append(escapePathName((partCols.get(i)).toLowerCase(), defaultStr, tableParams, conf));
+      name.append(escapePathName((partCols.get(i)).toLowerCase(), defaultStr, defaultPartitionName));
       name.append('=');
-      name.append(escapePathName(vals.get(i), defaultStr, tableParams, conf));
+      name.append(escapePathName(vals.get(i), defaultStr, defaultPartitionName));
     }
     return name.toString();
   }
@@ -195,9 +194,9 @@ public final class FileUtils {
    * @return
    */
   public static String makeDefaultListBucketingDirName(List<String> skewedCols,
-      String name, Map<String, String> tableParams, Configuration conf) {
+      String name, String defaultPartitionName) {
     String lbDirName;
-    String defaultDir = FileUtils.escapePathName(name, tableParams, conf);
+    String defaultDir = FileUtils.escapePathName(name, defaultPartitionName);
     StringBuilder defaultDirPath = new StringBuilder();
     for (int i = 0; i < skewedCols.size(); i++) {
       if (i > 0) {
@@ -215,16 +214,15 @@ public final class FileUtils {
    * @param vals The skewed values
    * @return An escaped, valid list bucketing directory name.
    */
-  public static String makeListBucketingDirName(List<String> lbCols, List<String> vals, Map<String, String> tableParams,
-      Configuration conf) {
+  public static String makeListBucketingDirName(List<String> lbCols, List<String> vals, String defaultPartitionName) {
     StringBuilder name = new StringBuilder();
     for (int i = 0; i < lbCols.size(); i++) {
       if (i > 0) {
         name.append(Path.SEPARATOR);
       }
-      name.append(escapePathName((lbCols.get(i)).toLowerCase(), tableParams, conf));
+      name.append(escapePathName((lbCols.get(i)).toLowerCase(), defaultPartitionName));
       name.append('=');
-      name.append(escapePathName(vals.get(i), tableParams, conf));
+      name.append(escapePathName(vals.get(i), defaultPartitionName));
     }
     return name.toString();
   }
@@ -276,8 +274,8 @@ public final class FileUtils {
     return c < charToEscape.size() && charToEscape.get(c);
   }
 
-  public static String escapePathName(String path, Map<String, String> tableParams, Configuration conf) {
-    return escapePathName(path, null, tableParams, conf);
+  public static String escapePathName(String path,  String defaultPartitionName) {
+    return escapePathName(path, null, defaultPartitionName);
   }
 
   /**
@@ -287,8 +285,7 @@ public final class FileUtils {
    *          The default name for the path, if the given path is empty or null.
    * @return An escaped path name.
    */
-  public static String escapePathName(String path, String defaultPath, Map<String, String> tableParams,
-      Configuration conf) {
+  public static String escapePathName(String path, String defaultPath, String defaultPartitionName) {
 
     // __HIVE_DEFAULT_NULL__ is the system default value for null and empty string.
     // TODO: we should allow user to specify default partition or HDFS file location.
@@ -296,7 +293,7 @@ public final class FileUtils {
       if (defaultPath == null) {
         //previously, when path is empty or null and no default path is specified,
         // __HIVE_DEFAULT_PARTITION__ was the return value for escapePathName
-        return MetaStoreUtils.getDefaultPartitionName(tableParams, conf);
+        return defaultPartitionName;
       } else {
         return defaultPath;
       }

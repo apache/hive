@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -55,7 +56,7 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
       // or the existing table is newer than our update.
       LOG.debug("DDLTask: Rename Partition is skipped as table {} / partition {} is newer than update", tableName,
               FileUtils.makePartName(new ArrayList<>(oldPartSpec.keySet()), new ArrayList<>(oldPartSpec.values()),
-                  tbl.getParameters(), context.getConf()));
+                  MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), context.getConf())));
       return 0;
     }
 
@@ -67,7 +68,8 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
     Partition oldPart = context.getDb().getPartition(tbl, oldPartSpec, false);
     if (oldPart == null) {
       String partName = FileUtils.makePartName(new ArrayList<String>(oldPartSpec.keySet()),
-          new ArrayList<String>(oldPartSpec.values()), tbl.getParameters(), context.getConf());
+          new ArrayList<String>(oldPartSpec.values()), MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(),
+              context.getConf()));
       throw new HiveException("Rename partition: source partition [" + partName + "] does not exist.");
     }
 

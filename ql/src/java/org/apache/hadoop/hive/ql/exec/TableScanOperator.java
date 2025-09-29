@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
@@ -260,8 +261,10 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
           // to the special partition, __HIVE_DEFAULT_PARTITION__.
           values.add(o == null ? defaultPartitionName : o.toString());
         }
-        partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values, conf.getTableMetadata() != null ?
-            conf.getTableMetadata().getParameters() : null, configuration);
+        Map<String , String> tableParams = conf.getTableMetadata() != null ?
+            conf.getTableMetadata().getParameters() : null;
+        partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values,
+            MetaStoreUtils.getDefaultPartitionName(tableParams, configuration));
         LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
       }
       // find which column contains the raw data size (both partitioned and non partitioned

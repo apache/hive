@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 
 import org.apache.hadoop.security.UserGroupInformation;
@@ -309,7 +310,7 @@ public class TestFileUtils {
     StringBuilder sb = new StringBuilder();
     FileUtils.charToEscape.stream().forEach(integer -> sb.append((char) integer));
     String path = sb.toString();
-    assertEquals(path, FileUtils.unescapePathName(FileUtils.escapePathName(path, null, new HiveConf())));
+    assertEquals(path, FileUtils.unescapePathName(FileUtils.escapePathName(path, MetaStoreUtils.getDefaultPartitionName(null, new HiveConf()))));
   }
 
   @Test

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -139,8 +140,8 @@ public class FSTableEvent implements TableEvent {
     List<String> partitions = new ArrayList<>();
     try {
       for (Partition partition : metadata.getPartitions()) {
-        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(), tblDesc.getTblProps(),
-            hiveConf);
+        String partName = Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(),
+            MetaStoreUtils.getDefaultPartitionName(tblDesc.getTblProps(), hiveConf));
         partitions.add(partName);
       }
     } catch (MetaException e) {
@@ -162,8 +163,7 @@ public class FSTableEvent implements TableEvent {
          * {@link org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator}
          */
         location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(),
-            tableParams, hiveConf)).
-            toString();
+            MetaStoreUtils.getDefaultPartitionName(tableParams, hiveConf))).toString();
       }
 
       ColumnStatistics columnStatistics = null;

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -224,8 +225,8 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
 
   private String getPartitionName(Table table, Partition partition) throws HiveException {
     try {
-      return Warehouse.makePartName(table.getPartitionKeys(), partition.getValues(), table.getParameters(),
-          context.getConf());
+      return Warehouse.makePartName(table.getPartitionKeys(), partition.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), context.getConf()));
     } catch (MetaException e) {
       throw new HiveException(e);
     }

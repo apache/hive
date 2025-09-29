@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.drop.AlterTableDropPartitionDesc;
@@ -316,7 +317,7 @@ public class LoadPartitions {
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
         new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec(),
-            table.getParameters(), context.hiveConf)),
+            MetaStoreUtils.getDefaultPartitionName(table.getParameters(), context.hiveConf))),
         replicaWarehousePartitionLocation,
         context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
         this.metricCollector
@@ -338,7 +339,8 @@ public class LoadPartitions {
 
   private Path locationOnReplicaWarehouse(Table table, AlterTableAddPartitionDesc.PartitionDesc partSpec)
       throws MetaException, HiveException {
-    String child = Warehouse.makePartPath(partSpec.getPartSpec(), table.getParameters(), context.hiveConf);
+    String child = Warehouse.makePartPath(partSpec.getPartSpec(),
+        MetaStoreUtils.getDefaultPartitionName(table.getParameters(), context.hiveConf));
     if (tableDesc.isExternal()) {
       String externalLocation =
           ReplExternalTables.externalTableLocation(context.hiveConf, partSpec.getLocation());

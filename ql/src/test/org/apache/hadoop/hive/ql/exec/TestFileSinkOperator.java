@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -403,7 +404,7 @@ public class TestFileSinkOperator {
       partColMap.put(PARTCOL_NAME, null);
       HiveConf conf = new HiveConf();
       conf.set(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname, "Sunday");
-      DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(partColMap, 100, null, conf);
+      DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(partColMap, 100, MetaStoreUtils.getDefaultPartitionName(null, conf));
       //todo: does this need the finalDestination?
       desc = new FileSinkDesc(basePath, tableDesc, false, 1, false,
           false, 1, 1, partCols, dpCtx, null, false, false, false, false, false, writeType, false);

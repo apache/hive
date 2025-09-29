@@ -304,15 +304,15 @@ public class ExpressionTree {
     private Object value;
     private Operator operator;
     private boolean isReverseOrder;
-    private Map<String, String> tableParams;
+    private String defaultPartitionName;
 
     public JDOFilterGenerator(Configuration conf, List<FieldSchema> partitionKeys,
-        FilterBuilder filterBuilder, Map<String, Object> params, Map<String, String> tableParams) {
+        FilterBuilder filterBuilder, Map<String, Object> params, String defaultPartitionName) {
       this.conf = conf;
       this.partitionKeys = partitionKeys;
       this.filterBuilder = filterBuilder;
       this.params = params;
-      this.tableParams = tableParams;
+      this.defaultPartitionName = defaultPartitionName;
     }
 
     private void beforeParsing() throws MetaException {
@@ -351,7 +351,7 @@ public class ExpressionTree {
         operator = Operator.LIKE;
       }
       if (partitionKeys != null) {
-        generateJDOFilterOverPartitions(conf, params, filterBuilder, partitionKeys, tableParams);
+        generateJDOFilterOverPartitions(conf, params, filterBuilder, partitionKeys, defaultPartitionName);
       } else {
         generateJDOFilterOverTables(params, filterBuilder);
       }
@@ -438,7 +438,7 @@ public class ExpressionTree {
 
     private void generateJDOFilterOverPartitions(Configuration conf,
         Map<String, Object> params, FilterBuilder filterBuilder, List<FieldSchema> partitionKeys,
-        Map<String, String> tableParams) throws MetaException {
+        String defaultPartitionName) throws MetaException {
       int partitionColumnCount = partitionKeys.size();
       int partitionColumnIndex = LeafNode.getPartColIndexForFilter(keyName, partitionKeys, filterBuilder);
       if (filterBuilder.hasError()) return;
@@ -460,7 +460,7 @@ public class ExpressionTree {
       if (isOpEquals || Operator.isNotEqualOperator(operator)) {
         String partitionKey = partitionKeys.get(partitionColumnIndex).getName();
         makeFilterForEquals(partitionKey, valueAsString, paramName, params,
-            partitionColumnIndex, partitionColumnCount, isOpEquals, filterBuilder, tableParams, conf);
+            partitionColumnIndex, partitionColumnCount, isOpEquals, filterBuilder, defaultPartitionName);
         return;
       }
       //get the value for a partition key form MPartition.values (PARTITION_KEY_VALUES)
@@ -585,13 +585,13 @@ public class ExpressionTree {
    */
   private static void makeFilterForEquals(String keyName, String value, String paramName,
       Map<String, Object> params, int keyPos, int keyCount, boolean isEq, FilterBuilder fltr,
-      Map<String, String> tableParams, Configuration conf) throws MetaException {
+      String defaultPartitionName) throws MetaException {
     Map<String, String> partKeyToVal = new HashMap<>();
     partKeyToVal.put(keyName, value);
     // If a partition has multiple partition keys, we make the assumption that
     // makePartName with one key will return a substring of the name made
     // with both all the keys.
-    String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false, tableParams, conf);
+    String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false, defaultPartitionName);
     if (keyCount == 1) {
       // Case where this is no other partition columns
       params.put(paramName, escapedNameFragment);

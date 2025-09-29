@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -345,8 +346,7 @@ public class ListBucketingPruner extends Transform {
           .append((FileUtils.makeDefaultListBucketingDirName(
               part.getSkewedColNames(),
               ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME,
-              part.getTable().getParameters(),
-              conf)));
+              MetaStoreUtils.getDefaultPartitionName(part.getTable().getParameters(), conf))));
       selectedPaths.add(new Path(builder.toString()));
     }
   }

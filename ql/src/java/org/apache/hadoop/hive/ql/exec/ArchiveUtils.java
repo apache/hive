@@ -101,7 +101,8 @@ public final class ArchiveUtils {
     public Path createPath(Table tbl, Configuration conf) throws HiveException {
       String prefixSubdir;
       try {
-        prefixSubdir = Warehouse.makePartName(fields, values, tbl.getParameters(), conf);
+        prefixSubdir = Warehouse.makePartName(fields, values,
+            MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
       } catch (MetaException e) {
         throw new HiveException("Unable to get partitions directories prefix", e);
       }
@@ -116,7 +117,7 @@ public final class ArchiveUtils {
      */
     public String getName(Map<String, String> tableParams, Configuration conf) throws HiveException {
       try {
-        return Warehouse.makePartName(fields, values, tableParams, conf);
+        return Warehouse.makePartName(fields, values, MetaStoreUtils.getDefaultPartitionName(tableParams, conf));
       } catch (MetaException e) {
         throw new HiveException("Unable to create partial name", e);
       }
@@ -226,7 +227,8 @@ public final class ArchiveUtils {
     List<FieldSchema> fields = p.getTable().getPartCols().subList(0, level);
     List<String> values = p.getValues().subList(0, level);
     try {
-      return Warehouse.makePartName(fields, values, p.getTable().getParameters(), conf);
+      return Warehouse.makePartName(fields, values,
+          MetaStoreUtils.getDefaultPartitionName(p.getTable().getParameters(), conf));
     } catch (MetaException e) {
       throw new HiveException("Wasn't able to generate name" +
                                 " for partial specification");

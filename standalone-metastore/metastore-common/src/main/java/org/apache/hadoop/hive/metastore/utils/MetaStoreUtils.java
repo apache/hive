@@ -497,7 +497,8 @@ public class MetaStoreUtils {
     // or a regex of the form ".*"
     // This works because the "=" and "/" separating key names and partition key/values
     // are not escaped.
-    String partNameMatcher = Warehouse.makePartName(partCols, partVals, defaultStr, table.getParameters(), conf);
+    String partNameMatcher = Warehouse.makePartName(partCols, partVals, defaultStr,
+        MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
     // add ".*" to the regex to match anything else afterwards the partial spec.
     if (partVals.size() < numPartKeys) {
       partNameMatcher += defaultStr;

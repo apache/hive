@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.common.AcidConstants.DELETE_DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PREFIX;
 import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
@@ -327,6 +326,7 @@ public class HiveMetaStoreChecker {
     checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
     String tablePathStr = tablePath.toString();
     int tablePathLength = tablePathStr.length();
+    String defaultPartitionName =  MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf);
 
     if (filterExp != null) {
       PartitionExpressionProxy expressionProxy = createExpressionProxy(conf);
@@ -337,8 +337,7 @@ public class HiveMetaStoreChecker {
       allPartDirs.stream().forEach(path -> partitions.add(path.toString().substring(tablePathStrLen)));
 
       // Remove all partition paths which does not matches the filter expression.
-      expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
-              MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf), partitions);
+      expressionProxy.filterPartitionsByExpr(partColumns, filterExp, defaultPartitionName, partitions);
 
       // now the partition list will contain all the paths that matches the filter expression.
       // add them back to partDirs.
@@ -361,7 +360,7 @@ public class HiveMetaStoreChecker {
       fs = partPath.getFileSystem(conf);
 
       CheckResult.PartitionResult prFromMetastore = new CheckResult.PartitionResult();
-      prFromMetastore.setPartitionName(getPartitionName(table, partition, conf));
+      prFromMetastore.setPartitionName(getPartitionName(table, partition, defaultPartitionName));
       prFromMetastore.setTableName(partition.getTableName());
       if (allPartDirs.remove(partPath)) {
         result.getCorrectPartitions().add(prFromMetastore);
@@ -389,7 +388,7 @@ public class HiveMetaStoreChecker {
         long partitionAgeSeconds = currentEpochSecs - createdTime;
         if (partitionAgeSeconds > partitionExpirySeconds) {
           CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
-          pr.setPartitionName(getPartitionName(table, partition, conf));
+          pr.setPartitionName(getPartitionName(table, partition, defaultPartitionName));
           pr.setTableName(partition.getTableName());
           result.getExpiredPartitions().add(pr);
           if (LOG.isDebugEnabled()) {

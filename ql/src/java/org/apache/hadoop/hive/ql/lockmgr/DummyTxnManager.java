@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -400,7 +401,8 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
     }
 
     if (t != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(t, lockData, conf), mode));
+      locks.add(new HiveLockObj(new HiveLockObject(t, lockData, MetaStoreUtils.getDefaultPartitionName(
+          t.getParameters(), conf)), mode));
       mode = HiveLockMode.SHARED;
       locks.add(new HiveLockObj(new HiveLockObject(t.getDbName(), lockData), mode));
       return locks;
@@ -408,7 +410,8 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
 
     if (p != null) {
       if (!(p instanceof DummyPartition)) {
-        locks.add(new HiveLockObj(new HiveLockObject(p, lockData, conf), mode));
+        locks.add(new HiveLockObj(new HiveLockObject(p, lockData,
+            MetaStoreUtils.getDefaultPartitionName(p.getTable().getParameters(), conf)), mode));
       }
 
       // All the parents are locked in shared mode
@@ -433,14 +436,15 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
         partialSpec.put(nameValue[0], nameValue[1]);
         DummyPartition par = new DummyPartition(p.getTable(), 
           p.getTable().getDbName() 
-            + "/" + FileUtils.escapePathName(p.getTable().getTableName(), p.getTable().getParameters(),
-            conf).toLowerCase() + "/" + partialName,
+            + "/" + FileUtils.escapePathName(p.getTable().getTableName(), MetaStoreUtils.getDefaultPartitionName(
+            p.getTable().getParameters(), conf)).toLowerCase() + "/" + partialName,
           partialSpec);
         locks.add(new HiveLockObj(new HiveLockObject(par, lockData), mode));
         partialName.append("/");
       }
 
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData, conf), mode));
+      locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData,
+          MetaStoreUtils.getDefaultPartitionName(p.getTable().getParameters(), conf)), mode));
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
     }
     return locks;

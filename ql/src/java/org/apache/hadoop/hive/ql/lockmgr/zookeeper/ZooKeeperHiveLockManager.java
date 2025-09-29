@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.lockmgr.*;
@@ -780,7 +781,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       if (names.length == 2) {
-        return new HiveLockObject(tab, data, conf);
+        return new HiveLockObject(tab, data, MetaStoreUtils.getDefaultPartitionName(tab.getParameters(), conf));
       }
 
       Map<String, String> partSpec = new HashMap<String, String>();
@@ -800,7 +801,8 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         return new HiveLockObject(new DummyPartition(tab, path, partSpec), data);
       }
 
-      return new HiveLockObject(partn, data, conf);
+      return new HiveLockObject(partn, data, MetaStoreUtils.getDefaultPartitionName(partn.getTable().getParameters(),
+          conf));
     } catch (Exception e) {
       LOG.error("Failed to create ZooKeeper object: " + e);
       throw new LockException(e);

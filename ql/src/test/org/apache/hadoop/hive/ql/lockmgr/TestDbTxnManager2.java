@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -1801,7 +1802,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     rqst.setTablename(tblName);
     if (partSpec != null) {
       String partName = FileUtils.makePartName(
-          new ArrayList<>(partSpec.keySet()), new ArrayList<>(partSpec.values()), null, conf);
+          new ArrayList<>(partSpec.keySet()), new ArrayList<>(partSpec.values()), MetaStoreUtils.getDefaultPartitionName( null, conf));
       rqst.setPartname(partName);
     }
     ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks(rqst);

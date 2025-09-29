@@ -487,7 +487,8 @@ public class Msck {
                 continue;
               }
               Map<String, String> partSpec = Warehouse.makeSpecFromName(part.getPartitionName());
-              Path location = part.getLocation(tablePath, partSpec, table.getParameters(), conf);
+              Path location = part.getLocation(tablePath, partSpec,
+                  MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
               Partition partition = MetaStoreServerUtils.createMetaPartitionObject(table, partSpec, location);
               partition.setWriteId(table.getWriteId());
               partsToAdd.add(partition);

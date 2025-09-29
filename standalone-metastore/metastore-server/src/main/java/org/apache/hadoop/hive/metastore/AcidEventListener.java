@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -126,7 +127,8 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
 
               List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
               List<String> partVals = p.getValues();
-              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals, table.getParameters(), conf));
+              rqst.setPartitionname(Warehouse.makePartName(partCols, partVals,
+                  MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf)));
               rqst.putToProperties("location", p.getSd().getLocation());
 
               txnHandler.submitForCleanup(rqst, writeId, currentTxn);
@@ -163,8 +165,10 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
     Partition oldPart = partitionEvent.getOldPartition();
     Partition newPart = partitionEvent.getNewPartition();
     Table t = partitionEvent.getTable();
-    String oldPartName = Warehouse.makePartName(t.getPartitionKeys(), oldPart.getValues(), t.getParameters(), conf);
-    String newPartName = Warehouse.makePartName(t.getPartitionKeys(), newPart.getValues(), t.getParameters(), conf);
+    String oldPartName = Warehouse.makePartName(t.getPartitionKeys(), oldPart.getValues(),
+        MetaStoreUtils.getDefaultPartitionName(t.getParameters(), conf));
+    String newPartName = Warehouse.makePartName(t.getPartitionKeys(), newPart.getValues(),
+        MetaStoreUtils.getDefaultPartitionName(t.getParameters(), conf));
     if (!oldPartName.equals(newPartName)) {
       txnHandler = getTxnHandler();
       txnHandler.onRename(t.getCatName(), t.getDbName(), t.getTableName(), oldPartName,

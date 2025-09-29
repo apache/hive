@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
@@ -166,7 +167,8 @@ public class ColStatsProcessor implements IStatsProcessor {
                 PartitionUtils.getDefaultPartitionName(tbl.getParameters(), this.conf) : partVal.toString());
             }
           }
-          partName = Warehouse.makePartName(partColSchema, partVals, tbl.getParameters(), conf);
+          partName = Warehouse.makePartName(partColSchema, partVals,
+              MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
         }
 
         ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);

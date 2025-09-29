@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -131,14 +132,14 @@ public class ListBucketingCtx implements Serializable {
   public void calculateSkewedValueSubDirList(Map<String, String> tableParams, Configuration conf) {
     if (isSkewedStoredAsDir()) {
       for (List<String> value : this.skewedColValues) {
-        skewedValuesDirNames.add(FileUtils.makeListBucketingDirName(this.skewedColNames, value, tableParams, conf));
+        skewedValuesDirNames.add(FileUtils.makeListBucketingDirName(this.skewedColNames, value,
+            MetaStoreUtils.getDefaultPartitionName(tableParams, conf)));
       }
       // creat default dir
       skewedValuesDirNames.add(FileUtils.makeDefaultListBucketingDirName(
           this.skewedColNames,
           ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME,
-          tableParams,
-          conf));
+          MetaStoreUtils.getDefaultPartitionName(tableParams, conf)));
     }
   }
 

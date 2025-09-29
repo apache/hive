@@ -189,7 +189,7 @@ public class MultiDataSourceJdbcResource {
   /**
    * Executes a {@link org.springframework.jdbc.core.JdbcTemplate#batchUpdate(String, Collection, int, ParameterizedPreparedStatementSetter)} 
    * call using the query string obtained from {@link ParameterizedBatchCommand#getParameterizedQueryString(DatabaseProduct)},
-   * the parameters obtained from {@link ParameterizedBatchCommand#getQueryParameters()}, and the
+   * the parameters obtained from {@link ParameterizedBatchCommand}, and the
    * {@link org.springframework.jdbc.core.PreparedStatementSetter} obtained from 
    * {@link ParameterizedBatchCommand#getPreparedStatementSetter()} methods. The batchSize is coming from the 
    * {@link Configuration} object.

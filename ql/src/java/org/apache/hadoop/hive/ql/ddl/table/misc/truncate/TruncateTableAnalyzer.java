@@ -169,7 +169,8 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
         if (table.hasNonNativePartitionSupport()) {
           table.getStorageHandler().validatePartSpec(table, partitionSpec);
           try {
-            String partName = Warehouse.makePartName(partitionSpec, false, table.getParameters(), conf);
+            String partName = Warehouse.makePartName(partitionSpec, false,
+                MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
             Partition partition = new DummyPartition(table, partName, partitionSpec);
             outputs.add(new WriteEntity(partition, writeType));
           } catch (MetaException e) {

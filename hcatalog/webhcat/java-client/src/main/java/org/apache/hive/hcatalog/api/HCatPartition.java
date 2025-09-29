@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
@@ -139,7 +140,7 @@ public class HCatPartition {
       LOG.warn("Partition location is not set! Attempting to construct default partition location.");
       try {
         String partName = Warehouse.makePartName(HCatSchemaUtils.getFieldSchemas(hcatTable.getPartCols()), values,
-            hcatTable.getTblProps(), hcatTable.getConf());
+            MetaStoreUtils.getDefaultPartitionName(hcatTable.getTblProps(), hcatTable.getConf()));
         sd.setLocation(new Path(hcatTable.getSd().getLocation(), partName).toString());
       }
       catch(MetaException exception) {

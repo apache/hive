@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
@@ -135,10 +136,10 @@ public class TestExchangePartitions extends MetaStoreClientTest {
 
     Assert.assertEquals(1, exchangedPartitions.size());
     String partitionName =
-        Warehouse.makePartName(sourceTable.getPartitionKeys(), partitions[1].getValues(), sourceTable.getParameters(),
-            metaStore.getConf());
+        Warehouse.makePartName(sourceTable.getPartitionKeys(), partitions[1].getValues(), MetaStoreUtils.getDefaultPartitionName(sourceTable.getParameters(),
+            metaStore.getConf()));
     String exchangedPartitionName = Warehouse.makePartName(sourceTable.getPartitionKeys(),
-        exchangedPartitions.get(0).getValues(), sourceTable.getParameters(), metaStore.getConf());
+        exchangedPartitions.get(0).getValues(), MetaStoreUtils.getDefaultPartitionName(sourceTable.getParameters(), metaStore.getConf()));
     Assert.assertEquals(partitionName, exchangedPartitionName);
 
     checkExchangedPartitions(sourceTable, destTable, Lists.newArrayList(partitions[1]));
@@ -187,7 +188,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     for (Partition exchangedPartition : exchangedPartitions) {
       String partName =
           Warehouse.makePartName(sourceTable.getPartitionKeys(), exchangedPartition.getValues(),
-              sourceTable.getParameters(), metaStore.getConf());
+              MetaStoreUtils.getDefaultPartitionName(sourceTable.getParameters(), metaStore.getConf()));
       exchangedPartNames.add(partName);
     }
     Assert.assertTrue(exchangedPartNames.contains("year=2017/month=march/day=15"));
@@ -1294,8 +1295,8 @@ public class TestExchangePartitions extends MetaStoreClientTest {
       // Check the location of the result partition. It should be located in the destination table
       // folder.
       String partName =
-          Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues(), sourceTable.getParameters(),
-              metaStore.getConf());
+          Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues(),
+              MetaStoreUtils.getDefaultPartitionName(sourceTable.getParameters(), metaStore.getConf()));
       Assert.assertEquals(destTable.getSd().getLocation() + "/" + partName,
           resultPart.getSd().getLocation());
       Assert.assertTrue(metaStore.isPathExists(new Path(resultPart.getSd().getLocation())));
@@ -1339,8 +1340,8 @@ public class TestExchangePartitions extends MetaStoreClientTest {
         // Expected exception
       }
       String partName =
-          Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues(), sourceTable.getParameters(),
-              metaStore.getConf());
+          Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues(),
+              MetaStoreUtils.getDefaultPartitionName(sourceTable.getParameters(), metaStore.getConf()));
       Assert.assertFalse(
           metaStore.isPathExists(new Path(destTable.getSd().getLocation() + "/" + partName)));
     }

@@ -955,8 +955,10 @@ public class HiveStrictManagedMigration {
                                         Map<String, String> partSpec) throws IOException, MetaException {
     String partLocation = partObj.getSd().getLocation();
     Path oldDefaultPartLocation = runOptions.shouldMoveExternal  ?
-      oldWh.get().getPartitionPath(dbObj, tableObj, partSpec.values().stream().collect(toList()), conf):
-      oldWh.get().getDefaultPartitionPath(dbObj, tableObj, partSpec, conf);
+      oldWh.get().getPartitionPath(dbObj, tableObj, partSpec.values().stream().collect(toList()),
+          MetaStoreUtils.getDefaultPartitionName(tableObj.getParameters(), conf)):
+      oldWh.get().getDefaultPartitionPath(dbObj, tableObj, partSpec,
+          MetaStoreUtils.getDefaultPartitionName(tableObj.getParameters(), conf));
     if (arePathsEqual(conf, partLocation, oldDefaultPartLocation.toString())) {
       // No need to check encryption zone and EC policy. Data was moved already along with the whole table.
       return true;
@@ -1042,7 +1044,8 @@ public class HiveStrictManagedMigration {
           // Table directory (which includes the partition directory) has already been moved,
           // just update the partition location in the metastore.
           if (!runOptions.dryRun) {
-            Path newPartPath = wh.get().getPartitionPath(newTablePath, partSpec, tableObj.getParameters(), conf);
+            Path newPartPath = wh.get().getPartitionPath(newTablePath, partSpec,
+                MetaStoreUtils.getDefaultPartitionName(tableObj.getParameters(), conf));
             hiveUpdater.get().updatePartitionLocation(dbName, tableObj, partName, partObj, newPartPath);
           }
         }

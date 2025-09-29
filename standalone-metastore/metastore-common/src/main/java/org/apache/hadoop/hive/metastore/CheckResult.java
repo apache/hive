@@ -177,10 +177,9 @@ public class CheckResult {
       this.path = path;
     }
 
-    public Path getLocation(Path tablePath, Map<String, String> partSpec, Map<String, String> tableParams,
-        Configuration conf) throws MetaException {
+    public Path getLocation(Path tablePath, Map<String, String> partSpec, String defaultPartitionName) throws MetaException {
       if (this.path == null) {
-        return new Path(tablePath, Warehouse.makePartPath(partSpec, tableParams, conf));
+        return new Path(tablePath, Warehouse.makePartPath(partSpec, defaultPartitionName));
       }
 
       return this.path;

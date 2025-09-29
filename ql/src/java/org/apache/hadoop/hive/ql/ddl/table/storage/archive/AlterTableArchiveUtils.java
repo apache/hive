@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -71,7 +72,8 @@ final class AlterTableArchiveUtils {
   static boolean partitionInCustomLocation(Table table, Partition partition, Configuration conf) throws HiveException {
     String subdir = null;
     try {
-      subdir = Warehouse.makePartName(table.getPartCols(), partition.getValues(), table.getParameters(), conf);
+      subdir = Warehouse.makePartName(table.getPartCols(), partition.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
     } catch (MetaException e) {
       throw new HiveException("Unable to get partition's directory", e);
     }

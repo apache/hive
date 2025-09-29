@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
@@ -53,8 +54,8 @@ public final class TempTable {
   }
 
   public Partition addPartition(Partition p) throws AlreadyExistsException, MetaException {
-    String partName = makePartName(tTable.getPartitionKeys(), p.getValues(), tTable.getParameters(),
-        SessionState.getSessionConf());
+    String partName = makePartName(tTable.getPartitionKeys(), p.getValues(),
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     Partition partition = pTree.addPartition(p, partName, false);
     return partition == null ? pTree.getPartition(partName) : partition;
   }

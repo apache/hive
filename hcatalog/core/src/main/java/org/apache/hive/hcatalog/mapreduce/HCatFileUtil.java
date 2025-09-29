@@ -38,7 +38,7 @@ public class HCatFileUtil {
   // This method parses the custom dynamic path and replaces each occurrence
   // of column name within regex pattern with its corresponding value, if provided
   public static String resolveCustomPath(OutputJobInfo jobInfo,
-      Map<String, String> dynPartKVs, boolean createRegexPath, Map<String, String> tableParams, Configuration conf) {
+      Map<String, String> dynPartKVs, boolean createRegexPath, String defaultPartitionName) {
     // get custom path string
     String customPath = jobInfo.getCustomDynamicPath();
     // create matcher for custom path
@@ -70,7 +70,7 @@ public class HCatFileUtil {
       if (columnValue != null) {
         sb.append(columnValue);
       } else {
-        sb.append(PartitionUtils.getDefaultPartitionName(tableParams, conf));
+        sb.append(defaultPartitionName);
       }
 
       if (createRegexPath) {

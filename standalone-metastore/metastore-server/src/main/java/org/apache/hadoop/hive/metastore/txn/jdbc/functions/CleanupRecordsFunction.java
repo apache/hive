@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -154,8 +155,8 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
           paramSources.add(new MapSqlParameterSource()
               .addValue("dbName", table.getDbName().toLowerCase())
               .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
-              .addValue("partName", Warehouse.makePartName(partCols, partVals, table.getParameters(),
-                  jdbcResource.getConf()), Types.VARCHAR)
+              .addValue("partName", Warehouse.makePartName(partCols, partVals,
+                  MetaStoreUtils.getDefaultPartitionName(table.getParameters(), jdbcResource.getConf())), Types.VARCHAR)
               .addValue("txnId", null, Types.BIGINT));
         }
       }

@@ -2927,7 +2927,8 @@ public class ObjectStore implements RawStore, Configurable {
       // Change the query to use part_vals instead of the name which is
       // redundant TODO: callers of this often get part_vals out of name for no reason...
       String name =
-          Warehouse.makePartName(convertToFieldSchemas(mtbl.getPartitionKeys()), part_vals, mtbl.getParameters(), conf);
+          Warehouse.makePartName(convertToFieldSchemas(mtbl.getPartitionKeys()), part_vals,
+              MetaStoreUtils.getDefaultPartitionName(mtbl.getParameters(), conf));
       result = getMPartition(catName, dbName, tableName, name);
       committed = commitTransaction();
     } finally {
@@ -3025,9 +3026,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
-        .getPartitionKeys()), part.getValues(), mt.getParameters(), conf), mt, part.getValues(), part
-        .getCreateTime(), part.getLastAccessTime(),
-        msd, part.getParameters());
+        .getPartitionKeys()), part.getValues(), MetaStoreUtils.getDefaultPartitionName(mt.getParameters(), conf)),
+        mt, part.getValues(), part.getCreateTime(), part.getLastAccessTime(), msd, part.getParameters());
   }
 
   private Partition convertToPart(String catName, String dbName, String tblName,
@@ -3301,7 +3301,7 @@ public class ObjectStore implements RawStore, Configurable {
       Partition part = convertToPart(catName, dbName, tblName, mpart, TxnUtils.isAcidTable(mtbl.getParameters()));
       if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
         String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
-            .getPartitionKeys()), partVals, mtbl.getParameters(), conf);
+            .getPartitionKeys()), partVals, MetaStoreUtils.getDefaultPartitionName(mtbl.getParameters(), conf));
         PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(catName, dbName,
             tblName, partName, user_name, group_names);
         part.setPrivileges(partAuth);
@@ -3586,8 +3586,8 @@ public class ObjectStore implements RawStore, Configurable {
       for (Partition partition : partitions) {
         // Check for NULL's just to be safe
         if (tbl.getPartitionKeys() != null && partition.getValues() != null) {
-          partitionNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), partition.getValues(), tbl.getParameters(),
-              conf));
+          partitionNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), partition.getValues(),
+              MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)));
         }
       }
     }
@@ -3876,8 +3876,8 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (getauth) {
         for (Partition part : partitions) {
-          String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
-              .getPartitionKeys()), part.getValues(), mtbl.getParameters(), conf);
+          String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl.getPartitionKeys()),
+              part.getValues(), MetaStoreUtils.getDefaultPartitionName(mtbl.getParameters(), conf));
           PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, db_name,
               tbl_name, partName, userName, groupNames);
           part.setPrivileges(partAuth);
@@ -4927,8 +4927,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     tree.accept(new ExpressionTree.JDOFilterGenerator(getConf(),
-        table != null ? table.getPartitionKeys() : null, queryBuilder, params, table != null ?
-        table.getParameters() : null));
+        table != null ? table.getPartitionKeys() : null, queryBuilder, params,
+        MetaStoreUtils.getDefaultPartitionName(table != null ? table.getParameters() : null, getConf())));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
@@ -4949,7 +4949,7 @@ public class ObjectStore implements RawStore, Configurable {
     params.put("t2", dbName);
     params.put("t3", catName);
     tree.accept(new ExpressionTree.JDOFilterGenerator(getConf(), partitionKeys, queryBuilder, params,
-        getTable(catName, dbName, tblName).getParameters()));
+        MetaStoreUtils.getDefaultPartitionName(getTable(catName, dbName, tblName).getParameters(), getConf())));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
@@ -5290,7 +5290,8 @@ public class ObjectStore implements RawStore, Configurable {
       List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
-        partNames.add(Warehouse.makePartName(partCols, partVal, table.getParameters(), conf));
+        partNames.add(Warehouse.makePartName(partCols, partVal,
+            MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf)));
       }
       results = alterPartitionsInternal(table, partNames, newParts, queryWriteIdList, true, true);
       // commit the changes
@@ -7649,7 +7650,7 @@ public class ObjectStore implements RawStore, Configurable {
             String partName = null;
             if (hiveObject.getPartValues() != null) {
               partName = Warehouse.makePartName(tabObj.getPartitionKeys(), hiveObject.getPartValues(),
-                  tabObj.getParameters(), conf);
+                  MetaStoreUtils.getDefaultPartitionName(tabObj.getParameters(), conf));
             }
             List<MPartitionPrivilege> partitionGrants = this
                 .listPrincipalMPartitionGrants(userName, principalType,
@@ -7684,7 +7685,7 @@ public class ObjectStore implements RawStore, Configurable {
             String partName = null;
             if (hiveObject.getPartValues() != null) {
               partName = Warehouse.makePartName(tabObj.getPartitionKeys(),
-                  hiveObject.getPartValues(), tabObj.getParameters(), conf);
+                  hiveObject.getPartValues(), MetaStoreUtils.getDefaultPartitionName(tabObj.getParameters(), conf));
             }
 
             if (partName != null) {
@@ -10055,8 +10056,8 @@ public class ObjectStore implements RawStore, Configurable {
       for (Partition part : parts) {
 
         if (!isCurrentStatsValidForTheQuery(part, part.getWriteId(), writeIdList, false)) {
-          String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(), table.getParameters(),
-              conf);
+          String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(),
+              MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
           LOG.debug("The current metastore transactional partition column "
               + "statistics for {}.{}.{} is not valid for the current query",
               dbName, tblName, partName);
@@ -10798,7 +10799,7 @@ public class ObjectStore implements RawStore, Configurable {
   public boolean doesPartitionExist(String catName, String dbName, String tableName,
                                     List<FieldSchema> partKeys, List<String> partVals, Map<String, String> tableParams)
       throws MetaException {
-    String name = Warehouse.makePartName(partKeys, partVals, tableParams, conf);
+    String name = Warehouse.makePartName(partKeys, partVals, MetaStoreUtils.getDefaultPartitionName(tableParams, conf));
     return this.getMPartition(catName, dbName, tableName, name) != null;
   }
 

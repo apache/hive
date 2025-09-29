@@ -403,7 +403,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("partition {} has data location: {}", partition, location);
     } else {
       location = new Path(fromPath, Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues(),
-          tblDesc.getTblProps(), conf)).toString();
+          MetaStoreUtils.getDefaultPartitionName(tblDesc.getTblProps(), conf))).toString();
     }
 
     long writeId = -1;
@@ -768,8 +768,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
     Path tableLocation = getTableDataLocation(wh, table, tblDesc, x);
-    Path tgtPath = new Path(tableLocation, Warehouse.makePartPath(partSpec.getPartSpec(), table.getParameters(),
-        x.getConf()));
+    Path tgtPath = new Path(tableLocation, Warehouse.makePartPath(partSpec.getPartSpec(),
+        MetaStoreUtils.getDefaultPartitionName(table.getParameters(), x.getConf())));
     FileSystem tgtFs = FileSystem.get(tgtPath.toUri(), x.getConf());
     checkTargetLocationEmpty(tgtFs, tgtPath, replicationSpec, x.getLOG());
     partSpec.setLocation(tgtPath.toString());

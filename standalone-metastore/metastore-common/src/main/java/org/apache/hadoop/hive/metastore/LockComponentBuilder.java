@@ -22,8 +22,6 @@ import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockType;
 
-import java.util.Map;
-
 /**
  * A builder for {@link LockComponent}s
  */

@@ -1576,7 +1576,8 @@ class MetaStoreDirectSql {
       if (StringUtils.isNotEmpty(nodeValueStr) && (isOpEquals || isOpNotEqual)) {
         Map<String, String> partKeyToVal = new HashMap<>();
         partKeyToVal.put(partCol.getName(), nodeValueStr);
-        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false, null, conf);
+        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false,
+            MetaStoreUtils.getDefaultPartitionName(null, conf));
         if (colType == FilterType.Date) {
           // Some engines like Pig will record both date and time values, in which case we need
           // match PART_NAME by like clause.

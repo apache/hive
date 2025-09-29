@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.graalvm.polyglot.Context;
 
@@ -82,8 +83,8 @@ final class PartitionTree {
    * @throws MetaException partition values are incorrect.
    */
   Partition getPartition(List<String> partVals) throws MetaException {
-    String partName = makePartName(tTable.getPartitionKeys(), partVals, tTable.getParameters(),
-        SessionState.getSessionConf());
+    String partName = makePartName(tTable.getPartitionKeys(), partVals,
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     return getPartition(partName);
   }
 
@@ -102,8 +103,8 @@ final class PartitionTree {
     Map<String, Partition> partNameToPartition = new HashMap<>();
     // validate that the new partition values is not already added to the table
     for (Partition partition : partitions) {
-      String partName = makePartName(tTable.getPartitionKeys(), partition.getValues(), tTable.getParameters(),
-          SessionState.getSessionConf());
+      String partName = makePartName(tTable.getPartitionKeys(), partition.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
       if (!ifNotExists && parts.containsKey(partName)) {
         throw new AlreadyExistsException("Partition " + partName + " already exists");
       }
@@ -156,8 +157,8 @@ final class PartitionTree {
    * @throws MetaException partition with the provided partition values cannot be found.
    */
   Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
-    String partName = makePartName(tTable.getPartitionKeys(), partVals, tTable.getParameters(),
-        SessionState.getSessionConf());
+    String partName = makePartName(tTable.getPartitionKeys(), partVals,
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     if (!parts.containsKey(partName)) {
       throw new NoSuchObjectException(
           "Partition with partition values " + Arrays.toString(partVals.toArray()) + " is not found.");
@@ -202,8 +203,8 @@ final class PartitionTree {
       newPartition.getSd().setLocation(oldPartition.getSd().getLocation());
     }
     dropPartition(oldPartitionVals);
-    String partName = makePartName(tTable.getPartitionKeys(), newPartition.getValues(), tTable.getParameters(),
-        SessionState.getSessionConf());
+    String partName = makePartName(tTable.getPartitionKeys(), newPartition.getValues(),
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     if (parts.containsKey(partName)) {
       throw new InvalidOperationException("Partition " + partName + " already exists");
     }

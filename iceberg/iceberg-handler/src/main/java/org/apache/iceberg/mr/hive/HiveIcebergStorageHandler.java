@@ -893,7 +893,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
 
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
-        hiveConf.getIntVar(ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE), hmsTable.getParameters(), hiveConf);
+        hiveConf.getIntVar(ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE),
+        MetaStoreUtils.getDefaultPartitionName(hmsTable.getParameters(), hiveConf));
 
     if (table.spec().isPartitioned() &&
           hiveConf.getIntVar(ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD) >= 0) {
@@ -2012,7 +2013,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
     validatePartSpec(table, partitionSpec, policy);
     try {
-      String partName = Warehouse.makePartName(partitionSpec, false, table.getParameters(), conf);
+      String partName = Warehouse.makePartName(partitionSpec, false,
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
       return new DummyPartition(table, partName, partitionSpec);
     } catch (MetaException e) {
       throw new SemanticException("Unable to construct name for dummy partition due to: ", e);

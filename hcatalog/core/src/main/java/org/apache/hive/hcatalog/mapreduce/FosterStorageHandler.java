@@ -22,6 +22,7 @@ package org.apache.hive.hcatalog.mapreduce;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -154,7 +155,8 @@ public class FosterStorageHandler extends DefaultStorageHandler {
       }
 
       String outputLocation;
-
+      Map<String, String> tableParams = (jobInfo.getTableInfo() != null && jobInfo.getTableInfo().getTable() != null) ?
+          jobInfo.getTableInfo().getTable().getParameters() : null;
       if ((dynHash != null)
           && Boolean.parseBoolean((String)tableDesc.getProperties().get("EXTERNAL"))
           && jobInfo.getCustomDynamicPath() != null
@@ -162,8 +164,7 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         // dynamic partitioning with custom path; resolve the custom path
         // using partition column values
         outputLocation = HCatFileUtil.resolveCustomPath(jobInfo, null, true,
-            (jobInfo.getTableInfo() != null && jobInfo.getTableInfo().getTable() != null) ?
-                jobInfo.getTableInfo().getTable().getParameters() : null, HCatUtil.getHiveConf(conf));
+            MetaStoreUtils.getDefaultPartitionName(tableParams, HCatUtil.getHiveConf(conf)));
       } else if ((dynHash == null)
            && Boolean.parseBoolean((String)tableDesc.getProperties().get("EXTERNAL"))
            && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
@@ -184,9 +185,7 @@ public class FosterStorageHandler extends DefaultStorageHandler {
           cols.add(name);
           values.add(value);
         }
-        outputLocation = FileUtils.makePartName(cols, values, (jobInfo.getTableInfo() != null &&
-            jobInfo.getTableInfo().getTable() != null) ? jobInfo.getTableInfo().getTable().getParameters() : null,
-            conf);
+        outputLocation = FileUtils.makePartName(cols, values, MetaStoreUtils.getDefaultPartitionName(tableParams, conf));
       }
 
       if (outputLocation!= null && !outputLocation.isEmpty()){

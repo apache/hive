@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
@@ -1371,8 +1372,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       /* The row matches skewed column names. */
       if (allSkewedVals.contains(skewedValsCandidate)) {
         /* matches skewed values. */
-        lbDirName = FileUtils.makeListBucketingDirName(skewedCols, skewedValsCandidate, conf.getTable() != null ?
-            conf.getTable().getParameters() : null, hconf);
+        Map<String, String> tableParams = conf.getTable() != null ? conf.getTable().getParameters() : null;
+        lbDirName = FileUtils.makeListBucketingDirName(skewedCols, skewedValsCandidate,
+            MetaStoreUtils.getDefaultPartitionName(tableParams, hconf));
         locationMap.put(skewedValsCandidate, lbDirName);
       } else {
         lbDirName = createDefaultLbDir(skewedCols, locationMap);
@@ -1386,8 +1388,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private String createDefaultLbDir(List<String> skewedCols,
       Map<List<String>, String> locationMap) {
     String lbDirName;
+    Map<String, String> tableParams = conf.getTable() != null ? conf.getTable().getParameters() : null;
     lbDirName = FileUtils.makeDefaultListBucketingDirName(skewedCols,
-          lbCtx.getDefaultDirName(), conf.getTable() != null ? conf.getTable().getParameters() : null, hconf);
+          lbCtx.getDefaultDirName(), MetaStoreUtils.getDefaultPartitionName(tableParams, hconf));
     List<String> defaultKey = Lists.newArrayList(lbCtx.getDefaultKey());
     if (!locationMap.containsKey(defaultKey)) {
       locationMap.put(defaultKey, lbDirName);
@@ -1475,8 +1478,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   // return the relative path corresponding to the row.
   // e.g., ds=2008-04-08/hr=11
   private String getDynPartDirectory(List<String> row, List<String> dpColNames) {
-    return FileUtils.makePartName(dpColNames, row, conf.getTable() != null ?
-        conf.getTable().getParameters() : null, hconf);
+    return FileUtils.makePartName(dpColNames, row, MetaStoreUtils.getDefaultPartitionName(conf.getTable() != null ?
+        conf.getTable().getParameters() : null, hconf));
   }
 
   @Override

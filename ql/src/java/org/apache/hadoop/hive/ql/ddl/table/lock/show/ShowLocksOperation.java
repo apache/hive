@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.lock.show;
 
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -176,8 +177,8 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
         keyList.add(partKey);
         valList.add(partVal);
       }
-      String partName = FileUtils.makePartName(keyList, valList, Hive.get(context.getConf()).getTable(
-          request.getDbname(), request.getTablename()).getParameters(), context.getConf());
+      String partName = FileUtils.makePartName(keyList, valList, MetaStoreUtils.getDefaultPartitionName(Hive.get(
+          context.getConf()).getTable(request.getDbname(), request.getTablename()).getParameters(), context.getConf()));
       request.setPartname(partName);
     }
 

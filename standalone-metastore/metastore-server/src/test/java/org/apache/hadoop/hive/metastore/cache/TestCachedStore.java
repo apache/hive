@@ -1026,9 +1026,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(100, aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls());
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1, tbl.getParameters(), conf), partVals1, colName, CacheUtils.HIVE_ENGINE);
+        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1, MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)), partVals1, colName, CacheUtils.HIVE_ENGINE);
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2, tbl.getParameters(), conf), partVals2, colName, CacheUtils.HIVE_ENGINE);
+        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2, MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)), partVals2, colName, CacheUtils.HIVE_ENGINE);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals1);
     objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals2);
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName());

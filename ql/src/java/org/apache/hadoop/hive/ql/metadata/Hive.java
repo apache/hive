@@ -3006,8 +3006,8 @@ public class Hive implements AutoCloseable {
 
   private static Path genPartPathFromTable(Table tbl, Map<String, String> partSpec,
       Path tblDataLocationPath, HiveConf hiveConf) throws MetaException {
-    Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec, tbl.getParameters(),
-        hiveConf));
+    Path partPath = new Path(tbl.getDataLocation(), Warehouse.makePartPath(partSpec,
+        MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), hiveConf)));
     return new Path(tblDataLocationPath.toUri().getScheme(),
         tblDataLocationPath.toUri().getAuthority(), partPath.toUri().getPath());
   }
@@ -3275,8 +3275,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<String> partitionNames = new LinkedList<>();
       for(PartitionDetails details : partitionDetailsMap.values()) {
         if (details.fullSpec != null && !details.fullSpec.isEmpty()) {
-          partitionNames.add(Warehouse.makeDynamicPartNameNoTrailingSeperator(details.fullSpec, tbl.getParameters(),
-              conf));
+          partitionNames.add(Warehouse.makeDynamicPartNameNoTrailingSeperator(details.fullSpec,
+              MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)));
         }
       }
       List<Partition> partitions = Hive.get().getPartitionsByNames(tbl, partitionNames);
@@ -4707,7 +4707,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
             if (tbl.getDataLocation() != null) {
               Path partPath = new Path(tbl.getDataLocation(),
                   Warehouse.makePartName(tbl.getPartCols(),
-                      partitionWithoutSD.getValues(), tbl.getParameters(), SessionState.getSessionConf()));
+                      partitionWithoutSD.getValues(), MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(),
+                      SessionState.getSessionConf())));
               partitionLocation = partPath.toString();
             }
           } else {

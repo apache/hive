@@ -7810,7 +7810,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // but the underlying storage format knows about it.
         DummyPartition dummyPartition;
         try {
-          String partName = Warehouse.makePartName(partSpec, false, destinationTable.getParameters(), conf);
+          String partName = Warehouse.makePartName(partSpec, false,
+              MetaStoreUtils.getDefaultPartitionName(destinationTable.getParameters(), conf));
           dummyPartition = new DummyPartition(destinationTable, partName, partSpec);
         } catch (MetaException e) {
           throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
@@ -8612,7 +8613,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (dest_part != null) {
       try {
-        String staticSpec = Warehouse.makePartPath(dest_part.getSpec(), dest_tab.getParameters(), conf);
+        String staticSpec = Warehouse.makePartPath(dest_part.getSpec(),
+            MetaStoreUtils.getDefaultPartitionName(dest_tab.getParameters(), conf));
         fileSinkDesc.setStaticSpec(staticSpec);
       } catch (MetaException e) {
         throw new SemanticException(e);
@@ -8791,8 +8793,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     DynamicPartitionCtx dpCtx = qbm.getDPCtx(dest);
     if (dpCtx == null) {
       dest_tab.validatePartColumnNames(partSpec, false);
-      dpCtx = new DynamicPartitionCtx(partSpec,
-          conf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE), dest_tab.getParameters(), conf);
+      dpCtx = new DynamicPartitionCtx(partSpec, conf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE),
+          MetaStoreUtils.getDefaultPartitionName(dest_tab.getParameters(), conf));
       qbm.setDPCtx(dest, dpCtx);
     }
 
@@ -12278,9 +12280,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // db_name.table_name + partitionSec
     // as the prefix for easy of read during explain and debugging.
     // Currently, partition spec can only be static partition.
-    String k = FileUtils.escapePathName(tblName, tab.getParameters(), conf).toLowerCase() + Path.SEPARATOR;
-    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName(), tab.getParameters(),
-        conf).toLowerCase() + "." + k);
+    String k = FileUtils.escapePathName(tblName, MetaStoreUtils.getDefaultPartitionName(tab.getParameters(),
+        conf)).toLowerCase() + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName(),
+        MetaStoreUtils.getDefaultPartitionName(tab.getParameters(), conf)).toLowerCase() + "." + k);
 
     // set up WriteEntity for replication and txn stats
     WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);

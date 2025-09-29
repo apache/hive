@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -197,15 +198,15 @@ public class TestReplChangeManager {
     Partition part3 = createPartition(dbName, tblName, columns, values, serdeInfo);
     client.add_partition(part3);
 
-    Path part1Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160101"), hiveConf), "part");
+    Path part1Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160101"), MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), hiveConf)), "part");
     createFile(part1Path, "p1");
     String path1Chksum = ReplChangeManager.checksumFor(part1Path, fs);
 
-    Path part2Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160102"), hiveConf), "part");
+    Path part2Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160102"), MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), hiveConf)), "part");
     createFile(part2Path, "p2");
     String path2Chksum = ReplChangeManager.checksumFor(part2Path, fs);
 
-    Path part3Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160103"), hiveConf), "part");
+    Path part3Path = new Path(warehouse.getDefaultPartitionPath(db, tbl, ImmutableMap.of("dt", "20160103"), MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), hiveConf)), "part");
     createFile(part3Path, "p3");
     String path3Chksum = ReplChangeManager.checksumFor(part3Path, fs);
 

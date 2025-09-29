@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -187,7 +188,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even
         // though we are marking stats as not being accurate.
         if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
-          String prefix = getAggregationPrefix(p.getTable(), p.getPartition(), conf);
+          String prefix = getAggregationPrefix(p.getTable(), p.getPartition(),
+              MetaStoreUtils.getDefaultPartitionName(p.getTable().getParameters(), conf));
           updateStats(statsAggregator, parameters, prefix);
         }
       }
@@ -250,7 +252,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       if (partish.isTransactionalTable()) {
-        String prefix = getAggregationPrefix(partish.getTable(), partish.getPartition(), db.getConf());
+        String prefix = getAggregationPrefix(partish.getTable(), partish.getPartition(),
+            MetaStoreUtils.getDefaultPartitionName(partish.getTable().getParameters(), db.getConf()));
         long insertCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
         long updateCount = toLong(statsAggregator.aggregateStats(prefix, UPDATE_COUNT));
         long deleteCount = toLong(statsAggregator.aggregateStats(prefix, DELETE_COUNT));
@@ -528,20 +531,22 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     this.dpPartSpecs = dpPartSpecs;
   }
 
-  public static String getAggregationPrefix(Table table, Partition partition, Configuration conf) throws MetaException {
-    String prefix = getAggregationPrefix0(table, partition, conf);
+  public static String getAggregationPrefix(Table table, Partition partition, String defaultPartitionName)
+      throws MetaException {
+    String prefix = getAggregationPrefix0(table, partition, defaultPartitionName);
     return prefix.endsWith(Path.SEPARATOR) ? prefix : prefix + Path.SEPARATOR;
   }
 
-  private static String getAggregationPrefix0(Table table, Partition partition, Configuration conf) throws MetaException {
+  private static String getAggregationPrefix0(Table table, Partition partition, String defaultPartitionName)
+      throws MetaException {
 
     // prefix is of the form dbName.tblName
-    String prefix = FileUtils.escapePathName(table.getDbName(), table.getParameters(), conf).toLowerCase() + "." +
-        FileUtils.escapePathName(table.getTableName(), table.getParameters(), conf).toLowerCase();
+    String prefix = FileUtils.escapePathName(table.getDbName(), defaultPartitionName).toLowerCase() + "." +
+        FileUtils.escapePathName(table.getTableName(), defaultPartitionName).toLowerCase();
     // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
     // prefix = work.getAggKey();
     if (partition != null) {
-      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec(), table.getParameters(), conf));
+      return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec(), defaultPartitionName));
     }
     return prefix;
   }

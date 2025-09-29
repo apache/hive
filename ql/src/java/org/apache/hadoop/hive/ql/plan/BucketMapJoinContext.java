@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.BucketMatcher;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -233,7 +234,7 @@ public class BucketMapJoinContext implements Serializable {
     String partSpec = mapping.get(URI.create(inputPath).getPath());
     // if partSpec is not null or not empty, tableParams and conf can be null
     return partSpec == null || partSpec.isEmpty() ? fileName :
-      "(" + FileUtils.escapePathName(partSpec, null, conf) + ")" + fileName;
+      "(" + FileUtils.escapePathName(partSpec, MetaStoreUtils.getDefaultPartitionName( null, conf)) + ")" + fileName;
   }
 
   // revert partSpecToFileMapping to inputToPartSpecMapping
