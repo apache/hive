@@ -26,18 +26,18 @@ import java.util.function.UnaryOperator;
 /**
  * Applies a function to the processed lines, before passing it to the wrapped output stream.
  */
-public class TransformingFetchConverter extends SessionStream implements FetchListener {
+public class QTestFetchConverter extends SessionStream implements FetchCallback {
 
   private final UnaryOperator<String> transformation;
 
   private final PrintStream inner;
   private final boolean innerIsFetchConverter;
 
-  public TransformingFetchConverter(OutputStream out, boolean autoFlush, String encoding, UnaryOperator<String> transformation)
+  public QTestFetchConverter(OutputStream out, boolean autoFlush, String encoding, UnaryOperator<String> transformation)
       throws UnsupportedEncodingException {
     super(out, autoFlush, encoding);
     inner = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out);
-    innerIsFetchConverter = out instanceof FetchListener;
+    innerIsFetchConverter = out instanceof FetchCallback;
     this.transformation = transformation;
   }
 
@@ -48,28 +48,23 @@ public class TransformingFetchConverter extends SessionStream implements FetchLi
   @Override
   public void foundQuery(boolean queryfound) {
     if(innerIsFetchConverter) {
-      ((FetchListener)inner).foundQuery(queryfound);
+      ((FetchCallback)inner).foundQuery(queryfound);
     }
   }
 
   @Override
   public void fetchStarted() {
     if(innerIsFetchConverter) {
-      ((FetchListener)inner).fetchStarted();
+      ((FetchCallback)inner).fetchStarted();
     }
-  }
-
-  @Override
-  public void flush() {
-    super.flush();
   }
 
   @Override
   public void fetchFinished() {
     if(innerIsFetchConverter) {
-      ((FetchListener)inner).fetchFinished();
+      ((FetchCallback)inner).fetchFinished();
     }
-    super.flush();
+    flush();
   }
 }
 

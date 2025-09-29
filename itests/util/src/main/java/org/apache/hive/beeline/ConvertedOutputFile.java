@@ -19,7 +19,7 @@
 package org.apache.hive.beeline;
 
 import org.apache.hadoop.hive.common.io.DigestPrintStream;
-import org.apache.hadoop.hive.common.io.FetchListener;
+import org.apache.hadoop.hive.common.io.FetchCallback;
 import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
 
@@ -34,7 +34,7 @@ public class ConvertedOutputFile extends OutputFile {
 
   public ConvertedOutputFile(OutputFile inner, Converter converter) throws Exception {
     super(converter.getConvertedPrintStream(inner.getOut()), inner.getFilename());
-    isFetchListener = (getOut() instanceof FetchListener);
+    isFetchListener = (getOut() instanceof FetchCallback);
   }
 
   @Override
@@ -45,21 +45,21 @@ public class ConvertedOutputFile extends OutputFile {
   @Override
   void fetchStarted() {
     if (isFetchListener) {
-      ((FetchListener) getOut()).fetchStarted();
+      ((FetchCallback) getOut()).fetchStarted();
     }
   }
 
   @Override
   void foundQuery(boolean foundQuery) {
     if (isFetchListener) {
-      ((FetchListener) getOut()).foundQuery(foundQuery);
+      ((FetchCallback) getOut()).foundQuery(foundQuery);
     }
   }
 
   @Override
   void fetchFinished() {
     if (isFetchListener) {
-      ((FetchListener) getOut()).fetchFinished();
+      ((FetchCallback) getOut()).fetchFinished();
     }
   }
 

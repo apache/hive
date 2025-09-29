@@ -23,7 +23,7 @@ package org.apache.hadoop.hive.common.io;
  * of the output of an executed command, and whether
  * the command has been a query.
  */
-public interface FetchListener {
+public interface FetchCallback {
   /**
    * Marks the beginning of the output of an executed command.
    */

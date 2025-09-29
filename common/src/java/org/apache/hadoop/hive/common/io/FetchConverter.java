@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.common.io;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
-public abstract class FetchConverter extends SessionStream implements FetchListener {
+public abstract class FetchConverter extends SessionStream implements FetchCallback {
 
   protected volatile boolean queryfound;
   protected volatile boolean fetchStarted;

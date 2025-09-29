@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.SessionStream;
-import org.apache.hadoop.hive.common.io.TransformingFetchConverter;
+import org.apache.hadoop.hive.common.io.QTestFetchConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
@@ -658,7 +658,7 @@ public class QTestUtil {
 
     qTestResultProcessor.setOutputs(ss, fo);
 
-    ss.out = new TransformingFetchConverter(ss.out, false, "UTF-8", line -> {
+    ss.out = new QTestFetchConverter(ss.out, false, "UTF-8", line -> {
       notifyOutputLine(line);
       if(qOutProcessor != null) {
         // ensure that the masking is done before the sorting of the query results
