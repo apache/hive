@@ -42,10 +42,10 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
     assert(hookContext.getHookType() == HookType.PRE_EXEC_HOOK);
     SessionState ss = SessionState.get();
     QueryState queryState = hookContext.getQueryState();
-    if (ss != null && ss.out instanceof FetchCallback) {
+    if (ss != null && ss.out instanceof FetchCallback callback) {
       boolean foundQuery = queryState.getHiveOperation() == HiveOperation.QUERY &&
               !hookContext.getQueryPlan().isForExplain();
-      ((FetchCallback)ss.out).foundQuery(foundQuery);
+      callback.foundQuery(foundQuery);
     }
 
     Set<ReadEntity> inputs = hookContext.getInputs();

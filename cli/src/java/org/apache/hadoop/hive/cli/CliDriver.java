@@ -275,8 +275,8 @@ public class CliDriver {
         // print the results
         int counter = 0;
         try {
-          if (out instanceof FetchCallback) {
-            ((FetchCallback) out).fetchStarted();
+          if (out instanceof FetchCallback callback) {
+            callback.fetchStarted();
           }
           while (qp.getResults(res)) {
             for (String r : res) {
@@ -300,8 +300,8 @@ public class CliDriver {
           ShimLoader.getHadoopShims()
               .setHadoopSessionContext(String.format(USER_ID, ss.getSessionId(), ss.getUserName()));
 
-          if (out instanceof FetchCallback) {
-            ((FetchCallback) out).fetchFinished();
+          if (out instanceof FetchCallback callback) {
+            callback.fetchFinished();
           }
 
           console.printInfo(
