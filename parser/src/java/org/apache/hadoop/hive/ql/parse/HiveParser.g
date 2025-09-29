@@ -1297,7 +1297,7 @@ descStatement
     (
     (KW_CATALOG) => (KW_CATALOG) KW_EXTENDED? (catName=identifier) -> ^(TOK_DESCCATALOG $catName KW_EXTENDED?)
     |
-    (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
+    (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=databaseName) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     |
     (KW_DATACONNECTOR) => (KW_DATACONNECTOR) KW_EXTENDED? (dcName=identifier) -> ^(TOK_DESCDATACONNECTOR $dcName KW_EXTENDED?)
     |

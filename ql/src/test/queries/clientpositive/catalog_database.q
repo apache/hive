@@ -46,6 +46,9 @@ DROP DATABASE testcat.testdb_1;
 -- The list of databases in the catalog 'testcat' should contain default and testdb_2.
 SHOW DATABASES;
 
+-- DESC DATABASE by catalog.db pattern
+DESCRIBE DATABASE testcat.testdb_2;
+DESCRIBE DATABASE EXTENDED testcat.testdb_2;
 
 -- DROP CATALOG at the end. Need to drop all non-default databases first.
 DROP DATABASE testcat.testdb_2;
