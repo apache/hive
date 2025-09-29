@@ -70,7 +70,7 @@ public class TestLocationQueries extends BaseTestQueries {
       StringBuilder fileNames = new StringBuilder("Files failing the location check:");
       int locationCount = 0;
       Pattern p = Pattern.compile("location:([^,)]+)");
-      for(String line : outputLines) {
+      for (String line : outputLines) {
         Matcher m = p.matcher(line);
         if (m.find()) {
           File f = new File(m.group(1));

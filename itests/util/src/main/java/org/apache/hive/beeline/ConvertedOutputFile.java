@@ -30,35 +30,35 @@ import java.io.PrintStream;
  * FetchConverters.
  */
 public class ConvertedOutputFile extends OutputFile {
-  private final boolean isFetchListener;
+  private final boolean hasFetchCallback;
 
   public ConvertedOutputFile(OutputFile inner, Converter converter) throws Exception {
     super(converter.getConvertedPrintStream(inner.getOut()), inner.getFilename());
-    isFetchListener = (getOut() instanceof FetchCallback);
+    hasFetchCallback = (getOut() instanceof FetchCallback);
   }
 
   @Override
   boolean isActiveConverter() {
-    return isFetchListener;
+    return hasFetchCallback;
   }
 
   @Override
   void fetchStarted() {
-    if (isFetchListener) {
+    if (hasFetchCallback) {
       ((FetchCallback) getOut()).fetchStarted();
     }
   }
 
   @Override
   void foundQuery(boolean foundQuery) {
-    if (isFetchListener) {
+    if (hasFetchCallback) {
       ((FetchCallback) getOut()).foundQuery(foundQuery);
     }
   }
 
   @Override
   void fetchFinished() {
-    if (isFetchListener) {
+    if (hasFetchCallback) {
       ((FetchCallback) getOut()).fetchFinished();
     }
   }

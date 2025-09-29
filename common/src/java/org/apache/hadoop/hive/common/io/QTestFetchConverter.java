@@ -31,13 +31,13 @@ public class QTestFetchConverter extends SessionStream implements FetchCallback 
   private final UnaryOperator<String> transformation;
 
   private final PrintStream inner;
-  private final boolean innerIsFetchConverter;
+  private final boolean hasFetchCallback;
 
   public QTestFetchConverter(OutputStream out, boolean autoFlush, String encoding, UnaryOperator<String> transformation)
       throws UnsupportedEncodingException {
     super(out, autoFlush, encoding);
     inner = out instanceof PrintStream ps ? ps : new PrintStream(out);
-    innerIsFetchConverter = out instanceof FetchCallback;
+    hasFetchCallback = out instanceof FetchCallback;
     this.transformation = transformation;
   }
 
@@ -48,21 +48,21 @@ public class QTestFetchConverter extends SessionStream implements FetchCallback 
 
   @Override
   public void foundQuery(boolean queryfound) {
-    if(innerIsFetchConverter) {
+    if (hasFetchCallback) {
       ((FetchCallback)inner).foundQuery(queryfound);
     }
   }
 
   @Override
   public void fetchStarted() {
-    if(innerIsFetchConverter) {
+    if (hasFetchCallback) {
       ((FetchCallback)inner).fetchStarted();
     }
   }
 
   @Override
   public void fetchFinished() {
-    if(innerIsFetchConverter) {
+    if (hasFetchCallback) {
       ((FetchCallback)inner).fetchFinished();
     }
     flush();

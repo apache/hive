@@ -660,7 +660,7 @@ public class QTestUtil {
 
     ss.out = new QTestFetchConverter(ss.out, false, "UTF-8", line -> {
       notifyOutputLine(line);
-      if(qOutProcessor != null) {
+      if (qOutProcessor != null) {
         // ensure that the masking is done before the sorting of the query results
         return qOutProcessor.processLine(line).get();
       }
