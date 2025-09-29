@@ -1175,6 +1175,46 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals("Directories do not match", expectedDirs, actualDirs);
   }
 
+  @Test
+  public void testCleanupOnConcurrentMinorCompactions() throws Exception {
+    String dbName = "default";
+    String tblName = "tcocmc";
+    Table t = newTable(dbName, tblName, false);
+    
+    addBaseFile(t, null, 20L, 20, 21);
+    addDeltaFile(t, null, 22L, 22L, 1);
+    addDeltaFile(t, null, 23L, 23L, 1);
+
+    // Overlapping compacted deltas with different visibilityTxnIDs simulating concurrent compaction from two workers
+    addDeltaFile(t, null, 22L, 23L, 2, 24);
+    addDeltaFile(t, null, 22L, 23L, 2, 25);
+    burnThroughTransactions(dbName, tblName, 25);
+    
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    compactInTxn(rqst);
+    
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(2, paths.size());
+    boolean sawBase = false, sawDelta = false;
+    for (Path path : paths) {
+      if (path.getName().equals("base_20_v0000021")) {
+        sawBase = true;
+      } else if (path.getName().equals(addVisibilitySuffix(makeDeltaDirNameCompacted(22, 23), 25))) {
+        sawDelta = true;
+      } else {
+        Assert.fail("Unexpected file " + path.getName());
+      }
+    }
+    Assert.assertTrue(sawBase);
+    Assert.assertTrue(sawDelta);
+  }
+
   private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
     awiRqst.setTxnIds(Collections.singletonList(txnId));
