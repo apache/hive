@@ -1913,7 +1913,7 @@ public class MetastoreConf {
         "The number of entries of the token introspection cache."
     ),
     CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_FIELD(
-        "metastore.catalog.servlet.auth.oauth2.principal.regex.username.field",
+        "metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.field",
         "hive.metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.field", "sub",
         "The claim name including a username. This is effective when you use RegexPrincipalMapper. For example, if " +
             "you want to resolve a user name from the email claim, set this to email."
