@@ -33,18 +33,21 @@ public class DescDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String DESC_DATABASE_SCHEMA =
-      "db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname#string:string:string:string:string:string,string,string";
+      "cat_name,db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname#" +
+              "string:string:string:string:string:string:string,string,string";
 
   public static final String DESC_DATABASE_SCHEMA_EXTENDED =
-      "db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname,parameters#" +
-      "string:string:string:string:string:string:string,string,string";
+      "cat_name,db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname,parameters#" +
+      "string:string:string:string:string:string:string:string,string,string";
 
   private final String resFile;
+  private final String catName;
   private final String dbName;
   private final boolean isExtended;
 
-  public DescDatabaseDesc(Path resFile, String dbName, boolean isExtended) {
+  public DescDatabaseDesc(Path resFile, String catName, String dbName, boolean isExtended) {
     this.resFile = resFile.toString();
+    this.catName = catName;
     this.dbName = dbName;
     this.isExtended = isExtended;
   }
@@ -53,6 +56,11 @@ public class DescDatabaseDesc implements DDLDesc, Serializable {
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isExtended() {
     return isExtended;
+  }
+
+  @Explain(displayName = "catalog", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catName;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

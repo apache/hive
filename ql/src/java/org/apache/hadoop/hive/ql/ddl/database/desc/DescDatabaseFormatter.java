@@ -45,7 +45,7 @@ abstract class DescDatabaseFormatter {
     }
   }
 
-  abstract void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
+  abstract void showDatabaseDescription(DataOutputStream out, String catalog, String database, String comment, String location,
       String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
       String connectorName, String remoteDbName)
       throws HiveException;
@@ -54,11 +54,12 @@ abstract class DescDatabaseFormatter {
 
   static class JsonDescDatabaseFormatter extends DescDatabaseFormatter {
     @Override
-    void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
+    void showDatabaseDescription(DataOutputStream out, String catalog, String database, String comment, String location,
         String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
         String connectorName, String remoteDbName)
         throws HiveException {
       MapBuilder builder = MapBuilder.create()
+          .put("catalog", catalog)
           .put("database", database)
           .put("comment", comment)
           .put("location", location);
@@ -86,11 +87,13 @@ abstract class DescDatabaseFormatter {
 
   static class TextDescDatabaseFormatter extends DescDatabaseFormatter {
     @Override
-    void showDatabaseDescription(DataOutputStream out, String database, String comment, String location,
+    void showDatabaseDescription(DataOutputStream out, String catalog, String database, String comment, String location,
         String managedLocation, String ownerName, PrincipalType ownerType, Map<String, String> params,
         String connectorName, String remoteDbName)
         throws HiveException {
       try {
+        out.write(catalog.getBytes(StandardCharsets.UTF_8));
+        out.write(Utilities.tabCode);
         out.write(database.getBytes(StandardCharsets.UTF_8));
         out.write(Utilities.tabCode);
         if (comment != null) {
