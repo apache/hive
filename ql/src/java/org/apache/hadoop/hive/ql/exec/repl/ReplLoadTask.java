@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerD
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.thrift.TException;
@@ -448,8 +449,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Map<String, String> props = new HashMap<>();
     props.put(READONLY, Boolean.TRUE.toString());
 
+    // TODO catalog. Need to double check the actual catalog here.
     AlterDatabaseSetPropertiesDesc setTargetReadOnly =
-      new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+      new AlterDatabaseSetPropertiesDesc(HiveUtils.getCurrentCatalogOrDefault(conf), work.dbNameToLoadIn, props, null);
     DDLWork alterDbPropWork = new DDLWork(new HashSet<>(), new HashSet<>(), setTargetReadOnly, true,
       work.dumpDirectory, work.getMetricCollector());
 
@@ -865,7 +867,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           props.put(currProp.getKey(), (actualVal == null) ? "" : actualVal);
         }
       }
-      AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(sourceDb.getName(),
+      AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(sourceDb.getCatalogName(), sourceDb.getName(),
               new PrincipalDesc(sourceDb.getOwnerName(), sourceDb.getOwnerType()), null);
       DDLWork ddlWork = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
               (new Path(work.dumpDirectory)).getParent().toString(), work.getMetricCollector());
@@ -881,7 +883,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       props.put(ReplConst.REPL_FAILOVER_ENDPOINT, "");
     }
     if (!props.isEmpty()) {
-      AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
+      // TODO catalog. Need to double check the actual catalog here.
+      AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(targetDb.getCatalogName(),
+              work.dbNameToLoadIn, props, null);
       Task<?> addReplTargetPropTask =
               TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), setTargetDesc, true,
                       work.dumpDirectory, work.getMetricCollector()), conf);
@@ -927,8 +931,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         String lastEventid = builder.eventTo().toString();
         Map<String, String> mapProp = new HashMap<>();
         mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), lastEventid);
+        // TODO catalog. Need to double check the actual catalog here.
         AlterDatabaseSetPropertiesDesc alterDbDesc =
-            new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
+            new AlterDatabaseSetPropertiesDesc(targetDb.getCatalogName(), dbName, mapProp,
                 new ReplicationSpec(lastEventid, lastEventid));
         Task<?> updateReplIdTask =
             TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,

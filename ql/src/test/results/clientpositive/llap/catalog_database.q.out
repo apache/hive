@@ -104,14 +104,40 @@ PREHOOK: Input: database:testdb_2
 POSTHOOK: query: DESCRIBE DATABASE testcat.testdb_2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:testdb_2
-testcat	testdb_2		location/in/test		hive_test_user	USER		
+testdb_2		location/in/test		hive_test_user	USER		
 PREHOOK: query: DESCRIBE DATABASE EXTENDED testcat.testdb_2
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:testdb_2
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED testcat.testdb_2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:testdb_2
-testcat	testdb_2		location/in/test		hive_test_user	USER		
+testdb_2		location/in/test		hive_test_user	USER			
+PREHOOK: query: ALTER DATABASE testcat.testdb_2 SET dbproperties('test'='yesthisis')
+PREHOOK: type: ALTERDATABASE
+PREHOOK: Output: database:testdb_2
+POSTHOOK: query: ALTER DATABASE testcat.testdb_2 SET dbproperties('test'='yesthisis')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:testdb_2
+testdb_2		location/in/test		user1	USER		
 PREHOOK: query: DROP DATABASE testcat.testdb_2
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:testdb_2

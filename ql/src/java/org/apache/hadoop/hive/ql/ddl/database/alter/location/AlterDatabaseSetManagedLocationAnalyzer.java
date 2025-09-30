@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.alter.location;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.database.alter.AbstractAlterDatabaseAnalyzer;
@@ -36,12 +37,14 @@ public class AlterDatabaseSetManagedLocationAnalyzer extends AbstractAlterDataba
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String databaseName = getUnescapedName((ASTNode) root.getChild(0));
-    String newLocation = unescapeSQLString(root.getChild(1).getText());
+    Pair<String, String> catDbNamePair = getCatDbNamePair((ASTNode) root.getChild(0));
+    String catalogName = catDbNamePair.getLeft();
+    String databaseName = catDbNamePair.getRight();
+    String newLocation = unescapeSQLString(root.getChild(1).getChild(0).getText());
 
     outputs.add(toWriteEntity(newLocation));
 
-    AlterDatabaseSetManagedLocationDesc desc = new AlterDatabaseSetManagedLocationDesc(databaseName, newLocation);
+    AlterDatabaseSetManagedLocationDesc desc = new AlterDatabaseSetManagedLocationDesc(catalogName, databaseName, newLocation);
     addAlterDatabaseDesc(desc);
   }
 }
