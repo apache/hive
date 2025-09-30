@@ -20,8 +20,6 @@
 package org.apache.iceberg.rest;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +29,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
-import org.apache.iceberg.relocated.com.google.common.io.CharStreams;
 import org.apache.iceberg.rest.HMSCatalogAdapter.Route;
 import org.apache.iceberg.rest.HTTPRequest.HTTPMethod;
 import org.apache.iceberg.rest.responses.ErrorResponse;
@@ -152,10 +149,6 @@ public class HMSCatalogServlet extends HttpServlet {
       if (route.requestClass() != null) {
         requestBody =
             RESTObjectMapper.mapper().readValue(request.getReader(), route.requestClass());
-      } else if (route == Route.TOKENS) {
-        try (Reader reader = new InputStreamReader(request.getInputStream())) {
-          requestBody = RESTUtil.decodeFormData(CharStreams.toString(reader));
-        }
       }
 
       Map<String, String> queryParams =
