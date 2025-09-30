@@ -41,7 +41,7 @@ public class DescDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    if (root.getChildCount() == 0 || root.getChildCount() > 3) {
+    if (root.getChildCount() == 0 || root.getChildCount() > 2) {
       throw new SemanticException("Unexpected Tokens at DESCRIBE DATABASE");
     }
 
@@ -50,7 +50,7 @@ public class DescDatabaseAnalyzer extends BaseSemanticAnalyzer {
     Pair<String, String> catDbNamePair = getCatDbNamePair((ASTNode) root.getChild(0));
     String catName = catDbNamePair.getLeft();
     String dbName = catDbNamePair.getRight();
-    boolean isExtended = root.getChildCount() == 3;
+    boolean isExtended = root.getChildCount() == 2;
 
     inputs.add(new ReadEntity(getDatabase(catName, dbName, true)));
 
