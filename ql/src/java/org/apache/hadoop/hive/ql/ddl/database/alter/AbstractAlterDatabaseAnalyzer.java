@@ -35,7 +35,7 @@ public abstract class AbstractAlterDatabaseAnalyzer extends BaseSemanticAnalyzer
   }
 
   protected void addAlterDatabaseDesc(AbstractAlterDatabaseDesc alterDesc) throws SemanticException {
-    Database database = getDatabase(alterDesc.getDatabaseName());
+    Database database = getDatabase(alterDesc.getCatalogName(), alterDesc.getDatabaseName(), true);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterDesc)));
   }
