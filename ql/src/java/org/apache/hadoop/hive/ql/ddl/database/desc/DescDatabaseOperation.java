@@ -63,11 +63,11 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
         if (HiveConf.getBoolVar(context.getConf(), HiveConf.ConfVars.HIVE_IN_TEST)) {
           location = "location/in/test";
         }
-        formatter.showDatabaseDescription(outStream, database.getCatalogName(), database.getName(), database.getDescription(), location,
+        formatter.showDatabaseDescription(outStream, database.getName(), database.getDescription(), location,
             database.getManagedLocationUri(), database.getOwnerName(), database.getOwnerType(), params, "", "");
         break;
       case REMOTE:
-        formatter.showDatabaseDescription(outStream, database.getCatalogName(), database.getName(), database.getDescription(), "", "",
+        formatter.showDatabaseDescription(outStream, database.getName(), database.getDescription(), "", "",
           database.getOwnerName(), database.getOwnerType(), params, database.getConnector_name(), database.getRemote_dbname());
         break;
       default:
