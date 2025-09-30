@@ -161,12 +161,12 @@ public class LoadDatabase {
   }
 
   private Task<?> alterDbTask(Database dbObj) {
-    return alterDbTask(dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory),
+    return alterDbTask(dbObj.getCatalogName(), dbObj.getName(), updateDbProps(dbObj, context.dumpDirectory),
             context.hiveConf, context.dumpDirectory, this.metricCollector);
   }
 
   private Task<?> setOwnerInfoTask(Database dbObj) {
-    AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(dbObj.getName(),
+    AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(dbObj.getCatalogName(), dbObj.getName(),
         new PrincipalDesc(dbObj.getOwnerName(), dbObj.getOwnerType()), null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
             (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector);
@@ -204,10 +204,10 @@ public class LoadDatabase {
     return parameters;
   }
 
-  private static Task<?> alterDbTask(String dbName, Map<String, String> props,
+  private static Task<?> alterDbTask(String catName, String dbName, Map<String, String> props,
                                      HiveConf hiveConf, String dumpDirectory,
                                      ReplicationMetricCollector metricCollector) {
-    AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(dbName, props, null);
+    AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(catName, dbName, props, null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
             (new Path(dumpDirectory)).getParent().toString(), metricCollector);
     return TaskFactory.get(work, hiveConf);
@@ -228,7 +228,7 @@ public class LoadDatabase {
     @Override
     public TaskTracker tasks() throws SemanticException {
       Database dbObj = readDbMetadata();
-      tracker.addTask(alterDbTask(dbObj.getName(), dbObj.getParameters(), context.hiveConf,
+      tracker.addTask(alterDbTask(dbObj.getCatalogName(), dbObj.getName(), dbObj.getParameters(), context.hiveConf,
               context.dumpDirectory, this.metricCollector ));
       return tracker;
     }

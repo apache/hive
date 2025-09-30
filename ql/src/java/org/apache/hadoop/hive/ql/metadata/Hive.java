@@ -1300,7 +1300,12 @@ public class Hive implements AutoCloseable {
     }
   }
 
-  // TODO: this whole path won't work with catalogs
+  /**
+   * When you call this method, you need to ensure that the catalog has been set in the db object.
+   * @param dbName The database name.
+   * @param db The database object.
+   * @throws HiveException
+   */
   public void alterDatabase(String dbName, Database db)
       throws HiveException {
     try {

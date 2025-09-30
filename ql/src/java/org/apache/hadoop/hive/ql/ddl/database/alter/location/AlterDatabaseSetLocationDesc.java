@@ -31,8 +31,8 @@ public class AlterDatabaseSetLocationDesc extends AbstractAlterDatabaseDesc {
 
   private final String location;
 
-  public AlterDatabaseSetLocationDesc(String databaseName, String location) {
-    super(databaseName, null);
+  public AlterDatabaseSetLocationDesc(String catalogName, String databaseName, String location) {
+    super(catalogName, databaseName, null);
     this.location = location;
   }
 
