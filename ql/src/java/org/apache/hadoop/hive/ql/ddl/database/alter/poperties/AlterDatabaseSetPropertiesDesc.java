@@ -34,9 +34,9 @@ public class AlterDatabaseSetPropertiesDesc extends AbstractAlterDatabaseDesc {
 
   private final Map<String, String> dbProperties;
 
-  public AlterDatabaseSetPropertiesDesc(String databaseName, Map<String, String> dbProperties,
+  public AlterDatabaseSetPropertiesDesc(String catalogName, String databaseName, Map<String, String> dbProperties,
       ReplicationSpec replicationSpec) {
-    super(databaseName, replicationSpec);
+    super(catalogName, databaseName, replicationSpec);
     this.dbProperties = dbProperties;
   }
 
