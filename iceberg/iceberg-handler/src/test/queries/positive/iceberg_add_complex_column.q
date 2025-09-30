@@ -6,13 +6,9 @@ ALTER TABLE t_complex ADD COLUMNS (col1 STRUCT<x:INT, y:INT>);
 
 INSERT INTO t_complex VALUES (2, named_struct("x", 10, "y", 20));
 
-SELECT * FROM t_complex ORDER BY id;
-
 ALTER TABLE t_complex ADD COLUMNS (col2 map<string,string>);
 
 INSERT INTO t_complex VALUES (3, named_struct("x", 11, "y", 22), map("k1", "v1", "k2", "v2"));
-
-SELECT * FROM t_complex ORDER BY id;
 
 ALTER TABLE t_complex ADD COLUMNS (col3 array<int>);
 

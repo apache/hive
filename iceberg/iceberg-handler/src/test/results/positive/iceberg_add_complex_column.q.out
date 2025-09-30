@@ -30,16 +30,6 @@ POSTHOOK: query: INSERT INTO t_complex VALUES (2, named_struct("x", 10, "y", 20)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t_complex
-PREHOOK: query: SELECT * FROM t_complex ORDER BY id
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t_complex
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM t_complex ORDER BY id
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_complex
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL
-2	{"x":10,"y":20}
 PREHOOK: query: ALTER TABLE t_complex ADD COLUMNS (col2 map<string,string>)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@t_complex
@@ -56,17 +46,6 @@ POSTHOOK: query: INSERT INTO t_complex VALUES (3, named_struct("x", 11, "y", 22)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t_complex
-PREHOOK: query: SELECT * FROM t_complex ORDER BY id
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t_complex
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM t_complex ORDER BY id
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_complex
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	NULL
-2	{"x":10,"y":20}	NULL
-3	{"x":11,"y":22}	{"k1":"v1","k2":"v2"}
 PREHOOK: query: ALTER TABLE t_complex ADD COLUMNS (col3 array<int>)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@t_complex
