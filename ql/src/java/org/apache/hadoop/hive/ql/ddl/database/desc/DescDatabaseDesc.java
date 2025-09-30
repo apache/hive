@@ -33,12 +33,12 @@ public class DescDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final String DESC_DATABASE_SCHEMA =
-      "cat_name,db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname#" +
-              "string:string:string:string:string:string:string,string,string";
+      "db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname#" +
+              "string:string:string:string:string:string,string,string";
 
   public static final String DESC_DATABASE_SCHEMA_EXTENDED =
-      "cat_name,db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname,parameters#" +
-      "string:string:string:string:string:string:string:string,string,string";
+      "db_name,comment,location,managedLocation,owner_name,owner_type,connector_name,remote_dbname,parameters#" +
+      "string:string:string:string:string:string:string,string,string";
 
   private final String resFile;
   private final String catName;
