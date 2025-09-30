@@ -1,6 +1,6 @@
 --! qt:dataset:src
 --! qt:dataset:alltypesorc
---SORT_QUERY_RESULTS
+-- SORT_QUERY_RESULTS
 
 set hive.explain.user=false;
 

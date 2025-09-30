@@ -19,59 +19,53 @@
 package org.apache.hadoop.hive.common.io;
 
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.function.UnaryOperator;
 
-public abstract class FetchConverter extends SessionStream implements FetchCallback {
+/**
+ * Applies a function to the processed lines, before passing it to the wrapped output stream.
+ */
+public class QTestFetchConverter extends SessionStream implements FetchCallback {
 
-  protected volatile boolean queryfound;
-  protected volatile boolean fetchStarted;
+  private final UnaryOperator<String> transformation;
 
-  public FetchConverter(OutputStream out, boolean autoFlush, String encoding)
+  private final PrintStream inner;
+  private final boolean hasFetchCallback;
+
+  public QTestFetchConverter(OutputStream out, boolean autoFlush, String encoding, UnaryOperator<String> transformation)
       throws UnsupportedEncodingException {
     super(out, autoFlush, encoding);
+    inner = out instanceof PrintStream ps ? ps : new PrintStream(out);
+    hasFetchCallback = out instanceof FetchCallback;
+    this.transformation = transformation;
   }
 
+  @Override
+  public void println(String str) {
+    inner.println(transformation.apply(str));
+  }
+
+  @Override
   public void foundQuery(boolean queryfound) {
-    this.queryfound = queryfound;
+    if (hasFetchCallback) {
+      ((FetchCallback)inner).foundQuery(queryfound);
+    }
   }
 
+  @Override
   public void fetchStarted() {
-    fetchStarted = true;
-  }
-
-  @Override
-  public void println(String out) {
-    if (byPass()) {
-      printDirect(out);
-    } else {
-      process(out);
+    if (hasFetchCallback) {
+      ((FetchCallback)inner).fetchStarted();
     }
   }
 
-  protected final void printDirect(String out) {
-    super.println(out);
-  }
-
-  protected final boolean byPass() {
-    return !queryfound || !fetchStarted;
-  }
-
-  protected abstract void process(String out);
-
-  protected abstract void processFinal();
-
   @Override
-  public void flush() {
-    if (byPass()) {
-      super.flush();
-    }
-  }
-
   public void fetchFinished() {
-    if (!byPass()) {
-      processFinal();
+    if (hasFetchCallback) {
+      ((FetchCallback)inner).fetchFinished();
     }
-    super.flush();
-    fetchStarted = false;
+    flush();
   }
 }
+

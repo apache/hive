@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
-import org.apache.hadoop.hive.common.io.FetchConverter;
+import org.apache.hadoop.hive.common.io.FetchCallback;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -275,8 +275,8 @@ public class CliDriver {
         // print the results
         int counter = 0;
         try {
-          if (out instanceof FetchConverter) {
-            ((FetchConverter) out).fetchStarted();
+          if (out instanceof FetchCallback callback) {
+            callback.fetchStarted();
           }
           while (qp.getResults(res)) {
             for (String r : res) {
@@ -300,8 +300,8 @@ public class CliDriver {
           ShimLoader.getHadoopShims()
               .setHadoopSessionContext(String.format(USER_ID, ss.getSessionId(), ss.getUserName()));
 
-          if (out instanceof FetchConverter) {
-            ((FetchConverter) out).fetchFinished();
+          if (out instanceof FetchCallback callback) {
+            callback.fetchFinished();
           }
 
           console.printInfo(
