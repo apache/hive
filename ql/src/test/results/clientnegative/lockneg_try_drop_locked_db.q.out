@@ -17,5 +17,5 @@ PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks database lockneg9
 POSTHOOK: type: SHOWLOCKS
 lockneg9	SHARED
-Unable to acquire IMPLICIT, EXCLUSIVE lock lockneg9 after 1 attempts.
+Unable to acquire IMPLICIT, EXCLUSIVE lock hive@lockneg9 after 1 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

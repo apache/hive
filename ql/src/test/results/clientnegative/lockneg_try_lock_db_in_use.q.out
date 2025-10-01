@@ -49,5 +49,5 @@ PREHOOK: query: lock database lockneg2 exclusive
 PREHOOK: type: LOCKDATABASE
 PREHOOK: Input: database:lockneg2
 PREHOOK: Output: database:lockneg2
-Unable to acquire EXPLICIT, EXCLUSIVE lock lockneg2 after 1 attempts.
+Unable to acquire EXPLICIT, EXCLUSIVE lock hive@lockneg2 after 1 attempts.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask
