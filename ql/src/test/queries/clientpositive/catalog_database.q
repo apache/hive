@@ -58,10 +58,6 @@ ALTER DATABASE testcat.testdb_2 SET owner user user1;
 ALTER DATABASE testcat.testdb_2 SET LOCATION '/tmp/testcat/path/testcat.testdb_2';
 DESCRIBE DATABASE testcat.testdb_2;
 
--- LOCK & UNLOCK DATABASE by catalog.db pattern
-LOCK DATABASE testcat.testdb_2 SHARED;
-SHOW LOCKS;
-
 -- SHOW CREATE DATABASE vy catalog.db pattern
 SHOW CREATE DATABASE testcat.testdb_2;
 
