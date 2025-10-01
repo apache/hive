@@ -1338,7 +1338,7 @@ showStatement
     | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? whereClause? orderByClause? limitClause? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec? whereClause? orderByClause? limitClause?)
     | KW_SHOW KW_CREATE (
-        (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=identifier -> ^(TOK_SHOW_CREATEDATABASE $db_name)
+        (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=databaseName -> ^(TOK_SHOW_CREATEDATABASE $db_name)
         |
         KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
       )

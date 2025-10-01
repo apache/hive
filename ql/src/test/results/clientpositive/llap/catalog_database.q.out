@@ -150,6 +150,17 @@ PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: SHOW CREATE DATABASE testcat.testdb_2
+PREHOOK: type: SHOW_CREATEDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: SHOW CREATE DATABASE testcat.testdb_2
+POSTHOOK: type: SHOW_CREATEDATABASE
+POSTHOOK: Input: database:testdb_2
+CREATE DATABASE `testdb_2`
+LOCATION
+#### A masked pattern was here ####
+WITH DBPROPERTIES (
+  'test'='yesthisis')
 PREHOOK: query: DROP DATABASE testcat.testdb_2
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:testdb_2

@@ -62,6 +62,9 @@ DESCRIBE DATABASE testcat.testdb_2;
 LOCK DATABASE testcat.testdb_2 SHARED;
 SHOW LOCKS;
 
+-- SHOW CREATE DATABASE vy catalog.db pattern
+SHOW CREATE DATABASE testcat.testdb_2;
+
 -- DROP CATALOG at the end. Need to drop all non-default databases first.
 DROP DATABASE testcat.testdb_2;
 DROP CATALOG testcat;
