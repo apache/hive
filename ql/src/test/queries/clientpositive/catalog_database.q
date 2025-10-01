@@ -1,3 +1,5 @@
+set hive.support.concurrency=true;
+
 -- SORT_QUERY_RESULTS
 
 -- CREATE DATABASE in default catalog 'hive'
@@ -55,6 +57,10 @@ ALTER DATABASE testcat.testdb_2 SET dbproperties('test'='yesthisis');
 ALTER DATABASE testcat.testdb_2 SET owner user user1;
 ALTER DATABASE testcat.testdb_2 SET LOCATION '/tmp/testcat/path/testcat.testdb_2';
 DESCRIBE DATABASE testcat.testdb_2;
+
+-- LOCK & UNLOCK DATABASE by catalog.db pattern
+LOCK DATABASE testcat.testdb_2 SHARED;
+SHOW LOCKS;
 
 -- DROP CATALOG at the end. Need to drop all non-default databases first.
 DROP DATABASE testcat.testdb_2;

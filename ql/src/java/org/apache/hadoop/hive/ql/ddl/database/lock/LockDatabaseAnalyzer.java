@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.lock;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -43,16 +45,21 @@ public class LockDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String databaseName = unescapeIdentifier(root.getChild(0).getText());
+    Pair<String, String> catDbNamePair = getCatDbNamePair((ASTNode) root.getChild(0));
+    String catalogName = catDbNamePair.getLeft();
+    if (catalogName != null && getCatalog(catalogName) == null) {
+      throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);
+    }
+    String databaseName = catDbNamePair.getRight();
     String mode = unescapeIdentifier(root.getChild(1).getText().toUpperCase());
 
-    inputs.add(new ReadEntity(getDatabase(databaseName)));
+    inputs.add(new ReadEntity(getDatabase(catalogName, databaseName, true)));
     // Lock database operation is to acquire the lock explicitly, the operation itself doesn't need to be locked.
     // Set the WriteEntity as WriteType: DDL_NO_LOCK here, otherwise it will conflict with Hive's transaction.
-    outputs.add(new WriteEntity(getDatabase(databaseName), WriteType.DDL_NO_LOCK));
+    outputs.add(new WriteEntity(getDatabase(catalogName, databaseName, true), WriteType.DDL_NO_LOCK));
 
     LockDatabaseDesc desc =
-        new LockDatabaseDesc(databaseName, mode, HiveConf.getVar(conf, ConfVars.HIVE_QUERY_ID), ctx.getCmd());
+        new LockDatabaseDesc(catalogName, databaseName, mode, HiveConf.getVar(conf, ConfVars.HIVE_QUERY_ID), ctx.getCmd());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     ctx.setNeedLockMgr(true);
   }

@@ -31,10 +31,17 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class UnlockDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  private final String catalogName;
   private final String databaseName;
 
-  public UnlockDatabaseDesc(String databaseName) {
+  public UnlockDatabaseDesc(String catalogName, String databaseName) {
+    this.catalogName = catalogName;
     this.databaseName = databaseName;
+  }
+
+  @Explain(displayName = "catalog", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catalogName;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

@@ -61,7 +61,7 @@ lockStatement
 lockDatabase
 @init { gParent.pushMsg("lock database statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_LOCK (KW_DATABASE|KW_SCHEMA) (dbName=identifier) lockMode -> ^(TOK_LOCKDB $dbName lockMode)
+    : KW_LOCK (KW_DATABASE|KW_SCHEMA) (dbName=databaseName) lockMode -> ^(TOK_LOCKDB $dbName lockMode)
     ;
 
 lockMode
@@ -79,5 +79,5 @@ unlockStatement
 unlockDatabase
 @init { gParent.pushMsg("unlock database statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_UNLOCK (KW_DATABASE|KW_SCHEMA) (dbName=identifier) -> ^(TOK_UNLOCKDB $dbName)
+    : KW_UNLOCK (KW_DATABASE|KW_SCHEMA) (dbName=databaseName) -> ^(TOK_UNLOCKDB $dbName)
     ;
