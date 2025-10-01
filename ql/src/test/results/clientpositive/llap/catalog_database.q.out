@@ -138,6 +138,18 @@ POSTHOOK: query: DESCRIBE DATABASE testcat.testdb_2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:testdb_2
 testdb_2		location/in/test		user1	USER		
+PREHOOK: query: LOCK DATABASE testcat.testdb_2 SHARED
+PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:testdb_2
+PREHOOK: Output: database:testdb_2
+POSTHOOK: query: LOCK DATABASE testcat.testdb_2 SHARED
+POSTHOOK: type: LOCKDATABASE
+POSTHOOK: Input: database:testdb_2
+POSTHOOK: Output: database:testdb_2
+PREHOOK: query: SHOW LOCKS
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS
+POSTHOOK: type: SHOWLOCKS
 PREHOOK: query: DROP DATABASE testcat.testdb_2
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:testdb_2
