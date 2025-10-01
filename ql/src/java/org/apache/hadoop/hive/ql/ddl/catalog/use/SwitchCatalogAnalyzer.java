@@ -40,14 +40,14 @@ public class SwitchCatalogAnalyzer extends BaseSemanticAnalyzer {
 
     @Override
     public void analyzeInternal(ASTNode root) throws SemanticException {
-        String catlogName = unescapeIdentifier(root.getChild(0).getText());
+        String catalogName = unescapeIdentifier(root.getChild(0).getText());
 
-        Catalog catalog = getCatalog(catlogName);
+        Catalog catalog = getCatalog(catalogName);
         ReadEntity readEntity = new ReadEntity(catalog);
         readEntity.noLockNeeded();
         inputs.add(readEntity);
 
-        SwitchCatalogDesc desc = new SwitchCatalogDesc(catlogName);
+        SwitchCatalogDesc desc = new SwitchCatalogDesc(catalogName);
         rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     }
 }
