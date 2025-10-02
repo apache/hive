@@ -353,15 +353,15 @@ public class TableIdentifier implements org.apache.thrift.TBase<TableIdentifier,
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetCatalog()) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + (isSetCatalog() ? 131071 : 524287);
     if (isSetCatalog())
       hashCode = hashCode * 8191 + catalog.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetDatabase()) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + (isSetDatabase() ? 131071 : 524287);
     if (isSetDatabase())
       hashCode = hashCode * 8191 + database.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetTableName()) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + (isSetTableName() ? 131071 : 524287);
     if (isSetTableName())
       hashCode = hashCode * 8191 + tableName.hashCode();
 

@@ -74,8 +74,8 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     readSchema = table.schema();
 
     if (selectedColumns != null) {
-      readSchema =
-        caseSensitive ? readSchema.select(selectedColumns) : readSchema.caseInsensitiveSelect(selectedColumns);
+      readSchema = caseSensitive ?
+          readSchema.select(selectedColumns) : readSchema.caseInsensitiveSelect(selectedColumns);
     }
 
     if (InputFormatConfig.fetchVirtualColumns(conf)) {

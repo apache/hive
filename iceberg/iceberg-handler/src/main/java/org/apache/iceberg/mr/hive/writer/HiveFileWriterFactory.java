@@ -138,15 +138,15 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
     HiveFileWriterFactory build() {
       return new HiveFileWriterFactory(
-        table,
-        dataFileFormat,
-        dataSchema,
-        null,
-        deleteFileFormat,
-        null,
-        null,
-        null,
-        positionDeleteRowSchema);
+          table,
+          dataFileFormat,
+          dataSchema,
+          null,
+          deleteFileFormat,
+          null,
+          null,
+          null,
+          positionDeleteRowSchema);
     }
   }
 }
