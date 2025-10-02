@@ -52,7 +52,8 @@ public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
   private static final Logger LOG = LoggerFactory.getLogger(
       TestIcebergRESTCatalogHMSLlapLocalCliDriver.class);
   private static final String CATALOG_NAME = "ice01";
-  private static final CliAdapter adapter = new CliConfigs.TestIcebergRESTCatalogHMSLlapLocalCliDriver().getCliAdapter();
+  private static final CliAdapter CLI_ADAPTER =
+      new CliConfigs.TestIcebergRESTCatalogHMSLlapLocalCliDriver().getCliAdapter();
   
   private final String name;
   private final File qfile;
@@ -64,14 +65,14 @@ public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
           .build();
 
   @ClassRule
-  public static final TestRule cliClassRule = adapter.buildClassRule();
+  public static final TestRule CLI_CLASS_RULE = CLI_ADAPTER.buildClassRule();
 
   @Rule
-  public final TestRule cliTestRule = adapter.buildTestRule();
+  public final TestRule cliTestRule = CLI_ADAPTER.buildTestRule();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
-    return adapter.getParameters();
+    return CLI_ADAPTER.getParameters();
   }
 
   public TestIcebergRESTCatalogHMSLlapLocalCliDriver(String name, File qfile) {
@@ -113,6 +114,6 @@ public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
 
   @Test
   public void testCliDriver() throws Exception {
-    adapter.runTest(name, qfile);
+    CLI_ADAPTER.runTest(name, qfile);
   }
 }

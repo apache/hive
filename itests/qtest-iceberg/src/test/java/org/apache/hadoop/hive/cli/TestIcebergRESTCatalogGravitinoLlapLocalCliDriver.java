@@ -57,44 +57,45 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(Parameterized.class)
 public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
+  private static final CliAdapter CLI_ADAPTER =
+      new CliConfigs.TestIcebergRESTCatalogGravitinoLlapLocalCliDriver().getCliAdapter();
+  
   private static final Logger LOG = LoggerFactory.getLogger(TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class);
   
   private static final String CATALOG_NAME = "ice01";
+  private static final long GRAVITINO_STARTUP_TIMEOUT_MINUTES = 5L;
   private static final String GRAVITINO_CONF_FILE_TEMPLATE = "gravitino-h2-test-template.conf";
   private static final String GRAVITINO_ROOT_DIR = "/root/gravitino-iceberg-rest-server";
-  private static final long GRAVITINO_STARTUP_TIMEOUT_MINUTES = 5L;
-
   private static final String GRAVITINO_STARTUP_SCRIPT = GRAVITINO_ROOT_DIR + "/bin/start-iceberg-rest-server.sh";
   private static final String GRAVITINO_H2_LIB = GRAVITINO_ROOT_DIR + "/libs/h2-driver.jar";
   private static final String GRAVITINO_CONF_FILE = GRAVITINO_ROOT_DIR + "/conf/gravitino-iceberg-rest-server.conf";
-
-  private static final CliAdapter adapter = new CliConfigs.TestIcebergRESTCatalogGravitinoLlapLocalCliDriver().getCliAdapter();
   private static final DockerImageName GRAVITINO_IMAGE =
-      DockerImageName.parse("apache/gravitino-iceberg-rest:1.0.0-rc3");
+      DockerImageName.parse("apache/gravitino-iceberg-rest:1.0.0");
 
   private final String name;
   private final File qfile;
 
   private GenericContainer<?> gravitinoContainer;
   private Path warehouseDir;
-  private final ExecutorService fileSyncExecutor = Executors.newSingleThreadExecutor();
+  private final ScheduledExecutorService fileSyncExecutor = Executors.newSingleThreadScheduledExecutor();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
-    return adapter.getParameters();
+    return CLI_ADAPTER.getParameters();
   }
 
   @ClassRule
-  public static final TestRule cliClassRule = adapter.buildClassRule();
+  public static final TestRule CLI_CLASS_RULE = CLI_ADAPTER.buildClassRule();
 
   @Rule
-  public final TestRule cliTestRule = adapter.buildTestRule();
+  public final TestRule cliTestRule = CLI_ADAPTER.buildTestRule();
 
   public TestIcebergRESTCatalogGravitinoLlapLocalCliDriver(String name, File qfile) {
     this.name = name;
@@ -111,6 +112,9 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     String host = gravitinoContainer.getHost();
     Integer port = gravitinoContainer.getMappedPort(9001);
     String restCatalogPrefix = String.format("%s%s.", CatalogUtils.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
+
+    // Suppress IntelliJ warning about using HTTP since this is a local test container connection
+    @SuppressWarnings("HttpUrlsUsage")
     String restCatalogUri = String.format("http://%s:%d/iceberg", host, port);
 
     Configuration conf = SessionState.get().getConf();
@@ -132,13 +136,40 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
       try (var paths = Files.walk(warehouseDir)) {
         paths.sorted(Comparator.reverseOrder())
             .forEach(path -> {
-              try { Files.deleteIfExists(path); }
-              catch (IOException ignored) {}
+              try {
+                Files.deleteIfExists(path);
+              } catch (IOException e) {
+                LOG.debug("Failed to delete temp file {}", path, e);
+              }
             });
-      } catch (IOException ignored) {}
+      } catch (IOException e) {
+        LOG.debug("Failed to delete temp folder", e);
+      }
     }
   }
 
+  /**
+   * Starts a Gravitino container with the Iceberg REST server configured for testing.
+   *
+   * <p>This method configures the container to:
+   * <ul>
+   *   <li>Expose container REST port 9001 and map it to a host port.</li>
+   *   <li>Modify the container entrypoint to create the warehouse directory before startup.</li>
+   *   <li>Copy a dynamically prepared Gravitino configuration file into the container.</li>
+   *   <li>Copy the H2 driver JAR into the server's lib directory.</li>
+   *   <li>Wait for the Gravitino Iceberg REST server to finish starting (based on logs and port checks).</li>
+   *   <li>Stream container logs into the test logger for easier debugging.</li>
+   * </ul>
+   *
+   * <p>Note: The {@code @SuppressWarnings("resource")} annotation is applied because
+   * IntelliJ and some compilers flag {@link org.testcontainers.containers.GenericContainer}
+   * as a resource that should be managed with try-with-resources. In this test setup,
+   * the container lifecycle is managed explicitly: it is started here and stopped in
+   * {@code @After} (via {@code gravitinoContainer.stop()}). Using try-with-resources
+   * would not work in this context, since the container must remain running across
+   * multiple test methods rather than being confined to a single block scope.</p>
+   */
+  @SuppressWarnings("resource")
   private void startGravitinoContainer() {
     gravitinoContainer = new GenericContainer<>(GRAVITINO_IMAGE)
         .withExposedPorts(9001)
@@ -165,7 +196,8 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
                 .withStrategy(Wait.forListeningPort()
                     .withStartupTimeout(Duration.ofMinutes(GRAVITINO_STARTUP_TIMEOUT_MINUTES)))
         )
-        .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class)));
+        .withLogConsumer(new Slf4jLogConsumer(LoggerFactory
+            .getLogger(TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class)));
 
     gravitinoContainer.start();
   }
@@ -190,58 +222,52 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
    * to avoid overwriting container data.</p>
    */
   private void startWarehouseDirSync() {
-    fileSyncExecutor.submit(() -> {
-      try {
-        while (gravitinoContainer.isRunning()) {
-          try (CopyArchiveFromContainerCmd copyArchiveFromContainerCmd = 
-                   gravitinoContainer
-                       .getDockerClient()
-                       .copyArchiveFromContainerCmd(gravitinoContainer.getContainerId(), warehouseDir.toString()); 
-               InputStream tarStream = copyArchiveFromContainerCmd.exec();
-               TarArchiveInputStream tis = new TarArchiveInputStream(tarStream)) {
+    fileSyncExecutor.scheduleAtFixedRate(() -> {
+      if (gravitinoContainer.isRunning()) {
+        try (CopyArchiveFromContainerCmd copyArchiveFromContainerCmd = 
+                 gravitinoContainer
+                     .getDockerClient()
+                     .copyArchiveFromContainerCmd(gravitinoContainer.getContainerId(), warehouseDir.toString()); 
+             InputStream tarStream = copyArchiveFromContainerCmd.exec();
+             TarArchiveInputStream tis = new TarArchiveInputStream(tarStream)) {
 
-            TarArchiveEntry entry;
-            while ((entry = tis.getNextTarEntry()) != null) {
-              // Skip directories because we only want to copy metadata files from the container.
-              if (entry.isDirectory()) {
-                continue;
-              }
-
-              /*
-               * Tar entry names include a container-specific top-level folder, e.g.:
-               *   iceberg-test-1759245909247/iceberg_warehouse/ice_rest/.../metadata.json
-               *
-               * Strip the first part so the relative path inside the warehouse is preserved
-               * when mapping to the host warehouseDir.
-               */
-              
-              String[] parts = entry.getName().split("/", 2);
-              if (parts.length < 2) {
-                continue; // defensive guard
-              }
-
-              Path relativePath = Paths.get(parts[1]);
-              Path outputPath = warehouseDir.resolve(relativePath);
-
-              // Skip if already present on host to avoid overwriting
-              if (Files.exists(outputPath)) {
-                continue;
-              }
-
-              Files.createDirectories(outputPath.getParent());
-              Files.copy(tis, outputPath);
+          TarArchiveEntry entry;
+          while ((entry = tis.getNextEntry()) != null) {
+            // Skip directories because we only want to copy metadata files from the container.
+            if (entry.isDirectory()) {
+              continue;
             }
 
-          } catch (Exception e) {
-            LOG.error("Warehouse folder sync failed: {}", e.getMessage());
+            /*
+             * Tar entry names include a container-specific top-level folder, e.g.:
+             *   iceberg-test-1759245909247/iceberg_warehouse/ice_rest/.../metadata.json
+             *
+             * Strip the first part so the relative path inside the warehouse is preserved
+             * when mapping to the host warehouseDir.
+             */
+            
+            String[] parts = entry.getName().split("/", 2);
+            if (parts.length < 2) {
+              continue; // defensive guard
+            }
+
+            Path relativePath = Paths.get(parts[1]);
+            Path outputPath = warehouseDir.resolve(relativePath);
+
+            // Skip if already present on host to avoid overwriting
+            if (Files.exists(outputPath)) {
+              continue;
+            }
+
+            Files.createDirectories(outputPath.getParent());
+            Files.copy(tis, outputPath);
           }
 
-          Thread.sleep(1000); // sync every 1 second
+        } catch (Exception e) {
+          LOG.error("Warehouse folder sync failed: {}", e.getMessage());
         }
-      } catch (InterruptedException ignored) {
-        Thread.currentThread().interrupt();
       }
-    });
+    }, 0, 1, TimeUnit.SECONDS);
   }
 
   private void createWarehouseDir() {
@@ -270,12 +296,6 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
   @Test
   public void testCliDriver() throws Exception {
-    try {
-      adapter.runTest(name, qfile);
-    }
-    catch (Throwable e) {
-      System.err.println("Error running " + qfile);
-      throw e;
-    }
+    CLI_ADAPTER.runTest(name, qfile);
   }
 }
