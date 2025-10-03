@@ -7,3 +7,9 @@ create view vw_y (col_b) as (
     ( ( select b from tbl_x ) )
     );
 select * from vw_y;
+
+create view vw_z as (
+    ( ( select * from tbl_x )
+     )
+    );
+select * from vw_z;

@@ -76,3 +76,33 @@ POSTHOOK: Input: default@vw_y
 #### A masked pattern was here ####
 Prince
 John
+PREHOOK: query: create view vw_z as (
+    ( ( select * from tbl_x )
+     )
+    )
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@tbl_x
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vw_z
+POSTHOOK: query: create view vw_z as (
+    ( ( select * from tbl_x )
+     )
+    )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@tbl_x
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vw_z
+POSTHOOK: Lineage: vw_z.a SIMPLE [(tbl_x)tbl_x.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: vw_z.b SIMPLE [(tbl_x)tbl_x.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: select * from vw_z
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_x
+PREHOOK: Input: default@vw_z
+#### A masked pattern was here ####
+POSTHOOK: query: select * from vw_z
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_x
+POSTHOOK: Input: default@vw_z
+#### A masked pattern was here ####
+1	Prince
+2	John
