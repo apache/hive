@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.cli;
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
@@ -55,7 +56,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,6 +71,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   
   private static final String CATALOG_NAME = "ice01";
   private static final long GRAVITINO_STARTUP_TIMEOUT_MINUTES = 5L;
+  private static final int GRAVITINO_HTTP_PORT = 9001;
   private static final String GRAVITINO_CONF_FILE_TEMPLATE = "gravitino-h2-test-template.conf";
   private static final String GRAVITINO_ROOT_DIR = "/root/gravitino-iceberg-rest-server";
   private static final String GRAVITINO_STARTUP_SCRIPT = GRAVITINO_ROOT_DIR + "/bin/start-iceberg-rest-server.sh";
@@ -107,10 +108,10 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     createWarehouseDir();
     prepareGravitinoConfig();
     startGravitinoContainer();
-    startWarehouseDirSync();
+    fileSyncExecutor.scheduleAtFixedRate(this::syncWarehouseDir, 0, 5, TimeUnit.SECONDS);
 
     String host = gravitinoContainer.getHost();
-    Integer port = gravitinoContainer.getMappedPort(9001);
+    Integer port = gravitinoContainer.getMappedPort(GRAVITINO_HTTP_PORT);
     String restCatalogPrefix = String.format("%s%s.", CatalogUtils.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
 
     // Suppress IntelliJ warning about using HTTP since this is a local test container connection
@@ -125,27 +126,13 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   }
 
   @After
-  public void teardown() {
+  public void teardown() throws IOException {
     if (gravitinoContainer != null) {
       gravitinoContainer.stop();
     }
 
     fileSyncExecutor.shutdownNow();
-
-    if (warehouseDir != null && Files.exists(warehouseDir)) {
-      try (var paths = Files.walk(warehouseDir)) {
-        paths.sorted(Comparator.reverseOrder())
-            .forEach(path -> {
-              try {
-                Files.deleteIfExists(path);
-              } catch (IOException e) {
-                LOG.debug("Failed to delete temp file {}", path, e);
-              }
-            });
-      } catch (IOException e) {
-        LOG.debug("Failed to delete temp folder", e);
-      }
-    }
+    FileUtils.deleteDirectory(warehouseDir.toFile());
   }
 
   /**
@@ -153,7 +140,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
    *
    * <p>This method configures the container to:
    * <ul>
-   *   <li>Expose container REST port 9001 and map it to a host port.</li>
+   *   <li>Expose container REST port GRAVITINO_HTTP_PORT and map it to a host port.</li>
    *   <li>Modify the container entrypoint to create the warehouse directory before startup.</li>
    *   <li>Copy a dynamically prepared Gravitino configuration file into the container.</li>
    *   <li>Copy the H2 driver JAR into the server's lib directory.</li>
@@ -172,7 +159,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   @SuppressWarnings("resource")
   private void startGravitinoContainer() {
     gravitinoContainer = new GenericContainer<>(GRAVITINO_IMAGE)
-        .withExposedPorts(9001)
+        .withExposedPorts(GRAVITINO_HTTP_PORT)
         // Update entrypoint to create the warehouse directory before starting the server
         .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("bash", "-c",
             String.format("mkdir -p %s && exec %s", warehouseDir.toString(), GRAVITINO_STARTUP_SCRIPT)))
@@ -221,53 +208,51 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
    * and directories are created as needed. Files that already exist on the host are skipped
    * to avoid overwriting container data.</p>
    */
-  private void startWarehouseDirSync() {
-    fileSyncExecutor.scheduleAtFixedRate(() -> {
-      if (gravitinoContainer.isRunning()) {
-        try (CopyArchiveFromContainerCmd copyArchiveFromContainerCmd = 
-                 gravitinoContainer
-                     .getDockerClient()
-                     .copyArchiveFromContainerCmd(gravitinoContainer.getContainerId(), warehouseDir.toString()); 
-             InputStream tarStream = copyArchiveFromContainerCmd.exec();
-             TarArchiveInputStream tis = new TarArchiveInputStream(tarStream)) {
+  private void syncWarehouseDir() {
+    if (gravitinoContainer.isRunning()) {
+      try (CopyArchiveFromContainerCmd copyArchiveFromContainerCmd = 
+               gravitinoContainer
+                   .getDockerClient()
+                   .copyArchiveFromContainerCmd(gravitinoContainer.getContainerId(), warehouseDir.toString()); 
+           InputStream tarStream = copyArchiveFromContainerCmd.exec();
+           TarArchiveInputStream tis = new TarArchiveInputStream(tarStream)) {
 
-          TarArchiveEntry entry;
-          while ((entry = tis.getNextEntry()) != null) {
-            // Skip directories because we only want to copy metadata files from the container.
-            if (entry.isDirectory()) {
-              continue;
-            }
-
-            /*
-             * Tar entry names include a container-specific top-level folder, e.g.:
-             *   iceberg-test-1759245909247/iceberg_warehouse/ice_rest/.../metadata.json
-             *
-             * Strip the first part so the relative path inside the warehouse is preserved
-             * when mapping to the host warehouseDir.
-             */
-            
-            String[] parts = entry.getName().split("/", 2);
-            if (parts.length < 2) {
-              continue; // defensive guard
-            }
-
-            Path relativePath = Paths.get(parts[1]);
-            Path outputPath = warehouseDir.resolve(relativePath);
-
-            // Skip if already present on host to avoid overwriting
-            if (Files.exists(outputPath)) {
-              continue;
-            }
-
-            Files.createDirectories(outputPath.getParent());
-            Files.copy(tis, outputPath);
+        TarArchiveEntry entry;
+        while ((entry = tis.getNextEntry()) != null) {
+          // Skip directories because we only want to copy metadata files from the container.
+          if (entry.isDirectory()) {
+            continue;
           }
 
-        } catch (Exception e) {
-          LOG.error("Warehouse folder sync failed: {}", e.getMessage());
+          /*
+           * Tar entry names include a container-specific top-level folder, e.g.:
+           *   iceberg-test-1759245909247/iceberg_warehouse/ice_rest/.../metadata.json
+           *
+           * Strip the first part so the relative path inside the warehouse is preserved
+           * when mapping to the host warehouseDir.
+           */
+          
+          String[] parts = entry.getName().split("/", 2);
+          if (parts.length < 2) {
+            continue; // defensive guard
+          }
+
+          Path relativePath = Paths.get(parts[1]);
+          Path outputPath = warehouseDir.resolve(relativePath);
+
+          // Skip if already present on host to avoid overwriting
+          if (Files.exists(outputPath)) {
+            continue;
+          }
+
+          Files.createDirectories(outputPath.getParent());
+          Files.copy(tis, outputPath);
         }
+
+      } catch (Exception e) {
+        LOG.error("Warehouse folder sync failed: {}", e.getMessage());
       }
-    }, 0, 1, TimeUnit.SECONDS);
+    }
   }
 
   private void createWarehouseDir() {
@@ -289,7 +274,10 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
       content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    String updatedContent = content.replace("/WAREHOUSE_DIR", warehouseDir.toString());
+    String updatedContent = content
+        .replace("/WAREHOUSE_DIR", warehouseDir.toString())
+        .replace("HTTP_PORT", String.valueOf(GRAVITINO_HTTP_PORT));
+
     Path configFile = warehouseDir.resolve(GRAVITINO_CONF_FILE_TEMPLATE);
     Files.writeString(configFile, updatedContent);
   }

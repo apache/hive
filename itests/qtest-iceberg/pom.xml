@@ -476,18 +476,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.httpcomponents.client5</groupId>
-      <artifactId>httpclient5</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents.core5</groupId>
-      <artifactId>httpcore5</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents.core5</groupId>
-      <artifactId>httpcore5-h2</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
       <scope>test</scope>
@@ -557,7 +545,7 @@
                 <artifactItem>
                   <groupId>com.h2database</groupId>
                   <artifactId>h2</artifactId>
-                  <version>2.2.224</version>
+                  <version>${h2database.version}</version>
                   <destFileName>h2-driver.jar</destFileName>
                 </artifactItem>
               </artifactItems>
