@@ -1,4 +1,3 @@
-set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionPrintSuggester;
 set hive.mapred.mode=nonstrict;
 explain cbo
 select substr(w_warehouse_name, 1, 20),

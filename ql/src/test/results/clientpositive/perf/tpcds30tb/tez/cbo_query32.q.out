@@ -1,8 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[BETWEEN(false, CAST($2):TIMESTAMP(9), 1998-03-18 00:00:00:TIMESTAMP(9), 1998-06-16 00:00:00:TIMESTAMP(9))])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[sum($1)])
   HiveJoin(condition=[AND(=($6, $3), >($1, $5))], joinType=[inner], algorithm=[none], cost=[not available])

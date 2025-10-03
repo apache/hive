@@ -1,18 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date_sk=[$0], EXPR$0=[=($8, 1)], EXPR$1=[=($8, 2)], EXPR$2=[=($8, 3)], EXPR$3=[=($8, 4)], EXPR$4=[=($8, 5)], EXPR$5=[=($8, 6)], EXPR$6=[=($8, 7)], EXPR$7=[=($8, 8)], EXPR$8=[=($8, 9)], EXPR$9=[=($8, 10)], EXPR$10=[=($8, 11)], EXPR$11=[=($8, 12)])
-  HiveFilter(condition=[=($6, 2002)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-HiveProject(sm_ship_mode_sk=[$0])
-  HiveFilter(condition=[IN($4, _UTF-16LE'AIRBORNE', _UTF-16LE'DIAMOND')])
-    HiveTableScan(table=[[default, ship_mode]], table:alias=[ship_mode])
-
-CTE Suggestion:
-HiveProject(t_time_sk=[$0])
-  HiveFilter(condition=[BETWEEN(false, $2, 49530, 78330)])
-    HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
-
 CBO PLAN:
 HiveProject(w_warehouse_name=[$0], w_warehouse_sq_ft=[$1], w_city=[$2], w_county=[$3], w_state=[$4], w_country=[$5], ship_carriers=[CAST(_UTF-16LE'DIAMOND,AIRBORNE':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], year=[CAST(2002):INTEGER], jan_sales=[$6], feb_sales=[$7], mar_sales=[$8], apr_sales=[$9], may_sales=[$10], jun_sales=[$11], jul_sales=[$12], aug_sales=[$13], sep_sales=[$14], oct_sales=[$15], nov_sales=[$16], dec_sales=[$17], jan_sales_per_sq_foot=[$18], feb_sales_per_sq_foot=[$19], mar_sales_per_sq_foot=[$20], apr_sales_per_sq_foot=[$21], may_sales_per_sq_foot=[$22], jun_sales_per_sq_foot=[$23], jul_sales_per_sq_foot=[$24], aug_sales_per_sq_foot=[$25], sep_sales_per_sq_foot=[$26], oct_sales_per_sq_foot=[$27], nov_sales_per_sq_foot=[$28], dec_sales_per_sq_foot=[$29], jan_net=[$30], feb_net=[$31], mar_net=[$32], apr_net=[$33], may_net=[$34], jun_net=[$35], jul_net=[$36], aug_net=[$37], sep_net=[$38], oct_net=[$39], nov_net=[$40], dec_net=[$41])
   HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
