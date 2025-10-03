@@ -1124,7 +1124,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     // Delete table data
     if (deleteData && !isExternalTable(table)) {
       try {
-        getWh().deleteDir(tablePath, true, ifPurge, false);
+        getWh().deleteDir(tablePath, ifPurge, false);
       } catch (Exception err) {
         LOG.error("Failed to delete temp table directory: " + tablePath, err);
         // Forgive error
@@ -2215,7 +2215,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       Path path = getWh().getDnsPath(new Path(location));
       try {
         do {
-          getWh().deleteDir(path, true, purgeData, false);
+          getWh().deleteDir(path, purgeData, false);
           path = path.getParent();
         } while (getWh().isEmptyDir(path));
       } catch (IOException e) {

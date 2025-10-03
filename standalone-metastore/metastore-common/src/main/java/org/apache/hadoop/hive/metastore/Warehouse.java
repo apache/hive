@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.util.ReflectionUtils;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
@@ -434,15 +432,15 @@ public class Warehouse {
     }
   }
 
-  public void deleteDir(Path f, boolean recursive, Database db) throws MetaException {
-    deleteDir(f, recursive, false, db);
+  public void deleteDir(Path f, Database db) throws MetaException {
+    deleteDir(f, false, db);
   }
 
-  public void deleteDir(Path f, boolean recursive, boolean ifPurge, Database db) throws MetaException {
-    deleteDir(f, recursive, ifPurge, ReplChangeManager.isSourceOfReplication(db));
+  public void deleteDir(Path f, boolean ifPurge, Database db) throws MetaException {
+    deleteDir(f, ifPurge, ReplChangeManager.isSourceOfReplication(db));
   }
 
-  public void deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
+  public void deleteDir(Path f, boolean ifPurge, boolean needCmRecycle) throws MetaException {
     if (needCmRecycle) {
       try {
         cm.recycle(f, RecycleType.MOVE, ifPurge);
