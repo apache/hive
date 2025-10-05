@@ -25,4 +25,7 @@
   <suppress checks=".*" files="gen\-java"/>
   <!-- Ignore JDBM code -->
   <suppress checks=".*" files="ql\/util\/jdbm"/>
+  <!-- Copies of an external libraries -->
+  <suppress checks="Header" files="serde\/src\/java\/org\/apache\/hadoop\/hive\/serde2\/lazy\/fast\/StringToDouble\.java"/>
+  <suppress checks="Header" files="llap-server\/src\/java\/org\/apache\/hadoop\/hive\/llap\/daemon\/impl\/PriorityBlockingDeque\.java"/>
 </suppressions>
