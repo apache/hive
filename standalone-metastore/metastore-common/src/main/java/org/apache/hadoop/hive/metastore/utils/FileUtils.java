@@ -71,19 +71,20 @@ public class FileUtils {
     }
   };
 
-  public static void deleteDir(FileSystem fs, Path f, boolean ifPurge, Configuration conf)
+  public static boolean deleteDir(FileSystem fs, Path f, boolean ifPurge, Configuration conf)
       throws IOException {
     if (!fs.exists(f)) {
       LOG.warn("The path to delete does not exist: {}", f);
-      return;
+      return true;
     }
     if (!ifPurge && moveToTrash(fs, f, conf)) {
-      return;
+      return true;
     }
+    boolean result = false;
     try {
       // for whatever failure reason including that trash has lower encryption zone
       // retry with force delete
-      fs.delete(f, true);
+      result = fs.delete(f, true);
     } catch (RemoteException | SnapshotException se) {
       // If this is snapshot exception or the cause is snapshot replication from HDFS, could be the case where the
       // snapshots were created by replication, so in that case attempt to delete the replication related snapshots,
@@ -92,8 +93,12 @@ public class FileUtils {
           .contains("Snapshot"))
         deleteReplRelatedSnapshots(fs, f);
       // retry delete after attempting to delete replication related snapshots
-      fs.delete(f, true);
+      result = fs.delete(f, true);
     }
+    if (!result) {
+      LOG.error("Failed to delete {}", f);
+    }
+    return result;
   }
 
   /**

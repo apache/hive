@@ -2215,7 +2215,9 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       Path path = getWh().getDnsPath(new Path(location));
       try {
         do {
-          getWh().deleteDir(path, purgeData, false);
+          if (!getWh().deleteDir(path, purgeData, false)) {
+            throw new MetaException("Unable to delete partition at " + location);
+          }
           path = path.getParent();
         } while (getWh().isEmptyDir(path));
       } catch (IOException e) {

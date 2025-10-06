@@ -432,15 +432,15 @@ public class Warehouse {
     }
   }
 
-  public void deleteDir(Path f, Database db) throws MetaException {
-    deleteDir(f, false, db);
+  public boolean deleteDir(Path f, Database db) throws MetaException {
+    return deleteDir(f, false, db);
   }
 
-  public void deleteDir(Path f, boolean ifPurge, Database db) throws MetaException {
-    deleteDir(f, ifPurge, ReplChangeManager.isSourceOfReplication(db));
+  public boolean deleteDir(Path f, boolean ifPurge, Database db) throws MetaException {
+    return deleteDir(f, ifPurge, ReplChangeManager.isSourceOfReplication(db));
   }
 
-  public void deleteDir(Path f, boolean ifPurge, boolean needCmRecycle) throws MetaException {
+  public boolean deleteDir(Path f, boolean ifPurge, boolean needCmRecycle) throws MetaException {
     if (needCmRecycle) {
       try {
         cm.recycle(f, RecycleType.MOVE, ifPurge);
@@ -451,13 +451,15 @@ public class Warehouse {
     FileSystem fs = getFs(f);
     if (fs instanceof HarFileSystem) {
       LOG.warn("Har path {} is not supported to delete, skipping it.", f);
-      return;
+      return true;
     }
+    boolean delete = false;
     try {
-      FileUtils.deleteDir(fs, f, ifPurge, conf);
+      delete = FileUtils.deleteDir(fs, f, ifPurge, conf);
     } catch (IOException e) {
       MetaStoreUtils.throwMetaException(e);
     }
+    return delete;
   }
 
   public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {

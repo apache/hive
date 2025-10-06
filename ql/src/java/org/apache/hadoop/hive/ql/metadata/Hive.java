@@ -5948,14 +5948,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final SessionState parentSession = SessionState.get();
     for (final FileStatus status : statuses) {
       if (null == pool) {
-        org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
+        result &= org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
       } else {
         futures.add(pool.submit(new Callable<Boolean>() {
           @Override
           public Boolean call() throws Exception {
             SessionState.setCurrentSessionState(parentSession);
-            org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
-            return true;
+            return org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
           }
         }));
       }

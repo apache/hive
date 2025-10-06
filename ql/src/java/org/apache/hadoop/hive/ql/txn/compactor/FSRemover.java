@@ -122,8 +122,9 @@ public class FSRemover {
       if (needCmRecycle) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, cr.isPurge());
       }
-      FileUtils.deleteDir(fs, dead, cr.isPurge(), conf);
-      deleted.add(dead);
+      if (FileUtils.deleteDir(fs, dead, cr.isPurge(), conf)) {
+        deleted.add(dead);
+      }
     }
     return deleted;
   }
