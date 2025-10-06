@@ -1414,12 +1414,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       case DELETE ->
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-        ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
       case UPDATE -> shouldOverwrite(table, operation) ?
-        ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
-        ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
-      case MERGE ->
-        ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
+          ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+      case MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default -> ImmutableList.of();
     };
   }
@@ -1435,12 +1434,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     return switch (operation) {
       case DELETE -> IcebergTableUtil.isFanoutEnabled(table.getParameters()) ?
         EMPTY_ORDERING : POSITION_DELETE_ORDERING;
-      case MERGE ->
-        POSITION_DELETE_ORDERING;
-      default ->
-        // For update operations we use the same sort order defined by
-        // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
-        EMPTY_ORDERING;
+      case MERGE -> POSITION_DELETE_ORDERING;
+      // For update operations we use the same sort order defined by
+      // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
+      default -> EMPTY_ORDERING;
     };
   }
 

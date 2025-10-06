@@ -129,11 +129,10 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
     if (context.useDVs()) {
       return new PartitioningDVWriter<>(files, previousDeleteLoader);
     } else if (inputOrdered && rewritableDeletes == null) {
-      return new ClusteredPositionDeleteWriter<>(
-        writers, files, io, targetFileSize, deleteGranularity);
+      return new ClusteredPositionDeleteWriter<>(writers, files, io, targetFileSize, deleteGranularity);
     } else {
       return new FanoutPositionOnlyDeleteWriter<>(
-        writers, files, io, targetFileSize, deleteGranularity, previousDeleteLoader);
+          writers, files, io, targetFileSize, deleteGranularity, previousDeleteLoader);
     }
   }
 

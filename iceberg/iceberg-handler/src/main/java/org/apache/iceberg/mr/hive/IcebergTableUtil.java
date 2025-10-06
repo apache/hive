@@ -544,7 +544,7 @@ public class IcebergTableUtil {
                 expression, false);
             return e.getValue().isPartitioned() &&
               resEval.residualFor(e.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-              (e.getValue().specId() == table.spec().specId() || !latestSpecOnly);
+                (e.getValue().specId() == table.spec().specId() || !latestSpecOnly);
 
           }).transform(e -> e.getValue().partitionToPath(e.getKey())).toSortedList(
             Comparator.naturalOrder());
