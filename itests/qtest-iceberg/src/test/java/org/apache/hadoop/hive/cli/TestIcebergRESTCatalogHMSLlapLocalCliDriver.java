@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,12 +47,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @RunWith(Parameterized.class)
-public class TestIcebergRESTCatalogLlapLocalCliDriver {
+public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(
-      org.apache.hadoop.hive.cli.TestIcebergRESTCatalogLlapLocalCliDriver.class);
+      TestIcebergRESTCatalogHMSLlapLocalCliDriver.class);
   private static final String CATALOG_NAME = "ice01";
-  private static final CliAdapter adapter = new CliConfigs.TestIcebergRESTCatalogLlapLocalCliDriver().getCliAdapter();
+  private static final CliAdapter CLI_ADAPTER =
+      new CliConfigs.TestIcebergRESTCatalogHMSLlapLocalCliDriver().getCliAdapter();
   
   private final String name;
   private final File qfile;
@@ -64,17 +65,17 @@ public class TestIcebergRESTCatalogLlapLocalCliDriver {
           .build();
 
   @ClassRule
-  public static final TestRule cliClassRule = adapter.buildClassRule();
+  public static final TestRule CLI_CLASS_RULE = CLI_ADAPTER.buildClassRule();
 
   @Rule
-  public final TestRule cliTestRule = adapter.buildTestRule();
+  public final TestRule cliTestRule = CLI_ADAPTER.buildTestRule();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
-    return adapter.getParameters();
+    return CLI_ADAPTER.getParameters();
   }
 
-  public TestIcebergRESTCatalogLlapLocalCliDriver(String name, File qfile) {
+  public TestIcebergRESTCatalogHMSLlapLocalCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }
@@ -113,6 +114,6 @@ public class TestIcebergRESTCatalogLlapLocalCliDriver {
 
   @Test
   public void testCliDriver() throws Exception {
-    adapter.runTest(name, qfile);
+    CLI_ADAPTER.runTest(name, qfile);
   }
 }

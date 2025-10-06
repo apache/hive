@@ -660,7 +660,8 @@ public class CliConfigs {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
         excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.compactor.files");
-        excludesFrom(testConfigProps, "iceberg.llap.query.rest.files");
+        excludesFrom(testConfigProps, "iceberg.llap.query.rest.hms.files");
+        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
@@ -714,13 +715,35 @@ public class CliConfigs {
     }
   }
 
-  public static class TestIcebergRESTCatalogLlapLocalCliDriver extends AbstractCliConfig {
+  public static class TestIcebergRESTCatalogHMSLlapLocalCliDriver extends AbstractCliConfig {
 
-    public TestIcebergRESTCatalogLlapLocalCliDriver() {
+    public TestIcebergRESTCatalogHMSLlapLocalCliDriver() {
       super(CoreCliDriver.class);
       try {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
-        includesFrom(testConfigProps, "iceberg.llap.query.rest.files");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.hms.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
