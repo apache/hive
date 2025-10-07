@@ -1,5 +1,5 @@
 CBO PLAN:
-HiveProject(c_last_name=[$0], c_first_name=[$1], _o__c2=[$2], ss_ticket_number=[$3], amt=[$4], profit=[$5])
+HiveProject(c_last_name=[$0], c_first_name=[$1], _c2=[$2], ss_ticket_number=[$3], amt=[$4], profit=[$5])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$6], sort3=[$5], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
     HiveProject(c_last_name=[$2], c_first_name=[$1], _o__c2=[$7], ss_ticket_number=[$3], amt=[$5], profit=[$6], (tok_function substr (tok_table_or_col s_city) 1 30)=[$7])
       HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])

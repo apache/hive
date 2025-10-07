@@ -54,8 +54,9 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveAggregate(group=[{0, 1}])
-  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveProject(a2=[$0], b2=[$1])
+  HiveAggregate(group=[{0, 1}])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain cbo
 select a1, b1 from t1
@@ -75,8 +76,9 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveAggregate(group=[{0, 1}])
-  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveProject(a1=[$0], b1=[$1])
+  HiveAggregate(group=[{0, 1}])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain
 select a1, b1 from t1

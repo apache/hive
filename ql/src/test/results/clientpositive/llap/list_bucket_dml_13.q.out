@@ -26,7 +26,7 @@ select 1, key, 1, value, 1 from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3A00%3A99
-OPTIMIZED SQL: SELECT 1 AS `_o__c0`, `key`, 1 AS `_o__c2`, `value`, 1 AS `_o__c4`
+OPTIMIZED SQL: SELECT 1 AS `_c0`, `key`, 1 AS `_c2`, `value`, 1 AS `_c4`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -302,7 +302,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_mul_col
 POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3A00%3A99
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `col1`, CAST('466' AS STRING) AS `col2`, `col3`, CAST('val_466' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('2013-01-23+18:00:99' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT `col1` AS `list_bucketing_mul_col.col1`, CAST('466' AS STRING) AS `list_bucketing_mul_col.col2`, `col3` AS `list_bucketing_mul_col.col3`, CAST('val_466' AS STRING) AS `list_bucketing_mul_col.col4`, `col5` AS `list_bucketing_mul_col.col5`, CAST('2008-04-08' AS STRING) AS `list_bucketing_mul_col.ds`, CAST('2013-01-23+18:00:99' AS STRING) AS `list_bucketing_mul_col.hr`
 FROM `default`.`list_bucketing_mul_col`
 WHERE `col2` = '466' AND `col4` = 'val_466' AND `ds` = '2008-04-08' AND `hr` = '2013-01-23+18:00:99'
 STAGE DEPENDENCIES:

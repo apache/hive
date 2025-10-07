@@ -1,5 +1,5 @@
 CBO PLAN:
-HiveProject(d_year=[CAST(1998):INTEGER], brand_id=[$0], brand=[$1], ext_price=[$2])
+HiveProject(dt.d_year=[CAST(1998):INTEGER], brand_id=[$0], brand=[$1], ext_price=[$2])
   HiveSortLimit(sort0=[$2], sort1=[$0], dir0=[DESC], dir1=[ASC], fetch=[100])
     HiveProject(i_brand_id=[$0], i_brand=[$1], $f2=[$2])
       HiveAggregate(group=[{5, 6}], agg#0=[sum($1)])

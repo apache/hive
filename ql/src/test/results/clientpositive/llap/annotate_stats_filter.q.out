@@ -366,7 +366,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(state=[$0], locid=[$1], zip=[$2], year=[$3])
+HiveProject(loc_orc.state=[$0], loc_orc.locid=[$1], loc_orc.zip=[$2], loc_orc.year=[$3])
   HiveTableScan(table=[[default, loc_orc]], table:alias=[loc_orc])
 
 PREHOOK: query: explain select * from loc_orc where 'foo'

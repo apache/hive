@@ -36,7 +36,7 @@ POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobsto
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hdfs_table
 POSTHOOK: Output: default@blobstore_table
-OPTIMIZED SQL: SELECT `key`
+OPTIMIZED SQL: SELECT `key` AS `hdfs_table.key`
 FROM `default`.`hdfs_table`
 GROUP BY `key`
 ORDER BY `key`
@@ -292,7 +292,7 @@ POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobsto
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hdfs_table
 POSTHOOK: Output: default@blobstore_table
-OPTIMIZED SQL: SELECT `key`
+OPTIMIZED SQL: SELECT `key` AS `hdfs_table.key`
 FROM `default`.`hdfs_table`
 GROUP BY `key`
 ORDER BY `key`

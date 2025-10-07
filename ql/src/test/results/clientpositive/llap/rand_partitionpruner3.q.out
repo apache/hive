@@ -8,7 +8,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `a.key`, `value` AS `a.value`, CAST('2008-04-08' AS STRING) AS `a.ds`, `hr` AS `a.hr`
 FROM `default`.`srcpart`
 WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND RAND(1) < 0.1 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
@@ -88,7 +88,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `a.key`, `value` AS `a.value`, CAST('2008-04-08' AS STRING) AS `a.ds`, `hr` AS `a.hr`
 FROM `default`.`srcpart`
 WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:

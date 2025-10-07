@@ -23,11 +23,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n10
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, myinput1_n10]], table:alias=[a])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, myinput1_n10]], table:alias=[b])
+HiveProject(a.key=[$0], a.value=[$1], b.key=[$2], b.value=[$3])
+  HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, myinput1_n10]], table:alias=[a])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, myinput1_n10]], table:alias=[b])
 
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value
 PREHOOK: type: QUERY
@@ -139,7 +140,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n10
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
+HiveProject(a.key=[$0], a.value=[$1], b.key=[$4], b.value=[$5], c.key=[$2], c.value=[$3])
   HiveJoin(condition=[IS NOT DISTINCT FROM($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(key=[$0], value=[$1])
@@ -293,7 +294,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n10
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
+HiveProject(a.key=[$0], a.value=[$1], b.key=[$4], b.value=[$5], c.key=[$2], c.value=[$3])
   HiveJoin(condition=[IS NOT DISTINCT FROM($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[IS NOT DISTINCT FROM($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(key=[$0], value=[$1])
@@ -462,17 +463,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n10
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $4), =($1, $5))], joinType=[inner], algorithm=[none], cost=[not available])
-  HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $3), =($1, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+HiveProject(a.key=[$0], a.value=[$1], b.key=[$2], b.value=[$3], c.key=[$4], c.value=[$5])
+  HiveJoin(condition=[AND(=($1, $5), IS NOT DISTINCT FROM($0, $4))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[AND(=($1, $2), IS NOT DISTINCT FROM($0, $3))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[IS NOT NULL($1)])
+          HiveTableScan(table=[[default, myinput1_n10]], table:alias=[a])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, myinput1_n10]], table:alias=[b])
     HiveProject(key=[$0], value=[$1])
       HiveFilter(condition=[IS NOT NULL($1)])
-        HiveTableScan(table=[[default, myinput1_n10]], table:alias=[a])
-    HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, myinput1_n10]], table:alias=[b])
-  HiveProject(key=[$0], value=[$1])
-    HiveFilter(condition=[IS NOT NULL($1)])
-      HiveTableScan(table=[[default, myinput1_n10]], table:alias=[c])
+        HiveTableScan(table=[[default, myinput1_n10]], table:alias=[c])
 
 PREHOOK: query: explain select * from myinput1_n10 a join myinput1_n10 b on a.key is not distinct from b.value AND a.value=b.key join myinput1_n10 c on a.key is not distinct from c.key AND a.value=c.value
 PREHOOK: type: QUERY
@@ -607,7 +609,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n10
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
+HiveProject(a.key=[$0], a.value=[$1], b.key=[$4], b.value=[$5], c.key=[$2], c.value=[$3])
   HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $5), IS NOT DISTINCT FROM($1, $4))], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $2), IS NOT DISTINCT FROM($1, $3))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(key=[$0], value=[$1])
@@ -1792,7 +1794,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1_n10
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[null:INTEGER], value=[$0], key1=[$1], value1=[null:INTEGER])
+HiveProject(a.key=[null:INTEGER], a.value=[$0], b.key=[$1], b.value=[null:INTEGER])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(value=[$1])
       HiveFilter(condition=[IS NULL($0)])

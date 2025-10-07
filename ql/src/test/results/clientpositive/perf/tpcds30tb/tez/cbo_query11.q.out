@@ -1,9 +1,9 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
-  HiveProject(customer_id=[$0], customer_first_name=[$2], customer_last_name=[$3], customer_birth_country=[$4])
+  HiveProject(t_s_secyear.customer_id=[$0], t_s_secyear.customer_first_name=[$2], t_s_secyear.customer_last_name=[$3], t_s_secyear.customer_birth_country=[$4])
     HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(customer_id=[$0])
-        HiveJoin(condition=[AND(CASE($5, CASE($10, >(/($7, $9), /($2, $4)), >(0:DECIMAL(1, 0), /($2, $4))), CASE($10, >(/($7, $9), 0:DECIMAL(1, 0)), false)), =($0, $8))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[AND(=($0, $8), CASE($5, CASE($10, >(/($7, $9), /($2, $4)), >(0:DECIMAL(1, 0), /($2, $4))), CASE($10, >(/($7, $9), 0:DECIMAL(1, 0)), false)))], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(c_customer_id=[$0], c_birth_country=[$1], $f2=[$2])

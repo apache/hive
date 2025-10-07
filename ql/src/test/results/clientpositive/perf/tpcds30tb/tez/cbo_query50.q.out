@@ -1,10 +1,10 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
-  HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f12=[$12], $f13=[$13], $f14=[$14])
+  HiveProject(s_store_name=[$0], s_company_id=[$1], s_street_number=[$2], s_street_name=[$3], s_street_type=[$4], s_suite_number=[$5], s_city=[$6], s_county=[$7], s_state=[$8], s_zip=[$9], 30 days=[$10], 31-60 days=[$11], 61-90 days=[$12], 91-120 days=[$13], >120 days=[$14])
     HiveAggregate(group=[{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}], agg#0=[sum($10)], agg#1=[sum($11)], agg#2=[sum($12)], agg#3=[sum($13)], agg#4=[sum($14)])
       HiveProject($f0=[$11], $f1=[$12], $f2=[$13], $f3=[$14], $f4=[$15], $f5=[$16], $f6=[$17], $f7=[$18], $f8=[$19], $f9=[$20], $f10=[CAST(CASE(<=(-($8, $4), 30), 1, 0)):INTEGER], $f11=[CAST(CASE(AND(>(-($8, $4), 30), <=(-($8, $4), 60)), 1, 0)):INTEGER], $f12=[CAST(CASE(AND(>(-($8, $4), 60), <=(-($8, $4), 90)), 1, 0)):INTEGER], $f13=[CAST(CASE(AND(>(-($8, $4), 90), <=(-($8, $4), 120)), 1, 0)):INTEGER], $f14=[CAST(CASE(>(-($8, $4), 120), 1, 0)):INTEGER])
         HiveJoin(condition=[=($2, $10)], joinType=[inner], algorithm=[none], cost=[not available])
-          HiveJoin(condition=[AND(=($3, $7), =($0, $5), =($1, $6))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[AND(=($0, $5), =($1, $6), =($3, $7))], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(ss_item_sk=[$1], ss_customer_sk=[$2], ss_store_sk=[$6], ss_ticket_number=[$8], ss_sold_date_sk=[$22])
               HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($6), IS NOT NULL($22))])
                 HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])

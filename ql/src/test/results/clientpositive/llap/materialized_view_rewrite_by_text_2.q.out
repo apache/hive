@@ -33,7 +33,8 @@ POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, cmv_mat_view2]], table:alias=[default.cmv_mat_view2])
+HiveProject(a=[$0], c=[$1])
+  HiveTableScan(table=[[default, cmv_mat_view2]], table:alias=[default.cmv_mat_view2])
 
 PREHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
@@ -79,7 +80,8 @@ POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, cmv_mat_view2]], table:alias=[default.cmv_mat_view2])
+HiveProject(a=[$0], c=[$1])
+  HiveTableScan(table=[[default, cmv_mat_view2]], table:alias=[default.cmv_mat_view2])
 
 PREHOOK: query: drop materialized view cmv_mat_view2
 PREHOOK: type: DROP_MATERIALIZED_VIEW

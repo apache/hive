@@ -10,7 +10,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveProject(_o__c0=[null:(INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP], _o__c1=[null:(INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP ARRAY], _o__c2=[null:INTEGER], _o__c3=[null:RecordType((INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP ARRAY f1, RecordType(DOUBLE a, VARCHAR(2147483647) CHARACTER SET "UTF-16LE" b) f2)])
+HiveProject(_c0=[null:(INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP], _c1=[null:(INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP ARRAY], _c2=[null:INTEGER], _c3=[null:RecordType((INTEGER, VARCHAR(2147483647) CHARACTER SET "UTF-16LE") MAP ARRAY f1, RecordType(DOUBLE a, VARCHAR(2147483647) CHARACTER SET "UTF-16LE" b) f2)])
   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: explain

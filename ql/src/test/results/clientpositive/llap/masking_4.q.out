@@ -129,7 +129,7 @@ POSTHOOK: Input: default@masking_test_subq_n2
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], value=[$1])
+HiveProject(masking_test_subq_n2.key=[$0], masking_test_subq_n2.value=[$1])
   HiveSemiJoin(condition=[AND(=($0, $3), =($4, $2))], joinType=[semi])
     HiveProject(key=[$0], value=[$1], key1=[CAST($0):DOUBLE])
       HiveFilter(condition=[IS NOT NULL(CAST($0):DOUBLE)])

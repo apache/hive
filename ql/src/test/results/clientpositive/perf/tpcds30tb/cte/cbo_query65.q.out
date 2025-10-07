@@ -10,7 +10,7 @@ HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
 
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(s_store_name=[$1], i_item_desc=[$8], revenue=[$4], i_current_price=[$9], i_wholesale_cost=[$10], i_brand=[$11])
+  HiveProject(s_store_name=[$1], i_item_desc=[$8], sc.revenue=[$4], i_current_price=[$9], i_wholesale_cost=[$10], i_brand=[$11])
     HiveJoin(condition=[=($7, $3)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(s_store_sk=[$0], s_store_name=[$5])

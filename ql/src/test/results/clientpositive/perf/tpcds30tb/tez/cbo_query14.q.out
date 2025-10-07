@@ -4,7 +4,7 @@ Warning: Map Join MAPJOIN[1151][bigTable=?] in task 'Reducer 17' is a cross prod
 Warning: Map Join MAPJOIN[1187][bigTable=?] in task 'Reducer 26' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
-  HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], $f4=[$4], $f5=[$5])
+  HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], _c4=[$4], _c5=[$5])
     HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2, 3}, {0, 1, 2}, {0, 1}, {0}, {}]], agg#0=[sum($4)], agg#1=[sum($5)])
       HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], sales=[$4], number_sales=[$5])
         HiveUnion(all=[true])

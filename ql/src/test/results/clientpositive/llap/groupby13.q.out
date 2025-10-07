@@ -127,7 +127,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agby
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[$1])
+HiveProject(_c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[min($0)])
     HiveProject($f0=[CAST(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
       HiveFilter(condition=[=($1, _UTF-16LE'a')])

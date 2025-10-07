@@ -463,7 +463,7 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104
 POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t4`.`plan_key`, `t6`.`project_key`
+OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `dw.project_object_id`, `t4`.`plan_key`, `t6`.`project_key`
 FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
 FROM (SELECT `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
 FROM `default`.`l3_monthly_dw_dimplan`
@@ -471,7 +471,7 @@ WHERE `idp_data_date` = DATE '2017-12-28' AND `finplan_detail_object_id` IS NOT 
 RIGHT JOIN ((SELECT `plan_detail_object_id`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
 WHERE `project_object_id` = 7147200) AS `t2` CROSS JOIN (SELECT `l3_snapshot_number`
-FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
+FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number` AND `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id`) AS `t4`
 LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
 WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200 AND `l3_snapshot_number` IS NOT NULL) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
@@ -921,7 +921,7 @@ POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104
 POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t4`.`plan_key`, `t6`.`project_key`
+OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `dw.project_object_id`, `t4`.`plan_key`, `t6`.`project_key`
 FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
 FROM (SELECT `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
 FROM `default`.`l3_monthly_dw_dimplan`
@@ -929,7 +929,7 @@ WHERE `idp_data_date` = DATE '2017-12-28' AND `finplan_detail_object_id` IS NOT 
 RIGHT JOIN ((SELECT `plan_detail_object_id`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
 WHERE `project_object_id` = 7147200) AS `t2` CROSS JOIN (SELECT `l3_snapshot_number`
-FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
+FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number` AND `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id`) AS `t4`
 LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`
 FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
 WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200 AND `l3_snapshot_number` IS NOT NULL) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`

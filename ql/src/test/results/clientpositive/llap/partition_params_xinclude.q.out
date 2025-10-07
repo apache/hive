@@ -71,7 +71,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_params_xin
 POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `customer`, `dt`
+OPTIMIZED SQL: SELECT `customer` AS `part_params_xin.customer`, `dt` AS `part_params_xin.dt`
 FROM `default`.`part_params_xin`
 WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
 STAGE DEPENDENCIES:
@@ -145,7 +145,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_params_xin
 POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `customer`, `dt`
+OPTIMIZED SQL: SELECT `customer` AS `part_params_xin.customer`, `dt` AS `part_params_xin.dt`
 FROM `default`.`part_params_xin`
 WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
 STAGE DEPENDENCIES:
@@ -216,7 +216,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_params_xin
 POSTHOOK: Input: default@part_params_xin@dt=2001-01-01
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `customer`, `dt`
+OPTIMIZED SQL: SELECT `customer` AS `part_params_xin.customer`, `dt` AS `part_params_xin.dt`
 FROM `default`.`part_params_xin`
 WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
 STAGE DEPENDENCIES:

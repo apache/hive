@@ -3,7 +3,7 @@ HiveProject(brand_id=[$0], brand=[$1], i_manufact_id=[$2], i_manufact=[$3], ext_
   HiveSortLimit(sort0=[$4], sort1=[$5], sort2=[$6], sort3=[$2], sort4=[$3], dir0=[DESC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
     HiveProject(brand_id=[$0], brand=[$1], i_manufact_id=[$2], i_manufact=[$3], ext_price=[$4], (tok_table_or_col i_brand)=[$1], (tok_table_or_col i_brand_id)=[$0])
       HiveAggregate(group=[{11, 12, 13, 14}], agg#0=[sum($7)])
-        HiveJoin(condition=[AND(<>($3, $16), =($6, $15))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[AND(=($6, $15), <>($3, $16))], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(c_customer_sk=[$0], c_current_addr_sk=[$4])

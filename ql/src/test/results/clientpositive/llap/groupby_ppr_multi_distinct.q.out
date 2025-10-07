@@ -28,7 +28,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@dest1
-OPTIMIZED SQL: SELECT SUBSTR(`key`, 1, 1) AS `_o__c0`, COUNT(DISTINCT SUBSTR(`value`, 5)) AS `_o__c1`, SUBSTR(`key`, 1, 1) || SUM(SUBSTR(`value`, 5)) AS `_o__c2`, SUM(DISTINCT SUBSTR(`value`, 5)) AS `_o__c3`, COUNT(DISTINCT `value`) AS `_o__c4`
+OPTIMIZED SQL: SELECT SUBSTR(`key`, 1, 1) AS `_c0`, COUNT(DISTINCT SUBSTR(`value`, 5)) AS `_c1`, SUBSTR(`key`, 1, 1) || SUM(SUBSTR(`value`, 5)) AS `_c2`, SUM(DISTINCT SUBSTR(`value`, 5)) AS `_c3`, COUNT(DISTINCT `value`) AS `_c4`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
 GROUP BY SUBSTR(`key`, 1, 1)

@@ -48,7 +48,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[1])
+HiveProject(_c0=[1])
   HiveProject($f0=[$0])
     HiveAggregate(group=[{}], agg#0=[count($0)])
       HiveProject(a=[$0])
@@ -64,10 +64,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t_test
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count($0)])
-  HiveProject(a=[$0])
-    HiveAggregate(group=[{0}])
-      HiveTableScan(table=[[default, t_test]], table:alias=[t_test])
+HiveProject(b=[$0])
+  HiveAggregate(group=[{}], agg#0=[count($0)])
+    HiveProject(a=[$0])
+      HiveAggregate(group=[{0}])
+        HiveTableScan(table=[[default, t_test]], table:alias=[t_test])
 
 PREHOOK: query: explain select 1 from (select count(distinct a) from t_test) x
 PREHOOK: type: QUERY

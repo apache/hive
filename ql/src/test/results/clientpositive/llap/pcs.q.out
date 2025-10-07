@@ -520,7 +520,7 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`ds`, `t2`.`key`
+OPTIMIZED SQL: SELECT `t0`.`ds` AS `a.ds`, `t2`.`key` AS `b.key`
 FROM (SELECT `key`, `ds`
 FROM `default`.`pcs_t1`
 WHERE `key` IN (1, 2) AND `ds` IN ('2000-04-08', '2000-04-09')) AS `t0`
@@ -1203,7 +1203,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('2000-04-08' AS STRING) AS `$f0`
+OPTIMIZED SQL: SELECT CAST('2000-04-08' AS STRING) AS `ds`
 FROM `default`.`pcs_t1`
 WHERE `ds` = '2000-04-08'
 STAGE DEPENDENCIES:

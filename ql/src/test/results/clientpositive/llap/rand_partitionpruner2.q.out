@@ -22,7 +22,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tmptable_n1
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `a.key`, `value` AS `a.value`, CAST('2008-04-08' AS STRING) AS `a.ds`, `hr` AS `a.hr`
 FROM `default`.`srcpart`
 WHERE RAND(1) < 0.1 AND `ds` = '2008-04-08'
 STAGE DEPENDENCIES:

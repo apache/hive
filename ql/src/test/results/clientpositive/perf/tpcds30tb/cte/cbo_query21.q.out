@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
+  HiveProject(x.w_warehouse_name=[$0], x.i_item_id=[$1], x.inv_before=[$2], x.inv_after=[$3])
     HiveFilter(condition=[AND(CASE(>($2, 0), <=(6.66667E-1, /(CAST($3):DOUBLE, CAST($2):DOUBLE)), false), CASE(>($2, 0), <=(/(CAST($3):DOUBLE, CAST($2):DOUBLE), 1.5E0), false))])
       HiveAggregate(group=[{0, 1}], agg#0=[sum($2)], agg#1=[sum($3)])
         HiveProject($f0=[$10], $f1=[$5], $f2=[CASE($7, $3, 0)], $f3=[CASE($8, $3, 0)])

@@ -35,7 +35,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcFilter(condition=[AND(OR(=($0, 0), AND(=($0, 1), =($2, 11)), AND(=($0, 2), =($2, 22))), IN($0, 0, 1, 2))])
-    JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
+HiveProject(book.id=[$0], book.title=[$1], book.author=[$2])
+  HiveProject(id=[$0], title=[$1], author=[$2])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcFilter(condition=[AND(OR(=($0, 0), AND(=($0, 1), =($2, 11)), AND(=($0, 2), =($2, 22))), IN($0, 0, 1, 2))])
+        JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
 

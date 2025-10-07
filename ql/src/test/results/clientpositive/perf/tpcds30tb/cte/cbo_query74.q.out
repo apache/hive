@@ -20,8 +20,8 @@ HiveProject(ws_bill_customer_sk=[$3], ws_net_paid=[$28], ws_sold_date_sk=[$33])
 
 CBO PLAN:
 HiveSortLimit(sort0=[$2], sort1=[$0], sort2=[$1], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
-  HiveProject(customer_id=[$0], customer_first_name=[$1], customer_last_name=[$2])
-    HiveJoin(condition=[AND(CASE($6, CASE($11, >(/($8, $10), /($3, $5)), false), false), =($0, $9))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(t_s_secyear.customer_id=[$0], t_s_secyear.customer_first_name=[$1], t_s_secyear.customer_last_name=[$2])
+    HiveJoin(condition=[AND(=($0, $9), CASE($6, CASE($11, >(/($8, $10), /($3, $5)), false), false))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($0, $7)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(c_customer_id=[$0], c_first_name=[$1], c_last_name=[$2], $f3=[$3])

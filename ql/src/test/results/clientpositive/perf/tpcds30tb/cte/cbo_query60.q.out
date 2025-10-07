@@ -15,7 +15,7 @@ HiveProject(i_item_id=[$1])
 
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(i_item_id=[$0], $f1=[$1])
+  HiveProject(i_item_id=[$0], total_sales=[$1])
     HiveAggregate(group=[{0}], agg#0=[sum($1)])
       HiveProject(i_item_id=[$0], $f1=[$1])
         HiveUnion(all=[true])
