@@ -30,7 +30,7 @@ POSTHOOK: query: explain extended select * from src_multi1_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1_n1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`
+OPTIMIZED SQL: SELECT `key` AS `src_multi1_n1.key`, `value` AS `src_multi1_n1.value`
 FROM `default`.`src_multi1_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

@@ -544,7 +544,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `t1.key`, `t0`.`value` AS `t1.value`, `t2`.`key` AS `t2.key`, `t2`.`value` AS `t2.value`
 FROM (SELECT `key`, `value`, CAST(`key` AS DOUBLE) AS `EXPR$0`
 FROM `default`.`src`
 WHERE CAST(`key` AS DOUBLE) IS NOT NULL) AS `t0`

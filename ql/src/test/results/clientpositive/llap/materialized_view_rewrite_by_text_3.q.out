@@ -32,7 +32,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[CAST(_UTF-16LE'FOO':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+HiveProject(t1.col0=[CAST(_UTF-16LE'FOO':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
   HiveFilter(condition=[=($0, _UTF-16LE'FOO')])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
@@ -49,7 +49,8 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(t1.col0=[$0])
+  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: drop materialized view mat1
 PREHOOK: type: DROP_MATERIALIZED_VIEW

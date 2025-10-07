@@ -134,7 +134,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[CAST(_UTF-16LE'1000':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], b=[$1])
+HiveProject(t2.a=[CAST(_UTF-16LE'1000':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], t2.b=[$1])
   HiveFilter(condition=[=($0, _UTF-16LE'1000')])
     HiveTableScan(table=[[default, t]], table:alias=[t])
 

@@ -1,7 +1,7 @@
 Warning: Map Join MAPJOIN[168][bigTable=?] in task 'Map 1' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[100])
-  HiveProject(ca_state=[$0], $f1=[$1])
+  HiveProject(state=[$0], cnt=[$1])
     HiveFilter(condition=[>=($1, 10)])
       HiveAggregate(group=[{4}], agg#0=[count()])
         HiveJoin(condition=[=($7, $13)], joinType=[inner], algorithm=[none], cost=[not available])

@@ -6,7 +6,7 @@ POSTHOOK: query: explain extended prepare pcount from select count(*) from src w
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`src`
 WHERE `key` > CAST(? AS STRING)
 STAGE DEPENDENCIES:

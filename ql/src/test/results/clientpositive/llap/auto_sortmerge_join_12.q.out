@@ -161,7 +161,7 @@ POSTHOOK: Input: default@bucket_medium@ds=2008-04-08
 POSTHOOK: Input: default@bucket_small_n15
 POSTHOOK: Input: default@bucket_small_n15@ds=2008-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM (SELECT 0 AS `DUMMY`
 FROM `default`.`bucket_medium`) AS `t`,
 (SELECT 0 AS `DUMMY`

@@ -112,7 +112,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], value=[$1])
+HiveProject(ccn_table.key=[$0], ccn_table.value=[$1])
   HiveFilter(condition=[IS NOT DISTINCT FROM(CAST($0):DOUBLE, null)])
     HiveTableScan(table=[[default, ccn_table]], table:alias=[ccn_table])
 

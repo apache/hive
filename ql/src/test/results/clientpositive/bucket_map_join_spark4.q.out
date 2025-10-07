@@ -74,7 +74,7 @@ POSTHOOK: Input: default@tbl1_n0
 POSTHOOK: Input: default@tbl2_n0
 POSTHOOK: Input: default@tbl3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value0`, `t4`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value` AS `val1`, `t2`.`value` AS `val2`, `t4`.`value` AS `val3`
 FROM (SELECT `key`, `value`
 FROM `default`.`tbl1_n0`
 WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
@@ -414,7 +414,7 @@ POSTHOOK: Input: default@tbl1_n0
 POSTHOOK: Input: default@tbl2_n0
 POSTHOOK: Input: default@tbl3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value0`, `t4`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value` AS `val1`, `t2`.`value` AS `val2`, `t4`.`value` AS `val3`
 FROM (SELECT `key`, `value`
 FROM `default`.`tbl1_n0`
 WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`

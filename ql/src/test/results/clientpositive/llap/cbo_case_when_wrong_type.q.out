@@ -55,7 +55,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[1])
+HiveProject(_c0=[1])
   HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
     HiveTableScan(table=[[default, t]], table:alias=[t])
 
@@ -78,7 +78,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[1])
+HiveProject(_c0=[1])
   HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
     HiveTableScan(table=[[default, t]], table:alias=[t])
 

@@ -104,7 +104,7 @@ POSTHOOK: Input: default@test2_n6@age=30
 POSTHOOK: Input: default@test2_n6@age=40
 POSTHOOK: Input: default@test2_n6@age=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `name`, `age`
+OPTIMIZED SQL: SELECT `name` AS `test2_n6.name`, `age` AS `test2_n6.age`
 FROM `default`.`test2_n6`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

@@ -158,7 +158,7 @@ POSTHOOK: Input: default@ct_events_clean
 POSTHOOK: Input: default@service_request_clean
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_events1_test
-OPTIMIZED SQL: SELECT `t0`.`contact_event_id`, `t0`.`ce_create_dt`, `t0`.`ce_end_dt`, `t0`.`contact_type`, `t0`.`cnctevs_cd`, `t0`.`contact_mode`, `t0`.`cntvnst_stts_cd`, `t0`.`total_transfers`, `t0`.`ce_notes`, `t2`.`svcrqst_id`, `t2`.`svcrqct_cds`, `t2`.`svcrtyp_cd`, `t2`.`cmpltyp_cd`, `t2`.`sum_reason_cd` AS `src`, `t2`.`cnctmd_cd`, `t2`.`notes`
+OPTIMIZED SQL: SELECT `t0`.`contact_event_id` AS `a.contact_event_id`, `t0`.`ce_create_dt` AS `a.ce_create_dt`, `t0`.`ce_end_dt` AS `a.ce_end_dt`, `t0`.`contact_type` AS `a.contact_type`, `t0`.`cnctevs_cd` AS `a.cnctevs_cd`, `t0`.`contact_mode` AS `a.contact_mode`, `t0`.`cntvnst_stts_cd` AS `a.cntvnst_stts_cd`, `t0`.`total_transfers` AS `a.total_transfers`, `t0`.`ce_notes` AS `a.ce_notes`, `t2`.`svcrqst_id` AS `b.svcrqst_id`, `t2`.`svcrqct_cds` AS `b.svcrqct_cds`, `t2`.`svcrtyp_cd` AS `b.svcrtyp_cd`, `t2`.`cmpltyp_cd` AS `b.cmpltyp_cd`, `t2`.`sum_reason_cd` AS `src`, `t2`.`cnctmd_cd` AS `b.cnctmd_cd`, `t2`.`notes` AS `b.notes`
 FROM (SELECT `contact_event_id`, `ce_create_dt`, `ce_end_dt`, `contact_type`, `cnctevs_cd`, `contact_mode`, `cntvnst_stts_cd`, `total_transfers`, `ce_notes`
 FROM `default`.`ct_events_clean`
 WHERE `contact_event_id` IS NOT NULL) AS `t0`
@@ -1142,7 +1142,7 @@ POSTHOOK: Input: default@ct_events_clean
 POSTHOOK: Input: default@service_request_clean
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_events1_test
-OPTIMIZED SQL: SELECT `t0`.`contact_event_id`, `t0`.`ce_create_dt`, `t0`.`ce_end_dt`, `t0`.`contact_type`, `t0`.`cnctevs_cd`, `t0`.`contact_mode`, `t0`.`cntvnst_stts_cd`, `t0`.`total_transfers`, `t0`.`ce_notes`, `t2`.`svcrqst_id`, `t2`.`svcrqct_cds`, `t2`.`svcrtyp_cd`, `t2`.`cmpltyp_cd`, `t2`.`sum_reason_cd` AS `src`, `t2`.`cnctmd_cd`, `t2`.`notes`
+OPTIMIZED SQL: SELECT `t0`.`contact_event_id` AS `a.contact_event_id`, `t0`.`ce_create_dt` AS `a.ce_create_dt`, `t0`.`ce_end_dt` AS `a.ce_end_dt`, `t0`.`contact_type` AS `a.contact_type`, `t0`.`cnctevs_cd` AS `a.cnctevs_cd`, `t0`.`contact_mode` AS `a.contact_mode`, `t0`.`cntvnst_stts_cd` AS `a.cntvnst_stts_cd`, `t0`.`total_transfers` AS `a.total_transfers`, `t0`.`ce_notes` AS `a.ce_notes`, `t2`.`svcrqst_id` AS `b.svcrqst_id`, `t2`.`svcrqct_cds` AS `b.svcrqct_cds`, `t2`.`svcrtyp_cd` AS `b.svcrtyp_cd`, `t2`.`cmpltyp_cd` AS `b.cmpltyp_cd`, `t2`.`sum_reason_cd` AS `src`, `t2`.`cnctmd_cd` AS `b.cnctmd_cd`, `t2`.`notes` AS `b.notes`
 FROM (SELECT `contact_event_id`, `ce_create_dt`, `ce_end_dt`, `contact_type`, `cnctevs_cd`, `contact_mode`, `cntvnst_stts_cd`, `total_transfers`, `ce_notes`
 FROM `default`.`ct_events_clean`
 WHERE `contact_event_id` IS NOT NULL) AS `t0`

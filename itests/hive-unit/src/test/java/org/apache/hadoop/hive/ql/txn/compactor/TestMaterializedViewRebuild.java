@@ -46,7 +46,7 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
   private static final List<String> FULL_REBUILD_PLAN = Arrays.asList(
           "CBO PLAN:",
-          "HiveProject(a=[$0], b=[$1], c=[$2])",
+          "HiveProject(t1.a=[$0], t1.b=[$1], t1.c=[$2])",
           "  HiveFilter(condition=[OR(IS NULL($0), >($0, 0))])",
           "    HiveTableScan(table=[[default, t1]], table:alias=[t1])",
           ""
@@ -54,7 +54,7 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
   private static final List<String> INCREMENTAL_REBUILD_PLAN = Arrays.asList(
           "CBO PLAN:",
-          "HiveProject(a=[$0], b=[$1], c=[$2])",
+          "HiveProject(t1.a=[$0], t1.b=[$1], t1.c=[$2])",
           "  HiveFilter(condition=[AND(>($5.writeid, 2), OR(IS NULL($0), >($0, 0)))])",
           "    HiveTableScan(table=[[default, t1]], table:alias=[t1])",
           ""
@@ -105,7 +105,8 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     assertResult(EXPECTED_RESULT, result);
 
     result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveProject(a=[$0], b=[$1], c=[$2])",
+        "  HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
   }
 
   @Test
@@ -134,7 +135,9 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     assertResult(expected, result);
 
     result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
+    Assert.assertEquals(Arrays.asList("CBO PLAN:",
+        "HiveProject(a=[$0], b=[$1], c=[$2])",
+        "  HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
   }
 
   @Test
@@ -151,7 +154,8 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     assertResult(EXPECTED_RESULT, result);
 
     result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveProject(a=[$0], b=[$1], c=[$2])",
+        "  HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
   }
 
   private static final List<String> EXPECTED_RESULT_AFTER_UPDATE = Arrays.asList(
@@ -178,7 +182,8 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
     assertResult(EXPECTED_RESULT_AFTER_UPDATE, result);
 
     result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
-    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveProject(a=[$0], b=[$1], c=[$2])",
+        "  HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
   }
 
   private void assertResult(List<String> expected, List<String> actual) {

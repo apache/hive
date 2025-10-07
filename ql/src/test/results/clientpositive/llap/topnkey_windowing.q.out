@@ -374,7 +374,7 @@ FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `tw_code`, `rank_window_0` AS `ranking`
 FROM (SELECT `tw_code`, RANK() OVER (PARTITION BY 0 ORDER BY `tw_value` RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS `rank_window_0`
 FROM `default`.`topnkey_windowing`) AS `t`
 WHERE `rank_window_0` <= 3
@@ -561,7 +561,7 @@ FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@topnkey_windowing
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `tw_code`, `rank_window_0` AS `ranking`
 FROM (SELECT `tw_code`, RANK() OVER (PARTITION BY 0 ORDER BY `tw_value` RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS `rank_window_0`
 FROM `default`.`topnkey_windowing`) AS `t`
 WHERE `rank_window_0` <= 3

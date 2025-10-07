@@ -92,20 +92,21 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
-  HiveProject(b=[$0], c=[$1], $f2=[$2])
-    HiveUnion(all=[true])
-      HiveProject(b=[$0], c=[$1], $f2=[$2])
-        HiveAggregate(group=[{1, 2}], agg#0=[sum($4)])
-          HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-            HiveProject(a=[$0], b=[$1], c=[$2])
-              HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
-                HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice], fromVersion=[#Masked#])
-            HiveProject(d=[$0], f=[$2])
-              HiveFilter(condition=[IS NOT NULL($0)])
-                HiveTableScan(table=[[default, tbl_ice_v2]], table:alias=[tbl_ice_v2], fromVersion=[#Masked#])
-      HiveProject(b=[$0], c=[$1], _c2=[$2])
-        HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(tbl_ice.b=[$0], tbl_ice.c=[$1], _c2=[$2])
+  HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
+    HiveProject(b=[$0], c=[$1], $f2=[$2])
+      HiveUnion(all=[true])
+        HiveProject(b=[$0], c=[$1], $f2=[$2])
+          HiveAggregate(group=[{1, 2}], agg#0=[sum($4)])
+            HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(a=[$0], b=[$1], c=[$2])
+                HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
+                  HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice], fromVersion=[#Masked#])
+              HiveProject(d=[$0], f=[$2])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, tbl_ice_v2]], table:alias=[tbl_ice_v2], fromVersion=[#Masked#])
+        HiveProject(b=[$0], c=[$1], _c2=[$2])
+          HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: explain
 alter materialized view mat1 rebuild
@@ -352,7 +353,7 @@ POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveProject($f0=[$4], $f1=[$5], $f2=[CASE(IS NULL($2), $6, IS NULL($6), $2, +($6, $2))])
+HiveProject(tbl_ice.b=[$4], tbl_ice.c=[$5], _c2=[CASE(IS NULL($2), $6, IS NULL($6), $2, +($6, $2))])
   HiveFilter(condition=[OR($3, IS NULL($3))])
     HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $4), IS NOT DISTINCT FROM($1, $5))], joinType=[right], algorithm=[BucketJoin], cost=[not available])
       HiveProject(b=[$0], c=[$1], _c2=[$2], $f3=[true])

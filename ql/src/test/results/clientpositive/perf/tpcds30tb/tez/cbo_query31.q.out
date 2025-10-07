@@ -1,5 +1,5 @@
 CBO PLAN:
-HiveProject(ca_county=[$8], d_year=[CAST(2000):INTEGER], web_q1_q2_increase=[/($6, $1)], store_q1_q2_increase=[/($9, $11)], web_q2_q3_increase=[/($4, $6)], store_q2_q3_increase=[/($13, $9)])
+HiveProject(ss1.ca_county=[$8], ss1.d_year=[CAST(2000):INTEGER], web_q1_q2_increase=[/($6, $1)], store_q1_q2_increase=[/($9, $11)], web_q2_q3_increase=[/($4, $6)], store_q2_q3_increase=[/($13, $9)])
   HiveJoin(condition=[AND(=($8, $0), CASE(>($11, 0:DECIMAL(1, 0)), CASE($2, >(/($6, $1), /($9, $11)), false), false), CASE(>($9, 0:DECIMAL(1, 0)), CASE($7, >(/($4, $6), /($13, $9)), false), false))], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])

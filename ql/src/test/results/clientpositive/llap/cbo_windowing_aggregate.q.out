@@ -27,7 +27,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(mul1=[$0], mul2=[$0], _o__c2=[row_number() OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+HiveProject(mul1=[$0], mul2=[$0], _c2=[row_number() OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
   HiveProject($f0=[$0], $f1=[$1])
     HiveAggregate(group=[{0, 1}])
       HiveProject($f0=[*($0, 2)], $f1=[*($0, 2)])

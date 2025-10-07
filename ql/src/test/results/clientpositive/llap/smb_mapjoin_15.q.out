@@ -44,7 +44,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`value` AS `a.value`, `t2`.`key` AS `b.key`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`test_table1_n4`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -333,7 +333,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`key2` AS `a.key2`, `t0`.`value` AS `a.value`, `t2`.`key` AS `b.key`, `t2`.`key2` AS `b.key2`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `key2`, `value`
 FROM `default`.`test_table1_n4`
 WHERE `key` IS NOT NULL AND `key2` IS NOT NULL) AS `t0`
@@ -598,13 +598,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`key2` AS `a.key2`, `t0`.`value` AS `a.value`, `t2`.`key` AS `b.key`, `t2`.`key2` AS `b.key2`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `key2`, `value`
 FROM `default`.`test_table1_n4`
 WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `key2`, `value`
 FROM `default`.`test_table2_n4`
-WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t2` ON `t0`.`key2` = `t2`.`key2` AND `t0`.`key` = `t2`.`key`
+WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`key2` = `t2`.`key2`
 ORDER BY `t0`.`key`
 LIMIT 10
 STAGE DEPENDENCIES:
@@ -863,7 +863,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1_n4
 POSTHOOK: Input: default@test_table2_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`key2` AS `a.key2`, `t0`.`value` AS `a.value`, `t2`.`key` AS `b.key`, `t2`.`key2` AS `b.key2`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `key2`, `value`
 FROM `default`.`test_table1_n4`
 WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
