@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD;
 
 /**
  * Abort-cleanup based implementation of TaskHandler.
@@ -51,8 +53,7 @@ class AbortedTxnCleaner extends TaskHandler {
   private static final Logger LOG = LoggerFactory.getLogger(AbortedTxnCleaner.class.getName());
 
   public AbortedTxnCleaner(HiveConf conf, TxnStore txnHandler,
-                           MetadataCache metadataCache, boolean metricsEnabled,
-                           FSRemover fsRemover) {
+        MetadataCache metadataCache, boolean metricsEnabled, FSRemover fsRemover) {
     super(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
   }
 
@@ -74,17 +75,17 @@ class AbortedTxnCleaner extends TaskHandler {
    **/
   @Override
   public List<Runnable> getTasks() throws MetaException {
-    int abortedThreshold = HiveConf.getIntVar(conf,
-              HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
-    long abortedTimeThreshold = HiveConf
-              .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
-                      TimeUnit.MILLISECONDS);
-    List<CompactionInfo> readyToCleanAborts = txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
+    int abortedThreshold = HiveConf.getIntVar(getConf(), HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
+    long abortedTimeThreshold = HiveConf.getTimeVar(getConf(), HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
+        TimeUnit.MILLISECONDS);
+    List<CompactionInfo> readyToCleanAborts =
+        txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
 
     if (!readyToCleanAborts.isEmpty()) {
-      return readyToCleanAborts.stream().map(info -> ThrowingRunnable.unchecked(() ->
-                      clean(info, info.minOpenWriteTxnId, metricsEnabled)))
-              .collect(Collectors.toList());
+      return readyToCleanAborts.stream()
+          .map(info -> ThrowingRunnable.unchecked(
+              () -> clean(info, info.minOpenWriteTxnId, metricsEnabled)))
+          .collect(Collectors.toList());
     }
     return Collections.emptyList();
   }
@@ -98,7 +99,9 @@ class AbortedTxnCleaner extends TaskHandler {
         perfLogger.perfLogBegin(AbortedTxnCleaner.class.getName(), cleanerMetric);
       }
       Partition p = null;
-      Table t = metadataCache.computeIfAbsent(info.getFullTableName(), () -> resolveTable(info.dbname, info.tableName));
+      Table t = metadataCache.computeIfAbsent(info.getFullTableName(),
+          () -> resolveTable(info.dbname, info.tableName));
+
       if (isNull(t)) {
         // The table was dropped before we got around to cleaning it.
         LOG.info("Unable to find table {}, assuming it was dropped.", info.getFullTableName());
@@ -109,25 +112,24 @@ class AbortedTxnCleaner extends TaskHandler {
         p = resolvePartition(info.dbname, info.tableName, info.partName);
         if (isNull(p)) {
           // The partition was dropped before we got around to cleaning it.
-          LOG.info("Unable to find partition {}, assuming it was dropped.",
-                  info.getFullPartitionName());
+          LOG.info("Unable to find partition {}, assuming it was dropped.", info.getFullPartitionName());
           txnHandler.markCleaned(info);
           return;
         }
       }
 
-      String location = CompactorUtil.resolveStorageDescriptor(t,p).getLocation();
-      info.runAs = TxnUtils.findUserToRunAs(location, t, conf);
+      String location = CompactorUtil.resolveStorageDescriptor(t, p).getLocation();
+      info.runAs = TxnUtils.findUserToRunAs(location, t, getConf());
       abortCleanUsingAcidDir(info, location, minOpenWriteTxn);
 
     } catch (InterruptedException e) {
       LOG.error("Caught an interrupted exception when cleaning, unable to complete cleaning of {} due to {}", info,
-              e.getMessage());
+          e.getMessage());
       handleCleanerAttemptFailure(info, e.getMessage());
       throw e;
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", info,
-              e.getMessage());
+          e.getMessage());
       handleCleanerAttemptFailure(info, e.getMessage());
       throw new MetaException(e.getMessage());
     } finally {
@@ -139,9 +141,9 @@ class AbortedTxnCleaner extends TaskHandler {
 
   private void abortCleanUsingAcidDir(CompactionInfo info, String location, long minOpenWriteTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenWriteTxn, true);
+        TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenWriteTxn, true);
     //save it so that getAcidState() sees it
-    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    getConf().set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
 
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(info, validTxnList);
 
@@ -149,9 +151,13 @@ class AbortedTxnCleaner extends TaskHandler {
     // This is necessary for looking at the complete state of the table till the min open write Id
     // (if there is an open txn on the table) or the highestWatermark.
     // This is used later on while deleting the records in TXN_COMPONENTS table.
-    info.highestWriteId = Math.min(isNull(validWriteIdList.getMinOpenWriteId()) ?
-            Long.MAX_VALUE : validWriteIdList.getMinOpenWriteId() - 1, validWriteIdList.getHighWatermark());
-    Table table = metadataCache.computeIfAbsent(info.getFullTableName(), () -> resolveTable(info.dbname, info.tableName));
+    info.highestWriteId = Math.min(
+        isNull(validWriteIdList.getMinOpenWriteId()) ?
+            Long.MAX_VALUE : validWriteIdList.getMinOpenWriteId() - 1,
+        validWriteIdList.getHighWatermark());
+
+    Table table = metadataCache.computeIfAbsent(info.getFullTableName(),
+        () -> resolveTable(info.dbname, info.tableName));
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     boolean success = cleanAndVerifyObsoleteDirectories(info, location, validWriteIdList, table);
@@ -160,6 +166,5 @@ class AbortedTxnCleaner extends TaskHandler {
     } else {
       LOG.warn("Leaving aborted entry {} in TXN_COMPONENTS table.", info);
     }
-
   }
 }

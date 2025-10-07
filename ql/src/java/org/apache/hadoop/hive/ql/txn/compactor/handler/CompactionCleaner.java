@@ -67,17 +67,16 @@ class CompactionCleaner extends TaskHandler {
   private static final Logger LOG = LoggerFactory.getLogger(CompactionCleaner.class.getName());
 
   public CompactionCleaner(HiveConf conf, TxnStore txnHandler,
-                                MetadataCache metadataCache, boolean metricsEnabled,
-                                FSRemover fsRemover) {
+        MetadataCache metadataCache, boolean metricsEnabled, FSRemover fsRemover) {
     super(conf, txnHandler, metadataCache, metricsEnabled, fsRemover);
   }
 
   @Override
   public List<Runnable> getTasks() throws MetaException {
     long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-    long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
-            ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
-            : 0;
+    long retentionTime = HiveConf.getBoolVar(getConf(), HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
+        ? HiveConf.getTimeVar(getConf(), HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
+        : 0;
     List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
     if (!readyToClean.isEmpty()) {
       long minTxnIdSeenOpen = Math.min(minOpenTxnId, txnHandler.findMinTxnIdSeenOpen());
@@ -89,7 +88,6 @@ class CompactionCleaner extends TaskHandler {
       // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
       return readyToClean.stream().map(ci -> {
         long cleanerWaterMark = (ci.minOpenWriteId >= 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
-        LOG.info("Cleaning based on min open txn id: {}", cleanerWaterMark);
         return ThrowingRunnable.unchecked(() -> clean(ci, cleanerWaterMark, metricsEnabled));
       }).collect(Collectors.toList());
     }
@@ -97,10 +95,10 @@ class CompactionCleaner extends TaskHandler {
   }
 
   private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
-    LOG.info("Starting cleaning for {}", ci);
+    LOG.info("Starting cleaning for {} based on min open txnId: {}", ci, minOpenTxn);
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
-            (!isNull(ci.type) ? ci.type.toString().toLowerCase() : null);
+        (!isNull(ci.type) ? ci.type.toString().toLowerCase() : null);
     try {
       if (metricsEnabled) {
         perfLogger.perfLogBegin(CompactionCleaner.class.getName(), cleanerMetric);
@@ -111,11 +109,13 @@ class CompactionCleaner extends TaskHandler {
       Partition p = null;
 
       if (isNull(location)) {
-        t = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+        t = metadataCache.computeIfAbsent(ci.getFullTableName(),
+            () -> resolveTable(ci.dbname, ci.tableName));
+
         if (isNull(t)) {
           // The table was dropped before we got around to cleaning it.
           LOG.info("Unable to find table {}, assuming it was dropped. {}", ci.getFullTableName(),
-                  idWatermark(ci));
+              idWatermark(ci));
           txnHandler.markCleaned(ci);
           return;
         }
@@ -129,8 +129,8 @@ class CompactionCleaner extends TaskHandler {
           p = resolvePartition(ci.dbname, ci.tableName, ci.partName);
           if (isNull(p)) {
             // The partition was dropped before we got around to cleaning it.
-            LOG.info("Unable to find partition {}, assuming it was dropped. {}",
-                    ci.getFullPartitionName(), idWatermark(ci));
+            LOG.info("Unable to find partition {}, assuming it was dropped. {}", ci.getFullPartitionName(),
+                idWatermark(ci));
             txnHandler.markCleaned(ci);
             return;
           }
@@ -146,8 +146,8 @@ class CompactionCleaner extends TaskHandler {
 
       if (!isNull(t) || !isNull(ci.partName)) {
         String path = isNull(location)
-                ? CompactorUtil.resolveStorageDescriptor(t, p).getLocation()
-                : location;
+            ? CompactorUtil.resolveStorageDescriptor(t, p).getLocation()
+            : location;
         boolean dropPartition = !isNull(ci.partName) && isNull(p);
 
         //check if partition wasn't re-created
@@ -161,7 +161,7 @@ class CompactionCleaner extends TaskHandler {
       }
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of {} due to {}", ci,
-              e.getMessage());
+          e.getMessage());
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();
       }
@@ -205,9 +205,9 @@ class CompactionCleaner extends TaskHandler {
 
   private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList =
-            TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn, false);
+        TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn, false);
     //save it so that getAcidState() sees it
-    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    getConf().set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /*
      * {@code validTxnList} is capped by minOpenTxnGLB so if
      * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
@@ -241,7 +241,8 @@ class CompactionCleaner extends TaskHandler {
 
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
-    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(), () -> resolveTable(ci.dbname, ci.tableName));
+    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(),
+        () -> resolveTable(ci.dbname, ci.tableName));
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     boolean success = cleanAndVerifyObsoleteDirectories(ci, location, validWriteIdList, table);
@@ -254,7 +255,8 @@ class CompactionCleaner extends TaskHandler {
   }
 
   private LockRequest createLockRequest(CompactionInfo ci) {
-    return CompactorUtil.createLockRequest(conf, ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
+    return CompactorUtil.createLockRequest(
+        getConf(), ci, 0, LockType.EXCL_WRITE, DataOperationType.DELETE);
   }
 
   private static String idWatermark(CompactionInfo ci) {
@@ -263,7 +265,7 @@ class CompactionCleaner extends TaskHandler {
 
   @Override
   protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
-          throws NoSuchTxnException, MetaException {
+        throws NoSuchTxnException, MetaException {
     ValidReaderWriteIdList validWriteIdList = super.getValidCleanerWriteIdList(ci, validTxnList);
     /*
      * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
@@ -279,11 +281,14 @@ class CompactionCleaner extends TaskHandler {
   private CleanupRequest getCleaningRequestBasedOnLocation(CompactionInfo ci, String location) {
     String strIfPurge = ci.getProperty("ifPurge");
     boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
-
     Path obsoletePath = new Path(location);
+
     return new CleanupRequestBuilder()
-            .setLocation(location).setDbName(ci.dbname).setFullPartitionName(ci.getFullPartitionName())
-            .setRunAs(ci.runAs).setPurge(ifPurge).setObsoleteDirs(Collections.singletonList(obsoletePath))
-            .build();
+        .setLocation(location).setDbName(ci.dbname)
+        .setFullPartitionName(ci.getFullPartitionName())
+        .setRunAs(ci.runAs)
+        .setPurge(ifPurge)
+        .setObsoleteDirs(Collections.singletonList(obsoletePath))
+        .build();
   }
 }
