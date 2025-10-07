@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
+import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -41,6 +42,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
@@ -80,12 +82,16 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   private static final DockerImageName GRAVITINO_IMAGE =
       DockerImageName.parse("apache/gravitino-iceberg-rest:1.0.0");
 
+  private static final String OAUTH2_SERVER_ICEBERG_CLIENT_ID = "iceberg-client";
+  private static final String OAUTH2_SERVER_ICEBERG_CLIENT_SECRET = "iceberg-client-secret";
+
   private final String name;
   private final File qfile;
 
   private GenericContainer<?> gravitinoContainer;
   private Path warehouseDir;
   private final ScheduledExecutorService fileSyncExecutor = Executors.newSingleThreadScheduledExecutor();
+  private OAuth2AuthorizationServer oAuth2AuthorizationServer;
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
@@ -105,9 +111,12 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
   @Before
   public void setup() throws IOException {
+    Network dockerNetwork = Network.newNetwork();
+    
+    startOAuth2AuthorizationServer(dockerNetwork);
     createWarehouseDir();
     prepareGravitinoConfig();
-    startGravitinoContainer();
+    startGravitinoContainer(dockerNetwork);
     fileSyncExecutor.scheduleAtFixedRate(this::syncWarehouseDir, 0, 5, TimeUnit.SECONDS);
 
     String host = gravitinoContainer.getHost();
@@ -123,12 +132,21 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
     conf.set(restCatalogPrefix + "uri", restCatalogUri);
     conf.set(restCatalogPrefix + "type", CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
+
+    // OAUTH2 Configs
+    conf.set(restCatalogPrefix + "rest.auth.type", "oauth2");
+    conf.set(restCatalogPrefix + "oauth2-server-uri", oAuth2AuthorizationServer.getTokenEndpoint());
+    conf.set(restCatalogPrefix + "credential", oAuth2AuthorizationServer.getClientCredential());
   }
 
   @After
   public void teardown() throws IOException {
     if (gravitinoContainer != null) {
       gravitinoContainer.stop();
+    }
+    
+    if (oAuth2AuthorizationServer != null) {
+      oAuth2AuthorizationServer.stop();
     }
 
     fileSyncExecutor.shutdownNow();
@@ -157,7 +175,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
    * multiple test methods rather than being confined to a single block scope.</p>
    */
   @SuppressWarnings("resource")
-  private void startGravitinoContainer() {
+  private void startGravitinoContainer(Network dockerNetwork) {
     gravitinoContainer = new GenericContainer<>(GRAVITINO_IMAGE)
         .withExposedPorts(GRAVITINO_HTTP_PORT)
         // Update entrypoint to create the warehouse directory before starting the server
@@ -175,6 +193,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
             ),
             GRAVITINO_H2_LIB
         )
+        .withNetwork(dockerNetwork)
         // Wait for the server to be fully started
         .waitingFor(
             new WaitAllStrategy()
@@ -254,6 +273,11 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
       }
     }
   }
+  
+  private void startOAuth2AuthorizationServer(Network dockerNetwork) {
+    oAuth2AuthorizationServer = new OAuth2AuthorizationServer(dockerNetwork, false);
+    oAuth2AuthorizationServer.start();
+  }
 
   private void createWarehouseDir() {
     try {
@@ -276,10 +300,25 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
     String updatedContent = content
         .replace("/WAREHOUSE_DIR", warehouseDir.toString())
+        .replace("OAUTH2_SERVER_URI", oAuth2AuthorizationServer.getIssuer())
+        .replace("OAUTH2_JWKS_URI", getJwksUri())
+        .replace("OAUTH2_CLIENT_ID", OAUTH2_SERVER_ICEBERG_CLIENT_ID)
+        .replace("OAUTH2_CLIENT_SECRET", OAUTH2_SERVER_ICEBERG_CLIENT_SECRET)
+//        .replace("localhost", "host.docker.internal")
         .replace("HTTP_PORT", String.valueOf(GRAVITINO_HTTP_PORT));
 
     Path configFile = warehouseDir.resolve(GRAVITINO_CONF_FILE_TEMPLATE);
     Files.writeString(configFile, updatedContent);
+  }
+
+  private String getJwksUri() {
+    String reachableHost = oAuth2AuthorizationServer.getKeycloackContainerDockerInternalHostName();
+    int internalPort = 8080; // Keycloak container's internal port
+    return oAuth2AuthorizationServer.getIssuer()
+        .replace("localhost", reachableHost)
+        .replace("127.0.0.1", reachableHost)
+        // replace issuer's mapped port with keyclock container's internal port
+        .replaceFirst(":[0-9]+", ":" + internalPort);
   }
 
   @Test

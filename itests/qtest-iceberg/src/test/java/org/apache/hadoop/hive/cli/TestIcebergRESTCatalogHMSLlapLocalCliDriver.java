@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.ITestsSchemaInfo;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.hive.CatalogUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -36,21 +37,14 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Stream;
 
 @RunWith(Parameterized.class)
 public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
 
-  private static final Logger LOG = LoggerFactory.getLogger(
-      TestIcebergRESTCatalogHMSLlapLocalCliDriver.class);
   private static final String CATALOG_NAME = "ice01";
   private static final CliAdapter CLI_ADAPTER =
       new CliConfigs.TestIcebergRESTCatalogHMSLlapLocalCliDriver().getCliAdapter();
@@ -60,7 +54,7 @@ public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
   
   @ClassRule
   public static final HiveRESTCatalogServerExtension REST_CATALOG_EXTENSION =
-      HiveRESTCatalogServerExtension.builder(ServletSecurity.AuthType.NONE)
+      HiveRESTCatalogServerExtension.builder(ServletSecurity.AuthType.OAUTH2)
           .addMetaStoreSchemaClassName(ITestsSchemaInfo.class)
           .build();
 
@@ -90,26 +84,16 @@ public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
     conf.set(restCatalogPrefix + "uri", REST_CATALOG_EXTENSION.getRestEndpoint());
     conf.set(restCatalogPrefix + "type", CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
-  }
 
-  @Before
-  public void cleanUpRestCatalogServerTmpDir() throws IOException {
-    try (Stream<Path> children = Files.list(REST_CATALOG_EXTENSION.getRestCatalogServer().getWarehouseDir())) {
-      children
-          .filter(path -> !path.getFileName().toString().equals("derby.log"))
-          .filter(path -> !path.getFileName().toString().equals("metastore_db"))
-          .forEach(path -> {
-            try {
-              if (Files.isDirectory(path)) {
-                FileUtils.deleteDirectory(path.toFile());
-              } else {
-                Files.delete(path);
-              }
-            } catch (IOException e) {
-              LOG.error("Failed to delete path: {}", path, e);
-            }
-          });
-    }
+    // auth configs
+    conf.set(restCatalogPrefix + "rest.auth.type", "oauth2");
+    conf.set(restCatalogPrefix + "oauth2-server-uri", REST_CATALOG_EXTENSION.getOAuth2TokenEndpoint());
+    conf.set(restCatalogPrefix + "credential", REST_CATALOG_EXTENSION.getOAuth2ClientCredential());
+  }
+  
+  @After
+  public void tearDown() throws IOException {
+    FileUtils.deleteDirectory(REST_CATALOG_EXTENSION.getRestCatalogServer().getWarehouseDir().toFile());
   }
 
   @Test

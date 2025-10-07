@@ -240,6 +240,8 @@
     <spring.version>5.3.39</spring.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
+    <keycloak.version>26.0.6</keycloak.version>
+    <nimbus-oauth.version>11.28</nimbus-oauth.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
