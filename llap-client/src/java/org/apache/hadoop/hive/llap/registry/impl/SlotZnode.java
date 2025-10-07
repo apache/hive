@@ -148,7 +148,7 @@ public class SlotZnode implements Closeable {
     }
 
     currentSlot = slotToTake;
-    LOG.info("Will attempt to take slot " + currentSlot);
+    LOG.info("Will attempt to take slot {}", currentSlot);
   }
 
 
@@ -184,7 +184,7 @@ public class SlotZnode implements Closeable {
       client.delete().guaranteed().forPath(localNodePath);
     } catch (KeeperException.NoNodeException ignore) {
     } catch (Exception e) {
-      LOG.error("Deleting node: " + localNodePath, e);
+      LOG.error("Deleting node: {}", localNodePath, e);
       throw new IOException(e);
     }
   }
@@ -199,11 +199,11 @@ public class SlotZnode implements Closeable {
     String createPath = null;
     try {
       createPath = getSlotPath(currentSlot);
-      LOG.info("Attempting to create " + createPath);
+      LOG.info("Attempting to create {}", createPath);
       client.create().withMode(CreateMode.EPHEMERAL).inBackground(backgroundCallback)
         .forPath(createPath, data);
     } catch (Exception e) {
-      LOG.error("Creating node. Path: " + createPath, e);
+      LOG.error("Creating node. Path: {}", createPath, e);
       throw new RuntimeException(e);
     }
   }
@@ -216,7 +216,7 @@ public class SlotZnode implements Closeable {
       client.checkExists().usingWatcher(watcher).inBackground(
           checkExistsCallback).forPath(localNodePath);
     } catch (Exception e) {
-      LOG.error("Watching node: " + localNodePath, e);
+      LOG.error("Watching node: {}", localNodePath, e);
       throw e;
     }
   }
@@ -245,7 +245,7 @@ public class SlotZnode implements Closeable {
     String localPath = nodePath.get();
     if (localPath == null) return;
     if (!localPath.equals(event.getPath())) {
-      LOG.info("Ignoring the NodeDeleted event for " + event.getPath());
+      LOG.info("Ignoring the NodeDeleted event for {}", event.getPath());
       return;
     }
     LOG.info("Trying to reacquire because of the NodeDeleted event");
@@ -256,7 +256,7 @@ public class SlotZnode implements Closeable {
   private void processCreateResult(CuratorFramework client, CuratorEvent event) throws Exception {
     boolean doesExist = event.getResultCode() == KeeperException.Code.NODEEXISTS.intValue();
     if (!doesExist && event.getResultCode() != KeeperException.Code.OK.intValue()) {
-      LOG.info("Trying to reacquire due to create error: " + event);
+      LOG.info("Trying to reacquire due to create error: {}", event);
       startCreateCurrentNode(); // TODO: a pattern from Curator. Better error handling?
       return;
     }
@@ -267,7 +267,7 @@ public class SlotZnode implements Closeable {
       return;
     case INITIAL_SELECTION:
       if (doesExist) {
-        LOG.info("Slot " + currentSlot + " was occupied");
+        LOG.info("Slot {} was occupied", currentSlot);
         chooseSlotToTake(); // Try another slot.
         startCreateCurrentNode();
       } else {

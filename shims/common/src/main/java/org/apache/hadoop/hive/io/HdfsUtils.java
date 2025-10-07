@@ -121,9 +121,9 @@ public class HdfsUtils {
               run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
 
             } catch (Exception e) {
-              LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
-                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
-              LOG.debug("The details are: " + e, e);
+              LOG.info("Skipping ACL inheritance: File system for path {} does not support ACLs " +
+                      "but dfs.namenode.acls.enabled is set to true.", target);
+              LOG.debug("The details are: {}", e);
             }
           }
         } else {
@@ -146,9 +146,8 @@ public class HdfsUtils {
         }
       }
     } catch (Exception e) {
-      LOG.warn(
-              "Unable to inherit permissions for file " + target + " from file " + sourceStatus.getFileStatus().getPath(),
-              e.getMessage());
+      LOG.warn("Unable to inherit permissions for file {} from file {}",
+              target, sourceStatus.getFileStatus().getPath(), e.getMessage());
       LOG.debug("Exception while inheriting permissions", e);
     }
   }
@@ -188,7 +187,7 @@ public class HdfsUtils {
   private static void run(FsShell shell, String[] command) throws Exception {
     LOG.debug(ArrayUtils.toString(command));
     int retval = shell.run(command);
-    LOG.debug("Return value is :" + retval);
+    LOG.debug("Return value is : {}", retval);
   }
 public static class HadoopFileStatus {
 
@@ -203,9 +202,9 @@ public static class HadoopFileStatus {
       try {
         aclStatus = fs.getAclStatus(file);
       } catch (Exception e) {
-        LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
-                "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
-        LOG.debug("The details are: " + e, e);
+        LOG.info("Skipping ACL inheritance: File system for path {} does not support ACLs " +
+                "but dfs.namenode.acls.enabled is set to true.", file);
+        LOG.debug("The details are: {}", e);
       }
     }this.fileStatus = fileStatus;
     this.aclStatus = aclStatus;

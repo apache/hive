@@ -84,7 +84,7 @@ public class LlapUtil {
       throw new RuntimeException("Kerberos principal and/or keytab are null or empty");
     }
     final String serverPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
-    LOG.info("Logging in as " + serverPrincipal + " via " + keytabFile);
+    LOG.info("Logging in as {} via {}", serverPrincipal, keytabFile);
     return UserGroupInformation.loginUserFromKeytabAndReturnUGI(serverPrincipal, keytabFile);
   }
 
@@ -103,7 +103,7 @@ public class LlapUtil {
       throw new RuntimeException("Kerberos principal and/or keytab is null or empty");
     }
     final String serverPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
-    LOG.info("Logging in as " + serverPrincipal + " via " + keytabFile + " and updating current logged in user");
+    LOG.info("Logging in as {} via {} and updating current logged in user", serverPrincipal, keytabFile);
     UserGroupInformation.loginUserFromKeytab(serverPrincipal, keytabFile);
   }
 
@@ -184,7 +184,7 @@ public class LlapUtil {
           numHandlers, impl, secretManager, provider, aclVars);
       server.start();
     } catch (IOException e) {
-      LOG.error("Failed to run RPC Server on port: " + srvPort, e);
+      LOG.error("Failed to run RPC Server on port: {}", srvPort, e);
       throw new RuntimeException(e);
     }
 
@@ -195,7 +195,7 @@ public class LlapUtil {
     if (bindAddress != null) {
       bindAddress.set(bindAddressVal);
     }
-    LOG.info("Instantiated " + protocolClass.getSimpleName() + " at " + bindAddressVal);
+    LOG.info("Instantiated {} at {}", protocolClass.getSimpleName(), bindAddressVal);
     return server;
   }
 

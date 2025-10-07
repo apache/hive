@@ -640,7 +640,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     currentFieldStart = startPositions[fieldIndex];
     currentFieldLength = startPositions[fieldIndex + 1] - startPositions[fieldIndex] - 1;
     currentEscapeCount = (isEscaped ? escapeCounts[fieldIndex] : 0);
- 
+
     return doReadField(fields[fieldIndex]);
   }
 
@@ -881,12 +881,12 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
                 && currentComplexTypeHelpers[currentLevel - 1] instanceof MapComplexTypeHelper) {
               currentLevel++;
             }
-            ComplexTypeHelper complexTypeHelper = field.complexTypeHelper; 
+            ComplexTypeHelper complexTypeHelper = field.complexTypeHelper;
             currentComplexTypeHelpers[currentLevel++] = complexTypeHelper;
             if (field.complexCategory == Category.MAP) {
               currentComplexTypeHelpers[currentLevel] = null;
             }
-  
+
             // Set up context for readNextComplexField.
             complexTypeHelper.setCurrentFieldInfo(currentFieldStart, currentFieldLength);
           }
@@ -1040,7 +1040,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
         // When data is prematurely ended the fieldPosition will be 1 more than the end.
         Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
-  
+
         currentFieldStart = fieldPosition;
 
         final boolean isParentMap = isParentMap();
@@ -1261,12 +1261,10 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     try {
       if (LOG.isDebugEnabled()) {
         String byteData = Text.decode(bytes, bytesStart, bytesLength);
-        LOG.debug("Data not in the " + dataType
-            + " data type range so converted to null. Given data is :" +
-                    byteData, new Exception("For debugging purposes"));
+        LOG.debug("Data not in the {} data type range so converted to null. Given data is : {}", dataType, byteData);
       }
     } catch (CharacterCodingException e1) {
-      LOG.debug("Data not in the " + dataType + " data type range so converted to null.", e1);
+      LOG.debug("Data not in the {} data type range so converted to null.", dataType, e1);
     }
   }
 

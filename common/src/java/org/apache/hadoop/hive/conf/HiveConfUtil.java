@@ -210,8 +210,8 @@ public class HiveConfUtil {
 
     if (StringUtils.isNotBlank(jobKeyStoreLocation)) {
       jobConf.set(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG, jobKeyStoreLocation);
-      LOG.debug("Setting job conf credstore location to " + jobKeyStoreLocation
-          + " previous location was " + oldKeyStoreLocation);
+      LOG.debug("Setting job conf credstore location to {} previous location was {}",
+              jobKeyStoreLocation, oldKeyStoreLocation);
     }
 
     updateCredentialProviderPasswordForJobs(jobConf);

@@ -216,9 +216,9 @@ public class SessionManager extends CompositeService {
 
   private void createBackgroundOperationPool() {
     int poolSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_THREADS);
-    LOG.info("HiveServer2: Background operation thread pool size: " + poolSize);
+    LOG.info("HiveServer2: Background operation thread pool size: {}", poolSize);
     int poolQueueSize = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE);
-    LOG.info("HiveServer2: Background operation thread wait queue size: " + poolQueueSize);
+    LOG.info("HiveServer2: Background operation thread wait queue size: {}", poolQueueSize);
     long keepAliveTime = HiveConf.getTimeVar(
         hiveConf, ConfVars.HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME, TimeUnit.SECONDS);
     LOG.info(
@@ -264,25 +264,25 @@ public class SessionManager extends CompositeService {
     isOperationLogEnabled = true;
 
     if (operationLogRootDir.exists() && !operationLogRootDir.isDirectory()) {
-      LOG.warn("The operation log root directory exists, but it is not a directory: " +
+      LOG.warn("The operation log root directory exists, but it is not a directory: {}",
           operationLogRootDir.getAbsolutePath());
       isOperationLogEnabled = false;
     }
 
     if (!operationLogRootDir.exists()) {
       if (!operationLogRootDir.mkdirs()) {
-        LOG.warn("Unable to create operation log root directory: " +
+        LOG.warn("Unable to create operation log root directory: {}",
             operationLogRootDir.getAbsolutePath());
         isOperationLogEnabled = false;
       }
     }
 
     if (isOperationLogEnabled) {
-      LOG.info("Operation log root directory is created: " + operationLogRootDir.getAbsolutePath());
+      LOG.info("Operation log root directory is created: {}", operationLogRootDir.getAbsolutePath());
       try {
         FileUtils.forceDeleteOnExit(operationLogRootDir);
       } catch (IOException e) {
-        LOG.warn("Failed to schedule cleanup HS2 operation logging root dir: " +
+        LOG.warn("Failed to schedule cleanup HS2 operation logging root dir: {} " +
             operationLogRootDir.getAbsolutePath(), e);
       }
       logManager = Optional.of(new OperationLogManager(operationManager, hiveConf));
@@ -318,12 +318,12 @@ public class SessionManager extends CompositeService {
             if (sessionTimeout > 0 && session.getLastAccessTime() + sessionTimeout <= current
                 && (!checkOperation || session.getNoOperationTime() > sessionTimeout)) {
               SessionHandle handle = session.getSessionHandle();
-              LOG.warn("Session " + handle + " is Timed-out (last access : " +
-                  new Date(session.getLastAccessTime()) + ") and will be closed");
+              LOG.warn("Session {} is Timed-out (last access : {}) and will be closed",
+                      handle, new Date(session.getLastAccessTime()));
               try {
                 closeSession(handle);
               } catch (HiveSQLException e) {
-                LOG.warn("Exception is thrown closing session " + handle, e);
+                LOG.warn("Exception is thrown closing session {}", handle, e);
               } finally {
                 Metrics metrics = MetricsFactory.getInstance();
                 if (metrics != null) {
@@ -376,7 +376,7 @@ public class SessionManager extends CompositeService {
       try {
         backgroundOperationPool.awaitTermination(timeout, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
-        LOG.warn("HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT = " + timeout +
+        LOG.warn("HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT = {} " +
             " seconds has been exceeded. RUNNING background operations will be shut down", e);
       }
       backgroundOperationPool.shutdownNow();
@@ -391,8 +391,7 @@ public class SessionManager extends CompositeService {
       try {
         FileUtils.forceDelete(operationLogRootDir);
       } catch (Exception e) {
-        LOG.warn("Failed to cleanup root dir of HS2 logging: " + operationLogRootDir
-            .getAbsolutePath(), e);
+        LOG.warn("Failed to cleanup root dir of HS2 logging: {}", operationLogRootDir.getAbsolutePath(), e);
       }
     }
   }
@@ -523,8 +522,7 @@ public class SessionManager extends CompositeService {
       }
       throw new HiveSQLException(FAIL_CLOSE_ERROR_MESSAGE);
     }
-    LOG.info("Session opened, " + session.getSessionHandle()
-        + ", current sessions:" + getOpenSessionCount());
+    LOG.info("Session opened, {}, current sessions: {}", session.getSessionHandle(), getOpenSessionCount());
     return session;
   }
 
@@ -624,7 +622,7 @@ public class SessionManager extends CompositeService {
       if (session == null) {
         throw new HiveSQLException("Session does not exist: " + sessionHandle);
       }
-      LOG.info("Session closed, " + sessionHandle + ", current sessions:" + getOpenSessionCount());
+      LOG.info("Session closed, {}, current sessions: {}", sessionHandle, getOpenSessionCount());
     }
     closeSessionInternal(session);
   }
@@ -640,9 +638,9 @@ public class SessionManager extends CompositeService {
         // Asynchronously shutdown this instance of HiveServer2,
         // if there are no active client sessions
         if (getOpenSessionCount() == 0) {
-          LOG.info("This instance of HiveServer2 has been removed from the list of server "
-              + "instances available for dynamic service discovery. "
-              + "The last client session has ended - will shutdown now.");
+        LOG.info("This instance of HiveServer2 has been removed from the list of server "
+            + "instances available for dynamic service discovery. "
+            + "The last client session has ended - will shutdown now.");
           Thread shutdownThread = new Thread() {
             @Override
             public void run() {
@@ -731,7 +729,7 @@ public class SessionManager extends CompositeService {
   };
 
   public static void setProxyUserName(String userName) {
-    LOG.debug("setting proxy user name based on query param to: " + userName);
+    LOG.debug("setting proxy user name based on query param to: {}", userName);
     threadLocalProxyUserName.set(userName);
   }
 

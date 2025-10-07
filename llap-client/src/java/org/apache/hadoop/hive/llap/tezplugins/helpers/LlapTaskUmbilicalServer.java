@@ -160,7 +160,7 @@ public class LlapTaskUmbilicalServer {
     // If count goes to 0, it is safe to remove the token.
     int[] refCount = tokenRefMap.get(tokenIdentifier);
     if (refCount == null) {
-      LOG.warn("No refCount found for tokenIdentifier " + tokenIdentifier);
+      LOG.warn("No refCount found for tokenIdentifier {}", tokenIdentifier);
     } else {
       refCount[0]--;
       if (refCount[0] <= 0) {
