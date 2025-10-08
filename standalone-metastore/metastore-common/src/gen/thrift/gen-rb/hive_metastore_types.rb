@@ -1668,12 +1668,14 @@ class Catalog
   DESCRIPTION = 2
   LOCATIONURI = 3
   CREATETIME = 4
+  PARAMETERS = 5
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
     LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'},
-    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true}
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

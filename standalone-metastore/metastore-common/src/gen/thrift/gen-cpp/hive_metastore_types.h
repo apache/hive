@@ -3199,11 +3199,12 @@ void swap(GrantRevokeRoleResponse &a, GrantRevokeRoleResponse &b);
 std::ostream& operator<<(std::ostream& out, const GrantRevokeRoleResponse& obj);
 
 typedef struct _Catalog__isset {
-  _Catalog__isset() : name(false), description(false), locationUri(false), createTime(false) {}
+  _Catalog__isset() : name(false), description(false), locationUri(false), createTime(false), parameters(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
   bool createTime :1;
+  bool parameters :1;
 } _Catalog__isset;
 
 class Catalog : public virtual ::apache::thrift::TBase {
@@ -3223,6 +3224,7 @@ class Catalog : public virtual ::apache::thrift::TBase {
   std::string description;
   std::string locationUri;
   int32_t createTime;
+  std::map<std::string, std::string>  parameters;
 
   _Catalog__isset __isset;
 
@@ -3233,6 +3235,8 @@ class Catalog : public virtual ::apache::thrift::TBase {
   void __set_locationUri(const std::string& val);
 
   void __set_createTime(const int32_t val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
 
   bool operator == (const Catalog & rhs) const
   {
@@ -3247,6 +3251,10 @@ class Catalog : public virtual ::apache::thrift::TBase {
     if (__isset.createTime != rhs.__isset.createTime)
       return false;
     else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (__isset.parameters != rhs.__isset.parameters)
+      return false;
+    else if (__isset.parameters && !(parameters == rhs.parameters))
       return false;
     return true;
   }
