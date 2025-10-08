@@ -86,16 +86,18 @@ class CompactionCleaner extends TaskHandler {
       // to the clean method, to avoid cleaning up deltas needed for running queries
       // when min_history_level is finally dropped, than every HMS will commit compaction the new way
       // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
-      return readyToClean.stream().map(ci -> {
-        long cleanerWaterMark = (ci.minOpenWriteId >= 0) ? ci.nextTxnId + 1 : minTxnIdSeenOpen;
-        return ThrowingRunnable.unchecked(() -> clean(ci, cleanerWaterMark, metricsEnabled));
-      }).collect(Collectors.toList());
+      return readyToClean.stream()
+          .map(ci -> ThrowingRunnable.unchecked(
+              () -> clean(ci, minTxnIdSeenOpen, metricsEnabled)))
+          .collect(Collectors.toList());
     }
     return Collections.emptyList();
   }
 
   private void clean(CompactionInfo ci, long minOpenTxn, boolean metricsEnabled) throws MetaException {
-    LOG.info("Starting cleaning for {} based on min open txnId: {}", ci, minOpenTxn);
+    LOG.info("Starting cleaning for {}, based on min open {}", ci,
+        (ci.minOpenWriteId > 0) ? "writeId: " + ci.minOpenWriteId : "txnId: " + minOpenTxn);
+
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" +
         (!isNull(ci.type) ? ci.type.toString().toLowerCase() : null);
@@ -109,8 +111,7 @@ class CompactionCleaner extends TaskHandler {
       Partition p = null;
 
       if (isNull(location)) {
-        t = metadataCache.computeIfAbsent(ci.getFullTableName(),
-            () -> resolveTable(ci.dbname, ci.tableName));
+        t = resolveTable(ci);
 
         if (isNull(t)) {
           // The table was dropped before we got around to cleaning it.
@@ -154,7 +155,8 @@ class CompactionCleaner extends TaskHandler {
         if (dropPartition && isNull(resolvePartition(ci.dbname, ci.tableName, ci.partName))) {
           cleanUsingLocation(ci, path, true);
         } else {
-          cleanUsingAcidDir(ci, path, minOpenTxn);
+          long cleanerWaterMark = (ci.minOpenWriteId > 0) ? ci.nextTxnId + 1 : minOpenTxn;
+          cleanUsingAcidDir(ci, path, cleanerWaterMark);
         }
       } else {
         cleanUsingLocation(ci, location, false);
@@ -204,17 +206,16 @@ class CompactionCleaner extends TaskHandler {
   }
 
   private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
-    ValidTxnList validTxnList =
-        TxnUtils.createValidTxnListForCleaner(txnHandler.getOpenTxns(), minOpenTxn, false);
+    ValidTxnList validTxnList = TxnUtils.createValidTxnListForCleaner(
+        getOpenTxns(), minOpenTxn, false);
     //save it so that getAcidState() sees it
     getConf().set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     /*
-     * {@code validTxnList} is capped by minOpenTxnGLB so if
+     * {@code validTxnList} is capped by global minOpenTxn so if
      * {@link AcidUtils#getAcidState(Path, Configuration, ValidWriteIdList)} sees a base/delta
      * produced by a compactor, that means every reader that could be active right now see it
-     * as well.  That means if this base/delta shadows some earlier base/delta, it will be
+     * as well. That means if this base/delta shadows some earlier base/delta, it will be
      * used in favor of any files that it shadows. Thus, the shadowed files are safe to delete.
-     *
      *
      * The metadata about aborted writeIds (and consequently aborted txn IDs) cannot be deleted
      * above COMPACTION_QUEUE.CQ_HIGHEST_WRITE_ID.
@@ -241,8 +242,7 @@ class CompactionCleaner extends TaskHandler {
 
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
-    Table table = metadataCache.computeIfAbsent(ci.getFullTableName(),
-        () -> resolveTable(ci.dbname, ci.tableName));
+    Table table = resolveTable(ci);
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     boolean success = cleanAndVerifyObsoleteDirectories(ci, location, validWriteIdList, table);

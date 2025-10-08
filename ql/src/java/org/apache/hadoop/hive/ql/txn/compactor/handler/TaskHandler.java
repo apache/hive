@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCleanerWriteIdList;
@@ -24,6 +25,7 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -66,9 +68,9 @@ public abstract class TaskHandler {
   protected final TxnStore txnHandler;
   private final ThreadLocal<HiveConf> threadLocalConf;
   protected final boolean metricsEnabled;
-  protected final MetadataCache metadataCache;
+  private final MetadataCache metadataCache;
   protected final FSRemover fsRemover;
-  protected final long defaultRetention;
+  private final long defaultRetention;
 
   TaskHandler(HiveConf conf, TxnStore txnHandler, MetadataCache metadataCache,
         boolean metricsEnabled, FSRemover fsRemover) {
@@ -87,7 +89,17 @@ public abstract class TaskHandler {
     return threadLocalConf.get();
   }
 
-  protected Table resolveTable(String dbName, String tableName) throws MetaException {
+  protected GetOpenTxnsResponse getOpenTxns() throws Exception {
+    return metadataCache.computeIfAbsent("openTxns", txnHandler::getOpenTxns);
+  }
+
+  protected Table resolveTable(CompactionInfo info) throws Exception {
+    return metadataCache.computeIfAbsent(info.getFullTableName(),
+        () -> resolveTable(info.dbname, info.tableName));
+  }
+
+  @VisibleForTesting
+  Table resolveTable(String dbName, String tableName) throws MetaException {
     return CompactorUtil.resolveTable(getConf(), dbName, tableName);
   }
 

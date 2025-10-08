@@ -105,7 +105,7 @@ public class TestHandler extends TestCleaner {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
-    Mockito.verify(mockedMetadataCache, times(3)).computeIfAbsent(any(), any());
+    Mockito.verify(mockedMetadataCache, times(4)).computeIfAbsent(any(), any());
     Mockito.verify(mockedTaskHandler, times(1)).resolveTable(any(), any());
   }
 }
