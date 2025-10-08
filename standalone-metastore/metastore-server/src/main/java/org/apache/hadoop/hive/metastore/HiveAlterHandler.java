@@ -488,7 +488,7 @@ public class HiveAlterHandler implements AlterHandler {
           Path deleteOldDataLoc = new Path(oldt.getSd().getLocation());
           boolean isSkipTrash = MetaStoreUtils.isSkipTrash(oldt.getParameters());
           try {
-            wh.deleteDir(deleteOldDataLoc, true, isSkipTrash,
+            wh.deleteDir(deleteOldDataLoc, isSkipTrash,
                     ReplChangeManager.shouldEnableCm(olddb, oldt));
             LOG.info("Deleted the old data location: {} for the table: {}",
                     deleteOldDataLoc, databaseName + "." + tableName);
