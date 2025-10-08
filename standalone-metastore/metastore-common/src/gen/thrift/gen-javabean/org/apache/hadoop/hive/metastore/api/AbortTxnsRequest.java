@@ -406,13 +406,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list812 = iprot.readListBegin();
-                struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list812.size);
-                long _elem813;
-                for (int _i814 = 0; _i814 < _list812.size; ++_i814)
+                org.apache.thrift.protocol.TList _list822 = iprot.readListBegin();
+                struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list822.size);
+                long _elem823;
+                for (int _i824 = 0; _i824 < _list822.size; ++_i824)
                 {
-                  _elem813 = iprot.readI64();
-                  struct.txn_ids.add(_elem813);
+                  _elem823 = iprot.readI64();
+                  struct.txn_ids.add(_elem823);
                 }
                 iprot.readListEnd();
               }
@@ -446,9 +446,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txn_ids.size()));
-          for (long _iter815 : struct.txn_ids)
+          for (long _iter825 : struct.txn_ids)
           {
-            oprot.writeI64(_iter815);
+            oprot.writeI64(_iter825);
           }
           oprot.writeListEnd();
         }
@@ -478,9 +478,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txn_ids.size());
-        for (long _iter816 : struct.txn_ids)
+        for (long _iter826 : struct.txn_ids)
         {
-          oprot.writeI64(_iter816);
+          oprot.writeI64(_iter826);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -497,13 +497,13 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, AbortTxnsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list817 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
-        struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list817.size);
-        long _elem818;
-        for (int _i819 = 0; _i819 < _list817.size; ++_i819)
+        org.apache.thrift.protocol.TList _list827 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
+        struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list827.size);
+        long _elem828;
+        for (int _i829 = 0; _i829 < _list827.size; ++_i829)
         {
-          _elem818 = iprot.readI64();
-          struct.txn_ids.add(_elem818);
+          _elem828 = iprot.readI64();
+          struct.txn_ids.add(_elem828);
         }
       }
       struct.setTxn_idsIsSet(true);
