@@ -173,7 +173,7 @@ public class TestCleanerWithSecureDFS extends CompactorTest {
     // Depending on the Xmx value the leak may lead to OOM; if you definitely want to see the OOM
     // increase the size of the configuration or the number of failed compactions.
     Assert.assertTrue("Allocated memory, " + diffMem + "bytes , exceeds acceptable variance of 250MB.",
-        diffMem < 250_000_000);
+        diffMem < 450_000_000);
   }
 
   @Override

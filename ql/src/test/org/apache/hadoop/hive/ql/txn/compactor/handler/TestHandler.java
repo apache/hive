@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -72,7 +73,7 @@ public class TestHandler extends TestCleaner {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
   }
 
   @Test

@@ -29,7 +29,10 @@ public class MetadataCache {
 
   public MetadataCache(boolean isCacheEnabled) {
     if (isCacheEnabled) {
-      metaCache = Caffeine.newBuilder().softValues().build();
+      metaCache = Caffeine.newBuilder()
+          .softValues()
+          .maximumSize(10_000)
+          .build();
     }
   }
 

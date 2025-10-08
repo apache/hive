@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD;
@@ -74,9 +73,9 @@ class AbortedTxnCleaner extends TaskHandler {
       e. Fetch the aborted write IDs from the AcidState and use it to delete the associated metadata in the TXN_COMPONENTS table.
    **/
   @Override
-  public List<Runnable> getTasks() throws MetaException {
-    int abortedThreshold = HiveConf.getIntVar(getConf(), HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
-    long abortedTimeThreshold = HiveConf.getTimeVar(getConf(), HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
+  public List<Runnable> getTasks(HiveConf conf) throws MetaException {
+    int abortedThreshold = HiveConf.getIntVar(conf, HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD);
+    long abortedTimeThreshold = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
         TimeUnit.MILLISECONDS);
     List<CompactionInfo> readyToCleanAborts =
         txnHandler.findReadyToCleanAborts(abortedTimeThreshold, abortedThreshold);
@@ -85,7 +84,7 @@ class AbortedTxnCleaner extends TaskHandler {
       return readyToCleanAborts.stream()
           .map(info -> ThrowingRunnable.unchecked(
               () -> clean(info, metricsEnabled)))
-          .collect(Collectors.toList());
+          .toList();
     }
     return Collections.emptyList();
   }
@@ -119,7 +118,7 @@ class AbortedTxnCleaner extends TaskHandler {
 
       String location = CompactorUtil.resolveStorageDescriptor(t, p).getLocation();
       info.runAs = TxnUtils.findUserToRunAs(location, t, getConf());
-      abortCleanUsingAcidDir(info, location);
+      abortCleanUsingAcidDir(info, t, location);
 
     } catch (InterruptedException e) {
       LOG.error("Caught an interrupted exception when cleaning, unable to complete cleaning of {} due to {}", info,
@@ -138,7 +137,7 @@ class AbortedTxnCleaner extends TaskHandler {
     }
   }
 
-  private void abortCleanUsingAcidDir(CompactionInfo info, String location) throws Exception {
+  private void abortCleanUsingAcidDir(CompactionInfo info, Table table, String location) throws Exception {
     ValidTxnList validTxnList = TxnUtils.createValidTxnListForCleaner(
         getOpenTxns(), info.minOpenWriteTxnId, true);
     //save it so that getAcidState() sees it
@@ -146,6 +145,7 @@ class AbortedTxnCleaner extends TaskHandler {
 
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(info, validTxnList);
+    LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     // Set the highestWriteId of the cleanup equal to the min(minOpenWriteId - 1, highWatermark).
     // This is necessary for looking at the complete state of the table till the min open writeId
@@ -155,9 +155,6 @@ class AbortedTxnCleaner extends TaskHandler {
         isNull(validWriteIdList.getMinOpenWriteId()) ?
             Long.MAX_VALUE : validWriteIdList.getMinOpenWriteId() - 1,
         validWriteIdList.getHighWatermark());
-
-    Table table = resolveTable(info);
-    LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     boolean success = cleanAndVerifyObsoleteDirectories(info, location, validWriteIdList, table);
     if (success || CompactorUtil.isDynPartAbort(table, info.partName)) {

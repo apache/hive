@@ -29,10 +29,10 @@ import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -79,11 +79,11 @@ public abstract class TaskHandler {
     this.metadataCache = metadataCache;
     this.metricsEnabled = metricsEnabled;
     this.fsRemover = fsRemover;
-    this.defaultRetention = getTimeVar(conf,
-        HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
+    this.defaultRetention = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME,
+        TimeUnit.MILLISECONDS);
   }
 
-  public abstract List<Runnable> getTasks() throws MetaException;
+  public abstract List<Runnable> getTasks(HiveConf conf) throws MetaException;
 
   protected HiveConf getConf() {
     return threadLocalConf.get();
@@ -109,13 +109,14 @@ public abstract class TaskHandler {
   }
 
   protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo info, ValidTxnList validTxnList)
-        throws NoSuchTxnException, MetaException {
+      throws Exception {
     List<String> tblNames = Collections.singletonList(
-        AcidUtils.getFullTableName(info.dbname, info.tableName));
+        TxnUtils.getFullTableName(info.dbname, info.tableName));
 
     GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
     request.setValidTxnList(validTxnList.writeToString());
-    GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
+    GetValidWriteIdsResponse rsp = metadataCache.computeIfAbsent(info.getFullTableName() + validTxnList.writeToString(),
+        () -> txnHandler.getValidWriteIds(request));
     // we could have no write IDs for a table if it was never written to but
     // since we are in the Cleaner phase of compactions, there must have
     // been some delta/base dirs

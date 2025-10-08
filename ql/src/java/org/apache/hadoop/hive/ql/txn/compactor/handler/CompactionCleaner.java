@@ -52,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
@@ -72,10 +71,10 @@ class CompactionCleaner extends TaskHandler {
   }
 
   @Override
-  public List<Runnable> getTasks() throws MetaException {
+  public List<Runnable> getTasks(HiveConf conf) throws MetaException {
     long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
-    long retentionTime = HiveConf.getBoolVar(getConf(), HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
-        ? HiveConf.getTimeVar(getConf(), HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
+    long retentionTime = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)
+        ? HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS)
         : 0;
     List<CompactionInfo> readyToClean = txnHandler.findReadyToClean(minOpenTxnId, retentionTime);
     if (!readyToClean.isEmpty()) {
@@ -89,7 +88,7 @@ class CompactionCleaner extends TaskHandler {
       return readyToClean.stream()
           .map(ci -> ThrowingRunnable.unchecked(
               () -> clean(ci, minTxnIdSeenOpen, metricsEnabled)))
-          .collect(Collectors.toList());
+          .toList();
     }
     return Collections.emptyList();
   }
@@ -156,7 +155,7 @@ class CompactionCleaner extends TaskHandler {
           cleanUsingLocation(ci, path, true);
         } else {
           long cleanerWaterMark = (ci.minOpenWriteId > 0) ? ci.nextTxnId + 1 : minOpenTxn;
-          cleanUsingAcidDir(ci, path, cleanerWaterMark);
+          cleanUsingAcidDir(ci, t, path, cleanerWaterMark);
         }
       } else {
         cleanUsingLocation(ci, location, false);
@@ -205,7 +204,7 @@ class CompactionCleaner extends TaskHandler {
     }
   }
 
-  private void cleanUsingAcidDir(CompactionInfo ci, String location, long minOpenTxn) throws Exception {
+  private void cleanUsingAcidDir(CompactionInfo ci, Table table, String location, long minOpenTxn) throws Exception {
     ValidTxnList validTxnList = TxnUtils.createValidTxnListForCleaner(
         getOpenTxns(), minOpenTxn, false);
     //save it so that getAcidState() sees it
@@ -242,7 +241,6 @@ class CompactionCleaner extends TaskHandler {
 
     // Creating 'reader' list since we are interested in the set of 'obsolete' files
     ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, validTxnList);
-    Table table = resolveTable(ci);
     LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
     boolean success = cleanAndVerifyObsoleteDirectories(ci, location, validWriteIdList, table);
@@ -265,7 +263,7 @@ class CompactionCleaner extends TaskHandler {
 
   @Override
   protected ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, ValidTxnList validTxnList)
-        throws NoSuchTxnException, MetaException {
+      throws Exception {
     ValidReaderWriteIdList validWriteIdList = super.getValidCleanerWriteIdList(ci, validTxnList);
     /*
      * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
