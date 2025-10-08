@@ -706,6 +706,16 @@ CREATE TABLE CTLGS (
       CREATE_TIME INT
 );
 
+-- HIVE-29178
+-- Table structure for table CATALOG_PARAMS
+CREATE TABLE CATALOG_PARAMS (
+       CTLG_ID bigint NOT NULL,
+       PARAM_KEY nvarchar(180) NOT NULL,
+       PARAM_VALUE nvarchar(4000) DEFAULT NULL,
+       PRIMARY KEY (CTLG_ID, PARAM_KEY),
+       CONSTRAINT CATALOG_PARAMS_FK1 FOREIGN KEY (CTLG_ID) REFERENCES CTLGS (CTLG_ID) ON DELETE CASCADE
+);
+
 -- Insert a default value.  The location is TBD.  Hive will fix this when it starts
 INSERT INTO CTLGS VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
 
