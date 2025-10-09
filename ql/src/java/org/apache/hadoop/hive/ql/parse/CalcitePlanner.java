@@ -4919,12 +4919,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
-          HiveProject project = switch (Objects.requireNonNull(relNode)) {
-            case HiveProject hiveProject -> hiveProject;
-            case SingleRel singleRel when singleRel.getInput() instanceof HiveProject hiveProject -> hiveProject;
-            default -> throw new SemanticException("View " + subqAlias + " is corresponding to "
-                + relNode + ", rather than a HiveProject or a SingleRel with HiveProject as its child.");
-          };
+          HiveProject project = extractFirstProject(relNode)
+              .orElseThrow(() -> new SemanticException("Could not obtain a HiveProject from " + relNode));
           if (this.viewProjectToTableSchema == null) {
             this.viewProjectToTableSchema = new LinkedHashMap<>();
           }
@@ -5048,6 +5044,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       setQB(qb);
       return srcRel;
+    }
+
+    /**
+     * Extract the first HiveProject from a RelNode tree of SingleRel nodes.
+     * This doesn't search through inputs of multi-input nodes (like Joins).
+     * 
+     * @param rel RelNode
+     * @return Optional HiveProject
+     */
+    private Optional<HiveProject> extractFirstProject(RelNode rel) {
+      return switch (rel) {
+      case HiveProject hiveProject -> Optional.of(hiveProject);
+      case SingleRel sr -> extractFirstProject(sr.getInput());
+      case null, default -> Optional.empty();
+      };
     }
 
     private RelNode genGBHavingLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
