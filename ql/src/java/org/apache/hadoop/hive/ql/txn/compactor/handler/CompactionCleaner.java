@@ -248,7 +248,7 @@ class CompactionCleaner extends TaskHandler {
       txnHandler.markCleaned(ci);
     } else {
       txnHandler.clearCleanerStart(ci);
-      LOG.warn("No files were removed. Leaving queue entry {} in ready for cleaning state.", ci);
+      LOG.warn("Leaving queue entry {} in ready for cleaning state.", ci);
     }
   }
 
