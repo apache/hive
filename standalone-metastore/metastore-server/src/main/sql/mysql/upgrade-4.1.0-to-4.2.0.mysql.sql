@@ -9,7 +9,6 @@ CREATE TABLE `CATALOG_PARAMS` (
     CONSTRAINT `CATALOG_PARAMS_FK1` FOREIGN KEY (`CTLG_ID`) REFERENCES `CTLGS` (`CTLG_ID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='4.2.0', VERSION_COMMENT='Hive release version 4.2.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 4.1.0 to 4.2.0' AS MESSAGE;

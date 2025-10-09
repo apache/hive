@@ -89,16 +89,6 @@ CREATE TABLE `CTLGS` (
 -- Insert a default value.  The location is TBD.  Hive will fix this when it starts
 INSERT INTO `CTLGS` VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
 
--- HIVE-29178
--- Table structure for table `CATALOG_PARAMS`
-CREATE TABLE `CATALOG_PARAMS` (
-     `CTLG_ID` BIGINT NOT NULL,
-     `PARAM_KEY` VARCHAR(180) NOT NULL,
-     `PARAM_VALUE` VARCHAR(4000) DEFAULT NULL,
-     PRIMARY KEY (`CTLG_ID`, `PARAM_KEY`),
-     CONSTRAINT `CATALOG_PARAMS_FK1` FOREIGN KEY (`CTLG_ID`) REFERENCES `CTLGS` (`CTLG_ID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 --
 -- Table structure for table `DBS`
 --
@@ -1341,6 +1331,16 @@ CREATE TABLE IF NOT EXISTS `DC_PRIVS` (
   KEY `DC_PRIVS_N49` (`NAME`),
   CONSTRAINT `DC_PRIVS_FK1` FOREIGN KEY (`NAME`) REFERENCES `DATACONNECTORS` (`NAME`)
   ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- HIVE-29178
+-- Table structure for table `CATALOG_PARAMS`
+CREATE TABLE `CATALOG_PARAMS` (
+    `CTLG_ID` BIGINT NOT NULL,
+    `PARAM_KEY` VARCHAR(180) NOT NULL,
+    `PARAM_VALUE` VARCHAR(4000) DEFAULT NULL,
+    PRIMARY KEY (`CTLG_ID`, `PARAM_KEY`),
+     CONSTRAINT `CATALOG_PARAMS_FK1` FOREIGN KEY (`CTLG_ID`) REFERENCES `CTLGS` (`CTLG_ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
