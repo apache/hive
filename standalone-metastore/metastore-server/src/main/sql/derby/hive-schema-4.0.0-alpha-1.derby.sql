@@ -245,15 +245,6 @@ CREATE TABLE "APP"."CTLGS" (
 INSERT INTO "APP"."CTLGS" ("CTLG_ID", "NAME", "DESC", "LOCATION_URI", "CREATE_TIME")
 VALUES (1, 'hive', 'Default catalog for Hive', 'TBD', NULL);
 
--- HIVE-29178
-CREATE TABLE "APP"."CATALOG_PARAMS" (
-    "CTLG_ID" BIGINT NOT NULL,
-    "PARAM_KEY" VARCHAR(180) NOT NULL,
-    "PARAM_VALUE" VARCHAR(4000) DEFAULT NULL,
-    PRIMARY KEY ("CTLG_ID", "PARAM_KEY"),
-    CONSTRAINT "CATALOG_PARAMS_FK1" FOREIGN KEY ("CTLG_ID") REFERENCES "APP"."CTLGS" ("CTLG_ID") ON DELETE CASCADE
-)
-
 -- ----------------------------------------------
 -- DML Statements
 -- ----------------------------------------------

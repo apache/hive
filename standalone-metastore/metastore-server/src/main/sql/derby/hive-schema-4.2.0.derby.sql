@@ -864,6 +864,15 @@ CREATE TABLE "APP"."PACKAGES" (
 CREATE UNIQUE INDEX "UNIQUEPKG" ON "PACKAGES" ("NAME", "DB_ID");
 ALTER TABLE "PACKAGES" ADD CONSTRAINT "PACKAGES_FK1" FOREIGN KEY ("DB_ID") REFERENCES "DBS" ("DB_ID");
 
+-- HIVE-29178
+CREATE TABLE "APP"."CATALOG_PARAMS" (
+     "CTLG_ID" BIGINT NOT NULL,
+     "PARAM_KEY" VARCHAR(180) NOT NULL,
+     "PARAM_VALUE" VARCHAR(4000) DEFAULT NULL,
+     PRIMARY KEY ("CTLG_ID", "PARAM_KEY"),
+     CONSTRAINT "CATALOG_PARAMS_FK1" FOREIGN KEY ("CTLG_ID") REFERENCES "APP"."CTLGS" ("CTLG_ID") ON DELETE CASCADE
+);
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------

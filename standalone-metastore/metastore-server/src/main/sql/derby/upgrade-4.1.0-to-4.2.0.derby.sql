@@ -5,7 +5,7 @@ CREATE TABLE "APP"."CATALOG_PARAMS" (
     "PARAM_VALUE" VARCHAR(4000) DEFAULT NULL,
     PRIMARY KEY ("CTLG_ID", "PARAM_KEY"),
     CONSTRAINT "CATALOG_PARAMS_FK1" FOREIGN KEY ("CTLG_ID") REFERENCES "APP"."CTLGS" ("CTLG_ID") ON DELETE CASCADE
-)
+);
 
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='4.2.0', VERSION_COMMENT='Hive release version 4.2.0' where VER_ID=1;
