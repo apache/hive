@@ -684,7 +684,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_LIMIT", "LIMIT");
     xlateMap.put("KW_OFFSET", "OFFSET");
     xlateMap.put("KW_SET", "SET");
-    xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
+    xlateMap.put("KW_PROPERTIES", "PROPERTIES");
     xlateMap.put("KW_VALUE_TYPE", "\$VALUE\$");
     xlateMap.put("KW_ELEM_TYPE", "\$ELEM\$");
     xlateMap.put("KW_DEFINED", "DEFINED");
@@ -1129,7 +1129,7 @@ createCatalogStatement
         name=identifier
         catLocation
         catalogComment?
-        (KW_CATPROPERTIES catprops=catProperties)?
+        (KW_PROPERTIES catprops=catProperties)?
     -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment? $catprops?)
     ;
 
